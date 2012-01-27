@@ -1,0 +1,46 @@
+Scott C. Livingston  <slivingston@caltech.edu>
+Jan 2012.
+
+
+Grammar for GR(1)
+-----------------
+
+*Summary:* C-like, infix syntax.
+
+/* Define which variables are controlled and uncontrolled. */
+envvarlist ::= envvarlist VARIABLE | 'ENV:' VARIABLE
+sysvarlist ::= sysvarlist VARIABLE | 'SYS:' VARIABLE
+
+propformula ::= "False" | "True" | VARIABLE | '!' propformula | propformula '&' propformula | propformula '|' propformula | '(' propformula ')' | propformula "->" propformula | VARIABLE '=' NUMBER
+
+/* The only difference between propformula and tpropformula is variables can be primed (next operator) in the latter. */
+tpropformula ::= "False" | "True" | VARIABLE | VARIABLE '\'' | '!' propformula | propformula '&' propformula | propformula '|' propformula | '(' propformula ')' | propformula "->" propformula | VARIABLE '=' NUMBER
+
+transformula ::= "[]" tpropformula | transformula '&' transformula
+goalformula ::= "[]<>" propformula | goalformua '&' goalformula
+
+
+
+Other notes
+-----------
+
+Various BDD packages:
+
+- http://vlsi.colorado.edu/~fabio/CUDD/
+- http://www.ece.ucsb.edu/bears/pycudd.html (just wraps CUDD)
+- http://jossowski.de/projects/jinc/jinc.html
+- http://sourceforge.net/projects/buddy/develop
+- http://javaddlib.sourceforge.net/jdd/
+
+References
+----------
+
+- Kesten, Piterman, Pnueli, 2005.
+- Bloem, Jobstmann, Piterman, Pnueli, Sa'ar, 2011.
+
+
+License
+-------
+
+This is free software released under the terms of the GNU General
+Public License, version 3.  No warranty.
