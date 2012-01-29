@@ -1,7 +1,7 @@
 ENV: x
 SYS: y
 
-ENVINIT: x 
+ENVINIT: x
 ENVTRANS:
 ENVGOAL:
 

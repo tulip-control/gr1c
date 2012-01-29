@@ -1,6 +1,6 @@
 /* gr1c -- Bison (and Yacc) grammar file
  *
- * SCL; 26 Jan 2012.
+ * SCL; Jan 2012.
  */
 
 %{
@@ -97,15 +97,9 @@ tpropformula: TRUE_CONSTANT
 ;
 
 
-
 %%
 
 void yyerror( char const *s )
 {
 	fprintf( stderr, "%s\n", s );
-}
-
-int main( void )
-{
-	return yyparse();
 }
