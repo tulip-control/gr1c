@@ -1,10 +1,11 @@
 /* gr1c -- lexical analyzer (or "scanner")
  *
- * SCL; 26 Jan 2012.
+ * SCL; Jan 2012.
  */
 
 %{
-#include "y.tab.h"
+  #include "y.tab.h"
+  #define YY_USER_ACTION yylloc->last_column += yyleng;
 %}
 
 %option bison-bridge bison-locations
@@ -21,21 +22,29 @@ number  [0-9]+([.][0-9]+)?
 "[]<>"  { return LIVENESS_OP; }
 "[]"  { return SAFETY_OP; }
 
-[()&|!='\n]  { return yytext[0]; }
+[()&|!=']  { return yytext[0]; }
+
+\n  {
+        yylloc->first_column = yylloc->last_column;
+	yylloc->last_column = 0;
+        yylloc->first_line = yylloc->last_line;
+        ++(yylloc->last_line);
+        return yytext[0];
+    }
 
 "True"  { return TRUE_CONSTANT; }
 "False"  { return FALSE_CONSTANT; }
 
-^("ENV:") { return E_VARS; }
-^("SYS:") { return S_VARS; }
+^("ENV:")  { return E_VARS; }
+^("SYS:")  { return S_VARS; }
 
-^("ENVINIT:") { return E_INIT; }
-^("ENVTRANS:") { return E_TRANS; }
-^("ENVGOAL:") {return E_GOAL; }
+^("ENVINIT:")  { return E_INIT; }
+^("ENVTRANS:")  { return E_TRANS; }
+^("ENVGOAL:")  { return E_GOAL; }
 
-^("SYSINIT:") { return S_INIT; }
-^("SYSTRANS:") { return S_TRANS; }
-^("SYSGOAL:") {return S_GOAL; }
+^("SYSINIT:")  { return S_INIT; }
+^("SYSTRANS:")  { return S_TRANS; }
+^("SYSGOAL:")  { return S_GOAL; }
 
 {identifier}  { return VARIABLE; }
 {number}  { return NUMBER; }
@@ -43,3 +52,6 @@ number  [0-9]+([.][0-9]+)?
 ^("#").*  { return COMMENT; }
 
 [ \t]+  {} /* Ignore whitespace */
+
+.  { return yytext[0]; } /* Pass anything unknown to parser, as-is,
+                            hence a syntax error. */

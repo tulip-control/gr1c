@@ -8,8 +8,9 @@
   void yyerror( char const * );
 %}
 
-/* %define parse.lac full */
 %error-verbose
+/* %define api.pure */
+%pure_parser
 %locations
 
 
@@ -39,12 +40,15 @@
 %%
 
 input: /* empty */
-     | input '\n'
-     | input line '\n'
-     | line '\n'
+     | input line
 ;
 
-line: COMMENT
+line: '\n'
+    | exp '\n'
+    | error '\n'  { printf( "\nError detected on line %d.\n", @1.last_line ); YYABORT; }
+;
+
+exp: COMMENT
     | var_list
     | E_INIT
     | E_INIT propformula
