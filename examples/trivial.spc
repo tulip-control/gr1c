@@ -1,4 +1,4 @@
-ENV: x;  
+ENV: x;
 SYS: y;
 
 ENVINIT: x;

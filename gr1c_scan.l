@@ -14,7 +14,7 @@
 
 
 identifier  [a-zA-Z][a-zA-z0-9_\.]*
-number  [0-9]+([.][0-9]+)?
+number  (-)?[0-9]+([.][0-9]+)?
 
 %%
 
@@ -45,8 +45,8 @@ number  [0-9]+([.][0-9]+)?
 ^("SYSTRANS:")  { return S_TRANS; }
 ^("SYSGOAL:")  { return S_GOAL; }
 
-{identifier}  { return VARIABLE; }
-{number}  { return NUMBER; }
+{identifier}  { yylval->str = strdup( yytext ); return VARIABLE; }
+{number}  { yylval->num = atoi( yytext ); return NUMBER; }
 
 "#".*"\n"  { unput( '\n' ); }  /* Comments.
                                   unput is used to preserve line count. */

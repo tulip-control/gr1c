@@ -1,8 +1,5 @@
 /* gr1c -- Bison (and Yacc) grammar file
  *
- * As visual feedback during parsing, a dot is written to the screen
- * for each variable name recognized.
- *
  *
  * SCL; Jan 2012.
  */
@@ -10,13 +7,23 @@
 
 %{
   #include <stdio.h>
+  #include "ptree.h"
   void yyerror( char const * );
+
+  extern ptree_t *evar_list;
+  extern ptree_t *svar_list;
 %}
 
 %error-verbose
 /* %define api.pure */
 %pure_parser
 %locations
+
+
+%union {
+  char * str;
+  int num;
+}
 
 
 %token E_VARS
@@ -31,8 +38,8 @@
 %token S_GOAL
 
 %token COMMENT
-%token VARIABLE
-%token NUMBER
+%token <str> VARIABLE
+%token <num> NUMBER
 %token TRUE_CONSTANT
 %token FALSE_CONSTANT
 
@@ -48,7 +55,8 @@ input: /* empty */
      | input exp
 ;
 
-exp: var_list ';'
+exp: evar_list ';'
+   | svar_list ';'
    | E_INIT ';'
    | E_INIT propformula ';'
    | E_TRANS ';'
@@ -61,12 +69,27 @@ exp: var_list ';'
    | S_TRANS transformula ';'
    | S_GOAL ';'
    | S_GOAL goalformula ';'
-   | error { printf( "\nError detected on line %d.\n", @1.last_line ); YYABORT; }
+   | error  { printf( "Error detected on line %d.\n", @1.last_line ); YYABORT; }
 ;
 
-var_list: E_VARS
-        | S_VARS
-        | var_list VARIABLE
+evar_list: E_VARS
+        | evar_list VARIABLE  {
+              if (evar_list == NULL) {
+                  evar_list = init_ptree( PT_VARIABLE, $2, 0 );
+              } else {
+                  append_list_item( evar_list, PT_VARIABLE, $2, 0 );
+              }
+          }
+;
+
+svar_list: S_VARS
+        | svar_list VARIABLE  {
+              if (svar_list == NULL) {
+                  svar_list = init_ptree( PT_VARIABLE, $2, 0 );
+              } else {
+                  append_list_item( svar_list, PT_VARIABLE, $2, 0 );
+              }
+          }
 ;
 
 transformula: SAFETY_OP tpropformula
@@ -79,7 +102,7 @@ goalformula: LIVENESS_OP propformula
 
 propformula: TRUE_CONSTANT
            | FALSE_CONSTANT
-           | VARIABLE  { printf( "." ); }
+           | VARIABLE
            | VARIABLE '=' NUMBER
            | propformula '&' propformula
            | propformula '|' propformula
@@ -90,8 +113,8 @@ propformula: TRUE_CONSTANT
 
 tpropformula: TRUE_CONSTANT
 	    | FALSE_CONSTANT
-	    | VARIABLE  { printf( "." ); }
-	    | VARIABLE '\''  { printf( "." ); }
+	    | VARIABLE
+	    | VARIABLE '\''
 	    | VARIABLE '=' NUMBER
 	    | tpropformula '&' tpropformula
 	    | tpropformula '|' tpropformula

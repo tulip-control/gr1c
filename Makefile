@@ -12,10 +12,11 @@ CFLAGS = -g -Wall -pedantic
 LDFLAGS = 
 
 
-gr1c: main.o gr1c_parse.o gr1c_scan.o
+gr1c: main.o ptree.o gr1c_parse.o gr1c_scan.o
 	$(CC) -o $@ $(LDFLAGS) $^
 
 main.o: main.c
+ptree.o: ptree.c
 
 gr1c_scan.o: gr1c_scan.l gr1c_parse.c
 gr1c_parse.o: gr1c_parse.y
