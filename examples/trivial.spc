@@ -1,10 +1,15 @@
-ENV: x
-SYS: y
+ENV: x;  
+SYS: y;
 
-ENVINIT: x
-ENVTRANS:
-ENVGOAL:
+ENVINIT: x;
+ENVTRANS:;
+ENVGOAL:;
 
-SYSINIT: !y
-SYSTRANS: [](y -> !(y')) & [](!y -> (y'))
-SYSGOAL: []<>y
+SYSINIT: !y;
+
+SYSTRANS:  # Notice the safety formula spans two lines.
+  [](y -> !(y'))
+& [](!y -> (y'))
+;
+
+SYSGOAL: []<>y;

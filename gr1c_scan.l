@@ -22,14 +22,13 @@ number  [0-9]+([.][0-9]+)?
 "[]<>"  { return LIVENESS_OP; }
 "[]"  { return SAFETY_OP; }
 
-[()&|!=']  { return yytext[0]; }
+[()&|!=';]  { return yytext[0]; }
 
 \n  {
         yylloc->first_column = yylloc->last_column;
 	yylloc->last_column = 0;
         yylloc->first_line = yylloc->last_line;
         ++(yylloc->last_line);
-        return yytext[0];
     }
 
 "True"  { return TRUE_CONSTANT; }
@@ -49,9 +48,10 @@ number  [0-9]+([.][0-9]+)?
 {identifier}  { return VARIABLE; }
 {number}  { return NUMBER; }
 
-^("#").*  { return COMMENT; }
+"#".*"\n"  { unput( '\n' ); }  /* Comments.
+                                  unput is used to preserve line count. */
 
-[ \t]+  {} /* Ignore whitespace */
+[ \t]+  {}  /* Ignore whitespace */
 
-.  { return yytext[0]; } /* Pass anything unknown to parser, as-is,
-                            hence a syntax error. */
+.  { return yytext[0]; }  /* Pass anything unknown to parser, as-is,
+                             hence a syntax error. */

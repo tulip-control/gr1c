@@ -1,7 +1,12 @@
 /* gr1c -- Bison (and Yacc) grammar file
  *
+ * As visual feedback during parsing, a dot is written to the screen
+ * for each variable name recognized.
+ *
+ *
  * SCL; Jan 2012.
  */
+
 
 %{
   #include <stdio.h>
@@ -40,28 +45,23 @@
 %%
 
 input: /* empty */
-     | input line
+     | input exp
 ;
 
-line: '\n'
-    | exp '\n'
-    | error '\n'  { printf( "\nError detected on line %d.\n", @1.last_line ); YYABORT; }
-;
-
-exp: COMMENT
-    | var_list
-    | E_INIT
-    | E_INIT propformula
-    | E_TRANS
-    | E_TRANS transformula
-    | E_GOAL
-    | E_GOAL goalformula
-    | S_INIT
-    | S_INIT propformula
-    | S_TRANS
-    | S_TRANS transformula
-    | S_GOAL
-    | S_GOAL goalformula
+exp: var_list ';'
+   | E_INIT ';'
+   | E_INIT propformula ';'
+   | E_TRANS ';'
+   | E_TRANS transformula ';'
+   | E_GOAL ';'
+   | E_GOAL goalformula ';'
+   | S_INIT ';'
+   | S_INIT propformula ';'
+   | S_TRANS ';'
+   | S_TRANS transformula ';'
+   | S_GOAL ';'
+   | S_GOAL goalformula ';'
+   | error { printf( "\nError detected on line %d.\n", @1.last_line ); YYABORT; }
 ;
 
 var_list: E_VARS
@@ -79,7 +79,7 @@ goalformula: LIVENESS_OP propformula
 
 propformula: TRUE_CONSTANT
            | FALSE_CONSTANT
-           | VARIABLE  { printf( "." ); }  /* Write dot to terminal for each variable name recognized. */
+           | VARIABLE  { printf( "." ); }
            | VARIABLE '=' NUMBER
            | propformula '&' propformula
            | propformula '|' propformula
@@ -90,12 +90,12 @@ propformula: TRUE_CONSTANT
 
 tpropformula: TRUE_CONSTANT
 	    | FALSE_CONSTANT
-	    | VARIABLE  { printf( "." ); }  /* Write dot to terminal for each variable name recognized. */
+	    | VARIABLE  { printf( "." ); }
+	    | VARIABLE '\''  { printf( "." ); }
 	    | VARIABLE '=' NUMBER
 	    | tpropformula '&' tpropformula
 	    | tpropformula '|' tpropformula
 	    | tpropformula IMPLIES tpropformula
-	    | tpropformula '\''
 	    | '!' tpropformula
 	    | '(' tpropformula ')'
 ;
