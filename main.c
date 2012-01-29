@@ -1,4 +1,4 @@
-/* SCL; 28 Jan 2012. */
+/* SCL; Jan 2012. */
 
 
 #include <stdio.h>

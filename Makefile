@@ -12,13 +12,14 @@ CFLAGS = -g -Wall -pedantic
 LDFLAGS = 
 
 
-# Stand-alone gr1c syntax checker
-syncheck: syncheck.c gr1c_parse.o gr1c_scan.o
+gr1c: main.o gr1c_parse.o gr1c_scan.o
+	$(CC) -o $@ $(LDFLAGS) $^
+
+main.o: main.c
 
 gr1c_scan.o: gr1c_scan.l gr1c_parse.c
 gr1c_parse.o: gr1c_parse.y
 
 
 clean:
-	rm -fv *~ *.o y.tab.h gr1c_parse.c syncheck
-	rm -rfv syncheck.dSYM
+	rm -fv *~ *.o y.tab.h gr1c_parse.c gr1c
