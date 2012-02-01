@@ -4,7 +4,7 @@
  * getopt, once sophistication of usage demands.
  *
  *
- * SCL; Jan 2012.
+ * SCL; Jan, Feb 2012.
  */
 
 
@@ -21,13 +21,24 @@ typedef unsigned char bool;
 #define False 0
 
 
+/*************************
+ **** Global variabls ****/
+
 ptree_t *evar_list = NULL;
 ptree_t *svar_list = NULL;
+ptree_t *env_init = NULL;
+ptree_t *sys_init = NULL;
+
+/* General purpose tree pointer, which facilitates cleaner Yacc
+   parsing code. */
+ptree_t *gen_tree_ptr = NULL;
+
+/*************************/
 
 
 int main( int argc, char **argv )
 {
-	FILE *fd;
+	FILE *f;
 	bool help_flag = False;
 	bool ptdump_flag = False;
 	int i;
@@ -61,31 +72,33 @@ int main( int argc, char **argv )
 	/* If filename for specification given at command-line, then use
 	   it.  Else, read from stdin. */
 	if (input_index > 0) {
-		fd = fopen( argv[input_index], "r" );
-		if (fd == NULL) {
+		f = fopen( argv[input_index], "r" );
+		if (f == NULL) {
 			perror( "gr1c, fopen" );
 			return -1;
 		}
-		stdin = fd;
+		stdin = f;
 	}
 
-	/* Initialization (preparing for results of parsing spec). */
+	/* Parse the specification. */
 	evar_list = NULL;
 	svar_list = NULL;
-
-	/* Parse the specification. */
+	gen_tree_ptr = NULL;
 	if (yyparse())
 		return -1;
 
 	if (ptdump_flag) {
-		printf( "Number of environment variables: %d\n", tree_size( evar_list ) );
-		inorder_print( evar_list );
-		printf( "\nNumber of system variables: %d\n", tree_size( svar_list ) );
-		inorder_print( svar_list );
+		/* printf( "Number of environment variables: %d\n", tree_size( evar_list ) ); */
+		/* printf( "\nNumber of system variables: %d\n", tree_size( svar_list ) ); */
+
+		tree_dot_dump( sys_init, "sys_init_ptree.dot" );
+		tree_dot_dump( env_init, "env_init_ptree.dot" );
 	}
 
 	/* Clean-up */
 	delete_tree( evar_list );
+	delete_tree( svar_list );
+	delete_tree( sys_init );
 	
 	return 0;
 }

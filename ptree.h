@@ -10,7 +10,7 @@
  * applicable to the given type are ignored.
  *
  *
- * SCL; 29 Jan 2012.
+ * SCL; Jan, Feb 2012.
  */
 
 
@@ -20,11 +20,16 @@
 
 /********************
  **** Node types ****/
+/* variables or constant */
 #define PT_EMPTY 0
 #define PT_VARIABLE 1
 #define PT_NEXT_VARIABLE 2
 #define PT_CONSTANT 3
+
+/* unary */
 #define PT_NEG 4
+
+/* binary */
 #define PT_AND 5
 #define PT_OR 6
 #define PT_IMPLIES 7
@@ -49,8 +54,13 @@ ptree_t *init_ptree( int type, char *name, int value );
 int tree_size( ptree_t *head );
 /* Return number of nodes in tree. */
 
-void inorder_print( ptree_t *head );
-/* Print nodes to screen in-order. */
+void print_node( ptree_t *node, FILE *f );
+/* If f is NULL, then use stdout. */
+
+void inorder_trav( ptree_t *head,
+				   void (* node_fn)(ptree_t *, void *), void *arg );
+/* Traverse the tree in-order, calling *node_fn at each node and
+   passing it arg. */
 
 int tree_dot_dump( ptree_t *head, char *filename );
 /* Generate Graphviz DOT file depicting the parse tree.  Return 0 on
@@ -58,6 +68,15 @@ int tree_dot_dump( ptree_t *head, char *filename );
 
 void delete_tree( ptree_t *head );
 /* Delete tree with given root node. */
+
+ptree_t *pusht_terminal( ptree_t *head, int type, char *name, int value );
+/* Push variable or constant into top of tree.  (Behavior is
+   like reverse Polish notation.)  Return the new head, or NULL on
+   error. */
+
+ptree_t *pusht_operator( ptree_t *head, int type );
+/* Push unary binary operator into top of tree.  (Behavior is like reverse
+   Polish notation.)  Return the new head, or NULL on error. */
 
 ptree_t *append_list_item( ptree_t *head, int type, char *name, int value );
 /* Return pointer to new item (which is of course accessible via given

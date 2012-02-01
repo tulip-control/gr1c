@@ -1,7 +1,7 @@
 /* ptree.c -- Definitions for signatures appearing in ptree.h.
  *
  *
- * SCL; 29 Jan 2012.
+ * SCL; Jan, Feb 2012.
  */
 
 
@@ -65,56 +65,69 @@ int tree_size( ptree_t *head )
 }
 
 
-void inorder_print( ptree_t *head )
+void print_node( ptree_t *node, FILE *f )
+{
+	if (f == NULL)
+		f = stdout;
+
+	switch (node->type) {
+	case PT_EMPTY:
+		fprintf( f, "(empty)" );
+		break;
+
+	case PT_VARIABLE:
+		fprintf( f, "%s", node->name );
+		break;
+
+	case PT_NEXT_VARIABLE:
+		fprintf( f, "%s'", node->name );
+		break;
+
+	case PT_CONSTANT:
+		fprintf( f, "%d", node->value );
+		break;
+			
+	case PT_NEG:
+		fprintf( f, "!" );
+		break;
+
+	case PT_AND:
+		fprintf( f, "&" );
+		break;
+
+	case PT_OR:
+		fprintf( f, "|" );
+		break;
+
+	case PT_IMPLIES:
+		fprintf( f, "->" );
+		break;
+		
+	case PT_EQUALS:
+		fprintf( f, "=" );
+		break;
+
+	default:
+		fprintf( stderr, "inorder_print: Unrecognized type, %d\n", node->type );
+		break;
+	}
+}
+
+
+void inorder_trav( ptree_t *head,
+				   void (* node_fn)(ptree_t *, void *), void *arg )
 {
 	if (head == NULL)
 		return;
 
-	inorder_print( head->left );
-	
-	switch (head->type) {
-	case PT_EMPTY:
-		printf( "(empty)\n" );
-		break;
-
-	case PT_VARIABLE:
-		printf( "%s\n", head->name );
-		break;
-
-	case PT_NEXT_VARIABLE:
-		printf( "%s'\n", head->name );
-		break;
-
-	case PT_CONSTANT:
-		printf( "%d\n", head->value );
-		break;
-			
-	case PT_NEG:
-		printf( "!\n" );
-		break;
-
-	case PT_AND:
-		printf( "&\n" );
-		break;
-
-	case PT_OR:
-		printf( "|\n" );
-		break;
-
-	case PT_IMPLIES:
-		printf( "->\n" );
-		break;
-		
-	case PT_EQUALS:
-		printf( "=\n" );
-		break;
-
-	default:
-		fprintf( stderr, "inorder_print: Unrecognized type, %d\n", head->type );
-		break;
+	inorder_trav( head->left, node_fn, arg );
+	(*node_fn)( head, arg );
+	if (arg == NULL) {
+		printf( "\n" );
+	} else {
+		fprintf( arg, "\n" );
 	}
-
-	inorder_print( head->right );
+	inorder_trav( head->right, node_fn, arg );
 }
 
 
@@ -177,8 +190,89 @@ ptree_t *remove_list_item( ptree_t *head, int index )
 }
 
 
+ptree_t *pusht_terminal( ptree_t *head, int type, char *name, int value )
+{
+	ptree_t *new_head;
+
+	new_head = init_ptree( type, name, value );
+	new_head->left = head;
+	return new_head;
+}
+
+
+ptree_t *pusht_operator( ptree_t *head, int type )
+{
+	ptree_t *new_head, *move_node;
+
+	/* Make sure doing this is possible. */
+	if (head == NULL)
+		return NULL;
+
+	/* Find the variable node to move. */
+	if (head->type == PT_EMPTY || head->type == PT_VARIABLE
+		|| head->type == PT_NEXT_VARIABLE || head->type == PT_CONSTANT
+		|| head->type == PT_NEG) { /* if terminal or unary */
+		move_node = head;
+	} else { /* else, binary operator */
+		move_node = head->left;
+		if (move_node == NULL) {
+			exit(-1);
+		}
+	}
+	
+	new_head = init_ptree( type, NULL, 0 );
+	new_head->left = move_node->left;
+	new_head->right = head;
+	move_node->left = NULL;
+	return new_head;
+}
+
+
+void tree_dot_dump_node( ptree_t *node, FILE *f )
+{
+	fprintf( f, "\"%ld;\\n", (size_t)node );
+	print_node( node, f );
+	fprintf( f, "\"\n" );
+	if (node->left != NULL) {
+		fprintf( f, "\"%ld;\\n", (size_t)node );
+		print_node( node, f );
+		fprintf( f, "\" -> \"%ld;\\n", (size_t)(node->left) );
+		print_node( node->left, f );
+		fprintf( f, "\"\n" );
+	}
+	if (node->right != NULL) {
+		fprintf( f, "\"%ld;\\n", (size_t)node );
+		print_node( node, f );
+		fprintf( f, "\" -> \"%ld;\\n", (size_t)(node->right) );
+		print_node( node->right, f );
+		fprintf( f, "\"\n" );
+	}
+}
+
+
 int tree_dot_dump( ptree_t *head, char *filename )
 {
+	
 
-	return -1;
+	FILE *f = fopen( filename, "w" );
+	if (f == NULL) {
+		perror( "tree_dot_dump, fopen" );
+		return -1;
+	}
+
+	if (fprintf( f, "digraph PT {\n" ) < -1) {
+		fclose( f );
+		return -1;
+	}
+
+	inorder_trav( head, tree_dot_dump_node, f );
+
+	fprintf( f, "}\n" );
+
+	if (fclose( f )) {
+		perror( "tree_dot_dump, fclose" );
+		return -1;
+	}
+
+	return 0;
 }

@@ -1,7 +1,7 @@
 /* gr1c -- Bison (and Yacc) grammar file
  *
  *
- * SCL; Jan 2012.
+ * SCL; Jan, Feb 2012.
  */
 
 
@@ -12,6 +12,11 @@
 
   extern ptree_t *evar_list;
   extern ptree_t *svar_list;
+  
+  extern ptree_t *sys_init;
+  extern ptree_t *env_init;
+
+  extern ptree_t *gen_tree_ptr;
 %}
 
 %error-verbose
@@ -58,13 +63,23 @@ input: /* empty */
 exp: evar_list ';'
    | svar_list ';'
    | E_INIT ';'
-   | E_INIT propformula ';'
+   | E_INIT propformula ';' {
+         if (env_init != NULL)
+             delete_tree( env_init );
+         env_init = gen_tree_ptr;
+         gen_tree_ptr = NULL;
+     }
    | E_TRANS ';'
    | E_TRANS transformula ';'
    | E_GOAL ';'
    | E_GOAL goalformula ';'
    | S_INIT ';'
-   | S_INIT propformula ';'
+   | S_INIT propformula ';' {
+         if (sys_init != NULL)
+             delete_tree( sys_init );
+         sys_init = gen_tree_ptr;
+         gen_tree_ptr = NULL;
+     }
    | S_TRANS ';'
    | S_TRANS transformula ';'
    | S_GOAL ';'
@@ -100,14 +115,32 @@ goalformula: LIVENESS_OP propformula
            | LIVENESS_OP propformula '&' goalformula
 ;
 
-propformula: TRUE_CONSTANT
-           | FALSE_CONSTANT
-           | VARIABLE
-           | VARIABLE '=' NUMBER
-           | propformula '&' propformula
-           | propformula '|' propformula
-           | propformula IMPLIES propformula
-           | '!' propformula
+propformula: TRUE_CONSTANT  {
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 1 );
+             }
+           | FALSE_CONSTANT  {
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 0 );
+             }
+           | VARIABLE  {
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
+             }
+           | propformula '&' propformula  {
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_AND );
+             }
+           | propformula '|' propformula  {
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_OR );
+             }
+           | propformula IMPLIES propformula  {
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_IMPLIES );
+             }
+           | '!' propformula  {
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NEG );
+             }
+           | VARIABLE '=' NUMBER  {
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
+             }
            | '(' propformula ')'
 ;
 
