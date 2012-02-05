@@ -17,6 +17,8 @@
 #ifndef _PTREE_H_
 #define _PTREE_H_
 
+#include "cudd.h"
+
 
 /********************
  **** Node types ****/
@@ -54,7 +56,7 @@ ptree_t *init_ptree( int type, char *name, int value );
 int tree_size( ptree_t *head );
 /* Return number of nodes in tree. */
 
-void print_node( ptree_t *node, FILE *f );
+void print_node( ptree_t *node, FILE *fp );
 /* If f is NULL, then use stdout. */
 
 void inorder_trav( ptree_t *head,
@@ -62,8 +64,15 @@ void inorder_trav( ptree_t *head,
 /* Traverse the tree in-order, calling *node_fn at each node and
    passing it arg. */
 
-void print_formula( ptree_t *head, FILE *f );
+void print_formula( ptree_t *head, FILE *fp );
 /* If f is NULL, then use stdout. */
+
+DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager );
+/* Generate BDD corresponding to given parse tree.  var_list is the
+   linked list of variable names to refer to; ordering in var_list
+   determines index in the BDD.  Non-Boolean variables and equality
+   are not supported.  fn should be NULL, unless you wish to
+   initialize with a non-constant-True function. */
 
 int tree_dot_dump( ptree_t *head, char *filename );
 /* Generate Graphviz DOT file depicting the parse tree.  Return 0 on
@@ -94,6 +103,13 @@ ptree_t *remove_list_item( ptree_t *head, int index );
    If head is NULL (i.e., tree is empty), then print a warning and
    return NULL.  If index is outside of possible range, then print
    warning and return NULL. */
+
+ptree_t *get_list_item( ptree_t *head, int index );
+/* 0-based indexing.  An index of -1 refers to the last item in the
+   list.  Return pointer to the node, or NULL on error. */
+
+int find_list_item( ptree_t *head, int type, char *name, int value );
+/* Return index (0-base) to first match in list, or -1 if not found. */
 
 
 #endif

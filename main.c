@@ -40,14 +40,18 @@ ptree_t *gen_tree_ptr = NULL;
 
 int main( int argc, char **argv )
 {
-	FILE *f;
+	FILE *fp;
 	bool help_flag = False;
 	bool ptdump_flag = False;
-	int i;
 	int input_index = -1;
 
-	DdManager *manager;	
-	DdNode *fnode;
+	int i, var_index;
+	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
+
+	DdManager *manager;
+	DdNode *fn, *tmp;
+	ptree_t *var_separator;
+	int ddin[3] = {1, 0, 1};
 
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
@@ -77,12 +81,12 @@ int main( int argc, char **argv )
 	/* If filename for specification given at command-line, then use
 	   it.  Else, read from stdin. */
 	if (input_index > 0) {
-		f = fopen( argv[input_index], "r" );
-		if (f == NULL) {
+		fp = fopen( argv[input_index], "r" );
+		if (fp == NULL) {
 			perror( "gr1c, fopen" );
 			return -1;
 		}
-		stdin = f;
+		stdin = fp;
 	}
 
 	/* Parse the specification. */
@@ -92,19 +96,47 @@ int main( int argc, char **argv )
 	if (yyparse())
 		return -1;
 
-	if (ptdump_flag) {
-		/* printf( "Number of environment variables: %d\n", tree_size( evar_list ) ); */
-		/* printf( "\nNumber of system variables: %d\n", tree_size( svar_list ) ); */
+	/* Close input file, if opened. */
+	if (input_index > 0)
+		fclose( fp );
 
+	if (ptdump_flag) {
 		tree_dot_dump( env_init, "env_init_ptree.dot" );
 		tree_dot_dump( sys_init, "sys_init_ptree.dot" );
 
-		printf( "Environment variables: " );
-		inorder_trav( evar_list, print_node, stdout );
+		var_index = 0;
+		printf( "Environment variables (indices): " );
+		if (evar_list == NULL) {
+			printf( "(none)" );
+		} else {
+			tmppt = evar_list;
+			while (tmppt) {
+				if (tmppt->left == NULL) {
+					printf( "%s (%d)", tmppt->name, var_index );
+				} else {
+					printf( "%s (%d), ", tmppt->name, var_index );
+				}
+				tmppt = tmppt->left;
+				var_index++;
+			}
+		}
 		printf( "\n\n" );
 
-		printf( "System variables: " );
-		inorder_trav( svar_list, print_node, stdout );
+		printf( "System variables (indices): " );
+		if (svar_list == NULL) {
+			printf( "(none)" );
+		} else {
+			tmppt = svar_list;
+			while (tmppt) {
+				if (tmppt->left == NULL) {
+					printf( "%s (%d)", tmppt->name, var_index );
+				} else {
+					printf( "%s (%d), ", tmppt->name, var_index );
+				}
+				tmppt = tmppt->left;
+				var_index++;
+			}
+		}
 		printf( "\n\n" );
 
 		printf( "ENV INIT:  " );
@@ -117,17 +149,43 @@ int main( int argc, char **argv )
 	}
 
 	/* Build BDD for sys init, and play with it to learn CUDD. */
-	/* manager = Cudd_Init(tree_size(evar_list)+tree_size(svar_list), */
-	/* 					0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0); */
+	manager = Cudd_Init( tree_size( evar_list )+tree_size( svar_list ),
+						 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
 
+	if (evar_list == NULL) {
+		var_separator = NULL;
+	} else {
+		var_separator = get_list_item( evar_list, -1 );
+		if (var_separator == NULL) {
+			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			return -1;
+		}
+		var_separator->left = svar_list;
+	}
 	
+	if (evar_list == NULL) {  /* Handle deterministic case */
+		fn = ptree_BDD( sys_init, svar_list, manager );
+	} else {
+		fn = ptree_BDD( sys_init, evar_list, manager );
+	}
+	
+	/* Break the link that appended the system variables list to the
+	   environment variables list. */
+	if (evar_list != NULL)
+		var_separator->left = NULL;
+
+	Cudd_PrintDebug( manager, fn, 1, 3 );
+	tmp = Cudd_Eval( manager, fn, ddin );
+	printf( "Given input (%d, %d, %d),\nOutput: %.2f",
+			ddin[0], ddin[1], ddin[2],
+			(tmp->type).value );
 
 	/* Clean-up */
 	delete_tree( evar_list );
 	delete_tree( svar_list );
 	delete_tree( sys_init );
 	delete_tree( env_init );
-	/* Cudd_Quit(manager); */
+	Cudd_Quit(manager);
 	
 	return 0;
 }

@@ -1,6 +1,9 @@
-# SCL; 4 Feb 2012.
+# SCL; 5 Feb 2012.
 #
 #
+
+CUDD_ROOT = extern/cudd-2.5.0
+CUDD_LIB = $(CUDD_ROOT)/cudd/libcudd.a $(CUDD_ROOT)/mtr/libmtr.a $(CUDD_ROOT)/st/libst.a $(CUDD_ROOT)/util/libutil.a $(CUDD_ROOT)/epd/libepd.a
 
 LEX = flex
 LFLAGS = 
@@ -8,8 +11,8 @@ YACC = bison -y
 YFLAGS = -d
 
 CC = gcc
-CFLAGS = -g -Wall -pedantic -I/opt/local/include/cudd
-LDFLAGS = -L/opt/local/lib/cudd -lcudd -lmtr -lst -lutil
+CFLAGS = -g -Wall -pedantic -I$(CUDD_ROOT)/include
+LDFLAGS = $(CUDD_LIB)
 
 
 gr1c: main.o ptree.o gr1c_parse.o gr1c_scan.o

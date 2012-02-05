@@ -65,46 +65,46 @@ int tree_size( ptree_t *head )
 }
 
 
-void print_node( ptree_t *node, FILE *f )
+void print_node( ptree_t *node, FILE *fp )
 {
-	if (f == NULL)
-		f = stdout;
+	if (fp == NULL)
+		fp = stdout;
 
 	switch (node->type) {
 	case PT_EMPTY:
-		fprintf( f, "(empty)" );
+		fprintf( fp, "(empty)" );
 		break;
 
 	case PT_VARIABLE:
-		fprintf( f, "%s", node->name );
+		fprintf( fp, "%s", node->name );
 		break;
 
 	case PT_NEXT_VARIABLE:
-		fprintf( f, "%s'", node->name );
+		fprintf( fp, "%s'", node->name );
 		break;
 
 	case PT_CONSTANT:
-		fprintf( f, "%d", node->value );
+		fprintf( fp, "%d", node->value );
 		break;
 			
 	case PT_NEG:
-		fprintf( f, "!" );
+		fprintf( fp, "!" );
 		break;
 
 	case PT_AND:
-		fprintf( f, "&" );
+		fprintf( fp, "&" );
 		break;
 
 	case PT_OR:
-		fprintf( f, "|" );
+		fprintf( fp, "|" );
 		break;
 
 	case PT_IMPLIES:
-		fprintf( f, "->" );
+		fprintf( fp, "->" );
 		break;
 		
 	case PT_EQUALS:
-		fprintf( f, "=" );
+		fprintf( fp, "=" );
 		break;
 
 	default:
@@ -234,24 +234,24 @@ ptree_t *pusht_operator( ptree_t *head, int type )
 }
 
 
-void tree_dot_dump_node( ptree_t *node, FILE *f )
+void tree_dot_dump_node( ptree_t *node, FILE *fp )
 {
-	fprintf( f, "\"%ld;\\n", (size_t)node );
-	print_node( node, f );
-	fprintf( f, "\"\n" );
+	fprintf( fp, "\"%ld;\\n", (size_t)node );
+	print_node( node, fp );
+	fprintf( fp, "\"\n" );
 	if (node->left != NULL) {
-		fprintf( f, "\"%ld;\\n", (size_t)node );
-		print_node( node, f );
-		fprintf( f, "\" -> \"%ld;\\n", (size_t)(node->left) );
-		print_node( node->left, f );
-		fprintf( f, "\"\n" );
+		fprintf( fp, "\"%ld;\\n", (size_t)node );
+		print_node( node, fp );
+		fprintf( fp, "\" -> \"%ld;\\n", (size_t)(node->left) );
+		print_node( node->left, fp );
+		fprintf( fp, "\"\n" );
 	}
 	if (node->right != NULL) {
-		fprintf( f, "\"%ld;\\n", (size_t)node );
-		print_node( node, f );
-		fprintf( f, "\" -> \"%ld;\\n", (size_t)(node->right) );
-		print_node( node->right, f );
-		fprintf( f, "\"\n" );
+		fprintf( fp, "\"%ld;\\n", (size_t)node );
+		print_node( node, fp );
+		fprintf( fp, "\" -> \"%ld;\\n", (size_t)(node->right) );
+		print_node( node->right, fp );
+		fprintf( fp, "\"\n" );
 	}
 }
 
@@ -260,22 +260,22 @@ int tree_dot_dump( ptree_t *head, char *filename )
 {
 	
 
-	FILE *f = fopen( filename, "w" );
-	if (f == NULL) {
+	FILE *fp = fopen( filename, "w" );
+	if (fp == NULL) {
 		perror( "tree_dot_dump, fopen" );
 		return -1;
 	}
 
-	if (fprintf( f, "digraph PT {\n" ) < -1) {
-		fclose( f );
+	if (fprintf( fp, "digraph PT {\n" ) < -1) {
+		fclose( fp );
 		return -1;
 	}
 
-	inorder_trav( head, tree_dot_dump_node, f );
+	inorder_trav( head, tree_dot_dump_node, fp );
 
-	fprintf( f, "}\n" );
+	fprintf( fp, "}\n" );
 
-	if (fclose( f )) {
+	if (fclose( fp )) {
 		perror( "tree_dot_dump, fclose" );
 		return -1;
 	}
@@ -284,46 +284,46 @@ int tree_dot_dump( ptree_t *head, char *filename )
 }
 
 
-void print_formula( ptree_t *head, FILE *f )
+void print_formula( ptree_t *head, FILE *fp )
 {
 	if (head == NULL) {
 		fprintf( stderr, "Warning: print_formula called with NULL node." );
 		return;
 	}
 
-	if (f == NULL)
-		f = stdout;
+	if (fp == NULL)
+		fp = stdout;
 
 	switch (head->type) {
 	case PT_AND:
 	case PT_OR:
 	case PT_IMPLIES:
 	case PT_EQUALS:
-		fprintf( f, "(" );
-		print_formula( head->left, f );
+		fprintf( fp, "(" );
+		print_formula( head->left, fp );
 		break;
 
 	case PT_NEG:
-		fprintf( f, "(!" );
-		print_formula( head->right, f );
-		fprintf( f, ")" );
+		fprintf( fp, "(!" );
+		print_formula( head->right, fp );
+		fprintf( fp, ")" );
 		return;
 
 	case PT_VARIABLE:
-		fprintf( f, "%s", head->name );
+		fprintf( fp, "%s", head->name );
 		return;
 
 	case PT_NEXT_VARIABLE:
-		fprintf( f, "%s'", head->name );
+		fprintf( fp, "%s'", head->name );
 		return;
 		
 	case PT_CONSTANT:
 		if (head->value == 0) {
-			fprintf( f, "False" );
+			fprintf( fp, "False" );
 		} else if (head->value == 1) {
-			fprintf( f, "True" );
+			fprintf( fp, "True" );
 		} else {
-			fprintf( f, "%d", head->value );
+			fprintf( fp, "%d", head->value );
 		}
 		return;
 
@@ -334,19 +334,134 @@ void print_formula( ptree_t *head, FILE *f )
 
 	switch (head->type) {
 	case PT_AND:
-		fprintf( f, "&" );
+		fprintf( fp, "&" );
 		break;
 	case PT_OR:
-		fprintf( f, "|" );
+		fprintf( fp, "|" );
 		break;
 	case PT_IMPLIES:
-		fprintf( f, "->" );
+		fprintf( fp, "->" );
 		break;
 	case PT_EQUALS:
-		fprintf( f, "=" );
+		fprintf( fp, "=" );
 		break;
 	}
-	print_formula( head->right, f );
-	fprintf( f, ")" );
+	print_formula( head->right, fp );
+	fprintf( fp, ")" );
 	return;
+}
+
+
+DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
+{
+	DdNode *var, *lsub, *rsub, *fn;
+	int index;
+	int num_var;
+
+	switch (head->type) {
+	case PT_AND:
+	case PT_OR:
+	case PT_IMPLIES:
+		lsub = ptree_BDD( head->left, var_list, manager );
+		rsub = ptree_BDD( head->right, var_list, manager );
+		break;
+	case PT_NEG:
+		rsub = ptree_BDD( head->right, var_list, manager );
+		break;
+	case PT_VARIABLE:
+		index = find_list_item( var_list, head->type, head->name, 0 );
+		if (index < 0) {
+			fprintf( stderr, "Error: ptree_BDD requested variable \"%s\", but it is not in given list.\n", head->name );
+			exit(-1);
+		}
+		return Cudd_bddIthVar( manager, index );;
+	}
+
+	switch (head->type) {
+	case PT_AND:
+		fn = Cudd_bddAnd( manager, lsub, rsub );
+		Cudd_Ref( fn );
+		if (head->left->type != PT_VARIABLE)
+			Cudd_RecursiveDeref( manager, lsub );
+		if (head->right->type != PT_VARIABLE)
+			Cudd_RecursiveDeref( manager, rsub );
+		break;
+
+	case PT_OR:
+		fn = Cudd_bddOr( manager, lsub, rsub );
+		Cudd_Ref( fn );
+		if (head->left->type != PT_VARIABLE)
+			Cudd_RecursiveDeref( manager, lsub );
+		if (head->right->type != PT_VARIABLE)
+			Cudd_RecursiveDeref( manager, rsub );
+		break;
+
+	case PT_IMPLIES:
+		fn = Cudd_bddOr( manager, Cudd_Not(lsub), rsub );
+		Cudd_Ref( fn );
+		if (head->left->type != PT_VARIABLE)
+			Cudd_RecursiveDeref( manager, lsub );
+		if (head->right->type != PT_VARIABLE)
+			Cudd_RecursiveDeref( manager, rsub );
+		break;
+
+	case PT_NEG:
+		fn = Cudd_Not( rsub );
+		Cudd_Ref( fn );
+		if (head->right->type != PT_VARIABLE)
+			Cudd_RecursiveDeref( manager, rsub );
+		break;
+	}
+
+	return fn;
+}
+
+
+int find_list_item( ptree_t *head, int type, char *name, int value )
+{
+	int index = 0;
+	while (head != NULL) {
+		if (head->type == type) {
+			if (head->type == PT_VARIABLE || head->type == PT_NEXT_VARIABLE) {
+				/* If node is variable type, then names must match. */
+				if (name != NULL && head->name != NULL && !strcmp( head->name, name ))
+					break;
+			} else if (head->type == PT_CONSTANT) {
+				/* If node is constant (e.g., True), then values must match. */
+				if (head->value == value)
+					break;
+			} else {
+				/* Otherwise, it suffices to have the same type. */
+				break;
+			}
+		}
+		index += 1;
+		head = head->left;
+	}
+	if (head == NULL) {
+		return -1;  /* No matches found. */
+	} else {
+		return index;
+	}
+}
+
+
+ptree_t *get_list_item( ptree_t *head, int index )
+{
+	if (head == NULL || index < -1)
+		return NULL;
+
+	if (index == -1) {  /* Special case of end item request. */
+		while (head->left != NULL)
+			head = head->left;
+		return head;
+	}
+
+	while (index > 1) {
+		if (head->left == NULL)
+			return NULL;
+		head = head->left;
+		index--;
+	}
+	return head;
 }

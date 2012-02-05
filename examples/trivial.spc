@@ -1,11 +1,11 @@
-ENV: x;
+ENV: x foo;
 SYS: y;
 
-ENVINIT: x | !z;
+ENVINIT: x;
 ENVTRANS:;
 ENVGOAL:;
 
-SYSINIT: !y & !(x=2 | foo);
+SYSINIT: y | !(x | foo); #x->y
 
 SYSTRANS: ; # Notice the safety formula spans two lines.
 #   [](y -> !(y'))
