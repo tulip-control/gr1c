@@ -124,6 +124,9 @@ propformula: TRUE_CONSTANT  {
            | VARIABLE  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
              }
+           | '!' propformula  {
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NEG );
+             }
            | propformula '&' propformula  {
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_AND );
              }
@@ -132,9 +135,6 @@ propformula: TRUE_CONSTANT  {
              }
            | propformula IMPLIES propformula  {
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_IMPLIES );
-             }
-           | '!' propformula  {
-                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NEG );
              }
            | VARIABLE '=' NUMBER  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );

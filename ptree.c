@@ -122,11 +122,6 @@ void inorder_trav( ptree_t *head,
 
 	inorder_trav( head->left, node_fn, arg );
 	(*node_fn)( head, arg );
-	if (arg == NULL) {
-		printf( "\n" );
-	} else {
-		fprintf( arg, "\n" );
-	}
 	inorder_trav( head->right, node_fn, arg );
 }
 
@@ -202,28 +197,39 @@ ptree_t *pusht_terminal( ptree_t *head, int type, char *name, int value )
 
 ptree_t *pusht_operator( ptree_t *head, int type )
 {
-	ptree_t *new_head, *move_node;
+	ptree_t *new_head;
 
 	/* Make sure doing this is possible. */
 	if (head == NULL)
 		return NULL;
 
-	/* Find the variable node to move. */
+	new_head = init_ptree( type, NULL, 0 );
 	if (head->type == PT_EMPTY || head->type == PT_VARIABLE
 		|| head->type == PT_NEXT_VARIABLE || head->type == PT_CONSTANT
 		|| head->type == PT_NEG) { /* if terminal or unary */
-		move_node = head;
+		if (head->left != NULL && head->left->type == PT_EQUALS) {
+			/* Handle special case of left node of = operator. (N.B.,
+			   this cannot happen for other operators due to the order
+			   that tokens are visiting while parsing input.) */
+			new_head->left = head;
+			new_head->right = head->left;
+			head->left = head->left->left->left;
+			new_head->right->left->left = NULL;
+		} else {
+			new_head->right = head;
+			new_head->left = head->left;
+			head->left = NULL;
+		}
 	} else { /* else, binary operator */
-		move_node = head->left;
-		if (move_node == NULL) {
+		if (head->left == NULL) {
+			fprintf( stderr, "Error: parsing failed during call to pusht_operator." );
 			exit(-1);
 		}
+		new_head->right = head;
+		new_head->left = head->left->left;
+		head->left->left = NULL;
 	}
 	
-	new_head = init_ptree( type, NULL, 0 );
-	new_head->left = move_node->left;
-	new_head->right = head;
-	move_node->left = NULL;
 	return new_head;
 }
 
@@ -275,4 +281,72 @@ int tree_dot_dump( ptree_t *head, char *filename )
 	}
 
 	return 0;
+}
+
+
+void print_formula( ptree_t *head, FILE *f )
+{
+	if (head == NULL) {
+		fprintf( stderr, "Warning: print_formula called with NULL node." );
+		return;
+	}
+
+	if (f == NULL)
+		f = stdout;
+
+	switch (head->type) {
+	case PT_AND:
+	case PT_OR:
+	case PT_IMPLIES:
+	case PT_EQUALS:
+		fprintf( f, "(" );
+		print_formula( head->left, f );
+		break;
+
+	case PT_NEG:
+		fprintf( f, "(!" );
+		print_formula( head->right, f );
+		fprintf( f, ")" );
+		return;
+
+	case PT_VARIABLE:
+		fprintf( f, "%s", head->name );
+		return;
+
+	case PT_NEXT_VARIABLE:
+		fprintf( f, "%s'", head->name );
+		return;
+		
+	case PT_CONSTANT:
+		if (head->value == 0) {
+			fprintf( f, "False" );
+		} else if (head->value == 1) {
+			fprintf( f, "True" );
+		} else {
+			fprintf( f, "%d", head->value );
+		}
+		return;
+
+	default:
+		fprintf( stderr, "Warning: print_formula called with node of unknown type" );
+		return;
+	}
+
+	switch (head->type) {
+	case PT_AND:
+		fprintf( f, "&" );
+		break;
+	case PT_OR:
+		fprintf( f, "|" );
+		break;
+	case PT_IMPLIES:
+		fprintf( f, "->" );
+		break;
+	case PT_EQUALS:
+		fprintf( f, "=" );
+		break;
+	}
+	print_formula( head->right, f );
+	fprintf( f, ")" );
+	return;
 }

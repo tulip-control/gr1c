@@ -9,6 +9,8 @@
 
 
 #include <stdio.h>
+#include "util.h"
+#include "cudd.h"
 
 #include "ptree.h"
 extern int yyparse( void );
@@ -44,6 +46,9 @@ int main( int argc, char **argv )
 	int i;
 	int input_index = -1;
 
+	DdManager *manager;	
+	DdNode *fnode;
+
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
 		if (argv[i][0] == '-') {
@@ -65,7 +70,7 @@ int main( int argc, char **argv )
 	if (argc > 3 || help_flag) {
 		printf( "Usage: %s [-hp] [FILE]\n\n"
 				"  -h    help message\n"
-				"  -p    dump parse trees to DOT files, and echo textual trees to screen\n", argv[0] );
+				"  -p    dump parse trees to DOT files, and echo formulas to screen\n", argv[0] );
 		return 1;
 	}
 
@@ -91,14 +96,38 @@ int main( int argc, char **argv )
 		/* printf( "Number of environment variables: %d\n", tree_size( evar_list ) ); */
 		/* printf( "\nNumber of system variables: %d\n", tree_size( svar_list ) ); */
 
-		tree_dot_dump( sys_init, "sys_init_ptree.dot" );
 		tree_dot_dump( env_init, "env_init_ptree.dot" );
+		tree_dot_dump( sys_init, "sys_init_ptree.dot" );
+
+		printf( "Environment variables: " );
+		inorder_trav( evar_list, print_node, stdout );
+		printf( "\n\n" );
+
+		printf( "System variables: " );
+		inorder_trav( svar_list, print_node, stdout );
+		printf( "\n\n" );
+
+		printf( "ENV INIT:  " );
+		print_formula( env_init, stdout );
+		printf( "\n" );
+
+		printf( "SYS INIT:  " );
+		print_formula( sys_init, stdout );
+		printf( "\n" );
 	}
+
+	/* Build BDD for sys init, and play with it to learn CUDD. */
+	/* manager = Cudd_Init(tree_size(evar_list)+tree_size(svar_list), */
+	/* 					0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0); */
+
+	
 
 	/* Clean-up */
 	delete_tree( evar_list );
 	delete_tree( svar_list );
 	delete_tree( sys_init );
+	delete_tree( env_init );
+	/* Cudd_Quit(manager); */
 	
 	return 0;
 }

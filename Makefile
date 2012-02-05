@@ -1,4 +1,4 @@
-# SCL; 29 Jan 2012.
+# SCL; 4 Feb 2012.
 #
 #
 
@@ -8,8 +8,8 @@ YACC = bison -y
 YFLAGS = -d
 
 CC = gcc
-CFLAGS = -g -Wall -pedantic
-LDFLAGS = 
+CFLAGS = -g -Wall -pedantic -I/opt/local/include/cudd
+LDFLAGS = -L/opt/local/lib/cudd -lcudd -lmtr -lst -lutil
 
 
 gr1c: main.o ptree.o gr1c_parse.o gr1c_scan.o

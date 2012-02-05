@@ -62,6 +62,9 @@ void inorder_trav( ptree_t *head,
 /* Traverse the tree in-order, calling *node_fn at each node and
    passing it arg. */
 
+void print_formula( ptree_t *head, FILE *f );
+/* If f is NULL, then use stdout. */
+
 int tree_dot_dump( ptree_t *head, char *filename );
 /* Generate Graphviz DOT file depicting the parse tree.  Return 0 on
    success, -1 on error. */
