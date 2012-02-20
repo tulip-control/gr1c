@@ -17,6 +17,11 @@
   extern ptree_t *sys_init;
   extern ptree_t *env_init;
 
+  extern ptree_t **env_goals;
+  extern ptree_t **sys_goals;
+  extern int num_egoals;
+  extern int num_sgoals;
+
   extern ptree_t **env_trans_array;
   extern ptree_t **sys_trans_array;
   extern int et_array_len;
@@ -80,7 +85,7 @@ exp: evar_list ';'
    | E_TRANS ';'
    | E_TRANS etransformula ';'
    | E_GOAL ';'
-   | E_GOAL goalformula ';'
+   | E_GOAL egoalformula ';'
    | S_INIT ';'
    | S_INIT propformula ';' {
          if (sys_init != NULL)
@@ -91,7 +96,7 @@ exp: evar_list ';'
    | S_TRANS ';'
    | S_TRANS stransformula ';'
    | S_GOAL ';'
-   | S_GOAL goalformula ';'
+   | S_GOAL sgoalformula ';'
    | error  { printf( "Error detected on line %d.\n", @1.last_line ); YYABORT; }
 ;
 
@@ -159,8 +164,48 @@ stransformula: SAFETY_OP tpropformula  {
                }
 ;
 
-goalformula: LIVENESS_OP propformula
-           | LIVENESS_OP propformula '&' goalformula
+egoalformula: LIVENESS_OP propformula  {
+                  num_egoals++;
+                  env_goals = realloc( env_goals, sizeof(ptree_t *)*num_egoals );
+                  if (env_goals == NULL) {
+                      perror( "gr1c_parse.y, egoalformula, realloc" );
+                      YYABORT;
+                  }
+                  *(env_goals+num_egoals-1) = gen_tree_ptr;
+                  gen_tree_ptr = NULL;
+              }
+            | egoalformula AND_LIVENESS_OP propformula  {
+                  num_egoals++;
+                  env_goals = realloc( env_goals, sizeof(ptree_t *)*num_egoals );
+                  if (env_goals == NULL) {
+                      perror( "gr1c_parse.y, egoalformula, realloc" );
+                      YYABORT;
+                  }
+                  *(env_goals+num_egoals-1) = gen_tree_ptr;
+                  gen_tree_ptr = NULL;
+              }
+;
+
+sgoalformula: LIVENESS_OP propformula  {
+                  num_sgoals++;
+                  sys_goals = realloc( sys_goals, sizeof(ptree_t *)*num_sgoals );
+                  if (sys_goals == NULL) {
+                      perror( "gr1c_parse.y, sgoalformula, realloc" );
+                      YYABORT;
+                  }
+                  *(sys_goals+num_sgoals-1) = gen_tree_ptr;
+                  gen_tree_ptr = NULL;
+              }
+            | sgoalformula AND_LIVENESS_OP propformula  {
+                  num_sgoals++;
+                  sys_goals = realloc( sys_goals, sizeof(ptree_t *)*num_sgoals );
+                  if (sys_goals == NULL) {
+                      perror( "gr1c_parse.y, sgoalformula, realloc" );
+                      YYABORT;
+                  }
+                  *(sys_goals+num_sgoals-1) = gen_tree_ptr;
+                  gen_tree_ptr = NULL;
+              }
 ;
 
 propformula: TRUE_CONSTANT  {

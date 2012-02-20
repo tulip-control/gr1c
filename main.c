@@ -32,6 +32,10 @@ ptree_t *env_init = NULL;
 ptree_t *sys_init = NULL;
 ptree_t *env_trans = NULL;  /* Built from component parse trees in env_trans_array. */
 ptree_t *sys_trans = NULL;
+ptree_t **env_goals = NULL;
+ptree_t **sys_goals = NULL;
+int num_egoals = 0;
+int num_sgoals = 0;
 
 ptree_t **env_trans_array = NULL;
 ptree_t **sys_trans_array = NULL;
@@ -51,6 +55,7 @@ int main( int argc, char **argv )
 	bool help_flag = False;
 	bool ptdump_flag = False;
 	int input_index = -1;
+	char dumpfilename[32];
 
 	int i, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
@@ -138,6 +143,21 @@ int main( int argc, char **argv )
 		tree_dot_dump( env_trans, "env_trans_ptree.dot" );
 		tree_dot_dump( sys_trans, "sys_trans_ptree.dot" );
 
+		if (num_egoals > 0) {
+			for (i = 0; i < num_egoals; i++) {
+				snprintf( dumpfilename, sizeof(dumpfilename),
+						 "env_goal%05d_ptree.dot", i );
+				tree_dot_dump( *(env_goals+i), dumpfilename );
+			}
+		}
+		if (num_sgoals > 0) {
+			for (i = 0; i < num_sgoals; i++) {
+				snprintf( dumpfilename, sizeof(dumpfilename),
+						 "sys_goal%05d_ptree.dot", i );
+				tree_dot_dump( *(sys_goals+i), dumpfilename );
+			}
+		}
+
 		var_index = 0;
 		printf( "Environment variables (indices): " );
 		if (evar_list == NULL) {
@@ -187,6 +207,32 @@ int main( int argc, char **argv )
 
 		printf( "SYS TRANS:  [] " );
 		print_formula( sys_trans, stdout );
+		printf( "\n" );
+
+		printf( "ENV GOALS:  " );
+		if (num_egoals == 0) {
+			printf( "(none)" );
+		} else {
+			printf( "[]<> " );
+			print_formula( *env_goals, stdout );
+			for (i = 1; i < num_egoals; i++) {
+				printf( " & []<> " );
+				print_formula( *(env_goals+i), stdout );
+			}
+		}
+		printf( "\n" );
+
+		printf( "SYS GOALS:  " );
+		if (num_sgoals == 0) {
+			printf( "(none)" );
+		} else {
+			printf( "[]<> " );
+			print_formula( *sys_goals, stdout );
+			for (i = 1; i < num_sgoals; i++) {
+				printf( " & []<> " );
+				print_formula( *(sys_goals+i), stdout );
+			}
+		}
 		printf( "\n" );
 	}
 

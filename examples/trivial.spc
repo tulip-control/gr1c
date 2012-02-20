@@ -15,4 +15,4 @@ SYSTRANS: # Notice the safety formula spans two lines.
  & [](!y -> y')
 ;
 
-SYSGOAL:; #[]<>y;
+SYSGOAL: []<>y;
