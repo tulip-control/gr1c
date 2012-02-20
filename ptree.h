@@ -67,6 +67,14 @@ void inorder_trav( ptree_t *head,
 void print_formula( ptree_t *head, FILE *fp );
 /* If f is NULL, then use stdout. */
 
+ptree_t *merge_ptrees( ptree_t **heads, int len, int type );
+/* Create a new tree in which all of the given trees are included by
+   the specified binary operator.  len is the length of heads.  Return
+   pointer to the new tree root, or NULL on error.  N.B., the given
+   trees are *pointed to* by the new tree, i.e, their roots become
+   nodes in the new tree, and therefore you generally should *not* try
+   to free the originals (but can discard the old heads pointers). */
+
 DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager );
 /* Generate BDD corresponding to given parse tree.  var_list is the
    linked list of variable names to refer to; ordering in var_list

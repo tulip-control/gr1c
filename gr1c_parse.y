@@ -6,6 +6,7 @@
 
 
 %{
+  #include <stdlib.h>
   #include <stdio.h>
   #include "ptree.h"
   void yyerror( char const * );
@@ -15,6 +16,11 @@
   
   extern ptree_t *sys_init;
   extern ptree_t *env_init;
+
+  extern ptree_t **env_trans_array;
+  extern ptree_t **sys_trans_array;
+  extern int et_array_len;
+  extern int st_array_len;
 
   extern ptree_t *gen_tree_ptr;
 %}
@@ -50,7 +56,9 @@
 
 %left IMPLIES
 %left SAFETY_OP
+%left AND_SAFETY_OP
 %left LIVENESS_OP
+%left AND_LIVENESS_OP
 
 %left '&' '|' '!' '=' '\''
 
@@ -70,7 +78,7 @@ exp: evar_list ';'
          gen_tree_ptr = NULL;
      }
    | E_TRANS ';'
-   | E_TRANS transformula ';'
+   | E_TRANS etransformula ';'
    | E_GOAL ';'
    | E_GOAL goalformula ';'
    | S_INIT ';'
@@ -81,7 +89,7 @@ exp: evar_list ';'
          gen_tree_ptr = NULL;
      }
    | S_TRANS ';'
-   | S_TRANS transformula ';'
+   | S_TRANS stransformula ';'
    | S_GOAL ';'
    | S_GOAL goalformula ';'
    | error  { printf( "Error detected on line %d.\n", @1.last_line ); YYABORT; }
@@ -107,8 +115,48 @@ svar_list: S_VARS
           }
 ;
 
-transformula: SAFETY_OP tpropformula
-            | SAFETY_OP tpropformula '&' transformula
+etransformula: SAFETY_OP tpropformula  {
+                   et_array_len++;
+                   env_trans_array = realloc( env_trans_array, sizeof(ptree_t *)*et_array_len );
+                   if (env_trans_array == NULL) {
+                       perror( "gr1c_parse.y, etransformula, realloc" );
+                       YYABORT;
+                   }
+                   *(env_trans_array+et_array_len-1) = gen_tree_ptr;
+                   gen_tree_ptr = NULL;
+               }
+             | etransformula AND_SAFETY_OP tpropformula  {
+                   et_array_len++;
+                   env_trans_array = realloc( env_trans_array, sizeof(ptree_t *)*et_array_len );
+                   if (env_trans_array == NULL) {
+                       perror( "gr1c_parse.y, etransformula, realloc" );
+                       YYABORT;
+                   }
+                   *(env_trans_array+et_array_len-1) = gen_tree_ptr;
+                   gen_tree_ptr = NULL;
+               }
+;
+
+stransformula: SAFETY_OP tpropformula  {
+                   st_array_len++;
+                   sys_trans_array = realloc( sys_trans_array, sizeof(ptree_t *)*st_array_len );
+                   if (sys_trans_array == NULL) {
+                       perror( "gr1c_parse.y, stransformula, realloc" );
+                       YYABORT;
+                   }
+                   *(sys_trans_array+st_array_len-1) = gen_tree_ptr;
+                   gen_tree_ptr = NULL;
+               }
+             | stransformula AND_SAFETY_OP tpropformula  {
+                   st_array_len++;
+                   sys_trans_array = realloc( sys_trans_array, sizeof(ptree_t *)*st_array_len );
+                   if (sys_trans_array == NULL) {
+                       perror( "gr1c_parse.y, stransformula, realloc" );
+                       YYABORT;
+                   }
+                   *(sys_trans_array+st_array_len-1) = gen_tree_ptr;
+                   gen_tree_ptr = NULL;
+               }
 ;
 
 goalformula: LIVENESS_OP propformula
@@ -144,16 +192,36 @@ propformula: TRUE_CONSTANT  {
            | '(' propformula ')'
 ;
 
-tpropformula: TRUE_CONSTANT
-	    | FALSE_CONSTANT
-	    | VARIABLE
-	    | VARIABLE '\''
-	    | VARIABLE '=' NUMBER
-	    | tpropformula '&' tpropformula
-	    | tpropformula '|' tpropformula
-	    | tpropformula IMPLIES tpropformula
-	    | '!' tpropformula
-	    | '(' tpropformula ')'
+tpropformula: TRUE_CONSTANT  {
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 1 );
+             }
+           | FALSE_CONSTANT  {
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 0 );
+             }
+           | VARIABLE  {
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
+             }
+           | VARIABLE '\''  {
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_NEXT_VARIABLE, $1, 0 );
+             }
+           | '!' tpropformula  {
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NEG );
+             }
+           | tpropformula '&' tpropformula  {
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_AND );
+             }
+           | tpropformula '|' tpropformula  {
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_OR );
+             }
+           | tpropformula IMPLIES tpropformula  {
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_IMPLIES );
+             }
+           | VARIABLE '=' NUMBER  {
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
+             }
+           | '(' tpropformula ')'
 ;
 
 

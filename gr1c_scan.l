@@ -18,6 +18,9 @@ number  (-)?[0-9]+([.][0-9]+)?
 
 %%
 
+"&"[ \t]*"[]<>"  { return AND_LIVENESS_OP; }
+"&"[ \t]*"[]"  { return AND_SAFETY_OP; }
+
 "[]<>"  { return LIVENESS_OP; }
 "[]"  { return SAFETY_OP; }
 

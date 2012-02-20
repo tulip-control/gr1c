@@ -126,6 +126,45 @@ void inorder_trav( ptree_t *head,
 }
 
 
+ptree_t *merge_ptrees( ptree_t **heads, int len, int type )
+{
+	ptree_t *head, *node;
+	int i;
+
+	if (len <= 1 || heads == NULL)  /* Vacuous call. */
+		return NULL;
+
+	/* Check whether valid merging operator requested. */
+	switch (type) {
+	case PT_AND:
+	case PT_OR:
+	case PT_IMPLIES:
+		break;
+	default:
+		return NULL;
+	}
+
+	head = init_ptree( type, NULL, -1 );
+	if (head == NULL)
+		return NULL;
+	head->right = *(heads+len-1);
+
+	node = head;
+	for (i = len-1; i > 1; i--) {
+		node->left = init_ptree( type, NULL, -1 );
+		if (node->left == NULL) {
+			fprintf( stderr, "Error: merge_ptrees failed to create enough new nodes.\n" );
+			return NULL;
+		}
+		node = node->left;
+		node->right = *(heads+i-1);
+	}
+	node->left = *heads;
+
+	return head;
+}
+
+
 ptree_t *append_list_item( ptree_t *head, int type, char *name, int value )
 {
 	if (head == NULL) {

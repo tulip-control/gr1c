@@ -30,6 +30,13 @@ ptree_t *evar_list = NULL;
 ptree_t *svar_list = NULL;
 ptree_t *env_init = NULL;
 ptree_t *sys_init = NULL;
+ptree_t *env_trans = NULL;  /* Built from component parse trees in env_trans_array. */
+ptree_t *sys_trans = NULL;
+
+ptree_t **env_trans_array = NULL;
+ptree_t **sys_trans_array = NULL;
+int et_array_len = 0;
+int st_array_len = 0;
 
 /* General purpose tree pointer, which facilitates cleaner Yacc
    parsing code. */
@@ -48,10 +55,13 @@ int main( int argc, char **argv )
 	int i, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
 
-	DdManager *manager;
-	DdNode *fn, *tmp;
-	ptree_t *var_separator;
-	int ddin[3] = {1, 0, 1};
+	/* DdManager *manager; */
+	/* DdNode *fn, *tmp; */
+	/* ptree_t *var_separator; */
+	/* int ddin[3] = {0, 0, 0}; */
+	/* int cube[3] = {2, 2, 1}; */
+	/* int *support_indices; */
+	/* DdNode *ddcube; */
 
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
@@ -100,9 +110,33 @@ int main( int argc, char **argv )
 	if (input_index > 0)
 		fclose( fp );
 
+	/* Handle empty initial conditions, i.e., no restrictions. */
+	if (env_init == NULL)
+		env_init = init_ptree( PT_CONSTANT, NULL, 1 );
+	if (sys_init == NULL)
+		sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
+
+	/* Merge component safety (transition) formulas. */
+	if (et_array_len > 1) {
+		env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
+	} else if (et_array_len == 1) {
+		env_trans = *env_trans_array;
+	} else {  /* No restrictions on transitions. */
+		env_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
+	if (st_array_len > 1) {
+		sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
+	} else if (st_array_len == 1) {
+		sys_trans = *sys_trans_array;
+	} else {  /* No restrictions on transitions. */
+		sys_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
+
 	if (ptdump_flag) {
 		tree_dot_dump( env_init, "env_init_ptree.dot" );
 		tree_dot_dump( sys_init, "sys_init_ptree.dot" );
+		tree_dot_dump( env_trans, "env_trans_ptree.dot" );
+		tree_dot_dump( sys_trans, "sys_trans_ptree.dot" );
 
 		var_index = 0;
 		printf( "Environment variables (indices): " );
@@ -146,46 +180,71 @@ int main( int argc, char **argv )
 		printf( "SYS INIT:  " );
 		print_formula( sys_init, stdout );
 		printf( "\n" );
+
+		printf( "ENV TRANS:  [] " );
+		print_formula( env_trans, stdout );
+		printf( "\n" );
+
+		printf( "SYS TRANS:  [] " );
+		print_formula( sys_trans, stdout );
+		printf( "\n" );
 	}
 
 	/* Build BDD for sys init, and play with it to learn CUDD. */
-	manager = Cudd_Init( tree_size( evar_list )+tree_size( svar_list ),
-						 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
+	/* manager = Cudd_Init( tree_size( evar_list )+tree_size( svar_list ), */
+	/* 					 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 ); */
 
-	if (evar_list == NULL) {
-		var_separator = NULL;
-	} else {
-		var_separator = get_list_item( evar_list, -1 );
-		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
-			return -1;
-		}
-		var_separator->left = svar_list;
-	}
+	/* if (evar_list == NULL) { */
+	/* 	var_separator = NULL; */
+	/* } else { */
+	/* 	var_separator = get_list_item( evar_list, -1 ); */
+	/* 	if (var_separator == NULL) { */
+	/* 		fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" ); */
+	/* 		return -1; */
+	/* 	} */
+	/* 	var_separator->left = svar_list; */
+	/* } */
 	
-	if (evar_list == NULL) {  /* Handle deterministic case */
-		fn = ptree_BDD( sys_init, svar_list, manager );
-	} else {
-		fn = ptree_BDD( sys_init, evar_list, manager );
-	}
+	/* if (evar_list == NULL) {  /\* Handle deterministic case *\/ */
+	/* 	fn = ptree_BDD( sys_init, svar_list, manager ); */
+	/* } else { */
+	/* 	fn = ptree_BDD( sys_init, evar_list, manager ); */
+	/* } */
 	
-	/* Break the link that appended the system variables list to the
-	   environment variables list. */
-	if (evar_list != NULL)
-		var_separator->left = NULL;
+	/* /\* Break the link that appended the system variables list to the */
+	/*    environment variables list. *\/ */
+	/* if (evar_list != NULL) */
+	/* 	var_separator->left = NULL; */
 
-	Cudd_PrintDebug( manager, fn, 1, 3 );
-	tmp = Cudd_Eval( manager, fn, ddin );
-	printf( "Given input (%d, %d, %d),\nOutput: %.2f",
-			ddin[0], ddin[1], ddin[2],
-			(tmp->type).value );
+	/* printf( "support before quant: %d\n", */
+	/* 		Cudd_SupportIndices( manager, fn, &support_indices )); */
+
+	/* Cudd_PrintDebug( manager, fn, 1, 3 ); */
+	/* ddcube = Cudd_CubeArrayToBdd( manager, cube ); */
+	/* if (ddcube == NULL) { */
+	/* 	fprintf( stderr, "Error in generating cube for quantification." ); */
+	/* 	return -1; */
+	/* } */
+	/* fn = Cudd_bddUnivAbstract( manager, fn, ddcube ); */
+	/* if (fn == NULL) { */
+	/* 	fprintf( stderr, "Error in performing quantification." ); */
+	/* 	return -1; */
+	/* } */
+
+	/* printf( "support after quant: %d\n", */
+	/* 		Cudd_SupportIndices( manager, fn, &support_indices ));	 */
+
+	/* tmp = Cudd_Eval( manager, fn, ddin ); */
+	/* printf( "Given input (%d, %d, %d),\nOutput: %.2f", */
+	/* 		ddin[0], ddin[1], ddin[2], */
+	/* 		(tmp->type).value ); */
 
 	/* Clean-up */
 	delete_tree( evar_list );
 	delete_tree( svar_list );
 	delete_tree( sys_init );
 	delete_tree( env_init );
-	Cudd_Quit(manager);
+	/* Cudd_Quit(manager); */
 	
 	return 0;
 }

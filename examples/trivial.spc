@@ -1,15 +1,18 @@
 ENV: x foo;
 SYS: y;
 
-ENVINIT: x;
-ENVTRANS:;
+ENVINIT: x | !x;
+ENVTRANS: [](x -> x') & []!x -> !x';
 ENVGOAL:;
 
-SYSINIT: y | !(x | foo); #x->y
+# Blank lines are optional and can placed between sections or parts of
+# formulas.
 
-SYSTRANS: ; # Notice the safety formula spans two lines.
-#   [](y -> !(y'))
-# & [](!y -> (y'))
-# ;
+SYSINIT: y; #| !(x | foo); #x->y
 
-SYSGOAL: ;#[]<>y;
+SYSTRANS: # Notice the safety formula spans two lines.
+   [](y -> !(y'))
+ & [](!y -> y')
+;
+
+SYSGOAL:; #[]<>y;
