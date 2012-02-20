@@ -23,8 +23,8 @@ typedef unsigned char bool;
 #define False 0
 
 
-/*************************
- **** Global variabls ****/
+/**************************
+ **** Global variables ****/
 
 ptree_t *evar_list = NULL;
 ptree_t *svar_list = NULL;
@@ -35,7 +35,7 @@ ptree_t *sys_init = NULL;
    parsing code. */
 ptree_t *gen_tree_ptr = NULL;
 
-/*************************/
+/**************************/
 
 
 int main( int argc, char **argv )

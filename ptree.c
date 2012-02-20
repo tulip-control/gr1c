@@ -354,9 +354,8 @@ void print_formula( ptree_t *head, FILE *fp )
 
 DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 {
-	DdNode *var, *lsub, *rsub, *fn;
+	DdNode *lsub, *rsub, *fn;
 	int index;
-	int num_var;
 
 	switch (head->type) {
 	case PT_AND:
