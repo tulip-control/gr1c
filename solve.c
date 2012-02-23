@@ -93,38 +93,6 @@ DdNode *check_feasible( DdManager *manager )
 	strans = ptree_BDD( sys_trans, evar_list, manager );
 	sgoal = ptree_BDD( *sys_goals, evar_list, manager );
 
-	/* Check consistency of transition (safety) subformulas. */
-	/* cube_prime_sys( cube, num_env, num_sys ); */
-	/* ddcube = Cudd_CubeArrayToBdd( manager, cube ); */
-	/* if (ddcube == NULL) { */
-	/* 	fprintf( stderr, "check_feasible: Error in generating cube for quantification." ); */
-	/* 	return NULL; */
-	/* } */
-	/* tmp = Cudd_bddExistAbstract( manager, strans, ddcube ); */
-	/* if (tmp == NULL) { */
-	/* 	fprintf( stderr, */
-	/* 			 "check_feasible: Error in performing quantification." ); */
-	/* 	return NULL; */
-	/* } */
-	/* Cudd_Ref( tmp ); */
-	/* tmp2 = Cudd_bddAnd( manager, etrans, tmp ); */
-	/* Cudd_Ref( tmp2 ); */
-	/* if (Cudd_bddCorrelation( manager, tmp, tmp2 ) < 1.) { */
-	/* 	/\* Inconsistent.  N.B., this is not an error!  It simply means */
-	/* 	   that the specification cannot be realized. *\/ */
-	/* 	Cudd_RecursiveDeref( manager, tmp2 ); */
-	/* 	Cudd_RecursiveDeref( manager, tmp ); */
-	/* 	free( cube ); */
-	/* 	if (var_separator == NULL) { */
-	/* 		evar_list = NULL; */
-	/* 	} else { */
-	/* 		var_separator->left = NULL; */
-	/* 	} */
-	/* 	return NULL; */
-	/* } */
-	/* Cudd_RecursiveDeref( manager, tmp2 ); */
-	/* Cudd_RecursiveDeref( manager, tmp ); */
-
 	/* Initialize */
 	Z = Cudd_ReadOne( manager );
 	Cudd_Ref( Z );

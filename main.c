@@ -246,28 +246,10 @@ int main( int argc, char **argv )
 		printf( "Not feasible.\n" );
 	}
 
-	/* printf( "support before quant: %d\n", */
-	/* 		Cudd_SupportIndices( manager, fn, &support_indices )); */
-
-	/* Cudd_PrintDebug( manager, fn, 1, 3 ); */
-	/* ddcube = Cudd_CubeArrayToBdd( manager, cube ); */
-	/* if (ddcube == NULL) { */
-	/* 	fprintf( stderr, "Error in generating cube for quantification." ); */
-	/* 	return -1; */
-	/* } */
-	/* fn = Cudd_bddUnivAbstract( manager, fn, ddcube ); */
-	/* if (fn == NULL) { */
-	/* 	fprintf( stderr, "Error in performing quantification." ); */
-	/* 	return -1; */
-	/* } */
-
-	/* printf( "support after quant: %d\n", */
-	/* 		Cudd_SupportIndices( manager, fn, &support_indices ));	 */
-
-	/* tmp = Cudd_Eval( manager, fn, ddin ); */
-	/* printf( "Given input (%d, %d, %d),\nOutput: %.2f", */
-	/* 		ddin[0], ddin[1], ddin[2], */
-	/* 		(tmp->type).value ); */
+	if (!feas_flag && T != NULL) {  /* Synthesize strategy */
+		printf( "Synthesizing a strategy..." );
+		/* ... */
+	}
 
 	/* Clean-up */
 	delete_tree( evar_list );
