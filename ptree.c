@@ -412,7 +412,22 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 			fprintf( stderr, "Error: ptree_BDD requested variable \"%s\", but it is not in given list.\n", head->name );
 			exit(-1);
 		}
-		return Cudd_bddIthVar( manager, index );;
+		return Cudd_bddIthVar( manager, index );
+
+	case PT_NEXT_VARIABLE:
+		index = find_list_item( var_list, PT_VARIABLE, head->name, 0 );
+		if (index < 0) {
+			fprintf( stderr, "Error: ptree_BDD requested primed variable \"%s\", but it is not in given list.\n", head->name );
+			exit(-1);
+		}
+		return Cudd_bddIthVar( manager, tree_size(var_list)+index );
+
+	case PT_CONSTANT:
+		if (head->value == 0) {
+			return Cudd_Complement( Cudd_ReadOne( manager ) );
+		} else {
+			return Cudd_ReadOne( manager );
+		}
 	}
 
 	switch (head->type) {

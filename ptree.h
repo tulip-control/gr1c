@@ -80,7 +80,11 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager );
    linked list of variable names to refer to; ordering in var_list
    determines index in the BDD.  Non-Boolean variables and equality
    are not supported.  fn should be NULL, unless you wish to
-   initialize with a non-constant-True function. */
+   initialize with a non-constant-True function.
+
+   Any primed variables (type of PT_NEXT_VARIABLE) will be given an
+   index corresponding to unprimed variables but offset by the total
+   number of variables (length of list var_list). */
 
 int tree_dot_dump( ptree_t *head, char *filename );
 /* Generate Graphviz DOT file depicting the parse tree.  Return 0 on

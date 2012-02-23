@@ -13,6 +13,7 @@
 #include "cudd.h"
 
 #include "ptree.h"
+#include "solve.h"
 extern int yyparse( void );
 
 
@@ -54,19 +55,15 @@ int main( int argc, char **argv )
 	FILE *fp;
 	bool help_flag = False;
 	bool ptdump_flag = False;
+	bool feas_flag = False;
 	int input_index = -1;
 	char dumpfilename[32];
 
 	int i, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
 
-	/* DdManager *manager; */
-	/* DdNode *fn, *tmp; */
-	/* ptree_t *var_separator; */
-	/* int ddin[3] = {0, 0, 0}; */
-	/* int cube[3] = {2, 2, 1}; */
-	/* int *support_indices; */
-	/* DdNode *ddcube; */
+	DdManager *manager;
+	DdNode *T;
 
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
@@ -75,6 +72,8 @@ int main( int argc, char **argv )
 				help_flag = True;
 			} else if (argv[i][1] == 'p') {
 				ptdump_flag = True;
+			} else if (argv[i][1] == 'f') {
+				feas_flag = True;
 			} else {
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 				return 1;
@@ -86,10 +85,11 @@ int main( int argc, char **argv )
 		}
 	}
 
-	if (argc > 3 || help_flag) {
-		printf( "Usage: %s [-hp] [FILE]\n\n"
+	if (argc > 4 || help_flag) {
+		printf( "Usage: %s [-hpf] [FILE]\n\n"
 				"  -h    help message\n"
-				"  -p    dump parse trees to DOT files, and echo formulas to screen\n", argv[0] );
+				"  -p    dump parse trees to DOT files, and echo formulas to screen\n"
+				"  -f    only check feasibility; do not synthesize strategy\n", argv[0] );
 		return 1;
 	}
 
@@ -236,31 +236,15 @@ int main( int argc, char **argv )
 		printf( "\n" );
 	}
 
-	/* Build BDD for sys init, and play with it to learn CUDD. */
-	/* manager = Cudd_Init( tree_size( evar_list )+tree_size( svar_list ), */
-	/* 					 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 ); */
-
-	/* if (evar_list == NULL) { */
-	/* 	var_separator = NULL; */
-	/* } else { */
-	/* 	var_separator = get_list_item( evar_list, -1 ); */
-	/* 	if (var_separator == NULL) { */
-	/* 		fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" ); */
-	/* 		return -1; */
-	/* 	} */
-	/* 	var_separator->left = svar_list; */
-	/* } */
+	manager = Cudd_Init( 2*(tree_size( evar_list )+tree_size( svar_list )),
+						 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
+	T = check_feasible( manager );
 	
-	/* if (evar_list == NULL) {  /\* Handle deterministic case *\/ */
-	/* 	fn = ptree_BDD( sys_init, svar_list, manager ); */
-	/* } else { */
-	/* 	fn = ptree_BDD( sys_init, evar_list, manager ); */
-	/* } */
-	
-	/* /\* Break the link that appended the system variables list to the */
-	/*    environment variables list. *\/ */
-	/* if (evar_list != NULL) */
-	/* 	var_separator->left = NULL; */
+	if (T != NULL) {
+		printf( "Feasible.\n" );
+	} else {
+		printf( "Not feasible.\n" );
+	}
 
 	/* printf( "support before quant: %d\n", */
 	/* 		Cudd_SupportIndices( manager, fn, &support_indices )); */
@@ -288,9 +272,15 @@ int main( int argc, char **argv )
 	/* Clean-up */
 	delete_tree( evar_list );
 	delete_tree( svar_list );
-	delete_tree( sys_init );
 	delete_tree( env_init );
-	/* Cudd_Quit(manager); */
+	delete_tree( sys_init );
+	delete_tree( env_trans );
+	delete_tree( sys_trans );
+	for (i = 0; i < num_egoals; i++)
+		delete_tree( *(env_goals+i) );
+	for (i = 0; i < num_sgoals; i++)
+		delete_tree( *(sys_goals+i) );
+	Cudd_Quit(manager);
 	
 	return 0;
 }
