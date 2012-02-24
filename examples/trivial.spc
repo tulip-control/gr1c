@@ -2,8 +2,8 @@ ENV: x;
 SYS: y;
 
 ENVINIT: x;
-ENVTRANS: [](!y -> x');
-ENVGOAL:;
+ENVTRANS:;# [](x -> !x') & [](!x -> x');
+ENVGOAL: []<>x;
 
 # Blank lines are optional and can placed between sections or parts of
 # formulas.

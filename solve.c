@@ -39,22 +39,24 @@ DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
 							 int num_env, int num_sys, int *cube );
 
 
-/* Currently only can handle case of single system goal and no
-   environment goals.  Let f be the system goal. Thus the mu-calculus
-   formula to find the winning set is
-
-     \nu Z ( \mu Y ( (E)Y | f & (E)Z ))
-
-   where (E) is the exists modal operator (for all environment
-   actions, there exists a system action). */
+/* N.B., we assume there is at least one system goal.  This assumption
+   will be removed in a future version (soon). */
 DdNode *check_feasible( DdManager *manager )
 {
 	bool feasible;
 	ptree_t *var_separator;
 	DdNode *einit, *sinit;
-	DdNode *etrans, *strans, *sgoal;
-	DdNode *Y = NULL, *Z = NULL, *Y_prev = NULL, *Z_prev = NULL;
+	DdNode *etrans, *strans, **egoals, **sgoals;
+	DdNode *Y = NULL, *X = NULL, *Y_prev = NULL, *X_prev = NULL;
+	DdNode **Z, *Z_prev;
+	/* Z_i for the system goals.  Only one "previous" is needed for
+	   fixpoint detection. */
+	bool Z_changed;  /* Indicator flag while looping over greatest
+					    fixpoint computations of Z_i. */
+	int num_it;  /* Count number iterations to arrive at fixpoint. */
+
 	DdNode *tmp, *tmp2;
+	int i, j;  /* Generic counters */
 
 	int num_env, num_sys;
 	int *cube;  /* length will be twice total number of variables (to
@@ -91,65 +93,153 @@ DdNode *check_feasible( DdManager *manager )
 	sinit = ptree_BDD( sys_init, evar_list, manager );
 	etrans = ptree_BDD( env_trans, evar_list, manager );
 	strans = ptree_BDD( sys_trans, evar_list, manager );
-	sgoal = ptree_BDD( *sys_goals, evar_list, manager );
+
+	/* Build goal BDDs, if present. */
+	if (num_egoals > 0) {
+		egoals = malloc( num_egoals*sizeof(DdNode *) );
+		for (i = 0; i < num_egoals; i++)
+			*(egoals+i) = ptree_BDD( *(env_goals+i), evar_list, manager );
+	} else {
+		egoals = NULL;
+	}
+	if (num_sgoals > 0) {
+		Z = malloc( num_sgoals*sizeof(DdNode *) );
+		sgoals = malloc( num_sgoals*sizeof(DdNode *) );
+		for (i = 0; i < num_sgoals; i++)
+			*(sgoals+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
+	} else {
+		Z = malloc( sizeof(DdNode *) );
+		sgoals = NULL;
+	}
+	
 
 	/* Initialize */
-	Z = Cudd_ReadOne( manager );
-	Cudd_Ref( Z );
+	for (i = 0; i < num_sgoals; i++) {
+		*(Z+i) = Cudd_ReadOne( manager );
+		Cudd_Ref( *(Z+i) );
+	}
 
-	/* To detect fix point. */
-	Z_prev = Cudd_ReadOne( manager );
-	Cudd_Ref( Z_prev );
-	
 	do {
+		Z_changed = False;
+		for (i = 0; i < num_sgoals; i++) {
 
-		Z_prev = Z;
+			/* To detect fixpoint for this Z_i */
+			Z_prev = Cudd_ReadOne( manager );
+			Cudd_Ref( Z_prev );
+			num_it = 0;
+	
+			do {
+				num_it++;
 
-		/* (Re)initialize Y */
-		if (Y != NULL)
-			Cudd_RecursiveDeref( manager, Y );
-		if (Y_prev != NULL)
-			Cudd_RecursiveDeref( manager, Y_prev );
-		Y = Cudd_Not( Cudd_ReadOne( manager ) );
-		Y_prev = Cudd_Not( Cudd_ReadOne( manager ) );
-		Cudd_Ref( Y );
-		Cudd_Ref( Y_prev );
+				Z_prev = *(Z+i);
 
-		Z = compute_existsmodal( manager, Z, etrans, strans,
-								 num_env, num_sys, cube );
-		if (Z == NULL) {
-			/* fatal error */
-			return NULL;
+				/* (Re)initialize Y */
+				if (Y != NULL)
+					Cudd_RecursiveDeref( manager, Y );
+				if (Y_prev != NULL)
+					Cudd_RecursiveDeref( manager, Y_prev );
+				Y = Cudd_Not( Cudd_ReadOne( manager ) );
+				Y_prev = Cudd_Not( Cudd_ReadOne( manager ) );
+				Cudd_Ref( Y );
+				Cudd_Ref( Y_prev );
+
+				if (i == num_sgoals-1) {
+					*(Z+i) = compute_existsmodal( manager, *Z, etrans, strans,
+												  num_env, num_sys, cube );
+				} else {
+					*(Z+i) = compute_existsmodal( manager, *(Z+i+1), etrans, strans,
+												  num_env, num_sys, cube );
+				}
+				if (*(Z+i) == NULL) {
+					/* fatal error */
+					return NULL;
+				}
+
+				do {
+
+					Y_prev = Y;
+
+					Y = compute_existsmodal( manager, Y, etrans, strans,
+											 num_env, num_sys, cube );
+					if (Y == NULL) {
+						/* fatal error */
+						return NULL;
+					}
+
+					if (num_egoals > 0) {
+						for (j = 0; j < num_egoals; j++) {
+
+							/* (Re)initialize X */
+							if (X != NULL)
+								Cudd_RecursiveDeref( manager, X );
+							if (X_prev != NULL)
+								Cudd_RecursiveDeref( manager, X_prev );
+							X = Cudd_ReadOne( manager );
+							X_prev = Cudd_ReadOne( manager );
+							Cudd_Ref( X );
+							Cudd_Ref( X_prev );
+
+							/* Greatest fixpoint for X, for this env goal */
+							do {
+
+								X_prev = X;
+							   
+								X = compute_existsmodal( manager, X, etrans, strans,
+														 num_env, num_sys, cube );
+								if (X == NULL) {
+									/* fatal error */
+									return NULL;
+								}
+								
+								tmp = Cudd_bddAnd( manager, *(sgoals+i), *(Z+i) );
+								Cudd_Ref( tmp );
+								tmp2 = Cudd_bddOr( manager, tmp, Y );
+								Cudd_Ref( tmp2 );
+								Cudd_RecursiveDeref( manager, tmp );
+
+								tmp = Cudd_bddOr( manager, tmp2, Cudd_Not( *(egoals+j) ) );
+								Cudd_Ref( tmp );
+								Cudd_RecursiveDeref( manager, tmp2 );
+
+								X = Cudd_bddAnd( manager, tmp, X );
+								Cudd_Ref( X );
+								Cudd_RecursiveDeref( manager, tmp );
+
+								X = Cudd_bddAnd( manager, X, X_prev );
+								Cudd_Ref( X );
+								
+							} while (Cudd_bddCorrelation( manager, X, X_prev ) < 1.);
+
+							Y = Cudd_bddOr( manager, Y, X );
+							Cudd_Ref( Y );
+
+						}
+					} else {
+
+						tmp = Cudd_bddAnd( manager, *(sgoals+i), *(Z+i) );
+						Cudd_Ref( tmp );
+						Y = Cudd_bddOr( manager, tmp, Y );
+						Cudd_Ref( Y );
+						Cudd_RecursiveDeref( manager, tmp );
+
+						Y = Cudd_bddOr( manager, Y, Y_prev );
+						Cudd_Ref( Y );
+						
+					}
+
+				} while (Cudd_bddCorrelation( manager, Y, Y_prev ) < 1.);
+
+				*(Z+i) = Cudd_bddAnd( manager, Y, Z_prev );
+				Cudd_Ref( *(Z+i) );
+
+			} while (Cudd_bddCorrelation( manager, *(Z+i), Z_prev ) < 1.);
+			Cudd_RecursiveDeref( manager, Z_prev );
+
+			if (num_it > 1)
+				Z_changed = True;
+
 		}
-
-		do {
-
-			Y_prev = Y;
-
-			Y = compute_existsmodal( manager, Y, etrans, strans,
-									 num_env, num_sys, cube );
-			if (Y == NULL) {
-				/* fatal error */
-				return NULL;
-			}
-
-			tmp = Cudd_bddOr( manager, Y, sgoal );
-			Cudd_Ref( tmp );
-			Cudd_RecursiveDeref( manager, Y );
-			Y = Cudd_bddAnd( manager, tmp, Z );
-			Cudd_Ref( Y );
-			Cudd_RecursiveDeref( manager, tmp );
-
-			Y = Cudd_bddOr( manager, Y, Y_prev );
-			Cudd_Ref( Y );
-
-		} while (Cudd_bddCorrelation( manager, Y, Y_prev ) < 1.);
-
-		Z = Cudd_bddAnd( manager, Y, Z_prev );
-		Cudd_Ref( Z );
-
-	} while (Cudd_bddCorrelation( manager, Z, Z_prev ) < 1.);
-	Cudd_RecursiveDeref( manager, Z_prev );
+	} while (Z_changed);
 
 	/* Break the link that appended the system variables list to the
 	   environment variables list. */
@@ -162,7 +252,7 @@ DdNode *check_feasible( DdManager *manager )
 	/* Does winning set contain all initial states? */
 	tmp = Cudd_bddAnd( manager, einit, sinit );
 	Cudd_Ref( tmp );
-	tmp2 = Cudd_bddAnd( manager, tmp, Z );
+	tmp2 = Cudd_bddAnd( manager, tmp, *Z );
 	Cudd_Ref( tmp2 );
 	if (Cudd_bddCorrelation( manager, tmp, tmp2 ) < 1.) {  /* Not feasible */
 		feasible = False;
@@ -174,9 +264,15 @@ DdNode *check_feasible( DdManager *manager )
 
 	/* Pre-exit clean-up */
 	free( cube );
+	if (egoals != NULL)
+		free( egoals );
+	if (sgoals != NULL)
+		free( sgoals );
 
+	tmp = *Z;
+	free( Z );
 	if (feasible) {
-		return Z;
+		return tmp;
 	} else {
 		return NULL;
 	}
