@@ -54,6 +54,7 @@ int main( int argc, char **argv )
 {
 	FILE *fp;
 	bool help_flag = False;
+	bool syncheck_flag = False;
 	bool ptdump_flag = False;
 	bool realiz_flag = False;
 	int input_index = -1;
@@ -70,6 +71,8 @@ int main( int argc, char **argv )
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 'h') {
 				help_flag = True;
+			} else if (argv[i][1] == 's') {
+				syncheck_flag = True;
 			} else if (argv[i][1] == 'p') {
 				ptdump_flag = True;
 			} else if (argv[i][1] == 'r') {
@@ -86,8 +89,9 @@ int main( int argc, char **argv )
 	}
 
 	if (argc > 4 || help_flag) {
-		printf( "Usage: %s [-hpr] [FILE]\n\n"
+		printf( "Usage: %s [-hspr] [FILE]\n\n"
 				"  -h    help message\n"
+				"  -s    only check specification syntax (return -1 on error)\n"
 				"  -p    dump parse trees to DOT files, and echo formulas to screen\n"
 				"  -r    only check realizability; do not synthesize strategy\n", argv[0] );
 		return 1;
@@ -110,6 +114,9 @@ int main( int argc, char **argv )
 	gen_tree_ptr = NULL;
 	if (yyparse())
 		return -1;
+
+	if (syncheck_flag)
+		return 0;
 
 	/* Close input file, if opened. */
 	if (input_index > 0)
