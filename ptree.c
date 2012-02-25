@@ -20,6 +20,7 @@ ptree_t *init_ptree( int type, char *name, int value )
 		return NULL;
 	}
 	head->left = head->right = NULL;
+	head->name = NULL;
 	head->type = type;
 	if (type == PT_VARIABLE || type == PT_NEXT_VARIABLE) {
 		if (name == NULL) {

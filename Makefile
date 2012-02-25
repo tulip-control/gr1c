@@ -1,4 +1,4 @@
-# SCL; 5 Feb 2012.
+# SCL; 25 Feb 2012.
 #
 #
 
@@ -12,11 +12,11 @@ YFLAGS = -d
 
 CC = gcc
 CFLAGS = -g -Wall -pedantic -I$(CUDD_ROOT)/include
-LDFLAGS = $(CUDD_LIB)
+LDFLAGS = $(CUDD_LIB) -lm
 
 
 gr1c: main.o solve.o ptree.o gr1c_parse.o gr1c_scan.o
-	$(CC) -o $@ $(LDFLAGS) $^
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 main.o: main.c
 ptree.o: ptree.c
