@@ -1,4 +1,4 @@
-/* solve.h -- Compute feasibility and a strategy for a GR(1) game.
+/* solve.h -- Compute realizability and a strategy for a GR(1) game.
  *
  *
  * SCL; Feb 2012.
@@ -13,10 +13,10 @@
 #include "ptree.h"
 
 
-DdNode *check_feasible( DdManager *manager );
-/* If feasible, then returns (a pointer to) the characteristic
+DdNode *check_realizable( DdManager *manager );
+/* If realizable, then returns (a pointer to) the characteristic
    function of the winning set.  Otherwise (if problem is not
-   feasible), returns NULL.  Given manager must already be
+   realizable), returns NULL.  Given manager must already be
    initialized.  To account for all variables and their primed
    ("next") forms, a reasonable initialization can be achieved with
 

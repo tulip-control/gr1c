@@ -41,9 +41,9 @@ DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
 
 /* N.B., we assume there is at least one system goal.  This assumption
    will be removed in a future version (soon). */
-DdNode *check_feasible( DdManager *manager )
+DdNode *check_realizable( DdManager *manager )
 {
-	bool feasible;
+	bool realizable;
 	ptree_t *var_separator;
 	DdNode *einit, *sinit;
 	DdNode *etrans, *strans, **egoals, **sgoals;
@@ -69,7 +69,7 @@ DdNode *check_feasible( DdManager *manager )
 	/* Allocate cube array, used later for quantifying over variables. */
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
-		perror( "check_feasible, malloc" );
+		perror( "check_realizable, malloc" );
 		return NULL;
 	}
 	
@@ -254,10 +254,10 @@ DdNode *check_feasible( DdManager *manager )
 	Cudd_Ref( tmp );
 	tmp2 = Cudd_bddAnd( manager, tmp, *Z );
 	Cudd_Ref( tmp2 );
-	if (Cudd_bddCorrelation( manager, tmp, tmp2 ) < 1.) {  /* Not feasible */
-		feasible = False;
-	} else {  /* Feasible */
-		feasible = True;
+	if (Cudd_bddCorrelation( manager, tmp, tmp2 ) < 1.) {  /* Not realizable */
+		realizable = False;
+	} else {  /* Realizable */
+		realizable = True;
 	}
 	Cudd_RecursiveDeref( manager, tmp );
 	Cudd_RecursiveDeref( manager, tmp2 );
@@ -271,7 +271,7 @@ DdNode *check_feasible( DdManager *manager )
 
 	tmp = *Z;
 	free( Z );
-	if (feasible) {
+	if (realizable) {
 		return tmp;
 	} else {
 		return NULL;

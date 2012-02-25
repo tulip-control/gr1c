@@ -55,7 +55,7 @@ int main( int argc, char **argv )
 	FILE *fp;
 	bool help_flag = False;
 	bool ptdump_flag = False;
-	bool feas_flag = False;
+	bool realiz_flag = False;
 	int input_index = -1;
 	char dumpfilename[32];
 
@@ -72,8 +72,8 @@ int main( int argc, char **argv )
 				help_flag = True;
 			} else if (argv[i][1] == 'p') {
 				ptdump_flag = True;
-			} else if (argv[i][1] == 'f') {
-				feas_flag = True;
+			} else if (argv[i][1] == 'r') {
+				realiz_flag = True;
 			} else {
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 				return 1;
@@ -86,10 +86,10 @@ int main( int argc, char **argv )
 	}
 
 	if (argc > 4 || help_flag) {
-		printf( "Usage: %s [-hpf] [FILE]\n\n"
+		printf( "Usage: %s [-hpr] [FILE]\n\n"
 				"  -h    help message\n"
 				"  -p    dump parse trees to DOT files, and echo formulas to screen\n"
-				"  -f    only check feasibility; do not synthesize strategy\n", argv[0] );
+				"  -r    only check realizability; do not synthesize strategy\n", argv[0] );
 		return 1;
 	}
 
@@ -238,15 +238,15 @@ int main( int argc, char **argv )
 
 	manager = Cudd_Init( 2*(tree_size( evar_list )+tree_size( svar_list )),
 						 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
-	T = check_feasible( manager );
+	T = check_realizable( manager );
 	
 	if (T != NULL) {
-		printf( "Feasible.\n" );
+		printf( "Realizable.\n" );
 	} else {
-		printf( "Not feasible.\n" );
+		printf( "Not realizable.\n" );
 	}
 
-	if (!feas_flag && T != NULL) {  /* Synthesize strategy */
+	if (!realiz_flag && T != NULL) {  /* Synthesize strategy */
 		printf( "Synthesizing a strategy..." );
 		/* ... */
 	}
