@@ -247,10 +247,11 @@ ptree_t *pusht_operator( ptree_t *head, int type )
 	if (head->type == PT_EMPTY || head->type == PT_VARIABLE
 		|| head->type == PT_NEXT_VARIABLE || head->type == PT_CONSTANT
 		|| head->type == PT_NEG) { /* if terminal or unary */
-		if (head->left != NULL && head->left->type == PT_EQUALS) {
-			/* Handle special case of left node of = operator. (N.B.,
-			   this cannot happen for other operators due to the order
-			   that tokens are visiting while parsing input.) */
+		if (head->left != NULL
+			&& (head->left->type == PT_EQUALS
+				|| head->left->type == PT_AND
+				|| head->left->type == PT_OR
+				|| head->left->type == PT_IMPLIES)) {
 			new_head->left = head;
 			new_head->right = head->left;
 			head->left = head->left->left->left;

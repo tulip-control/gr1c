@@ -238,35 +238,35 @@ propformula: TRUE_CONSTANT  {
 ;
 
 tpropformula: TRUE_CONSTANT  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 1 );
-             }
-           | FALSE_CONSTANT  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 0 );
-             }
-           | VARIABLE  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-             }
-           | VARIABLE '\''  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_NEXT_VARIABLE, $1, 0 );
-             }
-           | '!' tpropformula  {
-                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NEG );
-             }
-           | tpropformula '&' tpropformula  {
-                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_AND );
-             }
-           | tpropformula '|' tpropformula  {
-                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_OR );
-             }
-           | tpropformula IMPLIES tpropformula  {
-                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_IMPLIES );
-             }
-           | VARIABLE '=' NUMBER  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
-                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
-             }
-           | '(' tpropformula ')'
+                  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 1 );
+	      }
+	    | FALSE_CONSTANT  {
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 0 );
+	      }
+	    | VARIABLE  {
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
+	      }
+	    | VARIABLE '\''  {
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_NEXT_VARIABLE, $1, 0 );
+	      }
+	    | '!' tpropformula  {
+		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NEG );
+	      }
+	    | tpropformula '&' tpropformula  {
+		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_AND );
+	      }
+	    | tpropformula '|' tpropformula  {
+		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_OR );
+	      }
+	    | tpropformula IMPLIES tpropformula  {
+		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_IMPLIES );
+	      }
+	    | VARIABLE '=' NUMBER  {
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
+	      }
+	    | '(' tpropformula ')'
 ;
 
 
