@@ -93,7 +93,8 @@ int main( int argc, char **argv )
 				"  -h    help message\n"
 				"  -s    only check specification syntax (return -1 on error)\n"
 				"  -p    dump parse trees to DOT files, and echo formulas to screen\n"
-				"  -r    only check realizability; do not synthesize strategy\n", argv[0] );
+				"  -r    only check realizability; do not synthesize strategy\n"
+				"        (return 0 if realizable, -1 if not)\n", argv[0] );
 		return 1;
 	}
 
@@ -270,6 +271,16 @@ int main( int argc, char **argv )
 	for (i = 0; i < num_sgoals; i++)
 		delete_tree( *(sys_goals+i) );
 	Cudd_Quit(manager);
-	
+
+	/* If user only requested to decide realizability, then return
+       0 if realizable, -1 if not realizable. */
+	if (realiz_flag) {
+		if (T != NULL) {
+			return 0;
+		} else {
+			return -1;
+		}
+	}
+
 	return 0;
 }
