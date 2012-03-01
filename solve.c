@@ -360,6 +360,7 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 		} else {
 			realizable = True;
 		}
+		Cudd_RecursiveDeref( manager, tmp2 );
 	}
 
 	/* Pre-exit clean-up */
@@ -379,14 +380,14 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 		Cudd_RecursiveDeref( manager, *(egoals+i) );
 	for (i = 0; i < num_sgoals; i++)
 		Cudd_RecursiveDeref( manager, *(sgoals+i) );
-	free( cube );
 	if (egoals != NULL)
 		free( egoals );
 	if (sgoals != NULL)
 		free( sgoals );
+	free( cube );
 
 	if (realizable) {
-		return Z;
+		return tmp;
 	} else {
 		return NULL;
 	}
