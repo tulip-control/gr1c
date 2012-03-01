@@ -247,7 +247,7 @@ ptree_t *pusht_operator( ptree_t *head, int type )
 	if (head->type == PT_EMPTY || head->type == PT_VARIABLE
 		|| head->type == PT_NEXT_VARIABLE || head->type == PT_CONSTANT
 		|| head->type == PT_NEG) { /* if terminal or unary */
-		if (head->left != NULL
+		if (head->left != NULL && type != PT_NEG
 			&& (head->left->type == PT_EQUALS
 				|| head->left->type == PT_AND
 				|| head->left->type == PT_OR
@@ -404,9 +404,12 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 	case PT_IMPLIES:
 		lsub = ptree_BDD( head->left, var_list, manager );
 		rsub = ptree_BDD( head->right, var_list, manager );
+		Cudd_Ref( lsub );
+		Cudd_Ref( rsub );
 		break;
 	case PT_NEG:
 		rsub = ptree_BDD( head->right, var_list, manager );
+		Cudd_Ref( rsub );
 		break;
 	case PT_VARIABLE:
 		index = find_list_item( var_list, head->type, head->name, 0 );
@@ -426,7 +429,7 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 
 	case PT_CONSTANT:
 		if (head->value == 0) {
-			return Cudd_Complement( Cudd_ReadOne( manager ) );
+			return Cudd_Not( Cudd_ReadOne( manager ) );
 		} else {
 			return Cudd_ReadOne( manager );
 		}
@@ -436,35 +439,26 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 	case PT_AND:
 		fn = Cudd_bddAnd( manager, lsub, rsub );
 		Cudd_Ref( fn );
-		if (head->left->type != PT_VARIABLE)
-			Cudd_RecursiveDeref( manager, lsub );
-		if (head->right->type != PT_VARIABLE)
-			Cudd_RecursiveDeref( manager, rsub );
+		Cudd_RecursiveDeref( manager, lsub );
+		Cudd_RecursiveDeref( manager, rsub );
 		break;
 
 	case PT_OR:
 		fn = Cudd_bddOr( manager, lsub, rsub );
 		Cudd_Ref( fn );
-		if (head->left->type != PT_VARIABLE)
-			Cudd_RecursiveDeref( manager, lsub );
-		if (head->right->type != PT_VARIABLE)
-			Cudd_RecursiveDeref( manager, rsub );
+		Cudd_RecursiveDeref( manager, lsub );
+		Cudd_RecursiveDeref( manager, rsub );
 		break;
 
 	case PT_IMPLIES:
 		fn = Cudd_bddOr( manager, Cudd_Not(lsub), rsub );
 		Cudd_Ref( fn );
-		if (head->left->type != PT_VARIABLE)
-			Cudd_RecursiveDeref( manager, lsub );
-		if (head->right->type != PT_VARIABLE)
-			Cudd_RecursiveDeref( manager, rsub );
+		Cudd_RecursiveDeref( manager, lsub );
+		Cudd_RecursiveDeref( manager, rsub );
 		break;
 
 	case PT_NEG:
 		fn = Cudd_Not( rsub );
-		Cudd_Ref( fn );
-		if (head->right->type != PT_VARIABLE)
-			Cudd_RecursiveDeref( manager, rsub );
 		break;
 	}
 

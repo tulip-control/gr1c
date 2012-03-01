@@ -57,6 +57,7 @@ int main( int argc, char **argv )
 	bool syncheck_flag = False;
 	bool ptdump_flag = False;
 	bool realiz_flag = False;
+	unsigned char verbose = 0;
 	int input_index = -1;
 	char dumpfilename[32];
 
@@ -71,6 +72,8 @@ int main( int argc, char **argv )
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 'h') {
 				help_flag = True;
+			} else if (argv[i][1] == 'v') {
+				verbose = 1;
 			} else if (argv[i][1] == 's') {
 				syncheck_flag = True;
 			} else if (argv[i][1] == 'p') {
@@ -88,9 +91,10 @@ int main( int argc, char **argv )
 		}
 	}
 
-	if (argc > 4 || help_flag) {
-		printf( "Usage: %s [-hspr] [FILE]\n\n"
+	if (argc > 5 || help_flag) {
+		printf( "Usage: %s [-hvspr] [FILE]\n\n"
 				"  -h    help message\n"
+				"  -v    be verbose\n"
 				"  -s    only check specification syntax (return -1 on error)\n"
 				"  -p    dump parse trees to DOT files, and echo formulas to screen\n"
 				"  -r    only check realizability; do not synthesize strategy\n"
@@ -113,8 +117,16 @@ int main( int argc, char **argv )
 	evar_list = NULL;
 	svar_list = NULL;
 	gen_tree_ptr = NULL;
+	if (verbose) {
+		printf( "Parsing input..." );
+		fflush( stdout );
+	}
 	if (yyparse())
 		return -1;
+	if (verbose) {
+		printf( "Done.\n" );
+		fflush( stdout );
+	}
 
 	if (syncheck_flag)
 		return 0;
@@ -246,8 +258,9 @@ int main( int argc, char **argv )
 
 	manager = Cudd_Init( 2*(tree_size( evar_list )+tree_size( svar_list )),
 						 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
-	T = check_realizable( manager );
-	
+	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+
+	T = check_realizable( manager, EXIST_SYS_INIT, verbose );
 	if (T != NULL) {
 		printf( "Realizable.\n" );
 	} else {
