@@ -12,7 +12,7 @@ YACC = bison -y
 YFLAGS = -d
 
 CC = gcc
-CFLAGS = -g -Wall -pedantic -I$(CUDD_ROOT)/include
+CFLAGS = -g -Wall -pedantic -ansi -I$(CUDD_ROOT)/include -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8
 LDFLAGS = $(CUDD_LIB) -lm
 
 

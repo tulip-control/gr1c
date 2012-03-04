@@ -4,7 +4,7 @@
  * getopt, once sophistication of usage demands.
  *
  *
- * SCL; Jan, Feb 2012.
+ * SCL; Jan-Mar 2012.
  */
 
 
@@ -157,6 +157,12 @@ int main( int argc, char **argv )
 		sys_trans = init_ptree( PT_CONSTANT, NULL, 1 );
 	}
 
+	if (num_egoals == 0) {
+		num_egoals = 1;
+		env_goals = malloc( sizeof(ptree_t *) );
+		*env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
+
 	if (ptdump_flag) {
 		tree_dot_dump( env_init, "env_init_ptree.dot" );
 		tree_dot_dump( sys_init, "sys_init_ptree.dot" );
@@ -258,6 +264,7 @@ int main( int argc, char **argv )
 
 	manager = Cudd_Init( 2*(tree_size( evar_list )+tree_size( svar_list )),
 						 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
+	Cudd_SetMaxCacheHard( manager, (unsigned int)-1 );
 	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 
 	T = check_realizable( manager, EXIST_SYS_INIT, verbose );
@@ -281,8 +288,16 @@ int main( int argc, char **argv )
 	delete_tree( sys_trans );
 	for (i = 0; i < num_egoals; i++)
 		delete_tree( *(env_goals+i) );
+	if (num_egoals > 0)
+		free( env_goals );
 	for (i = 0; i < num_sgoals; i++)
 		delete_tree( *(sys_goals+i) );
+	if (num_sgoals > 0)
+		free( sys_goals );
+	if (T != NULL)
+		Cudd_RecursiveDeref( manager, T );
+	if (verbose)
+		printf( "Cudd_CheckZeroRef -> %d\n", Cudd_CheckZeroRef( manager ) );
 	Cudd_Quit(manager);
 
 	/* If user only requested to decide realizability, then return

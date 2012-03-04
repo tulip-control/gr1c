@@ -1,7 +1,7 @@
 /* solve.c -- Definitions for signatures appearing in solve.h.
  *
  *
- * SCL; Feb 2012.
+ * SCL; Feb, Mar 2012.
  */
 
 
@@ -64,6 +64,12 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 	int *cube;  /* length will be twice total number of variables (to
 				   account for both variables and their primes). */
 	DdNode *ddcube;
+
+	if (verbose) {
+		printf( "== Cudd_PrintInfo() ==================================================\n" );
+		Cudd_PrintInfo( manager, stdout );
+		printf( "======================================================================\n" );
+	}
 
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
@@ -128,6 +134,14 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 		}
 	} else {
 		sgoals = NULL;
+	}
+
+	/* Break the link that appended the system variables list to the
+	   environment variables list. */
+	if (var_separator == NULL) {
+		evar_list = NULL;
+	} else {
+		var_separator->left = NULL;
 	}
 
 	/* Define a map in the manager to easily swap variables with their
@@ -197,82 +211,74 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 				Y_prev = Y;
 				if (Y_exmod != NULL)
 					Cudd_RecursiveDeref( manager, Y_exmod );
-				Y_exmod = compute_existsmodal( manager, Y, etrans, strans,
+				Y_exmod = compute_existsmodal( manager, Y_prev, etrans, strans,
 											   num_env, num_sys, cube );
 				if (Y_exmod == NULL) {
 					/* fatal error */
 					return NULL;
 				}
 				
-				if (num_egoals > 0) {
-					Y = Cudd_Not( Cudd_ReadOne( manager ) );
-					Cudd_Ref( Y );
-					for (j = 0; j < num_egoals; j++) {
+				Y = Cudd_Not( Cudd_ReadOne( manager ) );
+				Cudd_Ref( Y );
+				for (j = 0; j < num_egoals; j++) {
+					
+					/* (Re)initialize X */
+					if (X != NULL)
+						Cudd_RecursiveDeref( manager, X );
+					X = Cudd_ReadOne( manager );
+					Cudd_Ref( X );
 
-						/* (Re)initialize X */
-						if (X != NULL)
-							Cudd_RecursiveDeref( manager, X );
+					/* Greatest fixpoint for X, for this env goal */
+					num_it_X = 0;
+					do {
+						num_it_X++;
+						if (verbose) {
+							printf( "\t\tX iteration %d\n", num_it_X );
+							fflush( stdout );
+						}
+						
 						if (X_prev != NULL)
 							Cudd_RecursiveDeref( manager, X_prev );
-						X = Cudd_ReadOne( manager );
-						X_prev = Cudd_ReadOne( manager );
-						Cudd_Ref( X );
-						Cudd_Ref( X_prev );
-
-						/* Greatest fixpoint for X, for this env goal */
-						num_it_X = 0;
-						do {
-							num_it_X++;
-							if (verbose) {
-								printf( "\t\tX iteration %d\n", num_it_X );
-								fflush( stdout );
-							}
-
-							X_prev = X;
-							X = compute_existsmodal( manager, X, etrans, strans,
-													 num_env, num_sys, cube );
-							if (X == NULL) {
-								/* fatal error */
-								return NULL;
-							}
+						X_prev = X;
+						X = compute_existsmodal( manager, X_prev, etrans, strans,
+												 num_env, num_sys, cube );
+						if (X == NULL) {
+							/* fatal error */
+							return NULL;
+						}
 								
-							tmp = Cudd_bddAnd( manager, *(sgoals+i), *(Z+i) );
-							Cudd_Ref( tmp );
-							tmp2 = Cudd_bddOr( manager, tmp, Y_exmod );
-							Cudd_Ref( tmp2 );
-							Cudd_RecursiveDeref( manager, tmp );
-
-							tmp = Cudd_bddOr( manager, tmp2, Cudd_Not( *(egoals+j) ) );
-							Cudd_Ref( tmp );
-							Cudd_RecursiveDeref( manager, tmp2 );
-
-							tmp2 = X;
-							X = Cudd_bddAnd( manager, tmp, X );
-							Cudd_Ref( X );
-							Cudd_RecursiveDeref( manager, tmp );
-							Cudd_RecursiveDeref( manager, tmp2 );
-
-							tmp = X;
-							X = Cudd_bddAnd( manager, X, X_prev );
-							Cudd_Ref( X );
-							Cudd_RecursiveDeref( manager, tmp );
-								
-						} while (Cudd_bddCorrelation( manager, X, X_prev ) < 1.);
-
-						tmp = Y;
-						Y = Cudd_bddOr( manager, Y, X );
-						Cudd_Ref( Y );
+						tmp = Cudd_bddAnd( manager, *(sgoals+i), *(Z+i) );
+						Cudd_Ref( tmp );
+						tmp2 = Cudd_bddOr( manager, tmp, Y_exmod );
+						Cudd_Ref( tmp2 );
 						Cudd_RecursiveDeref( manager, tmp );
 
-					}
-				} else {
+						tmp = Cudd_bddOr( manager, tmp2, Cudd_Not( *(egoals+j) ) );
+						Cudd_Ref( tmp );
+						Cudd_RecursiveDeref( manager, tmp2 );
 
-					tmp = Cudd_bddAnd( manager, *(sgoals+i), *(Z+i) );
-					Cudd_Ref( tmp );
-					Y = Cudd_bddOr( manager, tmp, Y_exmod );
+						tmp2 = X;
+						X = Cudd_bddAnd( manager, tmp, X );
+						Cudd_Ref( X );
+						Cudd_RecursiveDeref( manager, tmp );
+						Cudd_RecursiveDeref( manager, tmp2 );
+
+						tmp = X;
+						X = Cudd_bddAnd( manager, X, X_prev );
+						Cudd_Ref( X );
+						Cudd_RecursiveDeref( manager, tmp );
+
+					} while (!(Cudd_bddLeq( manager, X, X_prev )*Cudd_bddLeq( manager, X_prev, X )));
+
+					tmp = Y;
+					Y = Cudd_bddOr( manager, Y, X );
 					Cudd_Ref( Y );
 					Cudd_RecursiveDeref( manager, tmp );
 
+					Cudd_RecursiveDeref( manager, X );
+					X = NULL;
+					Cudd_RecursiveDeref( manager, X_prev );
+					X_prev = NULL;
 				}
 
 				tmp2 = Y;
@@ -280,29 +286,29 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 				Cudd_Ref( Y );
 				Cudd_RecursiveDeref( manager, tmp2 );
 
-			} while (Cudd_bddCorrelation( manager, Y, Y_prev ) < 1.);
+			} while (!(Cudd_bddLeq( manager, Y, Y_prev )*Cudd_bddLeq( manager, Y_prev, Y )));
 
+			Cudd_RecursiveDeref( manager, *(Z+i) );
 			*(Z+i) = Cudd_bddAnd( manager, Y, *(Z_prev+i) );
 			Cudd_Ref( *(Z+i) );
+
+			Cudd_RecursiveDeref( manager, Y );
+			Y = NULL;
+			Cudd_RecursiveDeref( manager, Y_prev );
+			Y_prev = NULL;
+			Cudd_RecursiveDeref( manager, Y_exmod );
+			Y_exmod = NULL;
 
 		}
 
 		Z_changed = False;
 		for (i = 0; i < num_sgoals; i++) {
-			if (Cudd_bddCorrelation( manager, *(Z+i), *(Z_prev+i) ) < 1.) {
+			if (!(Cudd_bddLeq( manager, *(Z+i), *(Z_prev+i) )*Cudd_bddLeq( manager, *(Z_prev+i), *(Z+i) ))) {
 				Z_changed = True;
 				break;
 			}
 		}
 	} while (Z_changed);
-
-	/* Break the link that appended the system variables list to the
-	   environment variables list. */
-	if (var_separator == NULL) {
-		evar_list = NULL;
-	} else {
-		var_separator->left = NULL;
-	}
 
 	/* Does winning set contain all initial states? */
 	if (init_flags == ALL_SYS_INIT) {
@@ -310,7 +316,7 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 		Cudd_Ref( tmp );
 		tmp2 = Cudd_bddAnd( manager, tmp, *Z );
 		Cudd_Ref( tmp2 );
-		if (Cudd_bddCorrelation( manager, tmp, tmp2 ) < 1.) {
+		if (!(Cudd_bddLeq( manager, tmp, tmp2 )*Cudd_bddLeq( manager, tmp2, tmp ))) {
 			realizable = False;
 		} else {
 			realizable = True;
@@ -355,12 +361,18 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 		Cudd_RecursiveDeref( manager, ddcube );
 		Cudd_RecursiveDeref( manager, tmp );
 
-		if (Cudd_bddCorrelation( manager, tmp2, Cudd_ReadOne( manager ) ) < 1.) {
+		if (!(Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )*Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 ))) {
 			realizable = False;
 		} else {
 			realizable = True;
 		}
 		Cudd_RecursiveDeref( manager, tmp2 );
+	}
+
+	if (verbose) {
+		printf( "== Cudd_PrintInfo() ==================================================\n" );
+		Cudd_PrintInfo( manager, stdout );
+		printf( "======================================================================\n" );
 	}
 
 	/* Pre-exit clean-up */
@@ -380,15 +392,16 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 		Cudd_RecursiveDeref( manager, *(egoals+i) );
 	for (i = 0; i < num_sgoals; i++)
 		Cudd_RecursiveDeref( manager, *(sgoals+i) );
-	if (egoals != NULL)
+	if (num_egoals > 0)
 		free( egoals );
-	if (sgoals != NULL)
+	if (num_sgoals > 0)
 		free( sgoals );
 	free( cube );
 
 	if (realizable) {
 		return tmp;
 	} else {
+		Cudd_RecursiveDeref( manager, tmp );
 		return NULL;
 	}
 }
@@ -442,6 +455,12 @@ DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
 	DdNode *tmp, *tmp2;
 	DdNode *ddcube;
 
+	/* int i; */
+	/* for (i = 0; i < num_env+num_sys; i++) { */
+	/* 	*(cube+i) = i+num_env+num_sys; */
+	/* 	*(cube+i+num_env+num_sys) = i; */
+	/* } */
+	/* C = Cudd_bddPermute( manager, C, cube ); */
 	C = Cudd_bddVarMap( manager, C );
 	if (C == NULL) {
 		fprintf( stderr, "compute_existsmodal: Error in swapping variables with primed forms." );

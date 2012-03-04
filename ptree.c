@@ -1,7 +1,7 @@
 /* ptree.c -- Definitions for signatures appearing in ptree.h.
  *
  *
- * SCL; Jan, Feb 2012.
+ * SCL; Jan-Mar 2012.
  */
 
 
@@ -395,7 +395,7 @@ void print_formula( ptree_t *head, FILE *fp )
 
 DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 {
-	DdNode *lsub, *rsub, *fn;
+	DdNode *lsub, *rsub, *fn, *tmp;
 	int index;
 
 	switch (head->type) {
@@ -404,12 +404,9 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 	case PT_IMPLIES:
 		lsub = ptree_BDD( head->left, var_list, manager );
 		rsub = ptree_BDD( head->right, var_list, manager );
-		Cudd_Ref( lsub );
-		Cudd_Ref( rsub );
 		break;
 	case PT_NEG:
 		rsub = ptree_BDD( head->right, var_list, manager );
-		Cudd_Ref( rsub );
 		break;
 	case PT_VARIABLE:
 		index = find_list_item( var_list, head->type, head->name, 0 );
@@ -417,7 +414,13 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 			fprintf( stderr, "Error: ptree_BDD requested variable \"%s\", but it is not in given list.\n", head->name );
 			exit(-1);
 		}
-		return Cudd_bddIthVar( manager, index );
+		lsub = Cudd_ReadOne( manager );
+		Cudd_Ref( lsub );
+		fn = Cudd_bddAnd( manager, lsub,
+						  Cudd_bddIthVar( manager, index ) );
+		Cudd_Ref( fn );
+		Cudd_RecursiveDeref( manager, lsub );
+		break;
 
 	case PT_NEXT_VARIABLE:
 		index = find_list_item( var_list, PT_VARIABLE, head->name, 0 );
@@ -425,14 +428,22 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 			fprintf( stderr, "Error: ptree_BDD requested primed variable \"%s\", but it is not in given list.\n", head->name );
 			exit(-1);
 		}
-		return Cudd_bddIthVar( manager, tree_size(var_list)+index );
+		lsub = Cudd_ReadOne( manager );
+		Cudd_Ref( lsub );
+		fn = Cudd_bddAnd( manager, lsub,
+						  Cudd_bddIthVar( manager, tree_size(var_list)+index ) );
+		Cudd_Ref( fn );
+		Cudd_RecursiveDeref( manager, lsub );
+		break;
 
 	case PT_CONSTANT:
 		if (head->value == 0) {
-			return Cudd_Not( Cudd_ReadOne( manager ) );
+			fn = Cudd_Not( Cudd_ReadOne( manager ) );
 		} else {
-			return Cudd_ReadOne( manager );
+			fn = Cudd_ReadOne( manager );
 		}
+		Cudd_Ref( fn );
+		break;
 	}
 
 	switch (head->type) {
@@ -451,14 +462,19 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 		break;
 
 	case PT_IMPLIES:
-		fn = Cudd_bddOr( manager, Cudd_Not(lsub), rsub );
-		Cudd_Ref( fn );
+		tmp = Cudd_Not( lsub );
+		Cudd_Ref( tmp );
 		Cudd_RecursiveDeref( manager, lsub );
+		fn = Cudd_bddOr( manager, tmp, rsub );
+		Cudd_Ref( fn );
+		Cudd_RecursiveDeref( manager, tmp );
 		Cudd_RecursiveDeref( manager, rsub );
 		break;
 
 	case PT_NEG:
 		fn = Cudd_Not( rsub );
+		Cudd_Ref( fn );
+		Cudd_RecursiveDeref( manager, rsub );
 		break;
 	}
 
