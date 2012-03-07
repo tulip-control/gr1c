@@ -58,6 +58,7 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 
 	DdNode *tmp, *tmp2;
 	int i, j;  /* Generic counters */
+	bool env_nogoal_flag = False;  /* Indicate environment has no goals */
 
 	DdNode **vars, **pvars;
 	int num_env, num_sys;
@@ -69,6 +70,15 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 		printf( "== Cudd_PrintInfo() ==================================================\n" );
 		Cudd_PrintInfo( manager, stdout );
 		printf( "======================================================================\n" );
+	}
+
+	/* Set environment goal to True (i.e., any state) if none was
+	   given. This simplifies the implementation below. */
+	if (num_egoals == 0) {
+		env_nogoal_flag = True;
+		num_egoals = 1;
+		env_goals = malloc( sizeof(ptree_t *) );
+		*env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
 	}
 
 	num_env = tree_size( evar_list );
@@ -397,6 +407,11 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 	if (num_sgoals > 0)
 		free( sgoals );
 	free( cube );
+	if (env_nogoal_flag) {
+		num_egoals = 0;
+		delete_tree( *env_goals );
+		free( env_goals );
+	}
 
 	if (realizable) {
 		return tmp;

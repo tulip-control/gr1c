@@ -157,12 +157,6 @@ int main( int argc, char **argv )
 		sys_trans = init_ptree( PT_CONSTANT, NULL, 1 );
 	}
 
-	if (num_egoals == 0) {
-		num_egoals = 1;
-		env_goals = malloc( sizeof(ptree_t *) );
-		*env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
-	}
-
 	if (ptdump_flag) {
 		tree_dot_dump( env_init, "env_init_ptree.dot" );
 		tree_dot_dump( sys_init, "sys_init_ptree.dot" );
