@@ -113,7 +113,7 @@ int main( int argc, char **argv )
 
 	if (argc > 5 || help_flag) {
 		printf( "Usage: %s [-hvspr] [FILE]\n\n"
-				"  -h        help message\n"
+				"  -h        this help message\n"
 				"  -v        be verbose\n"
 				"  -t TYPE   strategy output format; default is \"tulip\";\n"
 				"            supported formats: txt, tulip\n"
@@ -339,14 +339,11 @@ int main( int argc, char **argv )
 		printf( "Cudd_CheckZeroRef -> %d\n", Cudd_CheckZeroRef( manager ) );
 	Cudd_Quit(manager);
 
-	/* If user only requested to decide realizability, then return
-       0 if realizable, -1 if not realizable. */
-	if (realiz_flag) {
-		if (T != NULL) {
-			return 0;
-		} else {
-			return -1;
-		}
+    /* Return 0 if realizable, -1 if not realizable. */
+	if (T != NULL) {
+		return 0;
+	} else {
+		return -1;
 	}
 
 	return 0;
