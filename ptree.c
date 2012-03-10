@@ -522,7 +522,7 @@ ptree_t *get_list_item( ptree_t *head, int index )
 		return head;
 	}
 
-	while (index > 1) {
+	while (index >= 1) {
 		if (head->left == NULL)
 			return NULL;
 		head = head->left;

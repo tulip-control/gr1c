@@ -8,20 +8,18 @@
  */
 
 
+#include <string.h>
 #include <stdio.h>
 #include "util.h"
 #include "cudd.h"
 
 #include "ptree.h"
 #include "solve.h"
+#include "automaton.h"
 extern int yyparse( void );
 
 
 typedef unsigned char byte;
-
-typedef unsigned char bool;
-#define True 1
-#define False 0
 
 
 /**************************
@@ -50,6 +48,11 @@ ptree_t *gen_tree_ptr = NULL;
 /**************************/
 
 
+/* Output formats */
+#define OUTPUT_FORMAT_TEXT 0
+#define OUTPUT_FORMAT_TULIP 1
+
+
 int main( int argc, char **argv )
 {
 	FILE *fp;
@@ -57,6 +60,7 @@ int main( int argc, char **argv )
 	bool syncheck_flag = False;
 	bool ptdump_flag = False;
 	bool realiz_flag = False;
+	byte format_option = OUTPUT_FORMAT_TULIP;
 	unsigned char verbose = 0;
 	int input_index = -1;
 	char dumpfilename[32];
@@ -65,7 +69,9 @@ int main( int argc, char **argv )
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
 
 	DdManager *manager;
-	DdNode *T;
+	DdNode *T = NULL;
+	anode_t *strategy = NULL;
+	int num_env, num_sys;
 
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
@@ -80,6 +86,20 @@ int main( int argc, char **argv )
 				ptdump_flag = True;
 			} else if (argv[i][1] == 'r') {
 				realiz_flag = True;
+			} else if (argv[i][1] == 't') {
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
+					format_option = OUTPUT_FORMAT_TEXT;
+				} else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
+					format_option = OUTPUT_FORMAT_TULIP;
+				} else {
+					fprintf( stderr, "Unrecognized output format. Try \"-h\".\n" );
+					return 1;
+				}
+				i++;
 			} else {
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 				return 1;
@@ -93,12 +113,14 @@ int main( int argc, char **argv )
 
 	if (argc > 5 || help_flag) {
 		printf( "Usage: %s [-hvspr] [FILE]\n\n"
-				"  -h    help message\n"
-				"  -v    be verbose\n"
-				"  -s    only check specification syntax (return -1 on error)\n"
-				"  -p    dump parse trees to DOT files, and echo formulas to screen\n"
-				"  -r    only check realizability; do not synthesize strategy\n"
-				"        (return 0 if realizable, -1 if not)\n", argv[0] );
+				"  -h        help message\n"
+				"  -v        be verbose\n"
+				"  -t TYPE   strategy output format; default is \"tulip\";\n"
+				"            supported formats: txt, tulip\n"
+				"  -s        only check specification syntax (return -1 on error)\n"
+				"  -p        dump parse trees to DOT files, and echo formulas to screen\n"
+				"  -r        only check realizability; do not synthesize strategy\n"
+				"            (return 0 if realizable, -1 if not)\n", argv[0] );
 		return 1;
 	}
 
@@ -256,21 +278,42 @@ int main( int argc, char **argv )
 		printf( "\n" );
 	}
 
-	manager = Cudd_Init( 2*(tree_size( evar_list )+tree_size( svar_list )),
+	num_env = tree_size( evar_list );
+	num_sys = tree_size( svar_list );
+
+	manager = Cudd_Init( 2*(num_env+num_sys),
 						 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
 	Cudd_SetMaxCacheHard( manager, (unsigned int)-1 );
 	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 
 	T = check_realizable( manager, EXIST_SYS_INIT, verbose );
-	if (T != NULL) {
+	if (T != NULL && (realiz_flag || verbose)) {
 		printf( "Realizable.\n" );
-	} else {
+	} else if (realiz_flag || verbose) {
 		printf( "Not realizable.\n" );
 	}
 
 	if (!realiz_flag && T != NULL) {  /* Synthesize strategy */
-		printf( "Synthesizing a strategy..." );
-		/* ... */
+		if (verbose) {
+			printf( "Synthesizing a strategy..." );
+			fflush( stdout );
+		}
+		strategy = synthesize( manager, EXIST_SYS_INIT, verbose );
+		if (verbose) {
+			printf( "Done.\n" );
+			fflush( stdout );
+		}
+		if (strategy != NULL) {
+			/* strategy = aut_prune_deadends( strategy ); */
+			if (format_option == OUTPUT_FORMAT_TEXT) {
+				list_aut_dump( strategy, num_env+num_sys, stdout );
+			} else { /* OUTPUT_FORMAT_TULIP */
+				tulip_aut_dump( strategy, evar_list, svar_list, stdout );
+			}
+		} else {
+			fprintf( stderr, "Error while attempting synthesis.\n" );
+			return -1;
+		}
 	}
 
 	/* Clean-up */
@@ -290,6 +333,8 @@ int main( int argc, char **argv )
 		free( sys_goals );
 	if (T != NULL)
 		Cudd_RecursiveDeref( manager, T );
+	if (strategy)
+		delete_aut( strategy );
 	if (verbose)
 		printf( "Cudd_CheckZeroRef -> %d\n", Cudd_CheckZeroRef( manager ) );
 	Cudd_Quit(manager);

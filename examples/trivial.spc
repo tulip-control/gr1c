@@ -11,7 +11,7 @@ ENVGOAL: []<>x;
 SYSINIT: y;
 
 SYSTRANS: # Notice the safety formula spans two lines.
-[](y -> !y')
-& [](!y -> y');
+;#[](y -> !y')
+#& [](!y -> y');
 
-SYSGOAL: []<>y&x;
+SYSGOAL: []<>y&x & []<>!y;

@@ -1,7 +1,7 @@
 /* solve.h -- Compute realizability and a strategy for a GR(1) game.
  *
  *
- * SCL; Feb 2012.
+ * SCL; Feb, Mar 2012.
  */
 
 
@@ -11,6 +11,7 @@
 #include "cudd.h"
 
 #include "ptree.h"
+#include "automaton.h"
 
 /* Flags concerning initial conditions. (See comments for check_realizable.) */
 #define EXIST_SYS_INIT 1
@@ -43,6 +44,17 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
                          environment and system initial conditions is
                          in the winning set.
 */
+
+anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
+					 unsigned char verbose );
+/* Synthesize a strategy.  The specification is assumed to be
+   realizable when this function is invoked.  Return pointer to
+   automaton representing the strategy, or NULL if error. Also see
+   documentation for check_realizable. */
+
+DdNode *compute_winning_set( DdManager *manager, unsigned char verbose );
+/* Compute the set of states that are winning for the system, under
+   the specification, while not including initial conditions. */
 
 
 #endif
