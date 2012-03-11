@@ -79,7 +79,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 					 unsigned char verbose )
 {
 	anode_t *strategy = NULL;
-	anode_t *this_node_stack = NULL, *next_node_stack = NULL;
+	anode_t *this_node_stack = NULL;
 	anode_t *node, *new_node;
 	bool *state;
 	bool **env_moves;
@@ -106,7 +106,6 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	int num_env, num_sys;
 	int *cube;  /* length will be twice total number of variables (to
 				   account for both variables and their primes). */
-	DdNode *ddcube;
 
 	/* Variables used during CUDD generation (state enumeration). */
 	DdGen *gen;
@@ -367,6 +366,17 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		Cudd_RecursiveDeref( manager, tmp2 );
 	}
 
+	/* Insert all stacked, initial nodes into strategy. */
+	node = this_node_stack;
+	while (node) {
+		strategy = insert_anode( strategy, node->mode, node->state, num_env+num_sys );
+		if (strategy == NULL) {
+			fprintf( stderr, "Error synthesize: inserting state node into strategy.\n" );
+			return NULL;
+		}
+		node = node->next;
+	}
+
 	while (this_node_stack) {
 		/* Find smallest Y_j set containing node. */
 		for (k = num_env+num_sys; k < 2*(num_env+num_sys); k++)
@@ -400,15 +410,9 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			}
 		} while (loop_mode != this_node_stack->mode);
 		if (this_node_stack->mode == loop_mode) {
-			node = find_anode( strategy, loop_mode, this_node_stack->state,
+			node = find_anode( strategy, this_node_stack->mode, this_node_stack->state,
 							   num_env+num_sys );
-			if (node == NULL) {
-				strategy = insert_anode( strategy, this_node_stack->mode, this_node_stack->state, num_env+num_sys );
-				if (strategy == NULL) {
-					fprintf( stderr, "Error synthesize: inserting state node into strategy.\n" );
-					return NULL;
-				}
-			} else if (node->trans_len > 0) {
+			if (node->trans_len > 0) {
 				/* This state and mode combination is already in strategy. */
 				this_node_stack = pop_anode( this_node_stack );
 				continue;
@@ -417,27 +421,13 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 
 			node = find_anode( strategy, loop_mode, this_node_stack->state,
 							   num_env+num_sys );
-			if (node == NULL) {
-				new_node = find_anode( strategy, this_node_stack->mode, this_node_stack->state, num_env+num_sys );
-				if (new_node == NULL) {
-					strategy = insert_anode( strategy, this_node_stack->mode, this_node_stack->state, num_env+num_sys );
-					if (strategy == NULL) {
-						fprintf( stderr, "Error synthesize: inserting state node into strategy.\n" );
-						return NULL;
-					}
-				} else if (new_node->trans_len > 0) {
-					/* This state and mode combination is already in strategy. */
-					this_node_stack = pop_anode( this_node_stack );
-					continue;
-				}
-			} else if (node->trans_len > 0) {
+			if (node->trans_len > 0) {
 				/* This state and mode combination is already in strategy. */
 				this_node_stack = pop_anode( this_node_stack );
 				continue;
 			} else {
 				strategy = delete_anode( strategy, node );
-				new_node = find_anode( strategy, this_node_stack->mode, this_node_stack->state,
-									   num_env+num_sys );
+				new_node = find_anode( strategy, this_node_stack->mode, this_node_stack->state, num_env+num_sys );
 				if (new_node == NULL) {
 					strategy = insert_anode( strategy, this_node_stack->mode, this_node_stack->state, num_env+num_sys );
 					if (strategy == NULL) {
@@ -453,15 +443,18 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				}
 				replace_anode_trans( strategy, node, new_node );
 			}
+
+			node = new_node;
 		}
+		this_node_stack = pop_anode( this_node_stack );
 			
 		/* Note that we assume the variable map has been appropriately
 		   defined in the CUDD manager, after the call to
 		   compute_winning_set above. */
 		if (j == 0) {
-			Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+this_node_stack->mode)) );
+			Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+node->mode)) );
 		} else {
-			Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+this_node_stack->mode)+j-1) );
+			Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+node->mode)+j-1) );
 		}
 		if (Y_i_primed == NULL) {
 			fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
@@ -471,7 +464,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 
 		if (num_env > 0) {
 			env_moves = get_env_moves( manager, cube,
-									   this_node_stack->state, etrans,
+									   node->state, etrans,
 									   num_env, num_sys,
 									   &emoves_len );
 		} else {
@@ -481,7 +474,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
 			Cudd_Ref( tmp );
 			tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
-							  this_node_stack->state,
+							  node->state,
 							  tmp, 0, num_sys+num_env );
 			Cudd_RecursiveDeref( manager, tmp );
 			if (num_env > 0) {
@@ -506,7 +499,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 				Cudd_RecursiveDeref( manager, tmp );
 				tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
-								  this_node_stack->state,
+								  node->state,
 								  strans_into_W, 0, num_sys+num_env );
 				if (num_env > 0) {
 					tmp = state2cof( manager, cube, 2*(num_env+num_sys),
@@ -516,7 +509,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				} else {
 					tmp = tmp2;
 				}
-				next_mode = this_node_stack->mode;
+				next_mode = node->mode;
 
 				Cudd_AutodynDisable( manager );
 				gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
@@ -541,13 +534,13 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				if (j == 1) {
                     /* Next state will satisfy current target goal,
 					   whence we can switch to the next mode. */
-					if (this_node_stack->mode == num_sgoals-1) {
+					if (node->mode == num_sgoals-1) {
 						next_mode = 0;
 					} else {
-						next_mode = this_node_stack->mode + 1;
+						next_mode = node->mode + 1;
 					}
 				} else {
-					next_mode = this_node_stack->mode;
+					next_mode = node->mode;
 				}
 			}
 			
@@ -556,27 +549,24 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			for (i = 0; i < num_env; i++)
 				*(state+i) = *(*(env_moves+k)+i);
 
-			node = find_anode( strategy, next_mode, state, num_env+num_sys );
-			if (node == NULL) {
+			new_node = find_anode( strategy, next_mode, state, num_env+num_sys );
+			if (new_node == NULL) {
 				strategy = insert_anode( strategy, next_mode, state,
 										 num_env+num_sys );
 				if (strategy == NULL) {
 					fprintf( stderr, "Error synthesize: inserting new node into strategy.\n" );
 					return NULL;
 				}
-				node = find_anode( next_node_stack, next_mode, state, num_env+num_sys );
-				if (node == NULL) {
-					next_node_stack = insert_anode( next_node_stack, next_mode, state,
-													num_env+num_sys );
-					if (next_node_stack == NULL) {
-						fprintf( stderr, "Error synthesize: inserting node into \"next\" stack.\n" );
-						return NULL;
-					}
+				this_node_stack = insert_anode( this_node_stack, next_mode, state,
+												num_env+num_sys );
+				if (this_node_stack == NULL) {
+					fprintf( stderr, "Error synthesize: pushing node onto stack failed.\n" );
+					return NULL;
 				}
 			} 
 
 			strategy = append_anode_trans( strategy,
-										   this_node_stack->mode, this_node_stack->state,
+										   node->mode, node->state,
 										   num_env+num_sys,
 										   next_mode, state );
 			if (strategy == NULL) {
@@ -592,11 +582,6 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			emoves_len = 0;
 		}
 		Cudd_RecursiveDeref( manager, Y_i_primed );
-		this_node_stack = pop_anode( this_node_stack );
-		if (this_node_stack == NULL) {
-			this_node_stack = next_node_stack;
-			next_node_stack = NULL;
-		}
 	}
 
 	if (verbose) {
