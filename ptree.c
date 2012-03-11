@@ -237,40 +237,25 @@ ptree_t *pusht_terminal( ptree_t *head, int type, char *name, int value )
 
 ptree_t *pusht_operator( ptree_t *head, int type )
 {
-	ptree_t *new_head;
+	ptree_t *new_head, *prev;
 
 	/* Make sure doing this is possible. */
 	if (head == NULL)
 		return NULL;
 
 	new_head = init_ptree( type, NULL, 0 );
-	if (head->type == PT_EMPTY || head->type == PT_VARIABLE
-		|| head->type == PT_NEXT_VARIABLE || head->type == PT_CONSTANT
-		|| head->type == PT_NEG) { /* if terminal or unary */
-		if (head->left != NULL && type != PT_NEG
-			&& (head->left->type == PT_EQUALS
-				|| head->left->type == PT_AND
-				|| head->left->type == PT_OR
-				|| head->left->type == PT_IMPLIES)) {
-			new_head->left = head;
-			new_head->right = head->left;
-			head->left = head->left->left->left;
-			new_head->right->left->left = NULL;
-		} else {
-			new_head->right = head;
-			new_head->left = head->left;
-			head->left = NULL;
-		}
-	} else { /* else, binary operator */
-		if (head->left == NULL) {
-			fprintf( stderr, "Error: parsing failed during call to pusht_operator." );
-			exit(-1);
-		}
-		new_head->right = head;
-		new_head->left = head->left->left;
-		head->left->left = NULL;
+	prev = head;
+	while (prev->left) {
+		if (prev->type == PT_EMPTY || prev->type == PT_VARIABLE
+			|| prev->type == PT_NEXT_VARIABLE || prev->type == PT_CONSTANT
+			|| prev->type == PT_NEG)
+			break;
+		prev = prev->left;
 	}
-	
+	new_head->left = prev->left;
+	prev->left = NULL;
+	new_head->right = head;
+
 	return new_head;
 }
 
