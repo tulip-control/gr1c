@@ -21,11 +21,11 @@ Installation
 CUDD (see above) should be placed in a directory called "extern".  Be
 sure that similar flags are used for compiling both gr1c and CUDD.  In
 particular, SIZEOF_VOID_P and SIZEOF_LONG need to be set to the sizes
-(in bytes) of void pointer (void *) and long int on your system. gr1c
+(in bytes) of void pointer (``void *``) and ``long int`` on your system. gr1c
 ships with a Makefile that has these set for Intel x86 64-bit.
 
 If you do not know the appropriate sizes for your system, then write a
-C program that prints sizeof(void *) and sizeof(long) to find them.
+C program that prints ``sizeof(void *)`` and ``sizeof(long)`` to find them.
 E.g., ::
 
   #include <stdio.h>
@@ -43,19 +43,24 @@ look in the Makefile to verify the expected relative location of CUDD
 Grammar for GR(1)
 =================
 
-*Summary:* C-like, infix syntax.
+*Summary:* C-like, infix syntax. Comments begin with ``#`` and
+continue until the end of line. The grammar below is not complete (nor
+normative), but should be enough for you to compose
+specifications. Also look under ``examples`` directory.
 
-/* Define which variables are controlled and uncontrolled. */
-envvarlist ::= envvarlist VARIABLE | 'ENV:' VARIABLE
-sysvarlist ::= sysvarlist VARIABLE | 'SYS:' VARIABLE
+::
 
-propformula ::= "False" | "True" | VARIABLE | '!' propformula | propformula '&' propformula | propformula '|' propformula | '(' propformula ')' | propformula "->" propformula | VARIABLE '=' NUMBER
+  /* Define which variables are controlled and uncontrolled. */
+  envvarlist ::= 'ENV:' VARIABLE | envvarlist VARIABLE
+  sysvarlist ::= 'SYS:' VARIABLE | sysvarlist VARIABLE
 
-/* The only difference between propformula and tpropformula is variables can be primed (next operator) in the latter. */
-tpropformula ::= "False" | "True" | VARIABLE | VARIABLE '\'' | '!' propformula | propformula '&' propformula | propformula '|' propformula | '(' propformula ')' | propformula "->" propformula | VARIABLE '=' NUMBER
+  propformula ::= "False" | "True" | VARIABLE | '!' propformula | propformula '&' propformula | propformula '|' propformula | propformula "->" propformula | VARIABLE '=' NUMBER | '(' propformula ')'
 
-transformula ::= "[]" tpropformula | transformula '&' transformula
-goalformula ::= "[]<>" propformula | goalformua '&' goalformula
+  /* The only difference between propformula and tpropformula is variables can be primed (next operator) in the latter. */
+  tpropformula ::= "False" | "True" | VARIABLE | VARIABLE '\'' | '!' tpropformula | tpropformula '&' tpropformula | tpropformula '|' tpropformula | tpropformula "->" tpropformula | VARIABLE '=' NUMBER | '(' tpropformula ')'
+
+  transformula ::= "[]" tpropformula | transformula '&' transformula
+  goalformula ::= "[]<>" propformula | goalformua '&' goalformula
 
 
 License
