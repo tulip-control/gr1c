@@ -67,4 +67,6 @@ License
 =======
 
 This is free software released under the terms of the GNU General
-Public License, version 3.  No warranty.
+Public License, version 3.  There is no warranty; not even for
+merchantability or fitness for a particular purpose.  See LICENSE.txt
+for copying conditions.
