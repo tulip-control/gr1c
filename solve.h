@@ -10,6 +10,7 @@
 
 #include "cudd.h"
 
+#include "common.h"
 #include "ptree.h"
 #include "automaton.h"
 

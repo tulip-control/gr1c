@@ -14,12 +14,8 @@
 
 #include <stdio.h>
 
+#include "common.h"
 #include "ptree.h"
-
-
-typedef char bool;
-#define True 1
-#define False 0
 
 
 typedef struct anode_t

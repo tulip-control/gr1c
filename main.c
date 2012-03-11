@@ -13,13 +13,11 @@
 #include "util.h"
 #include "cudd.h"
 
+#include "common.h"
 #include "ptree.h"
 #include "solve.h"
 #include "automaton.h"
 extern int yyparse( void );
-
-
-typedef unsigned char byte;
 
 
 /**************************
@@ -78,6 +76,9 @@ int main( int argc, char **argv )
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 'h') {
 				help_flag = True;
+			} else if (argv[i][1] == 'V') {
+				printf( "gr1c " GR1C_VERSION "\n\n" GR1C_COPYRIGHT "\n" );
+				return 0;
 			} else if (argv[i][1] == 'v') {
 				verbose = 1;
 			} else if (argv[i][1] == 's') {
@@ -114,6 +115,7 @@ int main( int argc, char **argv )
 	if (argc > 5 || help_flag) {
 		printf( "Usage: %s [-hvspr] [FILE]\n\n"
 				"  -h        this help message\n"
+				"  -V        print version and exit\n"
 				"  -v        be verbose\n"
 				"  -t TYPE   strategy output format; default is \"tulip\";\n"
 				"            supported formats: txt, tulip\n"
