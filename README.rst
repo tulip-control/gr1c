@@ -7,9 +7,9 @@ Scott C. Livingston  <slivingston@caltech.edu>
 strategies for GR(1) specifications.  The fixpoint formula defining
 the winning set is given (and its correctness proven) in
 
-Y. Kesten, N. Piterman, and A. Pnueli (2005). Bridging the gap between
-fair simulation and trace inclusion. *Information and Computation*,
-200: 35--61. DOI: 10.1016/j.ic.2005.01.006
+    Y. Kesten, N. Piterman, and A. Pnueli (2005). Bridging the gap between
+    fair simulation and trace inclusion. *Information and Computation*,
+    200: 35--61. DOI:`10.1016/j.ic.2005.01.006 <http://dx.doi.org/10.1016/j.ic.2005.01.006>`_.
 
 gr1c depends on CUDD, the CU Decision Diagram package by Fabio Somenzi
 and others.  See http://vlsi.colorado.edu/~fabio/CUDD/

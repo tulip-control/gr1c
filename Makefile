@@ -1,4 +1,4 @@
-# SCL; 7 Mar 2012.
+# SCL; 10 Mar 2012.
 #
 #
 
@@ -31,6 +31,13 @@ gr1c_parse.o: gr1c_parse.y
 
 install:
 	cp gr1c $(INSTALLDIR)
+
+# Generate PNG images from DOT files in local directory
+png:
+	@(for k in *.dot; do \
+		echo $$k; \
+		dot -Tpng -O $$k; \
+	done)
 
 clean:
 	rm -fv *~ *.o y.tab.h gr1c_parse.c gr1c
