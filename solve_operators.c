@@ -138,31 +138,12 @@ DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
    will be removed in a future version (soon). */
 DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 {
+	int i;
 	ptree_t *var_separator;
+	DdNode *W;  /* Characteristic function of winning set */
 	DdNode *etrans, *strans, **egoals, **sgoals;
-	DdNode *X = NULL, *X_prev = NULL;
-	DdNode *Y = NULL, *Y_exmod = NULL, *Y_prev = NULL;
-	DdNode **Z = NULL, **Z_prev = NULL;
-	bool Z_changed;  /* Use to detect occurrence of fixpoint for all Z_i */
-
-	/* Fixpoint iteration counters */
-	int num_it_Z, num_it_Y, num_it_X;
-
-	DdNode *tmp, *tmp2;
-	int i, j;  /* Generic counters */
 	bool env_nogoal_flag = False;  /* Indicate environment has no goals */
-
-	DdNode **vars, **pvars;
-	int num_env, num_sys;
-	int *cube;  /* length will be twice total number of variables (to
-				   account for both variables and their primes). */
-
-	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from compute_winning_set =================\n" );
-		Cudd_PrintInfo( manager, stdout );
-		printf( "======================================================================\n" );
-	}
-
+	
 	/* Set environment goal to True (i.e., any state) if none was
 	   given. This simplifies the implementation below. */
 	if (num_egoals == 0) {
@@ -172,16 +153,12 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 		*env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
 	}
 
-	num_env = tree_size( evar_list );
-	num_sys = tree_size( svar_list );
-
-	/* Allocate cube array, used later for quantifying over variables. */
-	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
-	if (cube == NULL) {
-		perror( "check_realizable_internal, malloc" );
-		return NULL;
+	if (verbose) {
+		printf( "== Cudd_PrintInfo(), called from compute_winning_set =================\n" );
+		Cudd_PrintInfo( manager, stdout );
+		printf( "======================================================================\n" );
 	}
-	
+
 	/* Chain together environment and system variable lists for
 	   working with BDD library. */
 	if (evar_list == NULL) {
@@ -223,14 +200,9 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 		egoals = NULL;
 	}
 	if (num_sgoals > 0) {
-		Z = malloc( num_sgoals*sizeof(DdNode *) );
-		Z_prev = malloc( num_sgoals*sizeof(DdNode *) );
 		sgoals = malloc( num_sgoals*sizeof(DdNode *) );
-		for (i = 0; i < num_sgoals; i++) {
-			*(Z+i) = NULL;
-			*(Z_prev+i) = NULL;
+		for (i = 0; i < num_sgoals; i++)
 			*(sgoals+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
-		}
 	} else {
 		sgoals = NULL;
 	}
@@ -243,6 +215,66 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 		var_separator->left = NULL;
 	}
 
+	W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals, verbose );
+
+	Cudd_RecursiveDeref( manager, etrans );
+	Cudd_RecursiveDeref( manager, strans );
+	for (i = 0; i < num_egoals; i++)
+		Cudd_RecursiveDeref( manager, *(egoals+i) );
+	for (i = 0; i < num_sgoals; i++)
+		Cudd_RecursiveDeref( manager, *(sgoals+i) );
+	if (num_egoals > 0)
+		free( egoals );
+	if (num_sgoals > 0)
+		free( sgoals );
+	if (env_nogoal_flag) {
+		num_egoals = 0;
+		delete_tree( *env_goals );
+		free( env_goals );
+	}
+
+	return W;
+}
+
+
+DdNode *compute_winning_set_BDD( DdManager *manager,
+								 DdNode *etrans, DdNode *strans,
+								 DdNode **egoals, DdNode **sgoals,
+								 unsigned char verbose )
+{
+	ptree_t *var_separator;
+	DdNode *X = NULL, *X_prev = NULL;
+	DdNode *Y = NULL, *Y_exmod = NULL, *Y_prev = NULL;
+	DdNode **Z = NULL, **Z_prev = NULL;
+	bool Z_changed;  /* Use to detect occurrence of fixpoint for all Z_i */
+
+	/* Fixpoint iteration counters */
+	int num_it_Z, num_it_Y, num_it_X;
+
+	DdNode *tmp, *tmp2;
+	int i, j;  /* Generic counters */
+
+	DdNode **vars, **pvars;
+	int num_env, num_sys;
+	int *cube;  /* length will be twice total number of variables (to
+				   account for both variables and their primes). */
+
+	if (verbose) {
+		printf( "== Cudd_PrintInfo(), called from compute_winning_set_trans ===========\n" );
+		Cudd_PrintInfo( manager, stdout );
+		printf( "======================================================================\n" );
+	}
+
+	num_env = tree_size( evar_list );
+	num_sys = tree_size( svar_list );
+
+	/* Allocate cube array, used later for quantifying over variables. */
+	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
+	if (cube == NULL) {
+		perror( "check_realizable_internal, malloc" );
+		return NULL;
+	}
+	
 	/* Define a map in the manager to easily swap variables with their
 	   primed selves. */
 	vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
@@ -257,6 +289,15 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 	}
 	free( vars );
 	free( pvars );
+
+	if (num_sgoals > 0) {
+		Z = malloc( num_sgoals*sizeof(DdNode *) );
+		Z_prev = malloc( num_sgoals*sizeof(DdNode *) );
+		for (i = 0; i < num_sgoals; i++) {
+			*(Z+i) = NULL;
+			*(Z_prev+i) = NULL;
+		}
+	}
 
 	/* Initialize */
 	for (i = 0; i < num_sgoals; i++) {
@@ -410,7 +451,7 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 	} while (Z_changed);
 
 	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from compute_winning_set =================\n" );
+		printf( "== Cudd_PrintInfo(), called from compute_winning_set_trans ===========\n" );
 		Cudd_PrintInfo( manager, stdout );
 		printf( "======================================================================\n" );
 	}
@@ -424,22 +465,7 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 	}
 	free( Z );
 	free( Z_prev );
-	Cudd_RecursiveDeref( manager, etrans );
-	Cudd_RecursiveDeref( manager, strans );
-	for (i = 0; i < num_egoals; i++)
-		Cudd_RecursiveDeref( manager, *(egoals+i) );
-	for (i = 0; i < num_sgoals; i++)
-		Cudd_RecursiveDeref( manager, *(sgoals+i) );
-	if (num_egoals > 0)
-		free( egoals );
-	if (num_sgoals > 0)
-		free( sgoals );
 	free( cube );
-	if (env_nogoal_flag) {
-		num_egoals = 0;
-		delete_tree( *env_goals );
-		free( env_goals );
-	}
 
 	return tmp;
 }

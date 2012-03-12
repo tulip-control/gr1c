@@ -55,7 +55,20 @@ anode_t *synthesize( DdManager *manager, unsigned char init_flags,
 
 DdNode *compute_winning_set( DdManager *manager, unsigned char verbose );
 /* Compute the set of states that are winning for the system, under
-   the specification, while not including initial conditions. */
+   the specification defined by the global parse trees (generated from
+   gr1c input in main()). Basically creates BDDs from parse trees and
+   then calls compute_winning_set_BDD. */
+
+DdNode *compute_winning_set_BDD( DdManager *manager,
+								 DdNode *etrans, DdNode *strans,
+								 DdNode **egoals, DdNode **sgoals,
+								 unsigned char verbose );
+/* Compute the set of states that are winning for the system, under
+   the specification, while not including initial conditions. The
+   transition (safety) formulas are defined by the given environment
+   and system BDDs (etrans and strans, respectively), and the
+   environment and system goal formulas are defined by egoals and
+   sgoals, respectively. */
 
 int levelset_interactive( DdManager *manager, unsigned char init_flags,
 						  FILE *infp, FILE *outfp,

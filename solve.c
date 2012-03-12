@@ -86,7 +86,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	int emoves_len;
 
 	ptree_t *var_separator;
-	DdNode *W = compute_winning_set( manager, verbose );
+	DdNode *W;
 	DdNode *strans_into_W;
 
 	DdNode *einit, *sinit, *etrans, *strans, **egoals, **sgoals;
@@ -188,10 +188,27 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	}
 	if (num_sgoals > 0) {
 		sgoals = malloc( num_sgoals*sizeof(DdNode *) );
+		for (i = 0; i < num_sgoals; i++)
+			*(sgoals+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
+	} else {
+		sgoals = NULL;
+	}
+
+	if (var_separator == NULL) {
+		evar_list = NULL;
+	} else {
+		var_separator->left = NULL;
+	}
+
+	W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals, verbose );
+	if (num_sgoals > 0) {
 		Y = malloc( num_sgoals*sizeof(DdNode **) );
 		num_level_sets = malloc( num_sgoals*sizeof(int) );
+		if (Y == NULL || num_level_sets == NULL) {
+			perror( "synthesize, malloc" );
+			return NULL;
+		}
 		for (i = 0; i < num_sgoals; i++) {
-			*(sgoals+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
 			*(num_level_sets+i) = 1;
 			*(Y+i) = malloc( *(num_level_sets+i)*sizeof(DdNode *) );
 			if (*(Y+i) == NULL) {
@@ -201,8 +218,6 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			**(Y+i) = Cudd_bddAnd( manager, *(sgoals+i), W );
 			Cudd_Ref( **(Y+i) );
 		}
-	} else {
-		sgoals = NULL;
 	}
 
 	/* Make primed form of W and take conjunction with system
@@ -591,11 +606,6 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	}
 
 	/* Pre-exit clean-up */
-	if (var_separator == NULL) {
-		evar_list = NULL;
-	} else {
-		var_separator->left = NULL;
-	}
 	Cudd_RecursiveDeref( manager, W );
 	Cudd_RecursiveDeref( manager, strans_into_W );
 	Cudd_RecursiveDeref( manager, einit );
