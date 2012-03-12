@@ -260,7 +260,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 				   account for both variables and their primes). */
 
 	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from compute_winning_set_trans ===========\n" );
+		printf( "== Cudd_PrintInfo(), called from compute_winning_set_BDD =============\n" );
 		Cudd_PrintInfo( manager, stdout );
 		printf( "======================================================================\n" );
 	}
@@ -451,7 +451,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 	} while (Z_changed);
 
 	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from compute_winning_set_trans ===========\n" );
+		printf( "== Cudd_PrintInfo(), called from compute_winning_set_BDD =============\n" );
 		Cudd_PrintInfo( manager, stdout );
 		printf( "======================================================================\n" );
 	}
@@ -468,4 +468,174 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 	free( cube );
 
 	return tmp;
+}
+
+
+DdNode ***compute_sublevel_sets( DdManager *manager,
+								 DdNode *W,
+								 DdNode *etrans, DdNode *strans,
+								 DdNode **egoals, DdNode **sgoals,
+								 int **num_sublevels,
+								 unsigned char verbose )
+{
+	DdNode ***Y = NULL, *Y_exmod;
+	DdNode *X = NULL, *X_prev = NULL;
+
+	DdNode **vars, **pvars;
+	int num_env, num_sys;
+	int *cube;
+
+	DdNode *tmp, *tmp2;
+	int i, j;
+
+	if (verbose) {
+		printf( "== Cudd_PrintInfo(), called from compute_sublevel_sets ===============\n" );
+		Cudd_PrintInfo( manager, stdout );
+		printf( "======================================================================\n" );
+	}
+
+	num_env = tree_size( evar_list );
+	num_sys = tree_size( svar_list );
+
+	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
+	if (cube == NULL) {
+		perror( "compute_sublevel_sets, malloc" );
+		return NULL;
+	}
+
+	/* Define a map in the manager to easily swap variables with their
+	   primed selves. */
+	vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+	pvars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+	for (i = 0; i < num_env+num_sys; i++) {
+		*(vars+i) = Cudd_bddIthVar( manager, i );
+		*(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
+	}
+	if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
+		fprintf( stderr, "Error: failed to define variable map in CUDD manager.\n" );
+		return NULL;
+	}
+	free( vars );
+	free( pvars );
+
+	if (num_sgoals > 0) {
+		Y = malloc( num_sgoals*sizeof(DdNode **) );
+		*num_sublevels = malloc( num_sgoals*sizeof(int) );
+		if (Y == NULL || *num_sublevels == NULL) {
+			perror( "compute_sublevel_sets, malloc" );
+			return NULL;
+		}
+		for (i = 0; i < num_sgoals; i++) {
+			*(*num_sublevels+i) = 1;
+			*(Y+i) = malloc( *(*num_sublevels+i)*sizeof(DdNode *) );
+			if (*(Y+i) == NULL) {
+				perror( "compute_sublevel_sets, malloc" );
+				return NULL;
+			}
+			**(Y+i) = Cudd_bddAnd( manager, *(sgoals+i), W );
+			Cudd_Ref( **(Y+i) );
+		}
+	} else {
+		return NULL;
+	}
+
+	/* Build list of Y_i sets from iterations of the fixpoint formula. */
+	for (i = 0; i < num_sgoals; i++) {
+		while (True) {
+			(*(*num_sublevels+i))++;
+			*(Y+i) = realloc( *(Y+i), *(*num_sublevels+i)*sizeof(DdNode *) );
+			if (*(Y+i) == NULL) {
+				perror( "synthesize, realloc" );
+				return NULL;
+			}
+
+			Y_exmod = compute_existsmodal( manager, *(*(Y+i)+*(*num_sublevels+i)-2),
+										   etrans, strans,
+										   num_env, num_sys, cube );
+
+			*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_Not( Cudd_ReadOne( manager ) );
+			Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
+			for (j = 0; j < num_egoals; j++) {
+					
+				/* (Re)initialize X */
+				if (X != NULL)
+					Cudd_RecursiveDeref( manager, X );
+				X = Cudd_ReadOne( manager );
+				Cudd_Ref( X );
+
+				/* Greatest fixpoint for X, for this env goal */
+				do {
+					if (X_prev != NULL)
+						Cudd_RecursiveDeref( manager, X_prev );
+					X_prev = X;
+					X = compute_existsmodal( manager, X_prev, etrans, strans,
+											 num_env, num_sys, cube );
+					if (X == NULL) {
+						/* fatal error */
+						return NULL;
+					}
+								
+					tmp = Cudd_bddAnd( manager, *(sgoals+i), W );
+					Cudd_Ref( tmp );
+					tmp2 = Cudd_bddOr( manager, tmp, Y_exmod );
+					Cudd_Ref( tmp2 );
+					Cudd_RecursiveDeref( manager, tmp );
+
+					tmp = Cudd_bddOr( manager, tmp2, Cudd_Not( *(egoals+j) ) );
+					Cudd_Ref( tmp );
+					Cudd_RecursiveDeref( manager, tmp2 );
+
+					tmp2 = X;
+					X = Cudd_bddAnd( manager, tmp, X );
+					Cudd_Ref( X );
+					Cudd_RecursiveDeref( manager, tmp );
+					Cudd_RecursiveDeref( manager, tmp2 );
+
+					tmp = X;
+					X = Cudd_bddAnd( manager, X, X_prev );
+					Cudd_Ref( X );
+					Cudd_RecursiveDeref( manager, tmp );
+
+				} while (!(Cudd_bddLeq( manager, X, X_prev )*Cudd_bddLeq( manager, X_prev, X )));
+
+				tmp = *(*(Y+i)+*(*num_sublevels+i)-1);
+				*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1), X );
+				Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
+				Cudd_RecursiveDeref( manager, tmp );
+			
+				Cudd_RecursiveDeref( manager, X );
+				X = NULL;
+				Cudd_RecursiveDeref( manager, X_prev );
+				X_prev = NULL;
+			}
+
+			if (*(*num_sublevels+i) > 1) {
+				tmp = *(*(Y+i)+*(*num_sublevels+i)-1);
+				*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1), *(*(Y+i)+*(*num_sublevels+i)-2) );
+				Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
+				Cudd_RecursiveDeref( manager, tmp );
+			}
+
+			if (*(*num_sublevels+i) > 1
+				&& Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-1), *(*(Y+i)+*(*num_sublevels+i)-2))*Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-2), *(*(Y+i)+*(*num_sublevels+i)-1) )) {
+				Cudd_RecursiveDeref( manager, *(*(Y+i)+*(*num_sublevels+i)-1) );
+				(*(*num_sublevels+i))--;
+				*(Y+i) = realloc( *(Y+i), *(*num_sublevels+i)*sizeof(DdNode *) );
+				if (*(Y+i) == NULL) {
+					perror( "synthesize, realloc" );
+					return NULL;
+				}
+				break;
+			}
+		}
+		Cudd_RecursiveDeref( manager, Y_exmod );
+	}
+
+	if (verbose) {
+		printf( "== Cudd_PrintInfo(), called from compute_sublevel_sets ===============\n" );
+		Cudd_PrintInfo( manager, stdout );
+		printf( "======================================================================\n" );
+	}
+
+	return Y;
 }

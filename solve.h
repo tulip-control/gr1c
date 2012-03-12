@@ -70,6 +70,18 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
    environment and system goal formulas are defined by egoals and
    sgoals, respectively. */
 
+DdNode ***compute_sublevel_sets( DdManager *manager,
+								 DdNode *W,
+								 DdNode *etrans, DdNode *strans,
+								 DdNode **egoals, DdNode **sgoals,
+								 int **num_sublevels,
+								 unsigned char verbose );
+/* W is assumed to be (the characteristic function of) the set of
+   winning states, e.g., as returned by compute_winning_set.
+   num_sublevel_sets is an int array of length equal to the number of
+   system goals.  Space for it is allocated by compute_sublevel_sets
+   and expected to be freed by the caller (or elsewhere). */
+
 int levelset_interactive( DdManager *manager, unsigned char init_flags,
 						  FILE *infp, FILE *outfp,
 						  unsigned char verbose );

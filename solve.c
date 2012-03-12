@@ -90,12 +90,11 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	DdNode *strans_into_W;
 
 	DdNode *einit, *sinit, *etrans, *strans, **egoals, **sgoals;
-	DdNode *X = NULL, *X_prev = NULL;
 	
 	DdNode *ddval;  /* Store result of evaluating a BDD */
-	DdNode ***Y = NULL, *Y_exmod;
+	DdNode ***Y = NULL;
 	DdNode *Y_i_primed;
-	int *num_level_sets;
+	int *num_sublevels;
 
 	DdNode *tmp, *tmp2;
 	int i, j, k;  /* Generic counters */
@@ -201,30 +200,22 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	}
 
 	W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals, verbose );
-	if (num_sgoals > 0) {
-		Y = malloc( num_sgoals*sizeof(DdNode **) );
-		num_level_sets = malloc( num_sgoals*sizeof(int) );
-		if (Y == NULL || num_level_sets == NULL) {
-			perror( "synthesize, malloc" );
-			return NULL;
-		}
-		for (i = 0; i < num_sgoals; i++) {
-			*(num_level_sets+i) = 1;
-			*(Y+i) = malloc( *(num_level_sets+i)*sizeof(DdNode *) );
-			if (*(Y+i) == NULL) {
-				perror( "synthesize, malloc" );
-				return NULL;
-			}
-			**(Y+i) = Cudd_bddAnd( manager, *(sgoals+i), W );
-			Cudd_Ref( **(Y+i) );
-		}
+	if (W == NULL) {
+		fprintf( stderr, "Error synthesize: not realizable.\n" );
+		return NULL;
+	}
+	Y = compute_sublevel_sets( manager, W, etrans, strans, egoals, sgoals,
+							   &num_sublevels, verbose );
+	if (Y == NULL) {
+		fprintf( stderr, "Error synthesize: failed to construct sublevel sets.\n" );
+		return NULL;
 	}
 
 	/* Make primed form of W and take conjunction with system
 	   transition (safety) formula, for use while stepping down Y_i
 	   sets.  Note that we assume the variable map has been
 	   appropriately defined in the CUDD manager, after the call to
-	   compute_winning_set above. */
+	   compute_winning_set_BDD above. */
 	tmp = Cudd_bddVarMap( manager, W );
 	if (tmp == NULL) {
 		fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
@@ -234,98 +225,6 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	strans_into_W = Cudd_bddAnd( manager, strans, tmp );
 	Cudd_Ref( strans_into_W );
 	Cudd_RecursiveDeref( manager, tmp );
-
-	/* Build list of Y_i sets from iterations of the fixpoint formula. */
-	for (i = 0; i < num_sgoals; i++) {
-		while (True) {
-			(*(num_level_sets+i))++;
-			*(Y+i) = realloc( *(Y+i), *(num_level_sets+i)*sizeof(DdNode *) );
-			if (*(Y+i) == NULL) {
-				perror( "synthesize, realloc" );
-				return NULL;
-			}
-
-			Y_exmod = compute_existsmodal( manager, *(*(Y+i)+*(num_level_sets+i)-2),
-										   etrans, strans,
-										   num_env, num_sys, cube );
-
-			*(*(Y+i)+*(num_level_sets+i)-1) = Cudd_Not( Cudd_ReadOne( manager ) );
-			Cudd_Ref( *(*(Y+i)+*(num_level_sets+i)-1) );
-			for (j = 0; j < num_egoals; j++) {
-					
-				/* (Re)initialize X */
-				if (X != NULL)
-					Cudd_RecursiveDeref( manager, X );
-				X = Cudd_ReadOne( manager );
-				Cudd_Ref( X );
-
-				/* Greatest fixpoint for X, for this env goal */
-				do {
-					if (X_prev != NULL)
-						Cudd_RecursiveDeref( manager, X_prev );
-					X_prev = X;
-					X = compute_existsmodal( manager, X_prev, etrans, strans,
-											 num_env, num_sys, cube );
-					if (X == NULL) {
-						/* fatal error */
-						return NULL;
-					}
-								
-					tmp = Cudd_bddAnd( manager, *(sgoals+i), W );
-					Cudd_Ref( tmp );
-					tmp2 = Cudd_bddOr( manager, tmp, Y_exmod );
-					Cudd_Ref( tmp2 );
-					Cudd_RecursiveDeref( manager, tmp );
-
-					tmp = Cudd_bddOr( manager, tmp2, Cudd_Not( *(egoals+j) ) );
-					Cudd_Ref( tmp );
-					Cudd_RecursiveDeref( manager, tmp2 );
-
-					tmp2 = X;
-					X = Cudd_bddAnd( manager, tmp, X );
-					Cudd_Ref( X );
-					Cudd_RecursiveDeref( manager, tmp );
-					Cudd_RecursiveDeref( manager, tmp2 );
-
-					tmp = X;
-					X = Cudd_bddAnd( manager, X, X_prev );
-					Cudd_Ref( X );
-					Cudd_RecursiveDeref( manager, tmp );
-
-				} while (!(Cudd_bddLeq( manager, X, X_prev )*Cudd_bddLeq( manager, X_prev, X )));
-
-				tmp = *(*(Y+i)+*(num_level_sets+i)-1);
-				*(*(Y+i)+*(num_level_sets+i)-1) = Cudd_bddOr( manager, *(*(Y+i)+*(num_level_sets+i)-1), X );
-				Cudd_Ref( *(*(Y+i)+*(num_level_sets+i)-1) );
-				Cudd_RecursiveDeref( manager, tmp );
-			
-				Cudd_RecursiveDeref( manager, X );
-				X = NULL;
-				Cudd_RecursiveDeref( manager, X_prev );
-				X_prev = NULL;
-			}
-
-			if (*(num_level_sets+i) > 1) {
-				tmp = *(*(Y+i)+*(num_level_sets+i)-1);
-				*(*(Y+i)+*(num_level_sets+i)-1) = Cudd_bddOr( manager, *(*(Y+i)+*(num_level_sets+i)-1), *(*(Y+i)+*(num_level_sets+i)-2) );
-				Cudd_Ref( *(*(Y+i)+*(num_level_sets+i)-1) );
-				Cudd_RecursiveDeref( manager, tmp );
-			}
-
-			if (*(num_level_sets+i) > 1
-				&& Cudd_bddLeq( manager, *(*(Y+i)+*(num_level_sets+i)-1), *(*(Y+i)+*(num_level_sets+i)-2))*Cudd_bddLeq( manager, *(*(Y+i)+*(num_level_sets+i)-2), *(*(Y+i)+*(num_level_sets+i)-1) )) {
-				Cudd_RecursiveDeref( manager, *(*(Y+i)+*(num_level_sets+i)-1) );
-				(*(num_level_sets+i))--;
-				*(Y+i) = realloc( *(Y+i), *(num_level_sets+i)*sizeof(DdNode *) );
-				if (*(Y+i) == NULL) {
-					perror( "synthesize, realloc" );
-					return NULL;
-				}
-				break;
-			}
-		}
-		Cudd_RecursiveDeref( manager, Y_exmod );
-	}
 
 	/* From each initial state, build strategy by propagating forward
 	   toward the next goal (current target goal specified by "mode"
@@ -399,7 +298,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		state2cube( this_node_stack->state, cube, num_env+num_sys );
 		loop_mode = this_node_stack->mode;
 		do {
-			j = *(num_level_sets+this_node_stack->mode)-1;
+			j = *(num_sublevels+this_node_stack->mode)-1;
 			while (j > 0) {
 				ddval = Cudd_Eval( manager, *(*(Y+this_node_stack->mode)+j), cube );
 				if (ddval->type.value < .1) {
@@ -628,14 +527,14 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		free( env_goals );
 	}
 	for (i = 0; i < num_sgoals; i++) {
-		for (j = 0; j < *(num_level_sets+i); j++)
+		for (j = 0; j < *(num_sublevels+i); j++)
 			Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
-		if (*(num_level_sets+i) > 0)
+		if (*(num_sublevels+i) > 0)
 			free( *(Y+i) );
 	}
 	if (num_sgoals > 0) {
 		free( Y );
-		free( num_level_sets );
+		free( num_sublevels );
 	}
 
 	return strategy;

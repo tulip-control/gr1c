@@ -351,7 +351,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 			/* if (W != NULL) */
 			/* 	Cudd_RecursiveDeref( manager, W ); */
-			/* W = compute_winning_set_BDD( manager,  */
+			/* W = compute_winning_set_BDD( manager, */
 
 		} else if (command == INTCOM_ENVNEXT) {
 
