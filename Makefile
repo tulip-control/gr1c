@@ -1,4 +1,4 @@
-# SCL; 10 Mar 2012.
+# SCL; 11 Mar 2012.
 #
 #
 
@@ -13,15 +13,16 @@ YFLAGS = -d
 
 CC = gcc
 CFLAGS = -g -Wall -pedantic -ansi -I$(CUDD_ROOT)/include -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8
-LDFLAGS = $(CUDD_LIB) -lm
+LDFLAGS = $(CUDD_LIB) -lm -lreadline
 
 
-gr1c: main.o solve_operators.o solve.o ptree.o automaton.o gr1c_parse.o gr1c_scan.o
+gr1c: main.o interactive.o solve_operators.o solve.o ptree.o automaton.o gr1c_parse.o gr1c_scan.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 main.o: main.c
 ptree.o: ptree.c
 automaton.o: automaton.c
+interactive.o: interactive.c
 solve_operators.o: solve_operators.c
 solve.o: solve.c
 

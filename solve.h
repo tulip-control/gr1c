@@ -46,7 +46,7 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
                          in the winning set.
 */
 
-anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
+anode_t *synthesize( DdManager *manager, unsigned char init_flags,
 					 unsigned char verbose );
 /* Synthesize a strategy.  The specification is assumed to be
    realizable when this function is invoked.  Return pointer to
@@ -56,6 +56,13 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 DdNode *compute_winning_set( DdManager *manager, unsigned char verbose );
 /* Compute the set of states that are winning for the system, under
    the specification, while not including initial conditions. */
+
+int levelset_interactive( DdManager *manager, unsigned char init_flags,
+						  FILE *infp, FILE *outfp,
+						  unsigned char verbose );
+/* Read commands from input stream infp and write results to outfp.
+   Return 1 on successful completion, 0 if specification unrealizable,
+   and -1 if error. */
 
 
 #endif

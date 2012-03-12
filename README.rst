@@ -11,7 +11,7 @@ the winning set is given (and its correctness proven) in
     fair simulation and trace inclusion. *Information and Computation*,
     200: 35--61. DOI:`10.1016/j.ic.2005.01.006 <http://dx.doi.org/10.1016/j.ic.2005.01.006>`_.
 
-gr1c depends on CUDD, the CU Decision Diagram package by Fabio Somenzi
+**gr1c** depends on CUDD, the CU Decision Diagram package by Fabio Somenzi
 and others.  See http://vlsi.colorado.edu/~fabio/CUDD/
 
 
@@ -61,6 +61,28 @@ specifications. Also look under ``examples`` directory.
 
   transformula ::= "[]" tpropformula | transformula '&' transformula
   goalformula ::= "[]<>" propformula | goalformua '&' goalformula
+
+
+Interactive gr1c
+================
+
+If started with the command-line flag "-i", **gr1c** will compute the
+sublevel sets from the fixpoint computation of the winning set and
+then accept commands until "quit" or end-of-file reached.  Recognized
+commands are:
+
+envvar
+  print list of environment variables in order.
+
+sysvar
+  print list of system variables in order.
+
+var
+  print all variable names with indices; your state values must match
+  this order.
+
+quit
+  terminate gr1c.
 
 
 License

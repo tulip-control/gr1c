@@ -50,14 +50,20 @@ ptree_t *gen_tree_ptr = NULL;
 #define OUTPUT_FORMAT_TEXT 0
 #define OUTPUT_FORMAT_TULIP 1
 
+/* Runtime modes */
+#define GR1C_MODE_SYNTAX 0
+#define GR1C_MODE_REALIZABLE 1
+#define GR1C_MODE_SYNTHESIS 2
+#define GR1C_MODE_INTERACTIVE 3
+
 
 int main( int argc, char **argv )
 {
 	FILE *fp;
+	FILE *stdin_backup = NULL;
+	byte run_option = GR1C_MODE_SYNTHESIS;
 	bool help_flag = False;
-	bool syncheck_flag = False;
 	bool ptdump_flag = False;
-	bool realiz_flag = False;
 	byte format_option = OUTPUT_FORMAT_TULIP;
 	unsigned char verbose = 0;
 	int input_index = -1;
@@ -82,11 +88,13 @@ int main( int argc, char **argv )
 			} else if (argv[i][1] == 'v') {
 				verbose = 1;
 			} else if (argv[i][1] == 's') {
-				syncheck_flag = True;
+				run_option = GR1C_MODE_SYNTAX;
 			} else if (argv[i][1] == 'p') {
 				ptdump_flag = True;
 			} else if (argv[i][1] == 'r') {
-				realiz_flag = True;
+				run_option = GR1C_MODE_REALIZABLE;
+			} else if (argv[i][1] == 'i') {
+				run_option = GR1C_MODE_INTERACTIVE;
 			} else if (argv[i][1] == 't') {
 				if (i == argc-1) {
 					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
@@ -122,7 +130,13 @@ int main( int argc, char **argv )
 				"  -s        only check specification syntax (return -1 on error)\n"
 				"  -p        dump parse trees to DOT files, and echo formulas to screen\n"
 				"  -r        only check realizability; do not synthesize strategy\n"
-				"            (return 0 if realizable, -1 if not)\n", argv[0] );
+				"            (return 0 if realizable, -1 if not)\n"
+				"  -i        interactive mode\n", argv[0] );
+		return 1;
+	}
+
+	if (input_index < 0 && run_option == GR1C_MODE_INTERACTIVE) {
+		printf( "Reading spec from stdin in interactive mode is not yet implemented.\n" );
 		return 1;
 	}
 
@@ -134,6 +148,7 @@ int main( int argc, char **argv )
 			perror( "gr1c, fopen" );
 			return -1;
 		}
+		stdin_backup = stdin;
 		stdin = fp;
 	}
 
@@ -151,8 +166,11 @@ int main( int argc, char **argv )
 		printf( "Done.\n" );
 		fflush( stdout );
 	}
+	if (stdin_backup != NULL) {
+		stdin = stdin_backup;
+	}
 
-	if (syncheck_flag)
+	if (run_option == GR1C_MODE_SYNTAX)
 		return 0;
 
 	/* Close input file, if opened. */
@@ -289,13 +307,14 @@ int main( int argc, char **argv )
 	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 
 	T = check_realizable( manager, EXIST_SYS_INIT, verbose );
-	if (T != NULL && (realiz_flag || verbose)) {
+	if (T != NULL && (run_option == GR1C_MODE_REALIZABLE || verbose)) {
 		printf( "Realizable.\n" );
-	} else if (realiz_flag || verbose) {
+	} else if (run_option == GR1C_MODE_REALIZABLE || verbose) {
 		printf( "Not realizable.\n" );
 	}
 
-	if (!realiz_flag && T != NULL) {  /* Synthesize strategy */
+	if (run_option == GR1C_MODE_SYNTHESIS && T != NULL) {
+
 		if (verbose) {
 			printf( "Synthesizing a strategy..." );
 			fflush( stdout );
@@ -316,6 +335,21 @@ int main( int argc, char **argv )
 			fprintf( stderr, "Error while attempting synthesis.\n" );
 			return -1;
 		}
+
+	} else if (run_option == GR1C_MODE_INTERACTIVE && T != NULL) {
+
+		Cudd_RecursiveDeref( manager, T );
+		T = NULL;
+
+		i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout, verbose );
+		if (i == 0) {
+			printf( "Not realizable.\n" );
+			return -1;
+		} else if (i < 0) {
+			printf( "Failure during interaction.\n" );
+			return -1;
+		}
+
 	}
 
 	/* Clean-up */
@@ -342,7 +376,7 @@ int main( int argc, char **argv )
 	Cudd_Quit(manager);
 
     /* Return 0 if realizable, -1 if not realizable. */
-	if (T != NULL) {
+	if (run_option == GR1C_MODE_INTERACTIVE || T != NULL) {
 		return 0;
 	} else {
 		return -1;
