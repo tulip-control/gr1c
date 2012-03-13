@@ -201,7 +201,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 
 	W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals, verbose );
 	if (W == NULL) {
-		fprintf( stderr, "Error synthesize: not realizable.\n" );
+		fprintf( stderr, "Error synthesize: failed to construct winning set.\n" );
 		return NULL;
 	}
 	Y = compute_sublevel_sets( manager, W, etrans, strans, egoals, sgoals,

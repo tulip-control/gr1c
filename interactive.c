@@ -8,6 +8,8 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -50,6 +52,8 @@ extern bool **get_env_moves( DdManager *manager, int *cube,
 extern DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
 									DdNode *etrans, DdNode *strans,
 									int num_env, int num_sys, int *cube );
+extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
+										  unsigned char init_flags, unsigned char verbose );
 
 
 /***************************
@@ -77,6 +81,40 @@ int intcom_index;
 char *intcom_name;
 
 
+/* Read space-separated values from given string.  Return the state
+   vector on success, NULL if error.  N.B., the given string will be
+   manipulated and not restored, up to the position of the last read
+   value. */
+bool *read_state_str( char *input, int len )
+{
+	bool *state;
+	int i;
+	char *start;
+	char *end;
+	int input_len = strlen( input );
+	if (len < 1 || input_len < 1)
+		return NULL;
+	state = malloc( sizeof(bool)*len );
+	if (state == NULL) {
+		perror( "read_state_str, malloc" );
+		return NULL;
+	}
+
+	start = input;
+	end = input;
+	for (i = 0; i < len && *end != '\0'; i++) {
+		*(state+i) = strtol( start, &end, 10 );
+		start = end;
+	}
+	if (i < len) {
+		fprintf( stderr, "Error read_state_str: not all of requested state components found.\n" );
+		free( state );
+		return NULL;
+	}
+
+	return state;
+}
+
 int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 {
 	int num_env, num_sys;
@@ -84,7 +122,6 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 	ptree_t *tmppt;
 	int var_index;
 	char *input;
-	size_t input_len;
 
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
@@ -154,17 +191,18 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 					var_index++;
 				}
 			}
+		} else if (!strncmp( input, "winning ", strlen( "winning " ) )) {
+
+			*(input+strlen( "winning" )) = '\0';
+			intcom_state1 = read_state_str( input+strlen( "winning" )+1,
+											num_env+num_sys );
+			free( input );
+			if (intcom_state1 == NULL)
+				return -1;
+			return INTCOM_WINNING;
+			
 		} else {
-			/* input_len = strlen( input ); */
-
-			/* if (input_len > strlen( "winning " )) { */
-			/* 	*(input+strlen( "winning" )) = '\0'; */
-			/* 	if (!strncmp( input, "winning", strlen( "winning" ) )) { */
-			/* 		free( input ); */
-			/* 		return INTCOM_WINNING; */
-			/* 	} */
-			/* } */
-
+			fprintf( outfp, "Unrecognized command: %s", input );
 		}
 
 		fprintf( outfp, "\n" );
@@ -188,22 +226,19 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	int emoves_len;
 
 	ptree_t *var_separator;
-	DdNode *W = check_realizable( manager, init_flags, verbose );
+	DdNode *W;
 	DdNode *strans_into_W;
 
 	DdNode *einit, *sinit, *etrans, *strans, **egoals, **sgoals;
-	DdNode *X = NULL, *X_prev = NULL;
 	
 	DdNode *ddval;  /* Store result of evaluating a BDD */
 	DdNode ***Y = NULL, *Y_exmod;
 	DdNode *Y_i_primed;
-	int *num_level_sets;
+	int *num_sublevels = NULL;
 
 	DdNode *tmp, *tmp2;
-	int i, j, k;  /* Generic counters */
+	int i, j;  /* Generic counters */
 	bool env_nogoal_flag = False;  /* Indicate environment has no goals */
-	int loop_mode;
-	int next_mode;
 	
 	int num_env, num_sys;
 	int *cube;  /* length will be twice total number of variables (to
@@ -213,9 +248,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	DdGen *gen;
 	CUDD_VALUE_TYPE gvalue;
 	int *gcube;
-
-	if (W == NULL)
-		return 0;  /* not realizable */
 
 	if (verbose) {
 		printf( "== Cudd_PrintInfo(), called from levelset_interactive ================\n" );
@@ -238,14 +270,14 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	/* State vector (i.e., valuation of the variables) */
 	state = malloc( sizeof(bool)*(num_env+num_sys) );
 	if (state == NULL) {
-		perror( "synthesize, malloc" );
+		perror( "levelset_interactive, malloc" );
 		return NULL;
 	}
 
 	/* Allocate cube array, used later for quantifying over variables. */
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
-		perror( "synthesize, malloc" );
+		perror( "levelset_interactive, malloc" );
 		return NULL;
 	}
 
@@ -293,22 +325,26 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	}
 	if (num_sgoals > 0) {
 		sgoals = malloc( num_sgoals*sizeof(DdNode *) );
-		Y = malloc( num_sgoals*sizeof(DdNode **) );
-		num_level_sets = malloc( num_sgoals*sizeof(int) );
-		for (i = 0; i < num_sgoals; i++) {
+		for (i = 0; i < num_sgoals; i++)
 			*(sgoals+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
-			*(num_level_sets+i) = 1;
-			*(Y+i) = malloc( *(num_level_sets+i)*sizeof(DdNode *) );
-			if (*(Y+i) == NULL) {
-				perror( "synthesize, malloc" );
-				return NULL;
-			}
-			**(Y+i) = Cudd_bddAnd( manager, *(sgoals+i), W );
-			Cudd_Ref( **(Y+i) );
-		}
 	} else {
 		sgoals = NULL;
 	}
+
+	if (var_separator == NULL) {
+			evar_list = NULL;
+	} else {
+		var_separator->left = NULL;
+	}
+
+	W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals, verbose );
+	if (W == NULL) {
+		fprintf( stderr, "Error levelset_interactive: failed to construct winning set.\n" );
+		return -1;
+	}
+	W = check_realizable_internal( manager, W, init_flags, verbose );
+	if (W == NULL)
+		return 0;  /* not realizable */
 
 	/* Make primed form of W and take conjunction with system
 	   transition (safety) formula, for use while stepping down Y_i
@@ -317,52 +353,72 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	   compute_winning_set above. */
 	tmp = Cudd_bddVarMap( manager, W );
 	if (tmp == NULL) {
-		fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
+		fprintf( stderr, "Error levelset_interactive: Error in swapping variables with primed forms.\n" );
 		return NULL;
 	}
 	Cudd_Ref( tmp );
 	strans_into_W = Cudd_bddAnd( manager, strans, tmp );
 	Cudd_Ref( strans_into_W );
 	Cudd_RecursiveDeref( manager, tmp );
-	
-	/* Break the link that appended the system variables list to the
-	   environment variables list. */
-	if (var_separator == NULL) {
-			evar_list = NULL;
-	} else {
-		var_separator->left = NULL;
-	}
 
 	command = INTCOM_RELEVELS;  /* Initialization, force sublevel computation */
 	do {
-		if (evar_list == NULL) {
-			var_separator = NULL;
-			evar_list = svar_list;
-		} else {
-			var_separator = get_list_item( evar_list, -1 );
-			if (var_separator == NULL) {
-				fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
-				return NULL;
+		switch (command) {
+		case INTCOM_REWIN:
+			if (W != NULL)
+				Cudd_RecursiveDeref( manager, W );
+			W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals, verbose );
+			if (W == NULL) {
+				fprintf( stderr, "Error levelset_interactive: failed to construct winning set.\n" );
+				return -1;
 			}
-			var_separator->left = svar_list;
+			break;
+
+		case INTCOM_RELEVELS:
+			if (W != NULL)
+				Cudd_RecursiveDeref( manager, W );
+			W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals, verbose );
+			if (W == NULL) {
+				fprintf( stderr, "Error levelset_interactive: failed to construct winning set.\n" );
+				return -1;
+			}
+			if (Y != NULL) {
+				for (i = 0; i < num_sgoals; i++) {
+					for (j = 0; j < *(num_sublevels+i); j++)
+						Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
+					if (*(num_sublevels+i) > 0)
+						free( *(Y+i) );
+				}
+				if (num_sgoals > 0) {
+					free( Y );
+					free( num_sublevels );
+				}
+			}
+			Y = compute_sublevel_sets( manager, W, etrans, strans, egoals, sgoals,
+									   &num_sublevels, verbose );
+			if (Y == NULL) {
+				fprintf( stderr, "Error levelset_interactive: failed to construct sublevel sets.\n" );
+				return -1;
+			}
+			break;
+
+		case INTCOM_ENVNEXT:
+			
+			break;
+
+		case INTCOM_WINNING:
+			state2cube( intcom_state1, cube, num_env+num_sys );
+			ddval = Cudd_Eval( manager, W, cube );
+			if (ddval->type.value < .1) {
+				fprintf( outfp, "False\n" );
+			} else {
+				fprintf( outfp, "True\n" );
+			}
+			free( intcom_state1 );
+			break;
 		}
 
-		if (command == INTCOM_WINNING) {
-
-			/* if (W != NULL) */
-			/* 	Cudd_RecursiveDeref( manager, W ); */
-			/* W = compute_winning_set_BDD( manager, */
-
-		} else if (command == INTCOM_ENVNEXT) {
-
-		}
-		
-		if (var_separator == NULL) {
-			evar_list = NULL;
-		} else {
-			var_separator->left = NULL;
-		}
-	} while (command = command_loop( manager, infp, outfp ));
+	} while ((command = command_loop( manager, infp, outfp )) > 0);
 
 	if (verbose) {
 		printf( "== Cudd_PrintInfo(), called from levelset_interactive ================\n" );
@@ -393,15 +449,17 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 		free( env_goals );
 	}
 	for (i = 0; i < num_sgoals; i++) {
-		for (j = 0; j < *(num_level_sets+i); j++)
+		for (j = 0; j < *(num_sublevels+i); j++)
 			Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
-		if (*(num_level_sets+i) > 0)
+		if (*(num_sublevels+i) > 0)
 			free( *(Y+i) );
 	}
 	if (num_sgoals > 0) {
 		free( Y );
-		free( num_level_sets );
+		free( num_sublevels );
 	}
 
+	if (command < 0)  /* command_loop returned error code? */
+		return command;
 	return 1;
 }
