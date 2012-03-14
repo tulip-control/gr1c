@@ -79,10 +79,18 @@ envnext STATE
   current STATE; each is on a separate line, with termination
   indicated by a final line of "---".
 
-sysnext STATE1 STATE2ENV
-  list of possible next valuations of system variables, given current
-  STATE1 and environment move STATE2ENV from that state; each is on a
-  separate line, with termination indicated by a final line of "---".
+sysnext STATE1 STATE2ENV GOALMODE
+  list of possible next valuations of system variables that are
+  consistent with progression of a winning strategy that currently has
+  goal index GOALMODE, given current STATE1 and environment move
+  STATE2ENV from that state; each is on a separate line, with
+  termination indicated by a final line of "---".
+
+sysnexta STATE1 STATE2ENV
+  list of possible next valuations of system variables regardless of
+  whether the resulting next state would be consistent with any
+  winning strategy, given current STATE1 and environment move
+  STATE2ENV from that state.
 
 restrict STATE1 STATE2
   remove the edge from STATE1 to STATE2, if present.

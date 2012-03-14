@@ -545,7 +545,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 			(*(*num_sublevels+i))++;
 			*(Y+i) = realloc( *(Y+i), *(*num_sublevels+i)*sizeof(DdNode *) );
 			if (*(Y+i) == NULL) {
-				perror( "synthesize, realloc" );
+				perror( "compute_sublevel_sets, realloc" );
 				return NULL;
 			}
 
@@ -609,26 +609,23 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 				X_prev = NULL;
 			}
 
-			if (*(*num_sublevels+i) > 1) {
-				tmp = *(*(Y+i)+*(*num_sublevels+i)-1);
-				*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1), *(*(Y+i)+*(*num_sublevels+i)-2) );
-				Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
-				Cudd_RecursiveDeref( manager, tmp );
-			}
+			tmp = *(*(Y+i)+*(*num_sublevels+i)-1);
+			*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1), *(*(Y+i)+*(*num_sublevels+i)-2) );
+			Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
+			Cudd_RecursiveDeref( manager, tmp );
 
-			if (*(*num_sublevels+i) > 1
-				&& Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-1), *(*(Y+i)+*(*num_sublevels+i)-2))*Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-2), *(*(Y+i)+*(*num_sublevels+i)-1) )) {
+			if (Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-1), *(*(Y+i)+*(*num_sublevels+i)-2))*Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-2), *(*(Y+i)+*(*num_sublevels+i)-1) )) {
 				Cudd_RecursiveDeref( manager, *(*(Y+i)+*(*num_sublevels+i)-1) );
 				(*(*num_sublevels+i))--;
 				*(Y+i) = realloc( *(Y+i), *(*num_sublevels+i)*sizeof(DdNode *) );
 				if (*(Y+i) == NULL) {
-					perror( "synthesize, realloc" );
+					perror( "compute_sublevel_sets, realloc" );
 					return NULL;
 				}
 				break;
 			}
+			Cudd_RecursiveDeref( manager, Y_exmod );
 		}
-		Cudd_RecursiveDeref( manager, Y_exmod );
 	}
 
 	if (verbose) {

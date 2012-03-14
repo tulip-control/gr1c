@@ -70,6 +70,7 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 #define INTCOM_SETINDEX 10
 #define INTCOM_REWIN 11
 #define INTCOM_RELEVELS 12
+#define INTCOM_SYSNEXTA 13
 /***************************/
 
 /**** Command arguments ****/
@@ -77,7 +78,7 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
    allocate the memory, and levelset_interactive (or otherwise the
    function that invoked command_loop) will free it. */
 bool *intcom_state1, *intcom_state2;
-int intcom_index;
+int intcom_index;  /* Also used to pass strategy goal mode. */
 char *intcom_name;
 
 
@@ -200,6 +201,68 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 			if (intcom_state1 == NULL)
 				return -1;
 			return INTCOM_WINNING;
+			
+		} else if (!strncmp( input, "envnext ", strlen( "envnext " ) )) {
+
+			*(input+strlen( "envnext" )) = '\0';
+			intcom_state1 = read_state_str( input+strlen( "envnext" )+1,
+											num_env+num_sys );
+			free( input );
+			if (intcom_state1 == NULL)
+				return -1;
+			return INTCOM_ENVNEXT;
+			
+		} else if (!strncmp( input, "sysnext ", strlen( "sysnext " ) )) {
+
+			*(input+strlen( "sysnext" )) = '\0';
+			intcom_state1 = read_state_str( input+strlen( "sysnext" )+1,
+											2*num_env+num_sys+1 );
+			if (intcom_state1 == NULL)
+				return -1;
+			if (*(intcom_state1+2*num_env+num_sys) < 0 || *(intcom_state1+2*num_env+num_sys) > num_sgoals-1) {
+				fprintf( outfp, "Invalid mode: %d", *(intcom_state1+2*num_env+num_sys) );
+				free( intcom_state1 );
+			} else {
+				free( input );
+				intcom_index  = *(intcom_state1+2*num_env+num_sys);
+				intcom_state1 = realloc( intcom_state1, (2*num_env+num_sys)*sizeof(bool) );
+				if (intcom_state1 == NULL) {
+					perror( "command_loop, realloc" );
+					return -1;
+				}
+				return INTCOM_SYSNEXT;
+			}
+			
+		} else if (!strncmp( input, "sysnexta ", strlen( "sysnexta " ) )) {
+
+			*(input+strlen( "sysnexta" )) = '\0';
+			intcom_state1 = read_state_str( input+strlen( "sysnexta" )+1,
+											2*num_env+num_sys );
+			free( input );
+			if (intcom_state1 == NULL)
+				return -1;
+			return INTCOM_SYSNEXTA;
+			
+		} else if (!strncmp( input, "getindex ", strlen( "getindex " ) )) {
+
+			*(input+strlen( "getindex" )) = '\0';
+			intcom_state1 = read_state_str( input+strlen( "getindex" )+1,
+											num_env+num_sys+1 );
+			if (intcom_state1 == NULL)
+				return -1;
+			if (*(intcom_state1+num_env+num_sys) < 0 || *(intcom_state1+num_env+num_sys) > num_sgoals-1) {
+				fprintf( outfp, "Invalid mode: %d", *(intcom_state1+num_env+num_sys) );
+				free( intcom_state1 );
+			} else {
+				free( input );
+				intcom_index = *(intcom_state1+num_env+num_sys);
+				intcom_state1 = realloc( intcom_state1, (num_env+num_sys)*sizeof(bool) );
+				if (intcom_state1 == NULL) {
+					perror( "command_loop, realloc" );
+					return -1;
+				}
+				return INTCOM_GETINDEX;
+			}
 			
 		} else {
 			fprintf( outfp, "Unrecognized command: %s", input );
@@ -346,21 +409,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	if (W == NULL)
 		return 0;  /* not realizable */
 
-	/* Make primed form of W and take conjunction with system
-	   transition (safety) formula, for use while stepping down Y_i
-	   sets.  Note that we assume the variable map has been
-	   appropriately defined in the CUDD manager, after the call to
-	   compute_winning_set above. */
-	tmp = Cudd_bddVarMap( manager, W );
-	if (tmp == NULL) {
-		fprintf( stderr, "Error levelset_interactive: Error in swapping variables with primed forms.\n" );
-		return NULL;
-	}
-	Cudd_Ref( tmp );
-	strans_into_W = Cudd_bddAnd( manager, strans, tmp );
-	Cudd_Ref( strans_into_W );
-	Cudd_RecursiveDeref( manager, tmp );
-
 	command = INTCOM_RELEVELS;  /* Initialization, force sublevel computation */
 	do {
 		switch (command) {
@@ -403,18 +451,166 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			break;
 
 		case INTCOM_ENVNEXT:
+			if (num_env > 0) {
+				env_moves = get_env_moves( manager, cube, intcom_state1,
+										   etrans, num_env, num_sys,
+										   &emoves_len );
+				free( intcom_state1 );
+			} else {
+				fprintf( outfp, "(none)\n" );
+				free( intcom_state1 );
+				break;
+			}
 			
+			for (i = 0; i < emoves_len; i++) {
+				for (j = 0; j < num_env; j++)
+					fprintf( outfp, "%d ", *(*(env_moves+i)+j) );
+				fprintf( outfp, "\n" );
+			}
+			fprintf( outfp, "---\n" );
+
+			if (emoves_len > 0) {
+				for (i = 0; i < emoves_len; i++)
+					free( *(env_moves+i) );
+				free( env_moves );
+			}
+			break;
+
+		case INTCOM_SYSNEXT:
+
+			tmp = Cudd_bddVarMap( manager, W );
+			if (tmp == NULL) {
+				fprintf( stderr, "Error levelset_interactive: Error in swapping variables with primed forms.\n" );
+				return NULL;
+			}
+			Cudd_Ref( tmp );
+			strans_into_W = Cudd_bddAnd( manager, strans, tmp );
+			Cudd_Ref( strans_into_W );
+			Cudd_RecursiveDeref( manager, tmp );
+
+			j = *(num_sublevels+intcom_index);
+			do {
+				j--;
+				ddval = Cudd_Eval( manager, *(*(Y+intcom_index)+j), cube );
+				if (ddval->type.value < .1) {
+					j++;
+					break;
+				}
+			} while (j > 0);
+			if (j == 0) {
+				Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+intcom_index)) );
+			} else {
+				Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+intcom_index)+j-1) );
+			}
+			if (Y_i_primed == NULL) {
+				fprintf( stderr, "levelset_interactive: Error in swapping variables with primed forms.\n" );
+				return NULL;
+			}
+
+			tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
+			Cudd_Ref( tmp );
+			tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+							  intcom_state1, tmp, 0, num_env+num_sys );
+			Cudd_RecursiveDeref( manager, tmp );
+			if (num_env > 0) {
+				tmp = state2cof( manager, cube, 2*(num_sys+num_env),
+								 intcom_state1+num_env+num_sys,
+								 tmp2, num_env+num_sys, num_env );
+				Cudd_RecursiveDeref( manager, tmp2 );
+			} else {
+				tmp = tmp2;
+			}
+			free( intcom_state1 );
+
+			Cudd_AutodynDisable( manager );
+			Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
+				initialize_cube( state, gcube+2*num_env+num_sys, num_sys );
+				while (!saturated_cube( state, gcube+2*num_env+num_sys, num_sys )) {
+					for (i = 0; i < num_sys; i++)
+						fprintf( outfp, "%d ", *(state+i) );
+					fprintf( outfp, "\n" );
+					increment_cube( state, gcube+2*num_env+num_sys, num_sys );
+				}
+				for (i = 0; i < num_sys; i++)
+					fprintf( outfp, "%d ", *(state+i) );
+				fprintf( outfp, "\n" );
+			}
+			Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+			fprintf( outfp, "---\n" );
+
+			Cudd_RecursiveDeref( manager, tmp );
+			Cudd_RecursiveDeref( manager, Y_i_primed );
+			Cudd_RecursiveDeref( manager, strans_into_W );
+			break;
+
+		case INTCOM_SYSNEXTA:
+			tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+							 intcom_state1, strans, 0, num_env+num_sys );
+			if (num_env > 0) {
+				tmp2 = state2cof( manager, cube, 2*(num_sys+num_env),
+								  intcom_state1+num_env+num_sys,
+								  tmp, num_env+num_sys, num_env );
+				Cudd_RecursiveDeref( manager, tmp );
+			} else {
+				tmp2 = tmp;
+			}
+			free( intcom_state1 );
+
+			Cudd_AutodynDisable( manager );
+			Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
+				initialize_cube( state, gcube+2*num_env+num_sys, num_sys );
+				while (!saturated_cube( state, gcube+2*num_env+num_sys, num_sys )) {
+					for (i = 0; i < num_sys; i++)
+						fprintf( outfp, "%d ", *(state+i) );
+					fprintf( outfp, "\n" );
+					increment_cube( state, gcube+2*num_env+num_sys, num_sys );
+				}
+				for (i = 0; i < num_sys; i++)
+					fprintf( outfp, "%d ", *(state+i) );
+				fprintf( outfp, "\n" );
+			}
+			Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+			fprintf( outfp, "---\n" );
+
+			Cudd_RecursiveDeref( manager, tmp2 );
 			break;
 
 		case INTCOM_WINNING:
+			if (verbose) {
+				printf( "Winning set membership check for state " );
+				for (i = 0; i < num_env+num_sys; i++)
+					printf( " %d", *(intcom_state1+i) );
+				printf( "\n" );
+			}
 			state2cube( intcom_state1, cube, num_env+num_sys );
+			free( intcom_state1 );
 			ddval = Cudd_Eval( manager, W, cube );
 			if (ddval->type.value < .1) {
 				fprintf( outfp, "False\n" );
 			} else {
 				fprintf( outfp, "True\n" );
 			}
+			break;
+
+		case INTCOM_GETINDEX:
+			if (verbose) {
+				printf( "Reachability index for goal %d of state ", intcom_index );
+				for (i = 0; i < num_env+num_sys; i++)
+					printf( " %d", *(intcom_state1+i) );
+				printf( "\n" );
+			}
+			state2cube( intcom_state1, cube, num_env+num_sys );
 			free( intcom_state1 );
+			j = *(num_sublevels+intcom_index);
+			do {
+				j--;
+				ddval = Cudd_Eval( manager, *(*(Y+intcom_index)+j), cube );
+				if (ddval->type.value < .1) {
+					j++;
+					break;
+				}
+			} while (j > 0);
+			fprintf( outfp, "%d\n", j );
 			break;
 		}
 
@@ -428,7 +624,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 	/* Pre-exit clean-up */
 	Cudd_RecursiveDeref( manager, W );
-	Cudd_RecursiveDeref( manager, strans_into_W );
 	Cudd_RecursiveDeref( manager, einit );
 	Cudd_RecursiveDeref( manager, sinit );
 	Cudd_RecursiveDeref( manager, etrans );

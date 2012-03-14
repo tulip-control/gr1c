@@ -298,22 +298,16 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		state2cube( this_node_stack->state, cube, num_env+num_sys );
 		loop_mode = this_node_stack->mode;
 		do {
-			j = *(num_sublevels+this_node_stack->mode)-1;
-			while (j > 0) {
+			j = *(num_sublevels+this_node_stack->mode);
+			do {
+				j--;
 				ddval = Cudd_Eval( manager, *(*(Y+this_node_stack->mode)+j), cube );
 				if (ddval->type.value < .1) {
 					j++;
 					break;
 				}
-				j--;
-			}
+			} while (j > 0);
 			if (j == 0) {
-				ddval = Cudd_Eval( manager, *(*(Y+this_node_stack->mode)), cube );
-				if (ddval->type.value < .1) {
-					j++;
-					break;
-				}
-
 				if (this_node_stack->mode == num_sgoals-1) {
 					this_node_stack->mode = 0;
 				} else {
@@ -389,12 +383,12 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			Cudd_Ref( tmp );
 			tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
 							  node->state,
-							  tmp, 0, num_sys+num_env );
+							  tmp, 0, num_env+num_sys );
 			Cudd_RecursiveDeref( manager, tmp );
 			if (num_env > 0) {
 				tmp = state2cof( manager, cube, 2*(num_env+num_sys),
 								 *(env_moves+k),
-								 tmp2, num_sys+num_env, num_env );
+								 tmp2, num_env+num_sys, num_env );
 				Cudd_RecursiveDeref( manager, tmp2 );
 			} else {
 				tmp = tmp2;
@@ -794,13 +788,11 @@ void initialize_cube( bool *cube, int *gcube, int len )
 void increment_cube( bool *cube, int *gcube, int len )
 {
 	int i;
-	unsigned char carry = 0;
 	for (i = len-1; i >= 0; i--) {
 		if (*(gcube+i) == 2) {
-			*(cube+i) += 1 + carry;
+			(*(cube+i))++;
 			if (*(cube+i) > 1) {
-				carry = 1;
-				(*(cube+i))--;
+				*(cube+i) = 0;
 			} else {
 				return;
 			}
