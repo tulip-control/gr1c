@@ -77,7 +77,7 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 /* In the case of pointers, it is expected that command_loop will
    allocate the memory, and levelset_interactive (or otherwise the
    function that invoked command_loop) will free it. */
-bool *intcom_state1, *intcom_state2;
+bool *intcom_state;
 int intcom_index;  /* Also used to pass strategy goal mode. */
 char *intcom_name;
 
@@ -128,6 +128,10 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 	num_sys = tree_size( svar_list );
 
 	while (input = readline( "" )) {
+		if (*input == '\0') {
+			free( input );
+			continue;
+		}
 		if (!strncmp( input, "quit", strlen( "quit" ) )) {
 			break;
 		} else if (!strncmp( input, "help", strlen( "help" ) )) {
@@ -192,41 +196,45 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 					var_index++;
 				}
 			}
+		} else if (!strncmp( input, "refresh winning", strlen( "refresh winning" ) )) {
+			return INTCOM_REWIN;
+		} else if (!strncmp( input, "refresh levels", strlen( "refresh levels" ) )) {
+			return INTCOM_RELEVELS;
 		} else if (!strncmp( input, "winning ", strlen( "winning " ) )) {
 
 			*(input+strlen( "winning" )) = '\0';
-			intcom_state1 = read_state_str( input+strlen( "winning" )+1,
+			intcom_state = read_state_str( input+strlen( "winning" )+1,
 											num_env+num_sys );
 			free( input );
-			if (intcom_state1 == NULL)
+			if (intcom_state == NULL)
 				return -1;
 			return INTCOM_WINNING;
 			
 		} else if (!strncmp( input, "envnext ", strlen( "envnext " ) )) {
 
 			*(input+strlen( "envnext" )) = '\0';
-			intcom_state1 = read_state_str( input+strlen( "envnext" )+1,
+			intcom_state = read_state_str( input+strlen( "envnext" )+1,
 											num_env+num_sys );
 			free( input );
-			if (intcom_state1 == NULL)
+			if (intcom_state == NULL)
 				return -1;
 			return INTCOM_ENVNEXT;
 			
 		} else if (!strncmp( input, "sysnext ", strlen( "sysnext " ) )) {
 
 			*(input+strlen( "sysnext" )) = '\0';
-			intcom_state1 = read_state_str( input+strlen( "sysnext" )+1,
+			intcom_state = read_state_str( input+strlen( "sysnext" )+1,
 											2*num_env+num_sys+1 );
-			if (intcom_state1 == NULL)
+			if (intcom_state == NULL)
 				return -1;
-			if (*(intcom_state1+2*num_env+num_sys) < 0 || *(intcom_state1+2*num_env+num_sys) > num_sgoals-1) {
-				fprintf( outfp, "Invalid mode: %d", *(intcom_state1+2*num_env+num_sys) );
-				free( intcom_state1 );
+			if (*(intcom_state+2*num_env+num_sys) < 0 || *(intcom_state+2*num_env+num_sys) > num_sgoals-1) {
+				fprintf( outfp, "Invalid mode: %d", *(intcom_state+2*num_env+num_sys) );
+				free( intcom_state );
 			} else {
 				free( input );
-				intcom_index  = *(intcom_state1+2*num_env+num_sys);
-				intcom_state1 = realloc( intcom_state1, (2*num_env+num_sys)*sizeof(bool) );
-				if (intcom_state1 == NULL) {
+				intcom_index  = *(intcom_state+2*num_env+num_sys);
+				intcom_state = realloc( intcom_state, (2*num_env+num_sys)*sizeof(bool) );
+				if (intcom_state == NULL) {
 					perror( "command_loop, realloc" );
 					return -1;
 				}
@@ -236,32 +244,89 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		} else if (!strncmp( input, "sysnexta ", strlen( "sysnexta " ) )) {
 
 			*(input+strlen( "sysnexta" )) = '\0';
-			intcom_state1 = read_state_str( input+strlen( "sysnexta" )+1,
+			intcom_state = read_state_str( input+strlen( "sysnexta" )+1,
 											2*num_env+num_sys );
 			free( input );
-			if (intcom_state1 == NULL)
+			if (intcom_state == NULL)
 				return -1;
 			return INTCOM_SYSNEXTA;
+			
+		} else if (!strncmp( input, "restrict ", strlen( "restrict " ) )) {
+
+			*(input+strlen( "restrict" )) = '\0';
+			intcom_state = read_state_str( input+strlen( "restrict" )+1,
+											2*(num_env+num_sys) );
+			free( input );
+			if (intcom_state == NULL)
+				return -1;
+			return INTCOM_RESTRICT;
+			
+		} else if (!strncmp( input, "relax ", strlen( "relax " ) )) {
+
+			*(input+strlen( "relax" )) = '\0';
+			intcom_state = read_state_str( input+strlen( "relax" )+1,
+											2*(num_env+num_sys) );
+			free( input );
+			if (intcom_state == NULL)
+				return -1;
+			return INTCOM_RELAX;
+			
+		} else if (!strncmp( input, "unrestrict ", strlen( "unrestrict " ) )) {
+			free( input );
+			return INTCOM_UNRESTRICT;
+		} else if (!strncmp( input, "unrelax ", strlen( "unrelax " ) )) {
+			free( input );
+			return INTCOM_UNRELAX;
+		} else if (!strncmp( input, "unreach ", strlen( "unreach " ) )) {
+
+			*(input+strlen( "unreach" )) = '\0';
+			intcom_state = read_state_str( input+strlen( "unreach" )+1,
+											num_env+num_sys );
+			free( input );
+			if (intcom_state == NULL)
+				return -1;
+			return INTCOM_UNREACH;
 			
 		} else if (!strncmp( input, "getindex ", strlen( "getindex " ) )) {
 
 			*(input+strlen( "getindex" )) = '\0';
-			intcom_state1 = read_state_str( input+strlen( "getindex" )+1,
+			intcom_state = read_state_str( input+strlen( "getindex" )+1,
 											num_env+num_sys+1 );
-			if (intcom_state1 == NULL)
+			if (intcom_state == NULL)
 				return -1;
-			if (*(intcom_state1+num_env+num_sys) < 0 || *(intcom_state1+num_env+num_sys) > num_sgoals-1) {
-				fprintf( outfp, "Invalid mode: %d", *(intcom_state1+num_env+num_sys) );
-				free( intcom_state1 );
+			if (*(intcom_state+num_env+num_sys) < 0 || *(intcom_state+num_env+num_sys) > num_sgoals-1) {
+				fprintf( outfp, "Invalid mode: %d", *(intcom_state+num_env+num_sys) );
+				free( intcom_state );
 			} else {
 				free( input );
-				intcom_index = *(intcom_state1+num_env+num_sys);
-				intcom_state1 = realloc( intcom_state1, (num_env+num_sys)*sizeof(bool) );
-				if (intcom_state1 == NULL) {
+				intcom_index = *(intcom_state+num_env+num_sys);
+				intcom_state = realloc( intcom_state, (num_env+num_sys)*sizeof(bool) );
+				if (intcom_state == NULL) {
 					perror( "command_loop, realloc" );
 					return -1;
 				}
 				return INTCOM_GETINDEX;
+			}
+			
+		} else if (!strncmp( input, "setindex ", strlen( "setindex " ) )) {
+
+			*(input+strlen( "setindex" )) = '\0';
+			intcom_state = read_state_str( input+strlen( "setindex" )+1,
+											num_env+num_sys+1 );
+			if (intcom_state == NULL)
+				return -1;
+			if (*(intcom_state+num_env+num_sys) < 0 || *(intcom_state+num_env+num_sys) > num_sgoals-1) {
+				fprintf( outfp, "Invalid mode: %d", *(intcom_state+num_env+num_sys) );
+				free( intcom_state );
+			} else {
+				free( input );
+				intcom_index = *(intcom_state+num_env+num_sys);
+				intcom_state = realloc( intcom_state, (num_env+num_sys)*sizeof(bool) );
+				if (intcom_state == NULL) {
+					perror( "command_loop, realloc" );
+					return -1;
+				}
+				return INTCOM_SETINDEX;
 			}
 			
 		} else {
@@ -452,13 +517,13 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 		case INTCOM_ENVNEXT:
 			if (num_env > 0) {
-				env_moves = get_env_moves( manager, cube, intcom_state1,
+				env_moves = get_env_moves( manager, cube, intcom_state,
 										   etrans, num_env, num_sys,
 										   &emoves_len );
-				free( intcom_state1 );
+				free( intcom_state );
 			} else {
 				fprintf( outfp, "(none)\n" );
-				free( intcom_state1 );
+				free( intcom_state );
 				break;
 			}
 			
@@ -510,17 +575,17 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
 			Cudd_Ref( tmp );
 			tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
-							  intcom_state1, tmp, 0, num_env+num_sys );
+							  intcom_state, tmp, 0, num_env+num_sys );
 			Cudd_RecursiveDeref( manager, tmp );
 			if (num_env > 0) {
 				tmp = state2cof( manager, cube, 2*(num_sys+num_env),
-								 intcom_state1+num_env+num_sys,
+								 intcom_state+num_env+num_sys,
 								 tmp2, num_env+num_sys, num_env );
 				Cudd_RecursiveDeref( manager, tmp2 );
 			} else {
 				tmp = tmp2;
 			}
-			free( intcom_state1 );
+			free( intcom_state );
 
 			Cudd_AutodynDisable( manager );
 			Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
@@ -545,16 +610,16 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 		case INTCOM_SYSNEXTA:
 			tmp = state2cof( manager, cube, 2*(num_env+num_sys),
-							 intcom_state1, strans, 0, num_env+num_sys );
+							 intcom_state, strans, 0, num_env+num_sys );
 			if (num_env > 0) {
 				tmp2 = state2cof( manager, cube, 2*(num_sys+num_env),
-								  intcom_state1+num_env+num_sys,
+								  intcom_state+num_env+num_sys,
 								  tmp, num_env+num_sys, num_env );
 				Cudd_RecursiveDeref( manager, tmp );
 			} else {
 				tmp2 = tmp;
 			}
-			free( intcom_state1 );
+			free( intcom_state );
 
 			Cudd_AutodynDisable( manager );
 			Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
@@ -579,11 +644,11 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			if (verbose) {
 				printf( "Winning set membership check for state " );
 				for (i = 0; i < num_env+num_sys; i++)
-					printf( " %d", *(intcom_state1+i) );
+					printf( " %d", *(intcom_state+i) );
 				printf( "\n" );
 			}
-			state2cube( intcom_state1, cube, num_env+num_sys );
-			free( intcom_state1 );
+			state2cube( intcom_state, cube, num_env+num_sys );
+			free( intcom_state );
 			ddval = Cudd_Eval( manager, W, cube );
 			if (ddval->type.value < .1) {
 				fprintf( outfp, "False\n" );
@@ -596,11 +661,11 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			if (verbose) {
 				printf( "Reachability index for goal %d of state ", intcom_index );
 				for (i = 0; i < num_env+num_sys; i++)
-					printf( " %d", *(intcom_state1+i) );
+					printf( " %d", *(intcom_state+i) );
 				printf( "\n" );
 			}
-			state2cube( intcom_state1, cube, num_env+num_sys );
-			free( intcom_state1 );
+			state2cube( intcom_state, cube, num_env+num_sys );
+			free( intcom_state );
 			j = *(num_sublevels+intcom_index);
 			do {
 				j--;
@@ -611,6 +676,19 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				}
 			} while (j > 0);
 			fprintf( outfp, "%d\n", j );
+			break;
+
+		case INTCOM_RESTRICT:
+		case INTCOM_RELAX:
+		case INTCOM_UNREACH:
+		case INTCOM_SETINDEX:
+			free( intcom_state );
+			fprintf( outfp, "(not implemented yet.)\n" );
+			break;
+
+		case INTCOM_UNRESTRICT:
+		case INTCOM_UNRELAX:
+			fprintf( outfp, "(not implemented yet.)\n" );
 			break;
 		}
 

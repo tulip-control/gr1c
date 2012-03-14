@@ -101,7 +101,7 @@ relax STATE1 STATE2
 un{restrict,relax}
   clear all restrictions or relaxations thus far.
 
-unreachable STATE
+unreach STATE
   make STATE unreachable, i.e., all ingoing edges are removed.
 
 getindex STATE GOALMODE
