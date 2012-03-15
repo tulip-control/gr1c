@@ -360,7 +360,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	DdNode *einit, *sinit, *etrans, *strans, **egoals, **sgoals;
 	
 	DdNode *ddval;  /* Store result of evaluating a BDD */
-	DdNode ***Y = NULL, *Y_exmod;
+	DdNode ***Y = NULL;
 	DdNode *Y_i_primed;
 	int *num_sublevels = NULL;
 
@@ -399,14 +399,14 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	state = malloc( sizeof(bool)*(num_env+num_sys) );
 	if (state == NULL) {
 		perror( "levelset_interactive, malloc" );
-		return NULL;
+		return -1;
 	}
 
 	/* Allocate cube array, used later for quantifying over variables. */
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
 		perror( "levelset_interactive, malloc" );
-		return NULL;
+		return -1;
 	}
 
 	/* Chain together environment and system variable lists for
@@ -419,7 +419,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 		var_separator = get_list_item( evar_list, -1 );
 		if (var_separator == NULL) {
 			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
-			return NULL;
+			return -1;
 		}
 		var_separator->left = svar_list;
 	}
@@ -546,7 +546,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			tmp = Cudd_bddVarMap( manager, W );
 			if (tmp == NULL) {
 				fprintf( stderr, "Error levelset_interactive: Error in swapping variables with primed forms.\n" );
-				return NULL;
+				return -1;
 			}
 			Cudd_Ref( tmp );
 			strans_into_W = Cudd_bddAnd( manager, strans, tmp );
@@ -569,7 +569,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			}
 			if (Y_i_primed == NULL) {
 				fprintf( stderr, "levelset_interactive: Error in swapping variables with primed forms.\n" );
-				return NULL;
+				return -1;
 			}
 
 			tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
