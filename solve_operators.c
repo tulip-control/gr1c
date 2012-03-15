@@ -242,7 +242,6 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 								 DdNode **egoals, DdNode **sgoals,
 								 unsigned char verbose )
 {
-	ptree_t *var_separator;
 	DdNode *X = NULL, *X_prev = NULL;
 	DdNode *Y = NULL, *Y_exmod = NULL, *Y_prev = NULL;
 	DdNode **Z = NULL, **Z_prev = NULL;
