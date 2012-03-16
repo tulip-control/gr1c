@@ -83,17 +83,14 @@ char *intcom_name;
 
 
 /* Read space-separated values from given string.  Return the state
-   vector on success, NULL if error.  N.B., the given string will be
-   manipulated and not restored, up to the position of the last read
-   value. */
+   vector on success, NULL if error. */
 bool *read_state_str( char *input, int len )
 {
 	bool *state;
 	int i;
 	char *start;
 	char *end;
-	int input_len = strlen( input );
-	if (len < 1 || input_len < 1)
+	if (len < 1 || strlen( input ) < 1)
 		return NULL;
 	state = malloc( sizeof(bool)*len );
 	if (state == NULL) {
@@ -105,6 +102,8 @@ bool *read_state_str( char *input, int len )
 	end = input;
 	for (i = 0; i < len && *end != '\0'; i++) {
 		*(state+i) = strtol( start, &end, 10 );
+		if (start == end)
+			break;
 		start = end;
 	}
 	if (i < len) {
@@ -584,6 +583,15 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				Cudd_RecursiveDeref( manager, tmp2 );
 			} else {
 				tmp = tmp2;
+			}
+			if (verbose) {
+				printf( "From state " );
+				for (i = 0; i < num_env+num_sys; i++)
+					printf( " %d", *(intcom_state+i) );
+				printf( "; given env move " );
+				for (i = 0; i < num_env; i++)
+					printf( " %d", *(intcom_state+num_env+num_sys+i) );
+				printf( "; goal %d\n", intcom_index );
 			}
 			free( intcom_state );
 

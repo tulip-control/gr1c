@@ -406,9 +406,24 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				Cudd_GenFree( gen );
 				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 				Cudd_RecursiveDeref( manager, tmp );
+				Cudd_RecursiveDeref( manager, Y_i_primed );
+				if (j > 0) {
+					Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+node->mode)+j) );
+					if (Y_i_primed == NULL) {
+						fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
+						return NULL;
+					}
+					
+				} else {
+					Y_i_primed = Cudd_ReadOne( manager );
+				}
+				Cudd_Ref( Y_i_primed );
+				tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
+				Cudd_Ref( tmp );
 				tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
 								  node->state,
-								  strans_into_W, 0, num_sys+num_env );
+								  tmp, 0, num_sys+num_env );
+				Cudd_RecursiveDeref( manager, tmp );
 				if (num_env > 0) {
 					tmp = state2cof( manager, cube, 2*(num_env+num_sys),
 									 *(env_moves+k),
@@ -439,23 +454,24 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 					*(cube+i) = *(gcube+i);
 				Cudd_GenFree( gen );
 				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
-				if (j == 1) {
-                    /* Next state will satisfy current target goal,
-					   whence we can switch to the next mode. */
-					if (node->mode == num_sgoals-1) {
-						next_mode = 0;
-					} else {
-						next_mode = node->mode + 1;
-					}
-				} else {
-					next_mode = node->mode;
-				}
 			}
 			
 			Cudd_RecursiveDeref( manager, tmp );
 			initialize_cube( state, cube+num_env+num_sys, num_env+num_sys );
 			for (i = 0; i < num_env; i++)
 				*(state+i) = *(*(env_moves+k)+i);
+
+			state2cube( state, cube, num_env+num_sys );
+			ddval = Cudd_Eval( manager, **(Y+node->mode), cube );
+			if (ddval->type.value < .1) {
+				next_mode = node->mode;
+			} else {
+				if (node->mode == num_sgoals-1) {
+					next_mode = 0;
+				} else {
+					next_mode = node->mode + 1;
+				}
+			}
 
 			new_node = find_anode( strategy, next_mode, state, num_env+num_sys );
 			if (new_node == NULL) {
@@ -685,7 +701,7 @@ DdNode *state2cof( DdManager *manager, int *cube, int cube_len,
 
 	tmp = Cudd_Cofactor( manager, trans, ddcube );
 	if (tmp == NULL) {
-		fprintf( stderr, "Error in generating cofactor." );
+		fprintf( stderr, "Error in computing cofactor." );
 		return NULL;
 	}
 	Cudd_Ref( tmp );
