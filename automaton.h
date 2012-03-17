@@ -29,6 +29,11 @@ typedef struct anode_t
 } anode_t;
 
 
+/* Flags to set format for output.  Combine non-conflicting flags with or. */
+#define DOT_AUT_ALL 0
+#define DOT_AUT_BINARY 1
+
+
 anode_t *insert_anode( anode_t *head, int mode, bool *state, int state_len );
 /* Insert node at the front of the given node list.  If given head is
    NULL, a new list will be created.
@@ -83,6 +88,11 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
    each automaton node.
 
    If fp = NULL, then write to stdout.  Return nonzero if error. */
+
+int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+				  unsigned char format_flags, FILE *fp );
+/* Dump DOT file describing the automaton (strategy).  See comments
+   for tulip_aut_dump. */
 
 void list_aut_dump( anode_t *head, int state_len, FILE *fp );
 /* Dump list of nodes; mostly useful for debugging.

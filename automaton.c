@@ -11,6 +11,134 @@
 #include "automaton.h"
 
 
+int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+				  unsigned char format_flags, FILE *fp )
+{
+	int i, j, last_nonzero;
+	anode_t *node;
+	int node_counter = 0;
+	ptree_t *var;
+	int num_env, num_sys;
+
+	if (fp == NULL)
+		fp = stdout;
+
+	num_env = tree_size( evar_list );
+	num_sys = tree_size( svar_list );
+
+	fprintf( fp, "/* strategy synthesized with gr1c, version " GR1C_VERSION " */\n" );
+	fprintf( fp, "digraph A {\n" );
+	node = head;
+	while (node) {
+		for (i = 0; i < node->trans_len; i++) {
+			fprintf( fp, "    \"%d;\\n", node_counter );
+			if (format_flags == DOT_AUT_ALL) {
+				last_nonzero = num_env+num_sys-1;
+			} else {
+				for (last_nonzero = num_env+num_sys-1; last_nonzero >= 0
+						 && *(node->state+last_nonzero) == 0; last_nonzero--) ;
+			}
+			if (last_nonzero < 0) {
+				fprintf( fp, "{}" );
+			} else {
+				for (j = 0; j < num_env; j++) {
+					if ((format_flags & DOT_AUT_BINARY) && *(node->state+j) == 0)
+						continue;
+					var = get_list_item( evar_list, j );
+					if (j == last_nonzero) {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s", var->name );
+						} else {
+							fprintf( fp, "%s=%d", var->name, *(node->state+j) );
+						}
+					} else {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s, ", var->name );
+						} else {
+							fprintf( fp, "%s=%d, ", var->name, *(node->state+j) );
+						}
+					}
+				}
+				for (j = 0; j < num_sys; j++) {
+					if ((format_flags & DOT_AUT_BINARY) && *(node->state+num_env+j) == 0)
+						continue;
+					var = get_list_item( svar_list, j );
+					if (j == last_nonzero-num_env) {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s", var->name );
+						} else {
+							fprintf( fp, "%s=%d", var->name, *(node->state+num_env+j) );
+						}
+					} else {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s, ", var->name );
+						} else {
+							fprintf( fp, "%s=%d, ", var->name, *(node->state+num_env+j) );
+						}
+					}
+				}
+			}
+			fprintf( fp, "\" -> \"%d;\\n",
+					 find_anode_index( head,
+									   (*(node->trans+i))->mode,
+									   (*(node->trans+i))->state, num_env+num_sys ) );
+			if (format_flags == DOT_AUT_ALL) {
+				last_nonzero = num_env+num_sys-1;
+			} else {
+				for (last_nonzero = num_env+num_sys-1; last_nonzero >= 0
+						 && *((*(node->trans+i))->state+last_nonzero) == 0; last_nonzero--) ;
+			}
+			if (last_nonzero < 0) {
+				fprintf( fp, "{}" );
+			} else {
+				for (j = 0; j < num_env; j++) {
+					if ((format_flags & DOT_AUT_BINARY) && *((*(node->trans+i))->state+j) == 0)
+						continue;
+					var = get_list_item( evar_list, j );
+					if (j == last_nonzero) {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s", var->name );
+						} else {
+							fprintf( fp, "%s=%d", var->name, *((*(node->trans+i))->state+j) );
+						}
+					} else {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s, ", var->name );
+						} else {
+							fprintf( fp, "%s=%d, ", var->name, *((*(node->trans+i))->state+j) );
+						}
+					}
+				}
+				for (j = 0; j < num_sys; j++) {
+					if ((format_flags & DOT_AUT_BINARY) && *((*(node->trans+i))->state+num_env+j) == 0)
+						continue;
+					var = get_list_item( svar_list, j );
+					if (j == last_nonzero-num_env) {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s", var->name );
+						} else {
+							fprintf( fp, "%s=%d", var->name, *((*(node->trans+i))->state+num_env+j) );
+						}
+					} else {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s, ", var->name );
+						} else {
+							fprintf( fp, "%s=%d, ", var->name, *((*(node->trans+i))->state+num_env+j) );
+						}
+					}
+				}
+			}
+			fprintf( fp, "\"\n" );
+		}
+		node_counter++;
+		node = node->next;
+	}
+	fprintf( fp, "}\n" );
+
+	return 0;
+}
+
+
 int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp )
 {
 	int i;
