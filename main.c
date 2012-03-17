@@ -124,7 +124,7 @@ int main( int argc, char **argv )
 	}
 
 	if (argc > 5 || help_flag) {
-		printf( "Usage: %s [-hvspr] [FILE]\n\n"
+		printf( "Usage: %s [-hVvspri] [-t TYPE] [FILE]\n\n"
 				"  -h        this help message\n"
 				"  -V        print version and exit\n"
 				"  -v        be verbose\n"
