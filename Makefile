@@ -1,8 +1,8 @@
-# SCL; 11 Mar 2012.
+# SCL; 18 Mar 2012.
 #
 #
 
-INSTALLDIR = ~/opt/bin
+INSTALLDIR = /usr/local/bin
 CUDD_ROOT = extern/cudd-2.5.0
 CUDD_LIB = $(CUDD_ROOT)/cudd/libcudd.a $(CUDD_ROOT)/mtr/libmtr.a $(CUDD_ROOT)/st/libst.a $(CUDD_ROOT)/util/libutil.a $(CUDD_ROOT)/epd/libepd.a
 
