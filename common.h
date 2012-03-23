@@ -1,7 +1,15 @@
-/* common.h -- Project-wide definitions and macros.
+/** \file common.h
+ * \brief Project-wide definitions and macros.
  *
  *
  * SCL; Mar 2012.
+ */
+
+/** \mainpage Introduction
+ *
+ * Rudimentary source documentation... to be later expanded as the
+ * project matures. Please also consult the README and
+ * <a href="https://github.com/slivingston/gr1c/wiki">wiki</a>.
  */
 
 

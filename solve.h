@@ -1,4 +1,5 @@
-/* solve.h -- Compute realizability and a strategy for a GR(1) game.
+/** \file solve.h
+ * \brief Compute realizability and a strategy for a GR(1) game.
  *
  *
  * SCL; Feb, Mar 2012.
@@ -19,9 +20,7 @@
 #define ALL_SYS_INIT 2
 
 
-DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
-						  unsigned char verbose );
-/* If realizable, then returns (a pointer to) the characteristic
+/** If realizable, then returns (a pointer to) the characteristic
    function of the winning set.  Otherwise (if problem is not
    realizable), returns NULL.  Given manager must already be
    initialized.  To account for all variables and their primed
@@ -45,49 +44,51 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
                          environment and system initial conditions is
                          in the winning set.
 */
+DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
+						  unsigned char verbose );
 
-anode_t *synthesize( DdManager *manager, unsigned char init_flags,
-					 unsigned char verbose );
-/* Synthesize a strategy.  The specification is assumed to be
+/** Synthesize a strategy.  The specification is assumed to be
    realizable when this function is invoked.  Return pointer to
    automaton representing the strategy, or NULL if error. Also see
    documentation for check_realizable. */
+anode_t *synthesize( DdManager *manager, unsigned char init_flags,
+					 unsigned char verbose );
 
-DdNode *compute_winning_set( DdManager *manager, unsigned char verbose );
-/* Compute the set of states that are winning for the system, under
+/** Compute the set of states that are winning for the system, under
    the specification defined by the global parse trees (generated from
    gr1c input in main()). Basically creates BDDs from parse trees and
    then calls compute_winning_set_BDD. */
+DdNode *compute_winning_set( DdManager *manager, unsigned char verbose );
 
-DdNode *compute_winning_set_BDD( DdManager *manager,
-								 DdNode *etrans, DdNode *strans,
-								 DdNode **egoals, DdNode **sgoals,
-								 unsigned char verbose );
-/* Compute the set of states that are winning for the system, under
+/** Compute the set of states that are winning for the system, under
    the specification, while not including initial conditions. The
    transition (safety) formulas are defined by the given environment
    and system BDDs (etrans and strans, respectively), and the
    environment and system goal formulas are defined by egoals and
    sgoals, respectively. */
+DdNode *compute_winning_set_BDD( DdManager *manager,
+								 DdNode *etrans, DdNode *strans,
+								 DdNode **egoals, DdNode **sgoals,
+								 unsigned char verbose );
 
+/** W is assumed to be (the characteristic function of) the set of
+   winning states, e.g., as returned by compute_winning_set.
+   num_sublevel_sets is an int array of length equal to the number of
+   system goals.  Space for it is allocated by compute_sublevel_sets
+   and expected to be freed by the caller (or elsewhere). */
 DdNode ***compute_sublevel_sets( DdManager *manager,
 								 DdNode *W,
 								 DdNode *etrans, DdNode *strans,
 								 DdNode **egoals, DdNode **sgoals,
 								 int **num_sublevels,
 								 unsigned char verbose );
-/* W is assumed to be (the characteristic function of) the set of
-   winning states, e.g., as returned by compute_winning_set.
-   num_sublevel_sets is an int array of length equal to the number of
-   system goals.  Space for it is allocated by compute_sublevel_sets
-   and expected to be freed by the caller (or elsewhere). */
 
+/** Read commands from input stream infp and write results to outfp.
+   Return 1 on successful completion, 0 if specification unrealizable,
+   and -1 if error. */
 int levelset_interactive( DdManager *manager, unsigned char init_flags,
 						  FILE *infp, FILE *outfp,
 						  unsigned char verbose );
-/* Read commands from input stream infp and write results to outfp.
-   Return 1 on successful completion, 0 if specification unrealizable,
-   and -1 if error. */
 
 
 #endif

@@ -42,3 +42,4 @@ png:
 
 clean:
 	rm -fv *~ *.o y.tab.h gr1c_parse.c gr1c
+	rm -fr doc/html/*
