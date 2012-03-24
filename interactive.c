@@ -73,6 +73,9 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 #define INTCOM_SYSNEXTA 13
 /***************************/
 
+/* Help string */
+#define INTCOM_HELP_STR "winning STATE\nenvnext STATE\nsysnext STATE1 STATE2ENV GOALMODE\nsysnexta STATE1 STATE2ENV\nrestrict STATE1 STATE2\nrelax STATE1 STATE2\nun{restrict,relax}\nunreach STATE\ngetindex STATE GOALMODE\nsetindex STATE GOALMODE\nrefresh winning\nrefresh levels\naddvar env (sys) VARIABLE\nenvvar\nsysvar\nvar\nnumgoals\nenable (disable) autoreorder\nquit"
+
 /**** Command arguments ****/
 /* In the case of pointers, it is expected that command_loop will
    allocate the memory, and levelset_interactive (or otherwise the
@@ -107,7 +110,6 @@ bool *read_state_str( char *input, int len )
 		start = end;
 	}
 	if (i < len) {
-		fprintf( stderr, "Error read_state_str: not all of requested state components found.\n" );
 		free( state );
 		return NULL;
 	}
@@ -134,7 +136,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		if (!strncmp( input, "quit", strlen( "quit" ) )) {
 			break;
 		} else if (!strncmp( input, "help", strlen( "help" ) )) {
-			fprintf( outfp, "(not implemented yet.)" );
+			fprintf( outfp, INTCOM_HELP_STR );
 		} else if (!strncmp( input, "enable autoreorder", strlen( "enable autoreorder" ) )) {
 			Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 		} else if (!strncmp( input, "disable autoreorder", strlen( "disable autoreorder" ) )) {
@@ -204,28 +206,35 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 			*(input+strlen( "winning" )) = '\0';
 			intcom_state = read_state_str( input+strlen( "winning" )+1,
 											num_env+num_sys );
-			free( input );
-			if (intcom_state == NULL)
-				return -1;
-			return INTCOM_WINNING;
+			if (intcom_state != NULL) {
+				free( input );
+				return INTCOM_WINNING;
+			} else {
+				fprintf( outfp, "Invalid arguments." );
+			}
 			
 		} else if (!strncmp( input, "envnext ", strlen( "envnext " ) )) {
 
 			*(input+strlen( "envnext" )) = '\0';
 			intcom_state = read_state_str( input+strlen( "envnext" )+1,
 											num_env+num_sys );
-			free( input );
-			if (intcom_state == NULL)
-				return -1;
-			return INTCOM_ENVNEXT;
+			if (intcom_state != NULL) {
+				free( input );
+				return INTCOM_ENVNEXT;
+			} else {
+				fprintf( outfp, "Invalid arguments." );
+			}
 			
 		} else if (!strncmp( input, "sysnext ", strlen( "sysnext " ) )) {
 
 			*(input+strlen( "sysnext" )) = '\0';
 			intcom_state = read_state_str( input+strlen( "sysnext" )+1,
 											2*num_env+num_sys+1 );
-			if (intcom_state == NULL)
-				return -1;
+			if (intcom_state == NULL) {
+				free( input );
+				fprintf( outfp, "Invalid arguments.\n" );
+				continue;
+			}
 			if (*(intcom_state+2*num_env+num_sys) < 0 || *(intcom_state+2*num_env+num_sys) > num_sgoals-1) {
 				fprintf( outfp, "Invalid mode: %d", *(intcom_state+2*num_env+num_sys) );
 				free( intcom_state );
@@ -245,30 +254,36 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 			*(input+strlen( "sysnexta" )) = '\0';
 			intcom_state = read_state_str( input+strlen( "sysnexta" )+1,
 											2*num_env+num_sys );
-			free( input );
-			if (intcom_state == NULL)
-				return -1;
-			return INTCOM_SYSNEXTA;
+			if (intcom_state != NULL) {
+				free( input );
+				return INTCOM_SYSNEXTA;
+			} else {
+				fprintf( outfp, "Invalid arguments." );
+			}
 			
 		} else if (!strncmp( input, "restrict ", strlen( "restrict " ) )) {
 
 			*(input+strlen( "restrict" )) = '\0';
 			intcom_state = read_state_str( input+strlen( "restrict" )+1,
 											2*(num_env+num_sys) );
-			free( input );
-			if (intcom_state == NULL)
-				return -1;
-			return INTCOM_RESTRICT;
+			if (intcom_state != NULL) {
+				free( input );
+				return INTCOM_RESTRICT;
+			} else {
+				fprintf( outfp, "Invalid arguments." );
+			}
 			
 		} else if (!strncmp( input, "relax ", strlen( "relax " ) )) {
 
 			*(input+strlen( "relax" )) = '\0';
 			intcom_state = read_state_str( input+strlen( "relax" )+1,
 											2*(num_env+num_sys) );
-			free( input );
-			if (intcom_state == NULL)
-				return -1;
-			return INTCOM_RELAX;
+			if (intcom_state != NULL) {
+				free( input );
+				return INTCOM_RELAX;
+			} else {
+				fprintf( outfp, "Invalid arguments." );
+			}
 			
 		} else if (!strncmp( input, "unrestrict ", strlen( "unrestrict " ) )) {
 			free( input );
@@ -281,18 +296,23 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 			*(input+strlen( "unreach" )) = '\0';
 			intcom_state = read_state_str( input+strlen( "unreach" )+1,
 											num_env+num_sys );
-			free( input );
-			if (intcom_state == NULL)
-				return -1;
-			return INTCOM_UNREACH;
+			if (intcom_state != NULL) {
+				free( input );
+				return INTCOM_UNREACH;
+			} else {
+				fprintf( outfp, "Invalid arguments." );
+			}
 			
 		} else if (!strncmp( input, "getindex ", strlen( "getindex " ) )) {
 
 			*(input+strlen( "getindex" )) = '\0';
 			intcom_state = read_state_str( input+strlen( "getindex" )+1,
 											num_env+num_sys+1 );
-			if (intcom_state == NULL)
-				return -1;
+			if (intcom_state == NULL) {
+				free( input );
+				fprintf( outfp, "Invalid arguments.\n" );
+				continue;
+			}
 			if (*(intcom_state+num_env+num_sys) < 0 || *(intcom_state+num_env+num_sys) > num_sgoals-1) {
 				fprintf( outfp, "Invalid mode: %d", *(intcom_state+num_env+num_sys) );
 				free( intcom_state );
@@ -312,8 +332,11 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 			*(input+strlen( "setindex" )) = '\0';
 			intcom_state = read_state_str( input+strlen( "setindex" )+1,
 											num_env+num_sys+1 );
-			if (intcom_state == NULL)
-				return -1;
+			if (intcom_state == NULL) {
+				free( input );
+				fprintf( outfp, "Invalid arguments.\n" );
+				continue;
+			}
 			if (*(intcom_state+num_env+num_sys) < 0 || *(intcom_state+num_env+num_sys) > num_sgoals-1) {
 				fprintf( outfp, "Invalid mode: %d", *(intcom_state+num_env+num_sys) );
 				free( intcom_state );

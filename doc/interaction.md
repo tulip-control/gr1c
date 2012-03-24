@@ -78,7 +78,7 @@ Recognized commands
   have changed from restrict and relax commands); this command also
   causes the winning set to be computed (again).
 
-* **addvar {env,sys} VARIABLE**
+* **addvar env (sys) VARIABLE**
 
   add VARIABLE to list of environment (resp. system) variables if
   "env" (resp. "sys").
@@ -100,7 +100,7 @@ Recognized commands
 
   print number of system goals.
 
-* **{enable,disable} autoreorder**
+* **enable (disable) autoreorder**
 
   enable (resp. disable) automatic BDD reordering.
 
