@@ -40,6 +40,10 @@ png:
 		dot -Tpng -O $$k; \
 	done)
 
+.PHONY: doc
+doc:
+	@(cd doc; doxygen; cd ..)
+
 clean:
 	rm -fv *~ *.o y.tab.h gr1c_parse.c gr1c
-	rm -fr doc/html/*
+	rm -fr doc/build/*
