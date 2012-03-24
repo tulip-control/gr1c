@@ -100,6 +100,10 @@ Recognized commands
 
   print number of system goals.
 
+* **printgoal GOALMODE**
+
+  print formula for system goal index GOALMODE.
+
 * **enable (disable) autoreorder**
 
   enable (resp. disable) automatic BDD reordering.

@@ -74,7 +74,7 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 /***************************/
 
 /* Help string */
-#define INTCOM_HELP_STR "winning STATE\nenvnext STATE\nsysnext STATE1 STATE2ENV GOALMODE\nsysnexta STATE1 STATE2ENV\nrestrict STATE1 STATE2\nrelax STATE1 STATE2\nun{restrict,relax}\nunreach STATE\ngetindex STATE GOALMODE\nsetindex STATE GOALMODE\nrefresh winning\nrefresh levels\naddvar env (sys) VARIABLE\nenvvar\nsysvar\nvar\nnumgoals\nenable (disable) autoreorder\nquit"
+#define INTCOM_HELP_STR "winning STATE\nenvnext STATE\nsysnext STATE1 STATE2ENV GOALMODE\nsysnexta STATE1 STATE2ENV\nrestrict STATE1 STATE2\nrelax STATE1 STATE2\nun{restrict,relax}\nunreach STATE\ngetindex STATE GOALMODE\nsetindex STATE GOALMODE\nrefresh winning\nrefresh levels\naddvar env (sys) VARIABLE\nenvvar\nsysvar\nvar\nnumgoals\nprintgoal GOALMODE\nenable (disable) autoreorder\nquit"
 
 /**** Command arguments ****/
 /* In the case of pointers, it is expected that command_loop will
@@ -201,6 +201,21 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 			return INTCOM_REWIN;
 		} else if (!strncmp( input, "refresh levels", strlen( "refresh levels" ) )) {
 			return INTCOM_RELEVELS;
+		} else if (!strncmp( input, "printgoal ", strlen( "printgoal " ) )) {
+
+			*(input+strlen( "printgoal" )) = '\0';
+			intcom_state = read_state_str( input+strlen( "printgoal" )+1, 1 );
+			if (intcom_state == NULL) {
+				fprintf( outfp, "Invalid arguments." );
+			} else {
+				if (*intcom_state < 0 || *intcom_state > num_sgoals-1) {
+					fprintf( outfp, "Invalid mode: %d", *intcom_state );
+				} else {
+					print_formula( *(sys_goals+*intcom_state), stdout );
+				}
+				free( intcom_state );
+			}
+			
 		} else if (!strncmp( input, "winning ", strlen( "winning " ) )) {
 
 			*(input+strlen( "winning" )) = '\0';
