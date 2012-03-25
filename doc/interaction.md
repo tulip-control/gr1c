@@ -43,19 +43,30 @@ Recognized commands
 
 * **restrict STATE1 STATE2**
 
-  remove the edge from STATE1 to STATE2, if present.
+  remove edge from STATE1 to STATE2, if present. The behavior of this
+  command depends on the length of the second argument. If STATE2 has
+  length equal to the number of environment variables, then it is
+  treated as an environment move from STATE1, hence this command
+  removes the corresponding uncontrolled edge. If STATE2 is a complete
+  state vector, i.e., it has length equal to the total number of
+  environment and system variables, then it is treated as a system
+  move, hence this command removes the corresponding controlled edge.
 
 * **relax STATE1 STATE2**
 
-  add an edge from STATE1 to STATE2.
+  add an edge from STATE1 to STATE2. See description of "restrict"
+  command regarding how the length of STATE2 affects interpretation of
+  this command.
 
-* **un{restrict,relax}**
+* **clear**
 
-  clear all restrictions or relaxations thus far.
+  clear all restrictions and relaxations thus far.
 
 * **unreach STATE**
 
-  make STATE unreachable, i.e., all ingoing edges are removed.
+  make STATE unreachable, i.e., all ingoing edges are removed.  See
+  description of "restrict" command regarding how the length of STATE
+  affects interpretation of this command.
 
 * **getindex STATE GOALMODE**
 
@@ -74,9 +85,8 @@ Recognized commands
 
 * **refresh levels**
 
-  compute (sub)level sets (presumably after transition (safety) rules
-  have changed from restrict and relax commands); this command also
-  causes the winning set to be computed (again).
+  compute (sub)level sets; this command also causes the winning set to
+  be computed (again).
 
 * **addvar env (sys) VARIABLE**
 

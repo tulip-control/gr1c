@@ -26,8 +26,8 @@
    initialized.  To account for all variables and their primed
    ("next") forms, a reasonable initialization can be achieved with
 
-     manager = Cudd_Init( 2*(tree_size( evar_list )+tree_size( svar_list )),
-                          0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
+       manager = Cudd_Init( 2*(tree_size( evar_list )+tree_size( svar_list )),
+                            0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
 
    If an error occurs, then a message is printed to stderr and NULL is
    returned.  Depending on when and what provoked the error, there may
@@ -40,9 +40,9 @@
                         initialization such that the corresponding
                         state is in the winning set.
 
-       ALL_SYS_INIT    : realizable if every state satisfying both
-                         environment and system initial conditions is
-                         in the winning set.
+       ALL_SYS_INIT   : realizable if every state satisfying both
+                        environment and system initial conditions is
+                        in the winning set.
 */
 DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 						  unsigned char verbose );

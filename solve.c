@@ -401,8 +401,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				return NULL;
 			}
 			if (Cudd_IsGenEmpty( gen )) {
-				/* Cannot step closer to system goal, so instead we
-				   must be able to block an environment goal. */
+				/* Cannot step closer to system goal, so must be in
+				   goal state or able to block environment goal. */
 				Cudd_GenFree( gen );
 				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 				Cudd_RecursiveDeref( manager, tmp );
