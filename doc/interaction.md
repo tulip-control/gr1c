@@ -62,11 +62,11 @@ Recognized commands
 
   clear all restrictions and relaxations thus far.
 
-* **unreach STATE**
+* **blocksys STATESYS**, **blockenv STATEENV**
 
-  make STATE unreachable, i.e., all ingoing edges are removed.  See
-  description of "restrict" command regarding how the length of STATE
-  affects interpretation of this command.
+  prohibit system moves into STATESYS (resp., environment moves into
+  STATEENV).  See description of "restrict" command regarding how the
+  length of STATE affects interpretation of this command.
 
 * **getindex STATE GOALMODE**
 

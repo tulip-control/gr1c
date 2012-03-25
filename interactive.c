@@ -64,7 +64,8 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 #define INTCOM_RESTRICT 4
 #define INTCOM_RELAX 5
 #define INTCOM_CLEAR 6
-#define INTCOM_UNREACH 8
+#define INTCOM_BLKENV 7
+#define INTCOM_BLKSYS 8
 #define INTCOM_GETINDEX 9
 #define INTCOM_SETINDEX 10
 #define INTCOM_REWIN 11
@@ -80,7 +81,8 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 	"restrict STATE1 STATE2\n" \
 	"relax STATE1 STATE2\n" \
 	"clear\n" \
-	"unreach STATE\n" \
+	"blocksys STATESYS\n" \
+	"blockenv STATEENV\n" \
 	"getindex STATE GOALMODE\n" \
 	"setindex STATE GOALMODE\n" \
 	"refresh winning\n" \
@@ -347,14 +349,28 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		} else if (!strncmp( input, "clear", strlen( "clear" ) )) {
 			free( input );
 			return INTCOM_CLEAR;
-		} else if (!strncmp( input, "unreach ", strlen( "unreach " ) )) {
+		} else if (!strncmp( input, "blockenv ", strlen( "blockenv " ) )) {
 
-			*(input+strlen( "unreach" )) = '\0';
-			num_read = read_state_str( input+strlen( "unreach" )+1, &intcom_state,
-									   num_env+num_sys );
-			if ((num_read == num_env+num_sys) || (num_read == num_env)) {
+			*(input+strlen( "blockenv" )) = '\0';
+			num_read = read_state_str( input+strlen( "blockenv" )+1, &intcom_state,
+									   num_env );
+			if (num_read == num_env) {
 				free( input );
-				return INTCOM_UNREACH;
+				return INTCOM_BLKENV;
+			} else {
+				if (num_read > 0)
+					free( intcom_state );
+				fprintf( outfp, "Invalid arguments." );
+			}
+			
+		} else if (!strncmp( input, "blocksys ", strlen( "blocksys " ) )) {
+
+			*(input+strlen( "blocksys" )) = '\0';
+			num_read = read_state_str( input+strlen( "blocksys" )+1, &intcom_state,
+									   num_sys );
+			if (num_read == num_sys) {
+				free( input );
+				return INTCOM_BLKSYS;
 			} else {
 				if (num_read > 0)
 					free( intcom_state );
@@ -836,10 +852,18 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 		case INTCOM_RESTRICT:
 		case INTCOM_RELAX:
 			if (verbose) {
-				if (intcom_index == 2*num_env+num_sys) {
-					printf( "Removing uncontrolled edge from" );
-				} else { /* intcom_index == 2*(num_env+num_sys) */
-					printf( "Removing controlled edge from" );
+				if (command == INTCOM_RESTRICT) {
+					if (intcom_index == 2*num_env+num_sys) {
+						printf( "Removing uncontrolled edge from" );
+					} else { /* intcom_index == 2*(num_env+num_sys) */
+						printf( "Removing controlled edge from" );
+					}
+				} else { /* INTCOM_RELAX */
+					if (intcom_index == 2*num_env+num_sys) {
+						printf( "Adding uncontrolled edge from" );
+					} else { /* intcom_index == 2*(num_env+num_sys) */
+						printf( "Adding controlled edge from" );
+					}
 				}
 				for (i = 0; i < num_env+num_sys; i++)
 					printf( " %d", *(intcom_state+i) );
@@ -914,7 +938,77 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			free( intcom_state );
 			break;
 
-		case INTCOM_UNREACH:
+		case INTCOM_BLKENV:
+			if (verbose) {
+				printf( "Removing environment moves into" );
+				for (i = 0; i < num_env; i++)
+					printf( " %d", *(intcom_state+i) );
+				printf( "\n" );
+			}
+			vertex2 = Cudd_ReadOne( manager );
+			Cudd_Ref( vertex2 );
+			for (i = 0; i < num_env; i++) {
+				if (*(intcom_state+i)) {
+					tmp = Cudd_bddAnd( manager, vertex2,
+									   Cudd_bddIthVar( manager, num_env+num_sys+i ) );
+				} else {
+					tmp = Cudd_bddAnd( manager, vertex2,
+									   Cudd_Not( Cudd_bddIthVar( manager, num_env+num_sys+i ) ) );
+				}
+				Cudd_Ref( tmp );
+				Cudd_RecursiveDeref( manager, vertex2 );
+				vertex2 = tmp;
+			}
+			tmp = Cudd_Not( vertex2 );
+			Cudd_Ref( tmp );
+			Cudd_RecursiveDeref( manager, vertex2 );
+			vertex2 = tmp;
+
+			tmp = Cudd_bddAnd( manager, etrans_patched, vertex2 );
+			Cudd_Ref( tmp );
+			Cudd_RecursiveDeref( manager, etrans_patched );
+			etrans_patched = tmp;
+
+			Cudd_RecursiveDeref( manager, vertex2 );
+			free( intcom_state );
+			break;
+
+		case INTCOM_BLKSYS:
+			if (verbose) {
+				printf( "Removing system moves into" );
+				for (i = 0; i < num_sys; i++)
+					printf( " %d", *(intcom_state+i) );
+				printf( "\n" );
+			}
+
+			vertex2 = Cudd_ReadOne( manager );
+			Cudd_Ref( vertex2 );
+			for (i = 0; i < num_sys; i++) {
+				if (*(intcom_state+i)) {
+					tmp = Cudd_bddAnd( manager, vertex2,
+									   Cudd_bddIthVar( manager, 2*num_env+num_sys+i ) );
+				} else {
+					tmp = Cudd_bddAnd( manager, vertex2,
+									   Cudd_Not( Cudd_bddIthVar( manager, 2*num_env+num_sys+i ) ) );
+				}
+				Cudd_Ref( tmp );
+				Cudd_RecursiveDeref( manager, vertex2 );
+				vertex2 = tmp;
+			}
+			tmp = Cudd_Not( vertex2 );
+			Cudd_Ref( tmp );
+			Cudd_RecursiveDeref( manager, vertex2 );
+			vertex2 = tmp;
+
+			tmp = Cudd_bddAnd( manager, strans_patched, vertex2 );
+			Cudd_Ref( tmp );
+			Cudd_RecursiveDeref( manager, strans_patched );
+			strans_patched = tmp;
+
+			Cudd_RecursiveDeref( manager, vertex2 );
+			free( intcom_state );
+			break;
+
 		case INTCOM_SETINDEX:
 			free( intcom_state );
 			fprintf( outfp, "(not implemented yet.)\n" );
