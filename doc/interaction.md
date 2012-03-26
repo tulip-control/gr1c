@@ -1,7 +1,7 @@
 Interaction
 ===========
 
-If started with the command-line flag "-i", **gr1c** will compute the
+If started with the command-line flag "-i", gr1c will compute the
 sublevel sets from the fixpoint computation of the winning set and
 then accept commands until "quit" or end-of-file reached.  States
 should be given as space separated values.
@@ -15,6 +15,8 @@ Example session
 
 Recognized commands
 ===================
+
+Use **help** to see the list of commands without descriptions.
 
 * **winning STATE**
 
