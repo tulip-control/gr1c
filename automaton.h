@@ -19,11 +19,12 @@
 #include "ptree.h"
 
 
+/** \brief Data structure for strategy automaton nodes. */
 typedef struct anode_t
 {
 	bool *state;
-	int mode;
-	struct anode_t **trans;  /* Array of transitions */
+	int mode;  /**< Goal mode; indicates which system goal is currently being pursued. */
+	struct anode_t **trans;  /**< Array of transitions */
 	int trans_len;
 	
 	struct anode_t *next;
@@ -97,7 +98,14 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 				  unsigned char format_flags, FILE *fp );
 
 /** Dump list of nodes; mostly useful for debugging.
-   If fp = NULL, then write to stdout. */
+   If fp = NULL, then write to stdout.  The basic format is
+
+       i : S - m - [t0 t1 ...]
+
+   where i is the node ID (used only as a means to uniquely refer to
+   nodes), S is the state (as a bitvector) at that node, m is the goal
+   mode, and [t0 t1 ...] is the list of IDs of nodes reachable in one
+   step. */
 void list_aut_dump( anode_t *head, int state_len, FILE *fp );
 
 int aut_size( anode_t *head );
