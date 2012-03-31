@@ -31,7 +31,7 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	node = head;
 	while (node) {
 		for (i = 0; i < node->trans_len; i++) {
-			fprintf( fp, "    \"%d;\\n", node_counter );
+			fprintf( fp, "    \"%d;\\n(%d, %d)\\n", node_counter, node->mode, node->rindex );
 			if (format_flags == DOT_AUT_ALL) {
 				last_nonzero = num_env+num_sys-1;
 			} else {
@@ -78,10 +78,11 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					}
 				}
 			}
-			fprintf( fp, "\" -> \"%d;\\n",
+			fprintf( fp, "\" -> \"%d;\\n(%d, %d)\\n",
 					 find_anode_index( head,
 									   (*(node->trans+i))->mode,
-									   (*(node->trans+i))->state, num_env+num_sys ) );
+									   (*(node->trans+i))->state, num_env+num_sys ),
+					 (*(node->trans+i))->mode, (*(node->trans+i))->rindex );
 			if (format_flags == DOT_AUT_ALL) {
 				last_nonzero = num_env+num_sys-1;
 			} else {
@@ -160,7 +161,7 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 	fprintf( fp, "  <aut>\n" );
 	node = head;
 	while (node) {
-		fprintf( fp, "    <node>\n      <id>%d</id><name></name>\n      <child_list>", node_counter );
+		fprintf( fp, "    <node>\n      <id>%d</id><name>%d %d</name>\n      <child_list>", node_counter, node->mode, node->rindex );
 		for (i = 0; i < node->trans_len; i++)
 			fprintf( fp, " %d",
 					 find_anode_index( head,
@@ -208,7 +209,7 @@ void list_aut_dump( anode_t *head, int state_len, FILE *fp )
 				width_count = 0;
 			}
 		}
-		fprintf( fp, " - %2d - [", node->mode );
+		fprintf( fp, " - %2d - %2d - [", node->mode, node->rindex );
 		for (i = 0; i < node->trans_len; i++)
 			fprintf( fp, " %d",
 					 find_anode_index( head,
@@ -221,7 +222,7 @@ void list_aut_dump( anode_t *head, int state_len, FILE *fp )
 }
 
 
-anode_t *insert_anode( anode_t *head, int mode, bool *state, int state_len )
+anode_t *insert_anode( anode_t *head, int mode, int rindex, bool *state, int state_len )
 {
 	int i;
 	anode_t *new_head = malloc( sizeof(anode_t) );
@@ -239,6 +240,7 @@ anode_t *insert_anode( anode_t *head, int mode, bool *state, int state_len )
 	for (i = 0; i < state_len; i++)
 		*(new_head->state + i) = *(state+i);
 	new_head->mode = mode;
+	new_head->rindex = rindex;
 	new_head->trans = NULL;
 	new_head->trans_len = 0;
 

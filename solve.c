@@ -238,14 +238,14 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
 			initialize_cube( state, gcube, num_env+num_sys );
 			while (!saturated_cube( state, gcube, num_env+num_sys )) {
-				this_node_stack = insert_anode( this_node_stack, 0, state, num_env+num_sys );
+				this_node_stack = insert_anode( this_node_stack, 0, -1, state, num_env+num_sys );
 				if (this_node_stack == NULL) {
 					fprintf( stderr, "Error synthesize: building list of initial states.\n" );
 					return NULL;
 				}
 				increment_cube( state, gcube, num_env+num_sys );
 			}
-			this_node_stack = insert_anode( this_node_stack, 0, state, num_env+num_sys );
+			this_node_stack = insert_anode( this_node_stack, 0, -1, state, num_env+num_sys );
 			if (this_node_stack == NULL) {
 				fprintf( stderr, "Error synthesize: building list of initial states.\n" );
 				return NULL;
@@ -263,14 +263,14 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
 			initialize_cube( state, gcube, num_env+num_sys );
 			while (!saturated_cube( state, gcube, num_env+num_sys )) {
-				this_node_stack = insert_anode( this_node_stack, 0, state, num_env+num_sys );
+				this_node_stack = insert_anode( this_node_stack, 0, -1, state, num_env+num_sys );
 				if (this_node_stack == NULL) {
 					fprintf( stderr, "Error synthesize: building list of initial states.\n" );
 					return NULL;
 				}
 				increment_cube( state, gcube, num_env+num_sys );
 			}
-			this_node_stack = insert_anode( this_node_stack, 0, state, num_env+num_sys );
+			this_node_stack = insert_anode( this_node_stack, 0, -1, state, num_env+num_sys );
 			if (this_node_stack == NULL) {
 				fprintf( stderr, "Error synthesize: building list of initial states.\n" );
 				return NULL;
@@ -283,7 +283,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	/* Insert all stacked, initial nodes into strategy. */
 	node = this_node_stack;
 	while (node) {
-		strategy = insert_anode( strategy, node->mode, node->state, num_env+num_sys );
+		strategy = insert_anode( strategy, node->mode, node->rindex,
+								 node->state, num_env+num_sys );
 		if (strategy == NULL) {
 			fprintf( stderr, "Error synthesize: inserting state node into strategy.\n" );
 			return NULL;
@@ -337,7 +338,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				strategy = delete_anode( strategy, node );
 				new_node = find_anode( strategy, this_node_stack->mode, this_node_stack->state, num_env+num_sys );
 				if (new_node == NULL) {
-					strategy = insert_anode( strategy, this_node_stack->mode, this_node_stack->state, num_env+num_sys );
+					strategy = insert_anode( strategy, this_node_stack->mode, -1, this_node_stack->state, num_env+num_sys );
 					if (strategy == NULL) {
 						fprintf( stderr, "Error synthesize: inserting state node into strategy.\n" );
 						return NULL;
@@ -355,7 +356,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			node = new_node;
 		}
 		this_node_stack = pop_anode( this_node_stack );
-			
+		node->rindex = j;
+
 		/* Note that we assume the variable map has been appropriately
 		   defined in the CUDD manager, after the call to
 		   compute_winning_set above. */
@@ -475,14 +477,14 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 
 			new_node = find_anode( strategy, next_mode, state, num_env+num_sys );
 			if (new_node == NULL) {
-				strategy = insert_anode( strategy, next_mode, state,
-										 num_env+num_sys );
+				strategy = insert_anode( strategy, next_mode, -1,
+										 state, num_env+num_sys );
 				if (strategy == NULL) {
 					fprintf( stderr, "Error synthesize: inserting new node into strategy.\n" );
 					return NULL;
 				}
-				this_node_stack = insert_anode( this_node_stack, next_mode, state,
-												num_env+num_sys );
+				this_node_stack = insert_anode( this_node_stack, next_mode, -1,
+												state, num_env+num_sys );
 				if (this_node_stack == NULL) {
 					fprintf( stderr, "Error synthesize: pushing node onto stack failed.\n" );
 					return NULL;

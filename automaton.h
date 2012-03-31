@@ -1,9 +1,12 @@
 /** \file automaton.h
  * \brief Routines for working with a strategy, as a finite automaton.
  *
- * Note that the length of the state vector in each node is not stored
- * anywhere in this data structure.  It is assumed to be positive and
- * constant for a particular automaton (strategy).
+ * A node is uniquely determined by its state and goal mode.  Thus
+ * other attributes such as reachability index are not required when
+ * invoking some functions.  Note that the length of the state vector
+ * in each node is not stored anywhere in this data structure.  It is
+ * assumed to be positive and constant for a particular automaton
+ * (strategy).
  *
  *
  * SCL; Mar 2012.
@@ -24,6 +27,9 @@ typedef struct anode_t
 {
 	bool *state;
 	int mode;  /**< Goal mode; indicates which system goal is currently being pursued. */
+	int rindex;  /**< Reachability index; least number of steps in
+				     which reaching the goal set can be guaranteed.
+				     Unset value is indicated by -1. */
 	struct anode_t **trans;  /**< Array of transitions */
 	int trans_len;
 	
@@ -40,7 +46,7 @@ typedef struct anode_t
    NULL, a new list will be created.
 
    Return new head on success, NULL on error. */
-anode_t *insert_anode( anode_t *head, int mode, bool *state, int state_len );
+anode_t *insert_anode( anode_t *head, int mode, int rindex, bool *state, int state_len );
 
 anode_t *pop_anode( anode_t *head );
 
@@ -88,24 +94,34 @@ anode_t *aut_prune_deadends( anode_t *head );
    the combined order is assumed to match that of the state vector in
    each automaton node.
 
+   For each node, the goal mode and reachability index are placed in a
+   <name> tag in that order.
+
    If fp = NULL, then write to stdout.  Return nonzero if error. */
 
 int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp );
 
 /** Dump DOT file describing the automaton (strategy).  See comments
-   for tulip_aut_dump. */
+   for tulip_aut_dump.  In addition to the state (presentation depends
+   on given format_flags), each node is labeled with
+
+       i;
+       (m, r)
+
+   where i is the node ID, m the goal mode, and r the reachability
+   index. */
 int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 				  unsigned char format_flags, FILE *fp );
 
 /** Dump list of nodes; mostly useful for debugging.
    If fp = NULL, then write to stdout.  The basic format is
 
-       i : S - m - [t0 t1 ...]
+       i : S - m - r - [t0 t1 ...]
 
    where i is the node ID (used only as a means to uniquely refer to
    nodes), S is the state (as a bitvector) at that node, m is the goal
-   mode, and [t0 t1 ...] is the list of IDs of nodes reachable in one
-   step. */
+   mode, r is the reachability index, and [t0 t1 ...] is the list of
+   IDs of nodes reachable in one step. */
 void list_aut_dump( anode_t *head, int state_len, FILE *fp );
 
 int aut_size( anode_t *head );
