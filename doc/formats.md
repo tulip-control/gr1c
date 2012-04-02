@@ -35,13 +35,15 @@ order).
 game edge set changes
 ---------------------
 
-Files of this form consist of two parts: a sequence of **restrict**,
-**relax**, **blocksys**, or **blockenv** commands (as defined in the
-section [Interaction](md_interaction.html)); and a space-separated
-list of node IDs (all on one line) considered to be in the
-neighborhood for patching.  All nodes in the neighborhood are assumed
-to have the same goal mode.  Node IDs correspond to those in the given
-(to-be-patched) strategy.
+Files of this form consist of two parts: a space-separated list of
+node IDs (all on one line) considered to be in the neighborhood for
+patching; and a sequence of **restrict**, **relax**, **blocksys**, or
+**blockenv** commands (as defined in the section
+[Interaction](md_interaction.html)).  All nodes in the neighborhood
+are assumed to have the same goal mode.  Node IDs correspond to those
+in the given (to-be-patched) strategy.  At least one line of
+neighborhood node IDs *must* occur before any commands (restrict,
+etc.) so that the goal mode can be inferred.
 
 For example, if there are two variables, and we wish to change the
 game graph by removing the controlled edge from 0 0 to 0 1, and we are

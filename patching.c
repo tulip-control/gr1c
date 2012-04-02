@@ -28,6 +28,17 @@ extern int num_sgoals;
 extern int read_state_str( char *input, bool **state, int max_len );
 
 
+anode_t *find_anode_ID( anode_t *head, int ID )
+{
+	int i;
+	if (head == NULL || i < 0)
+		return NULL;
+	for (i = 0; i < ID && head != NULL; i++)
+		head = head->next;
+	return head;
+}
+
+
 #define INPUT_STRING_LEN 256
 
 anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *change_fp, unsigned char verbose )
@@ -47,8 +58,14 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	int num_read;
 	char *start, *end;
 	anode_t *strategy;
+	anode_t *node;
 	int *N = NULL;  /* "neighborhood" of nodes (a list of node IDs). */
 	int N_len = 0;
+	int N_mode = -1;  /* Goal mode of the automaton nodes in the neighborhood */
+
+	anode_t *affected = NULL;  /* Array of pointers to nodes directly
+								  affected by edge set change. */
+	int affected_len = 0;
 
 	if (change_fp == NULL)
 		return NULL;  /* Require game changes to be listed in an open stream. */
@@ -153,13 +170,24 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				*(N+N_len-1) = strtol( start, &end, 10 );
 			} while (end != start && *end != '\0');
 
+			node = find_anode_ID( strategy, *N );
+			if (node == NULL) {
+				fprintf( stderr, "Error: invalid node ID in neighborhood.\n" );
+				return NULL;
+			}
+			N_mode = node->mode;
+
 			if (verbose) {
-				printf( "Neighborhood node IDs:" );
+				printf( "Neighborhood goal mode of %d with node IDs:", N_mode );
 				for (i = 0; i < N_len-1; i++)
 					printf( " %d", *(N+i) );
 				printf( "\n" );
 			}
 		} else if (!strncmp( line, "restrict ", strlen( "restrict " ) ) || !strncmp( line, "relax ", strlen( "relax " ) )) {
+			if (N_mode < 0) {
+				fprintf( stderr, "Error: command encountered before goal mode set.\n" );
+				return NULL;
+			}
 
 			if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
 				num_read = read_state_str( line+strlen( "restrict" )+1, &state, 2*(num_env+num_sys) );
@@ -174,21 +202,21 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 			}
 			if (verbose) {
 				if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
-					if (num_read == 2*(num_env+num_sys)) {  /* Controlled edge */
+					if (num_read == 2*(num_env+num_sys)) {
 						printf( "Removing controlled edge from" );
-					} else {  /* Uncontrolled edge */
+					} else {
 						printf( "Removing uncontrolled edge from" );
 					}
 				} else { /* "relax " */
-					if (num_read == 2*(num_env+num_sys)) {  /* Controlled edge */
+					if (num_read == 2*(num_env+num_sys)) {
 						printf( "Adding controlled edge from" );
-					} else {  /* Uncontrolled edge */
+					} else {
 						printf( "Adding uncontrolled edge from" );
 					}
 				}
 				for (i = 0; i < num_env+num_sys; i++)
 					printf( " %d", *(state+i) );
-				printf( " to " );
+				printf( " to" );
 				for (i = num_env+num_sys; i < num_read; i++)
 					printf( " %d", *(state+i) );
 				printf( "\n" );
@@ -259,6 +287,10 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 			free( state );
 
 		} else if (!strncmp( line, "blocksys ", strlen( "blocksys " ) )) {
+			if (N_mode < 0) {
+				fprintf( stderr, "Error: command encountered before goal mode set.\n" );
+				return NULL;
+			}
 
 			num_read = read_state_str( line+strlen( "blocksys " )+1, &state, num_sys );
 			if (num_read != num_sys) {
@@ -302,6 +334,10 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 			free( state );
 
 		} else if (!strncmp( line, "blockenv ", strlen( "blockenv " ) )) {
+			if (N_mode < 0) {
+				fprintf( stderr, "Error: command encountered before goal mode set.\n" );
+				return NULL;
+			}
 
 			num_read = read_state_str( line+strlen( "blockenv " )+1, &state, num_env );
 			if (num_read != num_env) {
