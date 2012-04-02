@@ -28,7 +28,7 @@ extern int num_sgoals;
 extern int read_state_str( char *input, bool **state, int max_len );
 
 
-#define INPUT_STRING_LEN 60
+#define INPUT_STRING_LEN 256
 
 anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *change_fp, unsigned char verbose )
 {
@@ -61,7 +61,6 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 
 	strategy = aut_aut_load( num_env+num_sys, strategy_fp );
 	if (strategy == NULL) {
-		fprintf( stderr, "Error while reading strategy." );
 		return NULL;
 	}
 	
@@ -359,7 +358,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		return NULL;
 	}
 
-	/* ... */
+	
 
 	/* Pre-exit clean-up */
 	Cudd_RecursiveDeref( manager, einit );

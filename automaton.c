@@ -12,7 +12,7 @@
 #include "automaton.h"
 
 
-#define INPUT_STRING_LEN 60
+#define INPUT_STRING_LEN 256
 
 /* Memory recovery in the case of error, whether from a system call or
    while parsing, is almost nil.  Correct this behavior before
@@ -29,6 +29,7 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 	anode_t **node_array;
 	char line[INPUT_STRING_LEN];
 	char *start, *end;
+	int line_num;
 	
 	if (fp == NULL)
 		fp = stdin;
@@ -51,7 +52,9 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 		return NULL;
 	}
 
+	line_num = 0;
 	while (fgets( line, INPUT_STRING_LEN, fp )) {
+		line_num++;
 		if (strlen( line ) < 1 || *line == '\n')
 			continue;
 
@@ -67,7 +70,7 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 			start = end;
 		}
 		if (i != state_len) {
-			fprintf( stderr, "Error parsing gr1c automaton line.\n" );
+			fprintf( stderr, "Error parsing gr1c automaton line %d.\n", line_num );
 			return NULL;
 		}
 
@@ -79,14 +82,14 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 
 		(*(node_array+ia_len-1))->mode = strtol( start, &end, 10 );
 		if (start == end || *end == '\0') {
-			fprintf( stderr, "Error parsing gr1c automaton line.\n" );
+			fprintf( stderr, "Error parsing gr1c automaton line %d.\n", line_num );
 			return NULL;
 		}
 		start = end;
 
 		(*(node_array+ia_len-1))->rindex = strtol( start, &end, 10 );
 		if (start == end) {
-			fprintf( stderr, "Error parsing gr1c automaton line.\n" );
+			fprintf( stderr, "Error parsing gr1c automaton line %d.\n", line_num );
 			return NULL;
 		}
 		start = end;
