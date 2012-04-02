@@ -67,8 +67,7 @@ Use **help** to see the list of commands without descriptions.
 * **blocksys STATESYS**, **blockenv STATEENV**
 
   prohibit system moves into STATESYS (resp., environment moves into
-  STATEENV).  See description of "restrict" command regarding how the
-  length of STATE affects interpretation of this command.
+  STATEENV).
 
 * **getindex STATE GOALMODE**
 

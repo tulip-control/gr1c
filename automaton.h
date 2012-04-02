@@ -22,11 +22,12 @@
 #include "ptree.h"
 
 
-/** \brief Data structure for strategy automaton nodes. */
+/** \brief Strategy automaton nodes. */
 typedef struct anode_t
 {
 	bool *state;
-	int mode;  /**< Goal mode; indicates which system goal is currently being pursued. */
+	int mode;  /**< Goal mode; indicates which system goal is
+				    currently being pursued. */
 	int rindex;  /**< Reachability index; least number of steps in
 				     which reaching the goal set can be guaranteed.
 				     Unset value is indicated by -1. */
@@ -123,6 +124,15 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
    mode, r is the reachability index, and [t0 t1 ...] is the list of
    IDs of nodes reachable in one step. */
 void list_aut_dump( anode_t *head, int state_len, FILE *fp );
+
+/** Dump strategy using "gr1c automaton" file format.  See external
+   notes for details.  If fp = NULL, then write to stdout. */
+void aut_aut_dump( anode_t *head, int state_len, FILE *fp );
+
+/** Load strategy given in "gr1c automaton" format from file fp.  See
+   external notes for details.  If fp = NULL, then read from stdin.
+   Return resulting head pointer, or NULL if error. */
+anode_t *aut_aut_load( int state_len, FILE *fp );
 
 int aut_size( anode_t *head );
 void delete_aut( anode_t *head );

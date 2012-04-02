@@ -1,14 +1,204 @@
 /* automaton.c -- Definitions for signatures appearing in automaton.h.
  *
  *
- * SCL; Mar 2012.
+ * SCL; Mar, Apr 2012.
  */
 
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "automaton.h"
+
+
+#define INPUT_STRING_LEN 60
+
+/* Memory recovery in the case of error, whether from a system call or
+   while parsing, is almost nil.  Correct this behavior before
+   release.  Also note that sorting of nodes could be made faster. */
+anode_t *aut_aut_load( int state_len, FILE *fp )
+{
+	anode_t *head = NULL, *node;
+	bool *state;
+	int this_trans;
+	int i, j, k;  /* Generic counters */
+	int ia_len;  /* length of ID_array, trans_array, and node_array */
+	int *ID_array;
+	int **trans_array;
+	anode_t **node_array;
+	char line[INPUT_STRING_LEN];
+	char *start, *end;
+	
+	if (fp == NULL)
+		fp = stdin;
+
+	if (state_len < 1)
+		return NULL;
+	state = malloc( sizeof(bool)*state_len );
+	if (state == NULL) {
+		perror( "aut_aut_load, malloc" );
+		return NULL;
+	}
+
+	ia_len = 1;
+	ID_array = malloc( sizeof(int)*ia_len );
+	trans_array = malloc( sizeof(int *)*ia_len );
+	node_array = malloc( sizeof(anode_t *)*ia_len );
+	if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
+		free( state );
+		perror( "aut_aut_load, malloc" );
+		return NULL;
+	}
+
+	while (fgets( line, INPUT_STRING_LEN, fp )) {
+		if (strlen( line ) < 1 || *line == '\n')
+			continue;
+
+		*(ID_array+ia_len-1) = strtol( line, &end, 10 );
+		if (line == end || *end == '\0')
+			continue;
+
+		start = end;
+		for (i = 0; i < state_len && *end != '\0'; i++) {
+			*(state+i) = strtol( start, &end, 10 );
+			if (start == end)
+				break;
+			start = end;
+		}
+		if (i != state_len) {
+			fprintf( stderr, "Error parsing gr1c automaton line.\n" );
+			return NULL;
+		}
+
+		*(node_array+ia_len-1) = malloc( sizeof(anode_t) );
+		if (*(node_array+ia_len-1) == NULL) {
+			perror( "aut_aut_load, malloc" );
+			return NULL;
+		}
+
+		(*(node_array+ia_len-1))->mode = strtol( start, &end, 10 );
+		if (start == end || *end == '\0') {
+			fprintf( stderr, "Error parsing gr1c automaton line.\n" );
+			return NULL;
+		}
+		start = end;
+
+		(*(node_array+ia_len-1))->rindex = strtol( start, &end, 10 );
+		if (start == end) {
+			fprintf( stderr, "Error parsing gr1c automaton line.\n" );
+			return NULL;
+		}
+		start = end;
+
+		(*(node_array+ia_len-1))->state = state;
+		(*(node_array+ia_len-1))->trans_len = 0;
+		(*(node_array+ia_len-1))->next = NULL;
+		*(trans_array+ia_len-1) = NULL;
+
+		this_trans = strtol( start, &end, 10 );
+		while (start != end) {
+			((*(node_array+ia_len-1))->trans_len)++;
+			*(trans_array+ia_len-1) = realloc( *(trans_array+ia_len-1),
+											   sizeof(int)*((*(node_array+ia_len-1))->trans_len) );
+			if (*(trans_array+ia_len-1) == NULL) {
+				perror( "aut_aut_load, realloc" );
+				return NULL;
+			}
+			*(*(trans_array+ia_len-1) + (*(node_array+ia_len-1))->trans_len - 1) = this_trans;
+
+			start = end;
+			this_trans = strtol( start, &end, 10 );
+		}
+
+		state = malloc( sizeof(bool)*state_len );
+		if (state == NULL) {
+			perror( "aut_aut_load, malloc" );
+			return NULL;
+		}
+		ia_len++;
+		ID_array = realloc( ID_array, sizeof(int)*ia_len );
+		trans_array = realloc( trans_array, sizeof(int *)*ia_len );
+		node_array = realloc( node_array, sizeof(anode_t *)*ia_len );
+		if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
+			perror( "aut_aut_load, realloc" );
+			return NULL;
+		}
+	}
+	free( state );
+	ia_len--;
+	ID_array = realloc( ID_array, sizeof(int)*ia_len );
+	trans_array = realloc( trans_array, sizeof(int *)*ia_len );
+	node_array = realloc( node_array, sizeof(anode_t *)*ia_len );
+	if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
+		perror( "aut_aut_load, realloc" );
+		return NULL;
+	}
+
+	for (i = 0; i < ia_len; i++) {
+		for (j = 0; j < ia_len && *(ID_array+j) != i; j++) ;
+		if (j == ia_len) {
+			fprintf( stderr, "Error parsing gr1c automaton data; missing indices.\n" );
+			return NULL;
+		}
+
+		if (i == 0) {
+			head = *(node_array+j);
+			node = head;
+		} else {
+			node->next = *(node_array+j);
+			node = node->next;
+		}
+
+		if (node->trans_len > 0) {
+			node->trans = malloc( sizeof(anode_t *)*(node->trans_len) );
+			if (node->trans == NULL) {
+				perror( "aut_aut_load, malloc" );
+				return NULL;
+			}
+			for (j = 0; j < node->trans_len; j++) {
+				for (k = 0; k < ia_len && *(ID_array+k) != *(*(trans_array+i)+j); k++) ;
+				if (k == ia_len) {
+					fprintf( stderr, "Error parsing gr1c automaton data; missing indices.\n" );
+					return NULL;
+				}
+				*(node->trans+j) = *(node_array+k);
+			}
+		}
+	}
+
+	free( ID_array );
+	free( node_array );
+	for (i = 0; i < ia_len; i++)
+		free( *(trans_array+i) );
+	free( trans_array );
+	
+	return head;
+}
+
+
+void aut_aut_dump( anode_t *head, int state_len, FILE *fp )
+{
+	anode_t *node = head;
+	int node_counter = 0;
+	int i;
+	if (fp == NULL)
+		fp = stdout;
+	while (node) {
+		fprintf( fp, "%d", node_counter );
+		for (i = 0; i < state_len; i++)
+			fprintf( fp, " %d", *(node->state+i) );
+		fprintf( fp, " %d %d", node->mode, node->rindex );
+		for (i = 0; i < node->trans_len; i++)
+			fprintf( fp, " %d",
+					 find_anode_index( head,
+									   (*(node->trans+i))->mode,
+									   (*(node->trans+i))->state, state_len ) );
+		fprintf( fp, "\n" );
+		node = node->next;
+		node_counter++;
+	}
+}
 
 
 int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,

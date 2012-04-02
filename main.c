@@ -4,7 +4,7 @@
  * getopt, once sophistication of usage demands.
  *
  *
- * SCL; Jan-Mar 2012.
+ * SCL; Jan-Apr 2012.
  */
 
 
@@ -16,6 +16,7 @@
 #include "common.h"
 #include "ptree.h"
 #include "solve.h"
+#include "patching.h"
 #include "automaton.h"
 extern int yyparse( void );
 
@@ -50,12 +51,14 @@ ptree_t *gen_tree_ptr = NULL;
 #define OUTPUT_FORMAT_TEXT 0
 #define OUTPUT_FORMAT_TULIP 1
 #define OUTPUT_FORMAT_DOT 2
+#define OUTPUT_FORMAT_AUT 3
 
 /* Runtime modes */
 #define GR1C_MODE_SYNTAX 0
 #define GR1C_MODE_REALIZABLE 1
 #define GR1C_MODE_SYNTHESIS 2
 #define GR1C_MODE_INTERACTIVE 3
+#define GR1C_MODE_PATCH 4
 
 
 int main( int argc, char **argv )
@@ -68,6 +71,7 @@ int main( int argc, char **argv )
 	byte format_option = OUTPUT_FORMAT_TULIP;
 	unsigned char verbose = 0;
 	int input_index = -1;
+	int edges_input_index = -1;  /* If patching, command-line flag "-e". */
 	char dumpfilename[32];
 
 	int i, var_index;
@@ -107,10 +111,20 @@ int main( int argc, char **argv )
 					format_option = OUTPUT_FORMAT_TULIP;
 				} else if (!strncmp( argv[i+1], "dot", strlen( "dot" ) )) {
 					format_option = OUTPUT_FORMAT_DOT;
+				} else if (!strncmp( argv[i+1], "aut", strlen( "aut" ) )) {
+					format_option = OUTPUT_FORMAT_AUT;
 				} else {
 					fprintf( stderr, "Unrecognized output format. Try \"-h\".\n" );
 					return 1;
 				}
+				i++;
+			} else if (argv[i][1] == 'e') {
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				run_option = GR1C_MODE_PATCH;
+				edges_input_index = i+1;
 				i++;
 			} else {
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
@@ -123,23 +137,25 @@ int main( int argc, char **argv )
 		}
 	}
 
-	if (argc > 5 || help_flag) {
-		printf( "Usage: %s [-hVvspri] [-t TYPE] [FILE]\n\n"
+	if (help_flag) {
+		printf( "Usage: %s [-hVvspri] [-t TYPE] [-e FILE] [FILE]\n\n"
 				"  -h        this help message\n"
 				"  -V        print version and exit\n"
 				"  -v        be verbose\n"
 				"  -t TYPE   strategy output format; default is \"tulip\";\n"
-				"            supported formats: txt, tulip, dot\n"
+				"            supported formats: txt, tulip, dot, aut\n"
 				"  -s        only check specification syntax (return -1 on error)\n"
 				"  -p        dump parse trees to DOT files, and echo formulas to screen\n"
 				"  -r        only check realizability; do not synthesize strategy\n"
 				"            (return 0 if realizable, -1 if not)\n"
-				"  -i        interactive mode\n", argv[0] );
+				"  -i        interactive mode\n"
+				"  -e FILE   patch, given game edge set change file\n", argv[0] );
 		return 1;
 	}
 
-	if (input_index < 0 && run_option == GR1C_MODE_INTERACTIVE) {
-		printf( "Reading spec from stdin in interactive mode is not yet implemented.\n" );
+	if (input_index < 0 && (run_option == GR1C_MODE_INTERACTIVE
+							|| run_option == GR1C_MODE_PATCH)) {
+		printf( "Reading spec from stdin in interactive or patching mode is not yet implemented.\n" );
 		return 1;
 	}
 
@@ -309,53 +325,83 @@ int main( int argc, char **argv )
 	Cudd_SetMaxCacheHard( manager, (unsigned int)-1 );
 	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 
-	T = check_realizable( manager, EXIST_SYS_INIT, verbose );
-	if (T != NULL && (run_option == GR1C_MODE_REALIZABLE || verbose)) {
-		printf( "Realizable.\n" );
-	} else if (run_option == GR1C_MODE_REALIZABLE || verbose) {
-		printf( "Not realizable.\n" );
-	}
-
-	if (run_option == GR1C_MODE_SYNTHESIS && T != NULL) {
+	if (run_option == GR1C_MODE_PATCH) {
+		fp = fopen( argv[edges_input_index], "r" );
+		if (fp == NULL) {
+			perror( "gr1c, fopen" );
+			return -1;
+		}
 
 		if (verbose) {
-			printf( "Synthesizing a strategy..." );
+			printf( "Patching given strategy..." );
 			fflush( stdout );
 		}
-		strategy = synthesize( manager, EXIST_SYS_INIT, verbose );
+		strategy = patch_localfixpoint( manager, NULL, fp, verbose );
+		fclose( fp );
 		if (verbose) {
 			printf( "Done.\n" );
 			fflush( stdout );
 		}
-		if (strategy != NULL) {
-			/* strategy = aut_prune_deadends( strategy ); */
-			if (format_option == OUTPUT_FORMAT_TEXT) {
-				list_aut_dump( strategy, num_env+num_sys, stdout );
-			} else if (format_option == OUTPUT_FORMAT_DOT) {
-				dot_aut_dump( strategy, evar_list, svar_list,
-							  DOT_AUT_BINARY, stdout );
-			} else { /* OUTPUT_FORMAT_TULIP */
-				tulip_aut_dump( strategy, evar_list, svar_list, stdout );
-			}
-		} else {
-			fprintf( stderr, "Error while attempting synthesis.\n" );
+		if (strategy == NULL) {
+			fprintf( stderr, "Error while attempting to patch strategy.\n" );
 			return -1;
 		}
+		
+		T = NULL;  /* To avoid seg faults by the generic clean-up code. */
+	} else {
 
-	} else if (run_option == GR1C_MODE_INTERACTIVE && T != NULL) {
-
-		Cudd_RecursiveDeref( manager, T );
-		T = NULL;
-
-		i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout, verbose );
-		if (i == 0) {
+		T = check_realizable( manager, EXIST_SYS_INIT, verbose );
+		if (T != NULL && (run_option == GR1C_MODE_REALIZABLE || verbose)) {
+			printf( "Realizable.\n" );
+		} else if (run_option == GR1C_MODE_REALIZABLE || verbose) {
 			printf( "Not realizable.\n" );
-			return -1;
-		} else if (i < 0) {
-			printf( "Failure during interaction.\n" );
-			return -1;
 		}
 
+		if (run_option == GR1C_MODE_SYNTHESIS && T != NULL) {
+
+			if (verbose) {
+				printf( "Synthesizing a strategy..." );
+				fflush( stdout );
+			}
+			strategy = synthesize( manager, EXIST_SYS_INIT, verbose );
+			if (verbose) {
+				printf( "Done.\n" );
+				fflush( stdout );
+			}
+			if (strategy == NULL) {
+				fprintf( stderr, "Error while attempting synthesis.\n" );
+				return -1;
+			}
+
+		} else if (run_option == GR1C_MODE_INTERACTIVE && T != NULL) {
+
+			Cudd_RecursiveDeref( manager, T );
+			T = NULL;
+
+			i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout, verbose );
+			if (i == 0) {
+				printf( "Not realizable.\n" );
+				return -1;
+			} else if (i < 0) {
+				printf( "Failure during interaction.\n" );
+				return -1;
+			}
+
+		}
+	}
+
+	if (strategy != NULL) {
+		/* strategy = aut_prune_deadends( strategy ); */
+		if (format_option == OUTPUT_FORMAT_TEXT) {
+			list_aut_dump( strategy, num_env+num_sys, stdout );
+		} else if (format_option == OUTPUT_FORMAT_DOT) {
+			dot_aut_dump( strategy, evar_list, svar_list,
+						  DOT_AUT_BINARY, stdout );
+		} else if (format_option == OUTPUT_FORMAT_AUT) {
+			aut_aut_dump( strategy, num_env+num_sys, stdout );
+		} else { /* OUTPUT_FORMAT_TULIP */
+			tulip_aut_dump( strategy, evar_list, svar_list, stdout );
+		}
 	}
 
 	/* Clean-up */

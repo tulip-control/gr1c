@@ -39,6 +39,7 @@
 #define PT_EQUALS 8
 /********************/
 
+/** \brief Parse tree nodes. */
 typedef struct ptree_t
 {
 	int type;  /* See table above for recognized types. */
