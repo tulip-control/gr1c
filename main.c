@@ -343,7 +343,7 @@ int main( int argc, char **argv )
 			fflush( stdout );
 		}
 		if (strategy == NULL) {
-			fprintf( stderr, "Error while attempting to patch strategy.\n" );
+			fprintf( stderr, "Failed to patch strategy.\n" );
 			return -1;
 		}
 		
@@ -428,7 +428,8 @@ int main( int argc, char **argv )
 	Cudd_Quit(manager);
 
     /* Return 0 if realizable, -1 if not realizable. */
-	if (run_option == GR1C_MODE_INTERACTIVE || T != NULL) {
+	if (run_option == GR1C_MODE_INTERACTIVE || run_option == GR1C_MODE_PATCH
+		|| T != NULL) {
 		return 0;
 	} else {
 		return -1;

@@ -2,7 +2,7 @@
  *                  Also see solve.c and solve_operators.c
  *
  *
- * SCL; Mar 2012.
+ * SCL; Mar, Apr 2012.
  */
 
 
@@ -103,6 +103,27 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 bool *intcom_state;
 int intcom_index;  /* May be used to pass strategy goal mode or length
 					  of intcom_state. */
+
+
+/* Compute characteristic function for a single state. */
+DdNode *state2BDD( DdManager *manager, bool *state, int offset, int len )
+{
+	DdNode *v, *tmp;
+	int i;
+	v = Cudd_ReadOne( manager );
+	Cudd_Ref( v );
+	for (i = 0; i < len; i++) {
+		if (*(state+i)) {
+			tmp = Cudd_bddAnd( manager, v, Cudd_bddIthVar( manager, offset+i ) );
+		} else {
+			tmp = Cudd_bddAnd( manager, v, Cudd_Not( Cudd_bddIthVar( manager, offset+i ) ) );
+		}
+		Cudd_Ref( tmp );
+		Cudd_RecursiveDeref( manager, v );
+		v = tmp;
+	}
+	return v;
+}
 
 
 /* Read space-separated values from given string. Allocate space for
@@ -873,34 +894,8 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				printf( "\n" );
 			}
 			
-			vertex1 = Cudd_ReadOne( manager );
-			Cudd_Ref( vertex1 );
-			for (i = 0; i < num_env+num_sys; i++) {
-				if (*(intcom_state+i)) {
-					tmp = Cudd_bddAnd( manager, vertex1,
-									   Cudd_bddIthVar( manager, i ) );
-				} else {
-					tmp = Cudd_bddAnd( manager, vertex1,
-									   Cudd_Not( Cudd_bddIthVar( manager, i ) ) );
-				}
-				Cudd_Ref( tmp );
-				Cudd_RecursiveDeref( manager, vertex1 );
-				vertex1 = tmp;
-			}
-			vertex2 = Cudd_ReadOne( manager );
-			Cudd_Ref( vertex2 );
-			for (i = num_env+num_sys; i < intcom_index; i++) {
-				if (*(intcom_state+i)) {
-					tmp = Cudd_bddAnd( manager, vertex2,
-									   Cudd_bddIthVar( manager, i ) );
-				} else {
-					tmp = Cudd_bddAnd( manager, vertex2,
-									   Cudd_Not( Cudd_bddIthVar( manager, i ) ) );
-				}
-				Cudd_Ref( tmp );
-				Cudd_RecursiveDeref( manager, vertex2 );
-				vertex2 = tmp;
-			}
+			vertex1 = state2BDD( manager, intcom_state, 0, num_env+num_sys );
+			vertex2 = state2BDD( manager, intcom_state+num_env+num_sys, num_env+num_sys, intcom_index-(num_env+num_sys) );
 			tmp = Cudd_Not( vertex1 );
 			Cudd_Ref( tmp );
 			Cudd_RecursiveDeref( manager, vertex1 );
@@ -945,20 +940,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 					printf( " %d", *(intcom_state+i) );
 				printf( "\n" );
 			}
-			vertex2 = Cudd_ReadOne( manager );
-			Cudd_Ref( vertex2 );
-			for (i = 0; i < num_env; i++) {
-				if (*(intcom_state+i)) {
-					tmp = Cudd_bddAnd( manager, vertex2,
-									   Cudd_bddIthVar( manager, num_env+num_sys+i ) );
-				} else {
-					tmp = Cudd_bddAnd( manager, vertex2,
-									   Cudd_Not( Cudd_bddIthVar( manager, num_env+num_sys+i ) ) );
-				}
-				Cudd_Ref( tmp );
-				Cudd_RecursiveDeref( manager, vertex2 );
-				vertex2 = tmp;
-			}
+			vertex2 = state2BDD( manager, intcom_state, num_env+num_sys, num_env );
 			tmp = Cudd_Not( vertex2 );
 			Cudd_Ref( tmp );
 			Cudd_RecursiveDeref( manager, vertex2 );
@@ -981,20 +963,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				printf( "\n" );
 			}
 
-			vertex2 = Cudd_ReadOne( manager );
-			Cudd_Ref( vertex2 );
-			for (i = 0; i < num_sys; i++) {
-				if (*(intcom_state+i)) {
-					tmp = Cudd_bddAnd( manager, vertex2,
-									   Cudd_bddIthVar( manager, 2*num_env+num_sys+i ) );
-				} else {
-					tmp = Cudd_bddAnd( manager, vertex2,
-									   Cudd_Not( Cudd_bddIthVar( manager, 2*num_env+num_sys+i ) ) );
-				}
-				Cudd_Ref( tmp );
-				Cudd_RecursiveDeref( manager, vertex2 );
-				vertex2 = tmp;
-			}
+			vertex2 = state2BDD( manager, intcom_state, 2*num_env+num_sys, num_sys );
 			tmp = Cudd_Not( vertex2 );
 			Cudd_Ref( tmp );
 			Cudd_RecursiveDeref( manager, vertex2 );
