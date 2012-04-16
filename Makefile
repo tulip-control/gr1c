@@ -1,9 +1,9 @@
-# SCL; 18 Mar 2012.
+# SCL; 15 Apr 2012.
 #
 #
 
 INSTALLDIR = /usr/local/bin
-CUDD_ROOT = extern/cudd-2.5.0
+export CUDD_ROOT = extern/cudd-2.5.0
 CUDD_LIB = $(CUDD_ROOT)/cudd/libcudd.a $(CUDD_ROOT)/mtr/libmtr.a $(CUDD_ROOT)/st/libst.a $(CUDD_ROOT)/util/libutil.a $(CUDD_ROOT)/epd/libepd.a
 
 LEX = flex
@@ -33,6 +33,9 @@ gr1c_parse.o: gr1c_parse.y
 install:
 	cp gr1c $(INSTALLDIR)
 
+check: gr1c
+	$(MAKE) -C tests
+
 # Generate PNG images from DOT files in local directory
 png:
 	@(for k in *.dot; do \
@@ -47,3 +50,4 @@ doc:
 clean:
 	rm -fv *~ *.o y.tab.h gr1c_parse.c gr1c
 	rm -fr doc/build/*
+	$(MAKE) -C tests clean

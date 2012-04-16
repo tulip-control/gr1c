@@ -25,6 +25,10 @@ Markdown support.
 Installation
 ============
 
+A test suite is available. To run it, after building gr1c, ::
+
+  $ make check
+
 CUDD (see above) should be placed in a directory called "extern".  Be
 sure that similar flags are used for compiling both gr1c and CUDD.  In
 particular, SIZEOF_VOID_P and SIZEOF_LONG need to be set to the sizes
