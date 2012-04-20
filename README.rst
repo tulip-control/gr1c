@@ -29,11 +29,12 @@ A test suite is available. To run it, after building gr1c, ::
 
   $ make check
 
-CUDD (see above) should be placed in a directory called "extern".  Be
-sure that similar flags are used for compiling both gr1c and CUDD.  In
-particular, SIZEOF_VOID_P and SIZEOF_LONG need to be set to the sizes
-(in bytes) of void pointer (``void *``) and ``long int`` on your system. gr1c
-ships with a Makefile that has these set for Intel x86 64-bit.
+For installation, CUDD (see above) should be placed in a directory
+called "extern".  Be sure that similar flags are used for compiling
+both gr1c and CUDD.  In particular, SIZEOF_VOID_P and SIZEOF_LONG need
+to be set to the sizes (in bytes) of void pointer (``void *``) and
+``long int`` on your system. gr1c ships with a Makefile that has these
+set for Intel x86 64-bit.
 
 If you do not know the appropriate sizes for your system, then write a
 C program that prints ``sizeof(void *)`` and ``sizeof(long)`` to find them.

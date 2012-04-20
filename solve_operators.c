@@ -250,7 +250,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 	/* Fixpoint iteration counters */
 	int num_it_Z, num_it_Y, num_it_X;
 
-	DdNode *tmp, *tmp2;
+	DdNode *tmp, *tmp2, *tmp3;
 	int i, j;  /* Generic counters */
 
 	DdNode **vars, **pvars;
@@ -270,7 +270,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 	/* Allocate cube array, used later for quantifying over variables. */
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
-		perror( "check_realizable_internal, malloc" );
+		perror( "compute_winning_set_BDD, malloc" );
 		return NULL;
 	}
 	
@@ -392,15 +392,15 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 						Cudd_Ref( tmp2 );
 						Cudd_RecursiveDeref( manager, tmp );
 
-						tmp = Cudd_bddOr( manager, tmp2, Cudd_Not( *(egoals+j) ) );
+						tmp = Cudd_bddAnd( manager, X, Cudd_Not( *(egoals+j) ) );
 						Cudd_Ref( tmp );
-						Cudd_RecursiveDeref( manager, tmp2 );
 
-						tmp2 = X;
-						X = Cudd_bddAnd( manager, tmp, X );
+						tmp3 = X;
+						X = Cudd_bddOr( manager, tmp2, tmp );
 						Cudd_Ref( X );
 						Cudd_RecursiveDeref( manager, tmp );
 						Cudd_RecursiveDeref( manager, tmp2 );
+						Cudd_RecursiveDeref( manager, tmp3 );
 
 						tmp = X;
 						X = Cudd_bddAnd( manager, X, X_prev );
