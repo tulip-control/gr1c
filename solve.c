@@ -2,7 +2,7 @@
  *            Also see solve_operators.c
  *
  *
- * SCL; Feb, Mar 2012.
+ * SCL; Feb-Apr 2012.
  */
 
 
@@ -95,9 +95,10 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	DdNode ***Y = NULL;
 	DdNode *Y_i_primed;
 	int *num_sublevels;
+	DdNode ****X_ijr = NULL;
 
 	DdNode *tmp, *tmp2;
-	int i, j, k;  /* Generic counters */
+	int i, j, r, k;  /* Generic counters */
 	bool env_nogoal_flag = False;  /* Indicate environment has no goals */
 	int loop_mode;
 	int next_mode;
@@ -205,7 +206,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		return NULL;
 	}
 	Y = compute_sublevel_sets( manager, W, etrans, strans, egoals, sgoals,
-							   &num_sublevels, verbose );
+							   &num_sublevels, &X_ijr, verbose );
 	if (Y == NULL) {
 		fprintf( stderr, "Error synthesize: failed to construct sublevel sets.\n" );
 		return NULL;
@@ -405,32 +406,57 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				   goal state or able to block environment goal. */
 				Cudd_GenFree( gen );
 				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
-				Cudd_RecursiveDeref( manager, tmp );
-				Cudd_RecursiveDeref( manager, Y_i_primed );
 				if (j > 0) {
-					Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+node->mode)+j) );
-					if (Y_i_primed == NULL) {
-						fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
+					for (r = 0; r < num_egoals; r++) {
+						Cudd_RecursiveDeref( manager, tmp );
+						Cudd_RecursiveDeref( manager, Y_i_primed );
+						Y_i_primed = Cudd_bddVarMap( manager, *(*(*(X_ijr+node->mode)+j)+r) );
+						if (Y_i_primed == NULL) {
+							fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
+							return NULL;
+						}
+						Cudd_Ref( Y_i_primed );
+						tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
+						Cudd_Ref( tmp );
+						tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+										  node->state,
+										  tmp, 0, num_sys+num_env );
+						Cudd_RecursiveDeref( manager, tmp );
+						if (num_env > 0) {
+							tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+											 *(env_moves+k),
+											 tmp2, num_sys+num_env, num_env );
+							Cudd_RecursiveDeref( manager, tmp2 );
+						} else {
+							tmp = tmp2;
+						}
+					
+						if (!(Cudd_bddLeq( manager, tmp, Cudd_Not( Cudd_ReadOne( manager ) ) )*Cudd_bddLeq( manager, Cudd_Not( Cudd_ReadOne( manager ) ), tmp )))
+							break;
+					}
+					if (r >= num_egoals) {
+						fprintf( stderr, "Error synthesize: unexpected losing state.\n" );
 						return NULL;
 					}
-					
 				} else {
+					Cudd_RecursiveDeref( manager, tmp );
+					Cudd_RecursiveDeref( manager, Y_i_primed );
 					Y_i_primed = Cudd_ReadOne( manager );
-				}
-				Cudd_Ref( Y_i_primed );
-				tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
-				Cudd_Ref( tmp );
-				tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
-								  node->state,
-								  tmp, 0, num_sys+num_env );
-				Cudd_RecursiveDeref( manager, tmp );
-				if (num_env > 0) {
-					tmp = state2cof( manager, cube, 2*(num_env+num_sys),
-									 *(env_moves+k),
-									 tmp2, num_sys+num_env, num_env );
-					Cudd_RecursiveDeref( manager, tmp2 );
-				} else {
-					tmp = tmp2;
+					Cudd_Ref( Y_i_primed );
+					tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
+					Cudd_Ref( tmp );
+					tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+									  node->state,
+									  tmp, 0, num_sys+num_env );
+					Cudd_RecursiveDeref( manager, tmp );
+					if (num_env > 0) {
+						tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+										 *(env_moves+k),
+										 tmp2, num_sys+num_env, num_env );
+						Cudd_RecursiveDeref( manager, tmp2 );
+					} else {
+						tmp = tmp2;
+					}
 				}
 				next_mode = node->mode;
 
@@ -537,13 +563,21 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		free( env_goals );
 	}
 	for (i = 0; i < num_sgoals; i++) {
-		for (j = 0; j < *(num_sublevels+i); j++)
+		for (j = 0; j < *(num_sublevels+i); j++) {
 			Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
-		if (*(num_sublevels+i) > 0)
+			for (r = 0; r < num_egoals; r++) {
+				Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i)+j)+r) );
+			}
+			free( *(*(X_ijr+i)+j) );
+		}
+		if (*(num_sublevels+i) > 0) {
 			free( *(Y+i) );
+			free( *(X_ijr+i) );
+		}
 	}
 	if (num_sgoals > 0) {
 		free( Y );
+		free( X_ijr );
 		free( num_sublevels );
 	}
 

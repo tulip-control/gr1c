@@ -2,7 +2,7 @@
  * \brief Compute realizability and a strategy for a GR(1) game.
  *
  *
- * SCL; Feb, Mar 2012.
+ * SCL; Feb-Apr 2012.
  */
 
 
@@ -73,14 +73,21 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 
 /** W is assumed to be (the characteristic function of) the set of
    winning states, e.g., as returned by compute_winning_set.
-   num_sublevel_sets is an int array of length equal to the number of
+   num_sublevels is an int array of length equal to the number of
    system goals.  Space for it is allocated by compute_sublevel_sets
-   and expected to be freed by the caller (or elsewhere). */
+   and expected to be freed by the caller (or elsewhere).
+
+   The argument X_ijr should be a reference to a pointer. Upon
+   successful termination it contains (pointers to) the X fixed point
+   sets computed for each Y_ij sublevel set. For each Y_ij sublevel
+   set, the number of X sets is equal to the number of environment
+   goals. */
 DdNode ***compute_sublevel_sets( DdManager *manager,
 								 DdNode *W,
 								 DdNode *etrans, DdNode *strans,
 								 DdNode **egoals, DdNode **sgoals,
 								 int **num_sublevels,
+								 DdNode *****X_ijr,
 								 unsigned char verbose );
 
 /** Read commands from input stream infp and write results to outfp.

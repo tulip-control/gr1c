@@ -466,9 +466,10 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	DdNode ***Y = NULL;
 	DdNode *Y_i_primed;
 	int *num_sublevels = NULL;
+	DdNode ****X_ijr = NULL;
 
 	DdNode *tmp, *tmp2;
-	int i, j;  /* Generic counters */
+	int i, j, r;  /* Generic counters */
 	bool env_nogoal_flag = False;  /* Indicate environment has no goals */
 	
 	int num_env, num_sys;
@@ -622,7 +623,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			Y = compute_sublevel_sets( manager, W,
 									   etrans_patched, strans_patched,
 									   egoals, sgoals,
-									   &num_sublevels, verbose );
+									   &num_sublevels, &X_ijr, verbose );
 			if (Y == NULL) {
 				fprintf( stderr, "Error levelset_interactive: failed to construct sublevel sets.\n" );
 				return -1;
@@ -1056,13 +1057,21 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 		free( env_goals );
 	}
 	for (i = 0; i < num_sgoals; i++) {
-		for (j = 0; j < *(num_sublevels+i); j++)
+		for (j = 0; j < *(num_sublevels+i); j++) {
 			Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
-		if (*(num_sublevels+i) > 0)
+			for (r = 0; r < num_egoals; r++) {
+				Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i)+j)+r) );
+			}
+			free( *(*(X_ijr+i)+j) );
+		}
+		if (*(num_sublevels+i) > 0) {
 			free( *(Y+i) );
+			free( *(X_ijr+i) );
+		}
 	}
 	if (num_sgoals > 0) {
 		free( Y );
+		free( X_ijr );
 		free( num_sublevels );
 	}
 

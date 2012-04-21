@@ -7,7 +7,7 @@ PREFACE="============================================================\nERROR:"
 ############################################################
 # Test realizability
 
-REFSPECS=(gridworld.spc gridworld_env.spc)
+REFSPECS=(gridworld.spc gridworld_env.spc arbiter4.spc)
 UNREALIZABLE_REFSPECS=(trivial_un.spc)
 
 for k in ${REFSPECS[@]}; do

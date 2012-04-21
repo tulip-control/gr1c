@@ -2,7 +2,7 @@
  * \brief Project-wide definitions and macros.
  *
  *
- * SCL; Mar 2012.
+ * SCL; Mar-Apr 2012.
  */
 
 
@@ -10,7 +10,7 @@
 #define _COMMON_H_
 
 
-#define GR1C_VERSION "0.1d"
+#define GR1C_VERSION "0.1e"
 #define GR1C_COPYRIGHT "Copyright (c) 2012 by Scott C. Livingston, California Institute of Technology\nThis is free software, released under the GNU GPLv3 and without warranty."
 
 
