@@ -6,8 +6,8 @@
  */
 
 
-#ifndef _SOLVE_H_
-#define _SOLVE_H_
+#ifndef SOLVE_H
+#define SOLVE_H
 
 #include "cudd.h"
 

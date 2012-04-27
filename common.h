@@ -6,8 +6,8 @@
  */
 
 
-#ifndef _COMMON_H_
-#define _COMMON_H_
+#ifndef COMMON_H
+#define COMMON_H
 
 
 #define GR1C_VERSION "0.1e"

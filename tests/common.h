@@ -1,7 +1,7 @@
 /* SCL; April 2012. */
 
-#ifndef _TESTS_COMMON_H_
-#define _TESTS_COMMON_H_
+#ifndef TESTS_COMMON_H
+#define TESTS_COMMON_H
 
 #include <stdio.h>
 

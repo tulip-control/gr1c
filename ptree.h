@@ -15,8 +15,8 @@
  */
 
 
-#ifndef _PTREE_H_
-#define _PTREE_H_
+#ifndef PTREE_H
+#define PTREE_H
 
 #include <stdio.h>
 #include "cudd.h"
