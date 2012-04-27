@@ -1,4 +1,8 @@
 #!/bin/sh
+# Tests not targeted at particular units.
+#
+# SCL; 25 Apr 2012.
+
 
 BUILD_ROOT=..
 PREFACE="============================================================\nERROR:"

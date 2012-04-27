@@ -18,6 +18,7 @@
 #ifndef _PTREE_H_
 #define _PTREE_H_
 
+#include <stdio.h>
 #include "cudd.h"
 
 
@@ -39,6 +40,7 @@
 #define PT_EQUALS 8
 /********************/
 
+/** \brief Parse tree nodes. */
 typedef struct ptree_t
 {
 	int type;  /* See table above for recognized types. */
@@ -95,12 +97,11 @@ int tree_dot_dump( ptree_t *head, char *filename );
 void delete_tree( ptree_t *head );
 
 /** Push variable or constant into top of tree.  (Behavior is
-   like reverse Polish notation.)  Return the new head, or NULL on
-   error. */
+   like reverse Polish notation.)  Return the new head. */
 ptree_t *pusht_terminal( ptree_t *head, int type, char *name, int value );
 
 /** Push unary binary operator into top of tree.  (Behavior is like reverse
-   Polish notation.)  Return the new head, or NULL on error. */
+   Polish notation.)  Return the new head. */
 ptree_t *pusht_operator( ptree_t *head, int type );
 
 /** Return pointer to new item (which is of course accessible via given

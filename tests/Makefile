@@ -1,20 +1,29 @@
-# SCL; 15 Apr 2012.
+# Unit and integration tests of gr1c
 #
-# Unit and functional tests of gr1c
+# SCL; 26 Apr 2012.
+
 
 CUDD_LIB = ../$(CUDD_ROOT)/cudd/libcudd.a ../$(CUDD_ROOT)/mtr/libmtr.a ../$(CUDD_ROOT)/st/libst.a ../$(CUDD_ROOT)/util/libutil.a ../$(CUDD_ROOT)/epd/libepd.a
 
-CFLAGS = -Wall -pedantic -ansi -I.. -I../$(CUDD_ROOT)/include
+CFLAGS = -g -Wall -pedantic -ansi -I.. -I../$(CUDD_ROOT)/include
 LDFLAGS = $(CUDD_LIB)
-PROGRAMS = test_automaton
+PROGRAMS = test_automaton test_ptree test_ptree_to_BDD
 
 all: $(PROGRAMS)
 	./test_automaton
+	./test_ptree
+	./test_ptree_to_BDD
 	sh test-gr1c.sh
 	@echo "============================================================\nPASSED\n"
 
 test_automaton: test_automaton.c
 	gcc $(CFLAGS) $^ $(LDFLAGS) ../automaton.o ../ptree.o -o $@
 
+test_ptree: test_ptree.c
+	gcc $(CFLAGS) $^ $(LDFLAGS) ../ptree.o -o $@
+
+test_ptree_to_BDD: test_ptree_to_BDD.c
+	gcc $(CFLAGS) $^ $(LDFLAGS) ../ptree.o -o $@
+
 clean:
-	rm -fv *~ *.o $(PROGRAMS)
+	rm -fv *~ *.o $(PROGRAMS) temp_*_dump*
