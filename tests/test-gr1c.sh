@@ -11,17 +11,19 @@ PREFACE="============================================================\nERROR:"
 ############################################################
 # Test realizability
 
-REFSPECS=(gridworld.spc gridworld_env.spc arbiter4.spc)
-UNREALIZABLE_REFSPECS=(trivial_un.spc)
+REFSPECS="gridworld.spc gridworld_env.spc arbiter4.spc"
+UNREALIZABLE_REFSPECS="trivial_un.spc"
 
-for k in ${REFSPECS[@]}; do
+#for k in ${REFSPECS[@]}; do
+for k in `echo $REFSPECS`; do
     if ! $BUILD_ROOT/gr1c -r specs/$k > /dev/null; then
 	echo $PREFACE "realizable specs/${k} detected as unrealizable\n"
 	exit -1
     fi
 done
 
-for k in ${UNREALIZABLE_REFSPECS[@]}; do
+#for k in ${UNREALIZABLE_REFSPECS[@]}; do
+for k in `echo $UNREALIZABLE_REFSPECS`; do
     if $BUILD_ROOT/gr1c -r specs/$k > /dev/null; then
 	echo $PREFACE "unrealizable specs/${k} detected as realizable\n"
 	exit -1
