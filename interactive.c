@@ -2,7 +2,7 @@
  *                  Also see solve.c and solve_operators.c
  *
  *
- * SCL; Mar 2012.
+ * SCL; March, May 2012.
  */
 
 
@@ -10,8 +10,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+
+#ifdef USE_READLINE
+  #include <readline/readline.h>
+  #include <readline/history.h>
+#endif
 
 #include "ptree.h"
 #include "solve.h"
@@ -148,6 +151,29 @@ int read_state_str( char *input, bool **state, int max_len )
 	return i;
 }
 
+
+char *fgets_wrap( char *prompt, int max_len, FILE *infp, FILE *outfp )
+{
+	char *input;
+
+	if (max_len < 1)
+		return NULL;
+	input = malloc( max_len*sizeof(char) );
+	if (input == NULL) {
+		perror( "fgets_wrap, malloc" );
+		abort();  /* System error, do not attempt recovery. */
+	}
+
+	fprintf( outfp, "%s", prompt );
+	if (fgets( input, max_len, infp ) == NULL) {
+		free( input );
+		return NULL;
+	}
+
+	return input;
+}
+
+
 int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 {
 	int num_env, num_sys;
@@ -160,7 +186,11 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
 
-	while (input = readline( "" )) {
+#ifdef USE_READLINE
+	while (input = readline( GR1C_INTERACTIVE_PROMPT )) {
+#else
+	while (input = fgets_wrap( GR1C_INTERACTIVE_PROMPT, 60, infp, outfp)) {
+#endif
 		if (*input == '\0') {
 			free( input );
 			continue;

@@ -2,7 +2,7 @@
  * \brief Project-wide definitions and macros.
  *
  *
- * SCL; Mar-Apr 2012.
+ * SCL; March-May 2012.
  */
 
 
@@ -12,6 +12,9 @@
 
 #define GR1C_VERSION "0.1e"
 #define GR1C_COPYRIGHT "Copyright (c) 2012 by Scott C. Livingston, California Institute of Technology\nThis is free software, released under the GNU GPLv3 and without warranty."
+
+
+#define GR1C_INTERACTIVE_PROMPT ">>> "
 
 
 typedef char bool;

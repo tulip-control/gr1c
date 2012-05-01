@@ -1,4 +1,4 @@
-# SCL; 15 Apr 2012.
+# SCL; 1 May 2012.
 #
 #
 
@@ -13,7 +13,11 @@ YFLAGS = -d
 
 CC = gcc
 CFLAGS = -g -Wall -pedantic -ansi -I$(CUDD_ROOT)/include -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8
-LDFLAGS = $(CUDD_LIB) -lm -lreadline
+LDFLAGS = $(CUDD_LIB) -lm
+
+# To use and statically link with GNU Readline
+# CFLAGS += -DUSE_READLINE
+# LDFLAGS += -lreadline
 
 
 gr1c: main.o interactive.o solve_operators.o solve.o ptree.o automaton.o gr1c_parse.o gr1c_scan.o
