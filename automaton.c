@@ -1,7 +1,7 @@
 /* automaton.c -- Definitions for signatures appearing in automaton.h.
  *
  *
- * SCL; Mar 2012.
+ * SCL; March, May 2012.
  */
 
 
@@ -155,6 +155,18 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 
 	fprintf( fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
 	fprintf( fp, "<tulipcon xmlns=\"http://tulip-control.sourceforge.net/ns/0\" version=\"0\">\n" );
+	fprintf( fp, "  <env_vars>\n" );
+	for (i = 0; i < num_env; i++) {
+		var = get_list_item( evar_list, i );
+		fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
+	}
+	fprintf( fp, "  </env_vars>\n" );
+	fprintf( fp, "  <sys_vars>\n" );
+	for (i = 0; i < num_sys; i++) {
+		var = get_list_item( svar_list, i );
+		fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
+	}
+	fprintf( fp, "  </sys_vars>\n" );
 	fprintf( fp, "  <spec>\n    <env_init></env_init><env_safety></env_safety><env_prog></env_prog><sys_init></sys_init><sys_safety></sys_safety><sys_prog></sys_prog>\n  </spec>\n" );
 	
 	fprintf( fp, "  <aut>\n" );
