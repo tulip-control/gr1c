@@ -164,7 +164,8 @@ char *fgets_wrap( char *prompt, int max_len, FILE *infp, FILE *outfp )
 		abort();  /* System error, do not attempt recovery. */
 	}
 
-	fprintf( outfp, "%s", prompt );
+	if (prompt != NULL && *prompt != '\0')
+		fprintf( outfp, "%s", prompt );
 	if (fgets( input, max_len, infp ) == NULL) {
 		free( input );
 		return NULL;
@@ -1063,6 +1064,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			break;
 		}
 
+		fflush( outfp );
 	} while ((command = command_loop( manager, infp, outfp )) > 0);
 
 	if (verbose) {
