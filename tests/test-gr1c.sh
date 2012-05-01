@@ -1,7 +1,7 @@
 #!/bin/sh
 # Tests not targeted at particular units.
 #
-# SCL; 25 Apr 2012.
+# SCL; 29 Apr 2012.
 
 
 BUILD_ROOT=..
@@ -14,7 +14,6 @@ PREFACE="============================================================\nERROR:"
 REFSPECS="gridworld.spc gridworld_env.spc arbiter4.spc"
 UNREALIZABLE_REFSPECS="trivial_un.spc"
 
-#for k in ${REFSPECS[@]}; do
 for k in `echo $REFSPECS`; do
     if ! $BUILD_ROOT/gr1c -r specs/$k > /dev/null; then
 	echo $PREFACE "realizable specs/${k} detected as unrealizable\n"
@@ -22,7 +21,6 @@ for k in `echo $REFSPECS`; do
     fi
 done
 
-#for k in ${UNREALIZABLE_REFSPECS[@]}; do
 for k in `echo $UNREALIZABLE_REFSPECS`; do
     if $BUILD_ROOT/gr1c -r specs/$k > /dev/null; then
 	echo $PREFACE "unrealizable specs/${k} detected as realizable\n"

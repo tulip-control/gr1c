@@ -73,5 +73,6 @@ int main( int argc, char **argv )
 		abort();
 	}
 	Cudd_Quit( manager );
+	delete_tree( var_list );
 	return 0;
 }
