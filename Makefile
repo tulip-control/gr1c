@@ -16,8 +16,8 @@ CFLAGS = -g -Wall -pedantic -ansi -I$(CUDD_ROOT)/include -DHAVE_IEEE_754 -DBSD -
 LDFLAGS = $(CUDD_LIB) -lm
 
 # To use and statically link with GNU Readline
-# CFLAGS += -DUSE_READLINE
-# LDFLAGS += -lreadline
+#CFLAGS += -DUSE_READLINE
+#LDFLAGS += -lreadline
 
 
 gr1c: main.o interactive.o solve_operators.o solve.o ptree.o automaton.o gr1c_parse.o gr1c_scan.o

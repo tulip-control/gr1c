@@ -673,8 +673,10 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			}
 			
 			for (i = 0; i < emoves_len; i++) {
-				for (j = 0; j < num_env; j++)
-					fprintf( outfp, "%d ", *(*(env_moves+i)+j) );
+				if (num_env > 0)
+					fprintf( outfp, "%d", **(env_moves+i) );
+				for (j = 1; j < num_env; j++)
+					fprintf( outfp, " %d", *(*(env_moves+i)+j) );
 				fprintf( outfp, "\n" );
 			}
 			fprintf( outfp, "---\n" );
@@ -748,13 +750,15 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
 				initialize_cube( state, gcube+2*num_env+num_sys, num_sys );
 				while (!saturated_cube( state, gcube+2*num_env+num_sys, num_sys )) {
-					for (i = 0; i < num_sys; i++)
-						fprintf( outfp, "%d ", *(state+i) );
+					fprintf( outfp, "%d", *state );
+					for (i = 1; i < num_sys; i++)
+						fprintf( outfp, " %d", *(state+i) );
 					fprintf( outfp, "\n" );
 					increment_cube( state, gcube+2*num_env+num_sys, num_sys );
 				}
-				for (i = 0; i < num_sys; i++)
-					fprintf( outfp, "%d ", *(state+i) );
+				fprintf( outfp, "%d", *state );
+				for (i = 1; i < num_sys; i++)
+					fprintf( outfp, " %d", *(state+i) );
 				fprintf( outfp, "\n" );
 			}
 			Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
@@ -791,13 +795,15 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
 					initialize_cube( state, gcube+2*num_env+num_sys, num_sys );
 					while (!saturated_cube( state, gcube+2*num_env+num_sys, num_sys )) {
-						for (i = 0; i < num_sys; i++)
-							fprintf( outfp, "%d ", *(state+i) );
+						fprintf( outfp, "%d", *state );
+						for (i = 1; i < num_sys; i++)
+							fprintf( outfp, " %d", *(state+i) );
 						fprintf( outfp, "\n" );
 						increment_cube( state, gcube+2*num_env+num_sys, num_sys );
 					}
-					for (i = 0; i < num_sys; i++)
-						fprintf( outfp, "%d ", *(state+i) );
+					fprintf( outfp, "%d", *state );
+					for (i = 1; i < num_sys; i++)
+						fprintf( outfp, " %d", *(state+i) );
 					fprintf( outfp, "\n" );
 				}
 				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
@@ -827,13 +833,15 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
 				initialize_cube( state, gcube+2*num_env+num_sys, num_sys );
 				while (!saturated_cube( state, gcube+2*num_env+num_sys, num_sys )) {
-					for (i = 0; i < num_sys; i++)
-						fprintf( outfp, "%d ", *(state+i) );
+					fprintf( outfp, "%d", *state );
+					for (i = 1; i < num_sys; i++)
+						fprintf( outfp, " %d", *(state+i) );
 					fprintf( outfp, "\n" );
 					increment_cube( state, gcube+2*num_env+num_sys, num_sys );
 				}
-				for (i = 0; i < num_sys; i++)
-					fprintf( outfp, "%d ", *(state+i) );
+				fprintf( outfp, "%d", *state );
+				for (i = 1; i < num_sys; i++)
+					fprintf( outfp, " %d", *(state+i) );
 				fprintf( outfp, "\n" );
 			}
 			Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );

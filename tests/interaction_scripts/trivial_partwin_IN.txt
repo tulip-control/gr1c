@@ -1,0 +1,11 @@
+var
+numgoals
+printgoal 0
+printgoal 1
+printgoal 2
+printgoal 3
+winning 1 0 1 1
+winning 1 0 1 0
+winning 0 0 0 0
+sysnexta 0 0 0 0  0 0
+sysnext 0 0 0 0  0 0  2
