@@ -13,8 +13,8 @@
  */
 
 
-#ifndef _AUTOMATON_H_
-#define _AUTOMATON_H_
+#ifndef AUTOMATON_H
+#define AUTOMATON_H
 
 #include <stdio.h>
 
@@ -49,6 +49,7 @@ typedef struct anode_t
    Return new head on success, NULL on error. */
 anode_t *insert_anode( anode_t *head, int mode, int rindex, bool *state, int state_len );
 
+/** Delete topmost (head) node from list.  Return pointer to new head. */
 anode_t *pop_anode( anode_t *head );
 
 /** Build the transition array for the node with given state and mode.
@@ -134,7 +135,14 @@ void aut_aut_dump( anode_t *head, int state_len, FILE *fp );
    Return resulting head pointer, or NULL if error. */
 anode_t *aut_aut_load( int state_len, FILE *fp );
 
+/** Get number of nodes in given automaton. */
 int aut_size( anode_t *head );
+
+/** Delete entire automaton pointed to by given head.
+
+   Essentially, traverses node list and frees them and their member
+   data.  At completion, the given head pointer is no longer valid.
+   Invoking with NULL pointer causes return with no error. */
 void delete_aut( anode_t *head );
 
 

@@ -2,7 +2,7 @@
  *                  Also see solve.c and solve_operators.c
  *
  *
- * SCL; Mar, Apr 2012.
+ * SCL; March, May 2012.
  */
 
 
@@ -10,8 +10,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+
+#ifdef USE_READLINE
+  #include <readline/readline.h>
+  #include <readline/history.h>
+#endif
 
 #include "ptree.h"
 #include "solve.h"
@@ -169,6 +172,30 @@ int read_state_str( char *input, bool **state, int max_len )
 	return i;
 }
 
+
+char *fgets_wrap( char *prompt, int max_len, FILE *infp, FILE *outfp )
+{
+	char *input;
+
+	if (max_len < 1)
+		return NULL;
+	input = malloc( max_len*sizeof(char) );
+	if (input == NULL) {
+		perror( "fgets_wrap, malloc" );
+		abort();  /* System error, do not attempt recovery. */
+	}
+
+	if (prompt != NULL && *prompt != '\0')
+		fprintf( outfp, "%s", prompt );
+	if (fgets( input, max_len, infp ) == NULL) {
+		free( input );
+		return NULL;
+	}
+
+	return input;
+}
+
+
 int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 {
 	int num_env, num_sys;
@@ -181,7 +208,11 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
 
-	while (input = readline( "" )) {
+#ifdef USE_READLINE
+	while (input = readline( GR1C_INTERACTIVE_PROMPT )) {
+#else
+	while (input = fgets_wrap( GR1C_INTERACTIVE_PROMPT, 60, infp, outfp)) {
+#endif
 		if (*input == '\0') {
 			free( input );
 			continue;
@@ -487,9 +518,10 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	DdNode ***Y = NULL;
 	DdNode *Y_i_primed;
 	int *num_sublevels = NULL;
+	DdNode ****X_ijr = NULL;
 
 	DdNode *tmp, *tmp2;
-	int i, j;  /* Generic counters */
+	int i, j, r;  /* Generic counters */
 	bool env_nogoal_flag = False;  /* Indicate environment has no goals */
 	
 	int num_env, num_sys;
@@ -643,7 +675,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			Y = compute_sublevel_sets( manager, W,
 									   etrans_patched, strans_patched,
 									   egoals, sgoals,
-									   &num_sublevels, verbose );
+									   &num_sublevels, &X_ijr, verbose );
 			if (Y == NULL) {
 				fprintf( stderr, "Error levelset_interactive: failed to construct sublevel sets.\n" );
 				return -1;
@@ -663,8 +695,10 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			}
 			
 			for (i = 0; i < emoves_len; i++) {
-				for (j = 0; j < num_env; j++)
-					fprintf( outfp, "%d ", *(*(env_moves+i)+j) );
+				if (num_env > 0)
+					fprintf( outfp, "%d", **(env_moves+i) );
+				for (j = 1; j < num_env; j++)
+					fprintf( outfp, " %d", *(*(env_moves+i)+j) );
 				fprintf( outfp, "\n" );
 			}
 			fprintf( outfp, "---\n" );
@@ -738,13 +772,15 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
 				initialize_cube( state, gcube+2*num_env+num_sys, num_sys );
 				while (!saturated_cube( state, gcube+2*num_env+num_sys, num_sys )) {
-					for (i = 0; i < num_sys; i++)
-						fprintf( outfp, "%d ", *(state+i) );
+					fprintf( outfp, "%d", *state );
+					for (i = 1; i < num_sys; i++)
+						fprintf( outfp, " %d", *(state+i) );
 					fprintf( outfp, "\n" );
 					increment_cube( state, gcube+2*num_env+num_sys, num_sys );
 				}
-				for (i = 0; i < num_sys; i++)
-					fprintf( outfp, "%d ", *(state+i) );
+				fprintf( outfp, "%d", *state );
+				for (i = 1; i < num_sys; i++)
+					fprintf( outfp, " %d", *(state+i) );
 				fprintf( outfp, "\n" );
 			}
 			Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
@@ -781,13 +817,15 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
 					initialize_cube( state, gcube+2*num_env+num_sys, num_sys );
 					while (!saturated_cube( state, gcube+2*num_env+num_sys, num_sys )) {
-						for (i = 0; i < num_sys; i++)
-							fprintf( outfp, "%d ", *(state+i) );
+						fprintf( outfp, "%d", *state );
+						for (i = 1; i < num_sys; i++)
+							fprintf( outfp, " %d", *(state+i) );
 						fprintf( outfp, "\n" );
 						increment_cube( state, gcube+2*num_env+num_sys, num_sys );
 					}
-					for (i = 0; i < num_sys; i++)
-						fprintf( outfp, "%d ", *(state+i) );
+					fprintf( outfp, "%d", *state );
+					for (i = 1; i < num_sys; i++)
+						fprintf( outfp, " %d", *(state+i) );
 					fprintf( outfp, "\n" );
 				}
 				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
@@ -817,13 +855,15 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
 				initialize_cube( state, gcube+2*num_env+num_sys, num_sys );
 				while (!saturated_cube( state, gcube+2*num_env+num_sys, num_sys )) {
-					for (i = 0; i < num_sys; i++)
-						fprintf( outfp, "%d ", *(state+i) );
+					fprintf( outfp, "%d", *state );
+					for (i = 1; i < num_sys; i++)
+						fprintf( outfp, " %d", *(state+i) );
 					fprintf( outfp, "\n" );
 					increment_cube( state, gcube+2*num_env+num_sys, num_sys );
 				}
-				for (i = 0; i < num_sys; i++)
-					fprintf( outfp, "%d ", *(state+i) );
+				fprintf( outfp, "%d", *state );
+				for (i = 1; i < num_sys; i++)
+					fprintf( outfp, " %d", *(state+i) );
 				fprintf( outfp, "\n" );
 			}
 			Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
@@ -993,6 +1033,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			break;
 		}
 
+		fflush( outfp );
 	} while ((command = command_loop( manager, infp, outfp )) > 0);
 
 	if (verbose) {
@@ -1025,13 +1066,21 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 		free( env_goals );
 	}
 	for (i = 0; i < num_sgoals; i++) {
-		for (j = 0; j < *(num_sublevels+i); j++)
+		for (j = 0; j < *(num_sublevels+i); j++) {
 			Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
-		if (*(num_sublevels+i) > 0)
+			for (r = 0; r < num_egoals; r++) {
+				Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i)+j)+r) );
+			}
+			free( *(*(X_ijr+i)+j) );
+		}
+		if (*(num_sublevels+i) > 0) {
 			free( *(Y+i) );
+			free( *(X_ijr+i) );
+		}
 	}
 	if (num_sgoals > 0) {
 		free( Y );
+		free( X_ijr );
 		free( num_sublevels );
 	}
 

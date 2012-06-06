@@ -1,0 +1,29 @@
+>>> var
+x (0), ze (1), y (2), zs (3)
+>>> numgoals
+3
+>>> printgoal 0
+(y&x)
+>>> printgoal 1
+(!y)
+>>> printgoal 2
+(!ze)
+>>> printgoal 3
+Invalid mode: 3
+>>> winning 1 0 1 1
+False
+>>> winning 1 0 1 0
+True
+>>> winning 0 0 0 0
+True
+>>> sysnexta 0 0 0 0  0 0
+0 0
+0 1
+1 0
+1 1
+---
+>>> sysnext 0 0 0 0  0 0  2
+0 0
+1 0
+---
+>>> 

@@ -2,7 +2,7 @@
  *                      Also see solve.c
  *
  *
- * SCL; Feb, Mar 2012.
+ * SCL; Feb-Apr 2012.
  */
 
 
@@ -270,7 +270,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 	/* Allocate cube array, used later for quantifying over variables. */
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
-		perror( "check_realizable_internal, malloc" );
+		perror( "compute_winning_set_BDD, malloc" );
 		return NULL;
 	}
 	
@@ -392,12 +392,11 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 						Cudd_Ref( tmp2 );
 						Cudd_RecursiveDeref( manager, tmp );
 
-						tmp = Cudd_bddOr( manager, tmp2, Cudd_Not( *(egoals+j) ) );
+						tmp = Cudd_bddAnd( manager, X, Cudd_Not( *(egoals+j) ) );
 						Cudd_Ref( tmp );
-						Cudd_RecursiveDeref( manager, tmp2 );
+						Cudd_RecursiveDeref( manager, X );
 
-						tmp2 = X;
-						X = Cudd_bddAnd( manager, tmp, X );
+						X = Cudd_bddOr( manager, tmp2, tmp );
 						Cudd_Ref( X );
 						Cudd_RecursiveDeref( manager, tmp );
 						Cudd_RecursiveDeref( manager, tmp2 );
@@ -475,6 +474,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 								 DdNode *etrans, DdNode *strans,
 								 DdNode **egoals, DdNode **sgoals,
 								 int **num_sublevels,
+								 DdNode *****X_ijr,
 								 unsigned char verbose )
 {
 	DdNode ***Y = NULL, *Y_exmod;
@@ -485,7 +485,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 	int *cube;
 
 	DdNode *tmp, *tmp2;
-	int i, j;
+	int i, r;
 
 	if (verbose) {
 		printf( "== Cudd_PrintInfo(), called from compute_sublevel_sets ===============\n" );
@@ -524,6 +524,12 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 			perror( "compute_sublevel_sets, malloc" );
 			return NULL;
 		}
+		*X_ijr = malloc( num_sgoals*sizeof(DdNode ***) );
+		if (*X_ijr == NULL) {
+			perror( "compute_sublevel_sets, malloc" );
+			return NULL;
+		}
+
 		for (i = 0; i < num_sgoals; i++) {
 			*(*num_sublevels+i) = 1;
 			*(Y+i) = malloc( *(*num_sublevels+i)*sizeof(DdNode *) );
@@ -533,6 +539,21 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 			}
 			**(Y+i) = Cudd_bddAnd( manager, *(sgoals+i), W );
 			Cudd_Ref( **(Y+i) );
+
+			*(*X_ijr+i) = malloc( *(*num_sublevels+i)*sizeof(DdNode **) );
+			if (*(*X_ijr+i) == NULL) {
+				perror( "compute_sublevel_sets, malloc" );
+				return NULL;
+			}
+			**(*X_ijr+i) = malloc( num_egoals*sizeof(DdNode *) );
+			if (**(*X_ijr+i) == NULL) {
+				perror( "compute_sublevel_sets, malloc" );
+				return NULL;
+			}
+			for (r = 0; r < num_egoals; r++) {
+				*(**(*X_ijr+i) + r) = Cudd_Not( Cudd_ReadOne( manager ) );
+				Cudd_Ref( *(**(*X_ijr+i) + r) );
+			}
 		}
 	} else {
 		return NULL;
@@ -543,8 +564,15 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 		while (True) {
 			(*(*num_sublevels+i))++;
 			*(Y+i) = realloc( *(Y+i), *(*num_sublevels+i)*sizeof(DdNode *) );
-			if (*(Y+i) == NULL) {
+			*(*X_ijr+i) = realloc( *(*X_ijr+i), *(*num_sublevels+i)*sizeof(DdNode **) );
+			if (*(Y+i) == NULL || *(*X_ijr+i) == NULL) {
 				perror( "compute_sublevel_sets, realloc" );
+				return NULL;
+			}
+
+			*(*(*X_ijr+i) + *(*num_sublevels+i)-1) = malloc( num_egoals*sizeof(DdNode *) );
+			if (*(*(*X_ijr+i) + *(*num_sublevels+i)-1) == NULL) {
+				perror( "compute_sublevel_sets, malloc" );
 				return NULL;
 			}
 
@@ -554,7 +582,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 
 			*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_Not( Cudd_ReadOne( manager ) );
 			Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
-			for (j = 0; j < num_egoals; j++) {
+			for (r = 0; r < num_egoals; r++) {
 					
 				/* (Re)initialize X */
 				if (X != NULL)
@@ -580,12 +608,11 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 					Cudd_Ref( tmp2 );
 					Cudd_RecursiveDeref( manager, tmp );
 
-					tmp = Cudd_bddOr( manager, tmp2, Cudd_Not( *(egoals+j) ) );
+					tmp = Cudd_bddAnd( manager, X, Cudd_Not( *(egoals+r) ) );
 					Cudd_Ref( tmp );
-					Cudd_RecursiveDeref( manager, tmp2 );
+					Cudd_RecursiveDeref( manager, X );
 
-					tmp2 = X;
-					X = Cudd_bddAnd( manager, tmp, X );
+					X = Cudd_bddOr( manager, tmp2, tmp );
 					Cudd_Ref( X );
 					Cudd_RecursiveDeref( manager, tmp );
 					Cudd_RecursiveDeref( manager, tmp2 );
@@ -596,6 +623,9 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 					Cudd_RecursiveDeref( manager, tmp );
 
 				} while (!(Cudd_bddLeq( manager, X, X_prev )*Cudd_bddLeq( manager, X_prev, X )));
+
+				*(*(*(*X_ijr+i) + *(*num_sublevels+i)-1) + r) = X;
+				Cudd_Ref( *(*(*(*X_ijr+i) + *(*num_sublevels+i)-1) + r) );
 
 				tmp = *(*(Y+i)+*(*num_sublevels+i)-1);
 				*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1), X );
@@ -615,9 +645,14 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 
 			if (Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-1), *(*(Y+i)+*(*num_sublevels+i)-2))*Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-2), *(*(Y+i)+*(*num_sublevels+i)-1) )) {
 				Cudd_RecursiveDeref( manager, *(*(Y+i)+*(*num_sublevels+i)-1) );
+				for (r = 0; r < num_egoals; r++) {
+					Cudd_RecursiveDeref( manager, *(*(*(*X_ijr+i) + *(*num_sublevels+i)-1) + r) );
+				}
+				free( *(*(*X_ijr+i) + *(*num_sublevels+i)-1) );
 				(*(*num_sublevels+i))--;
 				*(Y+i) = realloc( *(Y+i), *(*num_sublevels+i)*sizeof(DdNode *) );
-				if (*(Y+i) == NULL) {
+				*(*X_ijr+i) = realloc( *(*X_ijr+i), *(*num_sublevels+i)*sizeof(DdNode **) );
+				if (*(Y+i) == NULL || *(*X_ijr+i) == NULL) {
 					perror( "compute_sublevel_sets, realloc" );
 					return NULL;
 				}
