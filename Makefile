@@ -1,4 +1,4 @@
-# SCL; 1 May 2012.
+# SCL; 27 June 2012.
 #
 #
 
@@ -20,12 +20,13 @@ LDFLAGS = $(CUDD_LIB) -lm
 #LDFLAGS += -lreadline
 
 
-gr1c: main.o interactive.o solve_operators.o solve.o ptree.o automaton.o gr1c_parse.o gr1c_scan.o
+gr1c: main.o interactive.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 main.o: main.c
 ptree.o: ptree.c
 automaton.o: automaton.c
+automaton_io.o: automaton_io.c
 interactive.o: interactive.c
 solve_operators.o: solve_operators.c
 solve.o: solve.c

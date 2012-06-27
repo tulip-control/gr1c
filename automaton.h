@@ -31,7 +31,6 @@ typedef struct anode_t
 } anode_t;
 
 
-
 /**
  * \defgroup DotDumpFlags format flags for dot_aut_dump
  *
@@ -44,6 +43,7 @@ typedef struct anode_t
 #define DOT_AUT_BINARY 1  /**<\brief Assume variables have Boolean
 						     domains, and only label nodes with those
 						     that are True. */
+#define DOT_AUT_EDGEINPUT 2  /**<\brief Show environment variables on edges. */
 /**@}*/
 
 
