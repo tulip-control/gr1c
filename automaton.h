@@ -6,7 +6,7 @@
  * constant for a particular automaton (strategy).
  *
  *
- * SCL; Mar 2012.
+ * SCL; 2012.
  */
 
 
@@ -23,17 +23,28 @@
 typedef struct anode_t
 {
 	bool *state;
-	int mode;  /**< Goal mode; indicates which system goal is currently being pursued. */
-	struct anode_t **trans;  /**< Array of transitions */
+	int mode;  /**<\brief Goal mode; indicates which system goal is currently being pursued. */
+	struct anode_t **trans;  /**<\brief Array of transitions */
 	int trans_len;
 	
 	struct anode_t *next;
 } anode_t;
 
 
-/* Flags to set format for output.  Combine non-conflicting flags with or. */
-#define DOT_AUT_ALL 0
-#define DOT_AUT_BINARY 1
+
+/**
+ * \defgroup DotDumpFlags format flags for dot_aut_dump
+ *
+ * \brief Flags to set format for output.  Combine non-conflicting
+ *   flags with or.
+ *
+ * @{
+ */
+#define DOT_AUT_ALL 0  /**<\brief Show all variables with values. */
+#define DOT_AUT_BINARY 1  /**<\brief Assume variables have Boolean
+						     domains, and only label nodes with those
+						     that are True. */
+/**@}*/
 
 
 /** Insert node at the front of the given node list.  If given head is
@@ -90,11 +101,10 @@ anode_t *aut_prune_deadends( anode_t *head );
    each automaton node.
 
    If fp = NULL, then write to stdout.  Return nonzero if error. */
-
 int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp );
 
-/** Dump DOT file describing the automaton (strategy).  See comments
-   for tulip_aut_dump. */
+/** Dump DOT file describing the automaton (strategy).  See \ref
+   DotDumpFlags.  Also see comments for tulip_aut_dump. */
 int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 				  unsigned char format_flags, FILE *fp );
 

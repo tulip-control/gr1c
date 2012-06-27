@@ -22,8 +22,11 @@
 #include "cudd.h"
 
 
-/********************
- **** Node types ****/
+/**
+ * \defgroup PTreeNodeTypes parse tree node types
+ *
+ * @{
+ */
 /* variables or constant */
 #define PT_EMPTY 0
 #define PT_VARIABLE 1
@@ -38,14 +41,14 @@
 #define PT_OR 6
 #define PT_IMPLIES 7
 #define PT_EQUALS 8
-/********************/
+/**@}*/
 
 /** \brief Parse tree nodes. */
 typedef struct ptree_t
 {
-	int type;  /* See table above for recognized types. */
-	char *name;  /* Name of the variable, if applicable. */
-	int value;  /* Value of a constant.  If of type boolean, then 0
+	int type;  /**<\brief See table of \ref PTreeNodeTypes. */
+	char *name;  /**<\brief Name of the variable, if applicable. */
+	int value;  /**<\brief Value of a constant.  If of type boolean, then 0
 				   means "false", and 1 "true". */
 	
 	struct ptree_t *left;
