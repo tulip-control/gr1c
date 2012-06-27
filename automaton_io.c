@@ -14,7 +14,7 @@
 int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 				  unsigned char format_flags, FILE *fp )
 {
-	int i, j, last_nonzero;
+	int i, j, last_nonzero_env, last_nonzero_sys;
 	anode_t *node;
 	int node_counter = 0;
 	ptree_t *var;
@@ -32,48 +32,57 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	while (node) {
 		for (i = 0; i < node->trans_len; i++) {
 			fprintf( fp, "    \"%d;\\n", node_counter );
-			if (format_flags == DOT_AUT_ALL) {
-				last_nonzero = num_env+num_sys-1;
+			if ((format_flags & 0x1) == DOT_AUT_ALL) {
+				last_nonzero_env = num_env-1;
+				last_nonzero_sys = num_sys-1;
 			} else {
-				for (last_nonzero = num_env+num_sys-1; last_nonzero >= 0
-						 && *(node->state+last_nonzero) == 0; last_nonzero--) ;
+				for (last_nonzero_env = num_env-1; last_nonzero_env >= 0
+						 && *(node->state+last_nonzero_env) == 0; last_nonzero_env--) ;
+				for (last_nonzero_sys = num_sys-1; last_nonzero_sys >= 0
+						 && *(node->state+num_env+last_nonzero_sys) == 0; last_nonzero_sys--) ;
 			}
-			if (last_nonzero < 0) {
+			if (last_nonzero_env < 0 && last_nonzero_sys < 0) {
 				fprintf( fp, "{}" );
 			} else {
-				for (j = 0; j < num_env; j++) {
-					if ((format_flags & DOT_AUT_BINARY) && *(node->state+j) == 0)
-						continue;
-					var = get_list_item( evar_list, j );
-					if (j == last_nonzero) {
-						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s", var->name );
+				if (!(format_flags & DOT_AUT_EDGEINPUT)) {
+					for (j = 0; j < num_env; j++) {
+						if ((format_flags & DOT_AUT_BINARY) && *(node->state+j) == 0)
+							continue;
+						var = get_list_item( evar_list, j );
+						if (j == last_nonzero_env) {
+							if (format_flags & DOT_AUT_BINARY) {
+								fprintf( fp, "%s", var->name );
+							} else {
+								fprintf( fp, "%s=%d", var->name, *(node->state+j) );
+							}
 						} else {
-							fprintf( fp, "%s=%d", var->name, *(node->state+j) );
-						}
-					} else {
-						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s, ", var->name );
-						} else {
-							fprintf( fp, "%s=%d, ", var->name, *(node->state+j) );
+							if (format_flags & DOT_AUT_BINARY) {
+								fprintf( fp, "%s, ", var->name );
+							} else {
+								fprintf( fp, "%s=%d, ", var->name, *(node->state+j) );
+							}
 						}
 					}
 				}
-				for (j = 0; j < num_sys; j++) {
-					if ((format_flags & DOT_AUT_BINARY) && *(node->state+num_env+j) == 0)
-						continue;
-					var = get_list_item( svar_list, j );
-					if (j == last_nonzero-num_env) {
-						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s", var->name );
+				if (last_nonzero_sys < 0 && (format_flags & DOT_AUT_EDGEINPUT)) {
+					fprintf( fp, "{}" );
+				} else {
+					for (j = 0; j < num_sys; j++) {
+						if ((format_flags & DOT_AUT_BINARY) && *(node->state+num_env+j) == 0)
+							continue;
+						var = get_list_item( svar_list, j );
+						if (j == last_nonzero_sys) {
+							if (format_flags & DOT_AUT_BINARY) {
+								fprintf( fp, "%s", var->name );
+							} else {
+								fprintf( fp, "%s=%d", var->name, *(node->state+num_env+j) );
+							}
 						} else {
-							fprintf( fp, "%s=%d", var->name, *(node->state+num_env+j) );
-						}
-					} else {
-						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s, ", var->name );
-						} else {
-							fprintf( fp, "%s=%d, ", var->name, *(node->state+num_env+j) );
+							if (format_flags & DOT_AUT_BINARY) {
+								fprintf( fp, "%s, ", var->name );
+							} else {
+								fprintf( fp, "%s=%d, ", var->name, *(node->state+num_env+j) );
+							}
 						}
 					}
 				}
@@ -82,53 +91,89 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					 find_anode_index( head,
 									   (*(node->trans+i))->mode,
 									   (*(node->trans+i))->state, num_env+num_sys ) );
-			if (format_flags == DOT_AUT_ALL) {
-				last_nonzero = num_env+num_sys-1;
+			if ((format_flags & 0x1) == DOT_AUT_ALL) {
+				last_nonzero_env = num_env-1;
+				last_nonzero_sys = num_sys-1;
 			} else {
-				for (last_nonzero = num_env+num_sys-1; last_nonzero >= 0
-						 && *((*(node->trans+i))->state+last_nonzero) == 0; last_nonzero--) ;
+				for (last_nonzero_env = num_env-1; last_nonzero_env >= 0
+						 && *((*(node->trans+i))->state+last_nonzero_env) == 0; last_nonzero_env--) ;
+				for (last_nonzero_sys = num_sys-1; last_nonzero_sys >= 0
+						 && *((*(node->trans+i))->state+num_env+last_nonzero_sys) == 0; last_nonzero_sys--) ;
 			}
-			if (last_nonzero < 0) {
+			if (last_nonzero_env < 0 && last_nonzero_sys < 0) {
 				fprintf( fp, "{}" );
 			} else {
-				for (j = 0; j < num_env; j++) {
-					if ((format_flags & DOT_AUT_BINARY) && *((*(node->trans+i))->state+j) == 0)
-						continue;
-					var = get_list_item( evar_list, j );
-					if (j == last_nonzero) {
-						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s", var->name );
+				if (!(format_flags & DOT_AUT_EDGEINPUT)) {
+					for (j = 0; j < num_env; j++) {
+						if ((format_flags & DOT_AUT_BINARY) && *((*(node->trans+i))->state+j) == 0)
+							continue;
+						var = get_list_item( evar_list, j );
+						if (j == last_nonzero_env) {
+							if (format_flags & DOT_AUT_BINARY) {
+								fprintf( fp, "%s", var->name );
+							} else {
+								fprintf( fp, "%s=%d", var->name, *((*(node->trans+i))->state+j) );
+							}
 						} else {
-							fprintf( fp, "%s=%d", var->name, *((*(node->trans+i))->state+j) );
-						}
-					} else {
-						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s, ", var->name );
-						} else {
-							fprintf( fp, "%s=%d, ", var->name, *((*(node->trans+i))->state+j) );
+							if (format_flags & DOT_AUT_BINARY) {
+								fprintf( fp, "%s, ", var->name );
+							} else {
+								fprintf( fp, "%s=%d, ", var->name, *((*(node->trans+i))->state+j) );
+							}
 						}
 					}
 				}
-				for (j = 0; j < num_sys; j++) {
-					if ((format_flags & DOT_AUT_BINARY) && *((*(node->trans+i))->state+num_env+j) == 0)
-						continue;
-					var = get_list_item( svar_list, j );
-					if (j == last_nonzero-num_env) {
-						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s", var->name );
+				if (last_nonzero_sys < 0 && (format_flags & DOT_AUT_EDGEINPUT)) {
+					fprintf( fp, "{}" );
+				} else {
+					for (j = 0; j < num_sys; j++) {
+						if ((format_flags & DOT_AUT_BINARY) && *((*(node->trans+i))->state+num_env+j) == 0)
+							continue;
+						var = get_list_item( svar_list, j );
+						if (j == last_nonzero_sys) {
+							if (format_flags & DOT_AUT_BINARY) {
+								fprintf( fp, "%s", var->name );
+							} else {
+								fprintf( fp, "%s=%d", var->name, *((*(node->trans+i))->state+num_env+j) );
+							}
 						} else {
-							fprintf( fp, "%s=%d", var->name, *((*(node->trans+i))->state+num_env+j) );
-						}
-					} else {
-						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s, ", var->name );
-						} else {
-							fprintf( fp, "%s=%d, ", var->name, *((*(node->trans+i))->state+num_env+j) );
+							if (format_flags & DOT_AUT_BINARY) {
+								fprintf( fp, "%s, ", var->name );
+							} else {
+								fprintf( fp, "%s=%d, ", var->name, *((*(node->trans+i))->state+num_env+j) );
+							}
 						}
 					}
 				}
 			}
-			fprintf( fp, "\"\n" );
+			fprintf( fp, "\"" );
+			if (format_flags & DOT_AUT_EDGEINPUT) {
+				fprintf( fp, "[label=\"" );
+				if (last_nonzero_env < 0) {
+					fprintf( fp, "{}" );
+				} else {
+					for (j = 0; j < num_env; j++) {
+						if ((format_flags & DOT_AUT_BINARY) && *((*(node->trans+i))->state+j) == 0)
+							continue;
+						var = get_list_item( evar_list, j );
+						if (j == last_nonzero_env) {
+							if (format_flags & DOT_AUT_BINARY) {
+								fprintf( fp, "%s", var->name );
+							} else {
+								fprintf( fp, "%s=%d", var->name, *((*(node->trans+i))->state+j) );
+							}
+						} else {
+							if (format_flags & DOT_AUT_BINARY) {
+								fprintf( fp, "%s, ", var->name );
+							} else {
+								fprintf( fp, "%s=%d, ", var->name, *((*(node->trans+i))->state+j) );
+							}
+						}
+					}
+				}
+				fprintf( fp, "\"]" );
+			}
+			fprintf( fp, "\n" );
 		}
 		node_counter++;
 		node = node->next;
