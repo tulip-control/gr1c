@@ -279,10 +279,12 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					}
 				}
 			}
-			fprintf( fp, "\" -> \"%d;\\n",
+			fprintf( fp, "\" -> \"%d;\\n(%d, %d)\\n",
 					 find_anode_index( head,
 									   (*(node->trans+i))->mode,
-									   (*(node->trans+i))->state, num_env+num_sys ) );
+									   (*(node->trans+i))->state, num_env+num_sys ),
+					 (*(node->trans+i))->mode,
+					 (*(node->trans+i))->rgrad);
 			if ((format_flags & 0x1) == DOT_AUT_ALL) {
 				last_nonzero_env = num_env-1;
 				last_nonzero_sys = num_sys-1;
