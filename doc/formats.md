@@ -11,7 +11,9 @@ in FILE (see format below).
 tulipcon XML
 ------------
 
-...as defined elsewhere.
+See [TuLiP
+documentation](http://tulip-control.sourceforge.net/doc/data_formats.html#tulipcon-xml);
+you might also consider [a recent snapshot](http://tulip-control.sourceforge.net/draft-doc/data_formats.html) of the docs in TuLiP trunk.
 
 
 gr1c automaton

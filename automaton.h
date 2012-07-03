@@ -50,6 +50,17 @@ typedef struct anode_t
 						     domains, and only label nodes with those
 						     that are True. */
 #define DOT_AUT_EDGEINPUT 2  /**<\brief Show environment variables on edges. */
+#define DOT_AUT_ATTRIB 4  /**<\brief Show node attributes.
+
+                             In addition to the state (presentation
+							 depends on format_flags given to
+							 dot_aut_dump()), each node is labeled with
+
+							     i;
+							     (m, r)
+
+							 where i is the node ID, m the goal mode,
+							 and r the reachability gradient value. */
 /**@}*/
 
 
@@ -113,15 +124,7 @@ anode_t *aut_prune_deadends( anode_t *head );
 int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp );
 
 /** Dump DOT file describing the automaton (strategy).  See \ref
-   DotDumpFlags.  Also see comments for tulip_aut_dump.  In addition
-   to the state (presentation depends on given format_flags), each
-   node is labeled with
-
-       i;
-       (m, r)
-
-   where i is the node ID, m the goal mode, and r the reachability
-   gradient value. */
+   DotDumpFlags.  Also see comments for tulip_aut_dump().   */
 int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 				  unsigned char format_flags, FILE *fp );
 
@@ -136,13 +139,15 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
    list of IDs of nodes reachable in one step. */
 void list_aut_dump( anode_t *head, int state_len, FILE *fp );
 
-/** Dump strategy using "gr1c automaton" file format.  See external
-   notes for details.  If fp = NULL, then write to stdout. */
+/** Dump strategy using "gr1c automaton" file format.  See
+   [external_notes](md_formats.html) for details.  If fp = NULL, then
+   write to stdout. */
 void aut_aut_dump( anode_t *head, int state_len, FILE *fp );
 
 /** Load strategy given in "gr1c automaton" format from file fp.  See
-   external notes for details.  If fp = NULL, then read from stdin.
-   Return resulting head pointer, or NULL if error. */
+   [external_notes](md_formats.html) for details.  If fp = NULL, then
+   read from stdin.  Return resulting head pointer, or NULL if
+   error. */
 anode_t *aut_aut_load( int state_len, FILE *fp );
 
 /** Get number of nodes in given automaton. */
