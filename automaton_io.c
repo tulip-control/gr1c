@@ -223,7 +223,10 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	node = head;
 	while (node) {
 		for (i = 0; i < node->trans_len; i++) {
-			fprintf( fp, "    \"%d;\\n(%d, %d)\\n", node_counter, node->mode, node->rgrad );
+			fprintf( fp, "    \"%d;\\n", node_counter );
+			if (format_flags & DOT_AUT_ATTRIB) {
+				fprintf( fp, "(%d, %d)\\n", node->mode, node->rgrad );
+			}
 			if ((format_flags & 0x1) == DOT_AUT_ALL) {
 				last_nonzero_env = num_env-1;
 				last_nonzero_sys = num_sys-1;
@@ -279,12 +282,13 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					}
 				}
 			}
-			fprintf( fp, "\" -> \"%d;\\n(%d, %d)\\n",
+			fprintf( fp, "\" -> \"%d;\\n",
 					 find_anode_index( head,
 									   (*(node->trans+i))->mode,
-									   (*(node->trans+i))->state, num_env+num_sys ),
-					 (*(node->trans+i))->mode,
-					 (*(node->trans+i))->rgrad);
+									   (*(node->trans+i))->state, num_env+num_sys ) );
+			if (format_flags & DOT_AUT_ATTRIB) {
+				fprintf( fp, "(%d, %d)\\n", (*(node->trans+i))->mode, (*(node->trans+i))->rgrad);
+			}
 			if ((format_flags & 0x1) == DOT_AUT_ALL) {
 				last_nonzero_env = num_env-1;
 				last_nonzero_sys = num_sys-1;

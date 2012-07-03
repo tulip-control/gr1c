@@ -396,7 +396,7 @@ int main( int argc, char **argv )
 			list_aut_dump( strategy, num_env+num_sys, stdout );
 		} else if (format_option == OUTPUT_FORMAT_DOT) {
 			dot_aut_dump( strategy, evar_list, svar_list,
-						  DOT_AUT_BINARY, stdout );
+						  DOT_AUT_BINARY | DOT_AUT_ATTRIB, stdout );
 		} else if (format_option == OUTPUT_FORMAT_AUT) {
 			aut_aut_dump( strategy, num_env+num_sys, stdout );
 		} else { /* OUTPUT_FORMAT_TULIP */
