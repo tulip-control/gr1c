@@ -250,6 +250,9 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 							} else {
 								fprintf( fp, "%s=%d", var->name, *(node->state+j) );
 							}
+							if ((last_nonzero_sys >= 0 || (format_flags & DOT_AUT_ALL))
+								&& !(format_flags & DOT_AUT_EDGEINPUT))
+								fprintf( fp, ", " );
 						} else {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s, ", var->name );
@@ -312,6 +315,9 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 							} else {
 								fprintf( fp, "%s=%d", var->name, *((*(node->trans+i))->state+j) );
 							}
+							if ((last_nonzero_sys >= 0 || (format_flags & DOT_AUT_ALL))
+								&& !(format_flags & DOT_AUT_EDGEINPUT))
+								fprintf( fp, ", " );
 						} else {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s, ", var->name );
