@@ -86,7 +86,7 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 		}
 		start = end;
 
-		(*(node_array+ia_len-1))->rindex = strtol( start, &end, 10 );
+		(*(node_array+ia_len-1))->rgrad = strtol( start, &end, 10 );
 		if (start == end) {
 			fprintf( stderr, "Error parsing gr1c automaton line %d.\n", line_num );
 			return NULL;
@@ -190,7 +190,7 @@ void aut_aut_dump( anode_t *head, int state_len, FILE *fp )
 		fprintf( fp, "%d", node_counter );
 		for (i = 0; i < state_len; i++)
 			fprintf( fp, " %d", *(node->state+i) );
-		fprintf( fp, " %d %d", node->mode, node->rindex );
+		fprintf( fp, " %d %d", node->mode, node->rgrad );
 		for (i = 0; i < node->trans_len; i++)
 			fprintf( fp, " %d",
 					 find_anode_index( head,
@@ -223,7 +223,7 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	node = head;
 	while (node) {
 		for (i = 0; i < node->trans_len; i++) {
-			fprintf( fp, "    \"%d;\\n(%d, %d)\\n", node_counter, node->mode, node->rindex );
+			fprintf( fp, "    \"%d;\\n(%d, %d)\\n", node_counter, node->mode, node->rgrad );
 			if ((format_flags & 0x1) == DOT_AUT_ALL) {
 				last_nonzero_env = num_env-1;
 				last_nonzero_sys = num_sys-1;

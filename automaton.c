@@ -12,7 +12,7 @@
 #include "automaton.h"
 
 
-anode_t *insert_anode( anode_t *head, int mode, int rindex, bool *state, int state_len )
+anode_t *insert_anode( anode_t *head, int mode, int rgrad, bool *state, int state_len )
 {
 	int i;
 	anode_t *new_head = malloc( sizeof(anode_t) );
@@ -30,7 +30,7 @@ anode_t *insert_anode( anode_t *head, int mode, int rindex, bool *state, int sta
 	for (i = 0; i < state_len; i++)
 		*(new_head->state + i) = *(state+i);
 	new_head->mode = mode;
-	new_head->rindex = rindex;
+	new_head->rgrad = rgrad;
 	new_head->trans = NULL;
 	new_head->trans_len = 0;
 

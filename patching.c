@@ -1,7 +1,7 @@
 /* patching.c -- Definitions for signatures appearing in patching.h.
  *
  *
- * SCL; Apr 2012.
+ * SCL; 2012.
  */
 
 
@@ -93,7 +93,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	int *N = NULL;  /* "neighborhood" of nodes (a list of node IDs). */
 	int N_len = 0;
 	int N_mode = -1;  /* Goal mode of the automaton nodes in the neighborhood */
-	int min_rindex;  /* Minimum reachability index of affected nodes. */
+	int min_rgrad;  /* Minimum reachability gradient value of affected nodes. */
 
 	DdNode *local_target;  /* Called B in the manuscript */
 	DdNode *entry_states;  /* Called C in the manuscript */
@@ -490,10 +490,10 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		return NULL;
 	}
 
-	min_rindex = -1;
+	min_rgrad = -1;
 	for (i = 0; i < affected_len; i++) {
-		if (min_rindex == -1 || (*(affected+i))->rindex < min_rindex)
-			min_rindex = (*(affected+i))->rindex;
+		if (min_rgrad == -1 || (*(affected+i))->rgrad < min_rgrad)
+			min_rgrad = (*(affected+i))->rgrad;
 	}
 
 	/* Create set to be reached by the local strategy and set of
@@ -508,7 +508,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 			fprintf( stderr, "Error: node ID %d in neighborhood not found in given strategy.\n", *(N+i) );
 			return NULL;
 		}
-		if (node->rindex >= min_rindex) {
+		if (node->rgrad >= min_rgrad) {
 			head = strategy;
 			node_counter = 0;
 			while (head) {
@@ -690,7 +690,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		/* Insert all stacked, initial nodes into strategy. */
 		node = this_node_stack;
 		while (node) {
-			local_strategy = insert_anode( local_strategy, N_mode, node->rindex,
+			local_strategy = insert_anode( local_strategy, N_mode, node->rgrad,
 										   node->state, num_env+num_sys );
 			if (local_strategy == NULL) {
 				fprintf( stderr, "Error: failed to build local strategy initial nodes.\n" );

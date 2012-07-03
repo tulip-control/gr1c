@@ -2,7 +2,7 @@
 #
 #
 
-INSTALLDIR = /usr/local/bin
+INSTALLDIR = ~/opt/bin
 export CUDD_ROOT = extern/cudd-2.5.0
 CUDD_LIB = $(CUDD_ROOT)/cudd/libcudd.a $(CUDD_ROOT)/mtr/libmtr.a $(CUDD_ROOT)/st/libst.a $(CUDD_ROOT)/util/libutil.a $(CUDD_ROOT)/epd/libepd.a
 

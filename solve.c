@@ -284,7 +284,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	/* Insert all stacked, initial nodes into strategy. */
 	node = this_node_stack;
 	while (node) {
-		strategy = insert_anode( strategy, node->mode, node->rindex,
+		strategy = insert_anode( strategy, node->mode, node->rgrad,
 								 node->state, num_env+num_sys );
 		if (strategy == NULL) {
 			fprintf( stderr, "Error synthesize: inserting state node into strategy.\n" );
@@ -357,7 +357,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			node = new_node;
 		}
 		this_node_stack = pop_anode( this_node_stack );
-		node->rindex = j;
+		node->rgrad = j;
 
 		/* Note that we assume the variable map has been appropriately
 		   defined in the CUDD manager, after the call to

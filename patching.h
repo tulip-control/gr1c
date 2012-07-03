@@ -1,8 +1,8 @@
 /** \file patching.h
- * \brief Implementation of patching (or incremental synthesis) algorithms.
+ * \brief Implementation of patching and incremental synthesis algorithms.
  *
  *
- * SCL; Apr 2012.
+ * SCL; 2012.
  */
 
 
