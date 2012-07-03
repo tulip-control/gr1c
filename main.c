@@ -391,7 +391,6 @@ int main( int argc, char **argv )
 	}
 
 	if (strategy != NULL) {
-		/* strategy = aut_prune_deadends( strategy ); */
 		if (format_option == OUTPUT_FORMAT_TEXT) {
 			list_aut_dump( strategy, num_env+num_sys, stdout );
 		} else if (format_option == OUTPUT_FORMAT_DOT) {
