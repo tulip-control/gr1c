@@ -409,7 +409,10 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 	fprintf( fp, "  <aut>\n" );
 	node = head;
 	while (node) {
-		fprintf( fp, "    <node>\n      <id>%d</id><name></name>\n      <child_list>", node_counter );
+		fprintf( fp, "    <node>\n      <id>%d</id><name>", node_counter );
+		if (node->mode != -1 && node->rgrad != -1)
+			fprintf( fp, "%d %d", node->mode, node->rgrad );
+		fprintf( fp, "</name>\n      <child_list>" );
 		for (i = 0; i < node->trans_len; i++)
 			fprintf( fp, " %d",
 					 find_anode_index( head,
