@@ -43,10 +43,10 @@ of **restrict**, **relax**, **blocksys**, or **blockenv** commands (as
 defined in the section [Interaction](md_interaction.html)). Blank
 lines and lines beginning with # are ignored.
 
-For example, if there are two variables, and we wish to change the
-game graph by removing the controlled edge from 00 to 01 (with states
-given as bitvectors), and we have declared the "neighborhood" to
-consist of states 00, 01, and 11, then the file would be
+For example, if there are two variables, and we have declared the
+"neighborhood" to consist of states 00, 01, and 11 (with states given
+as bitvectors), and we wish to change the game graph by removing the
+controlled edge from 00 to 01, then the file would be
 
     0 0
     0 1
