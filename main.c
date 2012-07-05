@@ -163,13 +163,14 @@ int main( int argc, char **argv )
 				"  -r        only check realizability; do not synthesize strategy\n"
 				"            (return 0 if realizable, -1 if not)\n"
 				"  -i        interactive mode\n"
-				"  -a FILE   automaton file in \"gr1c\" format\n"
+				"  -a FILE   automaton file in \"gr1c\" format;\n"
+				"            if FILE is -, then read from stdin\n"
 				"  -e FILE   patch, given game edge set change file; requires -a flag\n", argv[0] );
 		return 1;
 	}
 
-	if (input_index < 0 && run_option == GR1C_MODE_INTERACTIVE) {
-		printf( "Reading spec from stdin in interactive mode is not yet implemented.\n" );
+	if (input_index < 0 && (run_option == GR1C_MODE_INTERACTIVE || (run_option == GR1C_MODE_PATCH && !strncmp( argv[aut_input_index], "-", 1 )))) {
+		printf( "Reading spec from stdin in interactive mode, or in some cases while patching,\nis not yet implemented.\n" );
 		return 1;
 	}
 
@@ -349,10 +350,14 @@ int main( int argc, char **argv )
 			perror( "gr1c, fopen" );
 			return -1;
 		}
-		strategy_fp = fopen( argv[aut_input_index], "r" );
-		if (strategy_fp == NULL) {
-			perror( "gr1c, fopen" );
-			return -1;
+		if (!strncmp( argv[aut_input_index], "-", 1 )) {
+				strategy_fp = stdin;
+		} else {
+			strategy_fp = fopen( argv[aut_input_index], "r" );
+			if (strategy_fp == NULL) {
+				perror( "gr1c, fopen" );
+				return -1;
+			}
 		}
 
 		if (verbose) {
@@ -361,6 +366,8 @@ int main( int argc, char **argv )
 		}
 		strategy = patch_localfixpoint( manager, strategy_fp, fp, verbose );
 		fclose( fp );
+		if (strategy_fp != stdin)
+			fclose( strategy_fp );
 		if (verbose) {
 			printf( "Done.\n" );
 			fflush( stdout );
