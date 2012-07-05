@@ -312,6 +312,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 						   num_env+num_sys );
 		if (node->trans_len > 0 || j == 0) {
 			/* This state and mode combination is already in strategy. */
+			node->rgrad = j;
 			this_node_stack = pop_anode( this_node_stack );
 			continue;
 		}
@@ -514,6 +515,9 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	int goal_mode;
 	DdNode *N_BDD = NULL;  /* Characteristic function for set of states N. */
 	int min_rgrad;  /* Minimum reachability gradient value of affected nodes. */
+	int Exit_rgrad;  /* Maximum value among reached Exit nodes. */
+	int local_max_rgrad;
+	int local_min_rgrad;
 	bool break_flag;
 
 	anode_t **Exit;
@@ -1113,10 +1117,14 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		if (local_strategy == NULL)
 			break;
 
-		/* Update goal mode in local strategy to align with the current one. */
 		node = local_strategy;
+		local_min_rgrad = local_max_rgrad = -1;
 		while (node) {
 			node->mode = goal_mode+10;
+			if (node->rgrad > local_max_rgrad)
+				local_max_rgrad = node->rgrad;
+			if (node->rgrad < local_min_rgrad || local_min_rgrad == -1)
+				local_min_rgrad = node->rgrad;
 			node = node->next;
 		}
 
@@ -1130,15 +1138,10 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				return NULL;
 			}
 
-			((*(Entry+i))->trans_len)++;
-			(*(Entry+i))->trans = realloc( (*(Entry+i))->trans, sizeof(anode_t *)*((*(Entry+i))->trans_len) );
-			if ((*(Entry+i))->trans == NULL) {
-				perror( "patch_localfixpoint, realloc" );
-				return NULL;
-			}
-			*((*(Entry+i))->trans + (*(Entry+i))->trans_len-1) = node;
+			replace_anode_trans( strategy, *(Entry+i), node );
 		}
-		
+
+		Exit_rgrad = -1;
 		for (i = 0; i < Exit_len; i++) {
 			node = local_strategy;
 			while (node && !statecmp( (*(Exit+i))->state, node->state, num_env+num_sys ))
@@ -1146,15 +1149,59 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 			if (node == NULL)
 				continue;
 
-			(node->trans_len)++;
-			node->trans = realloc( node->trans, sizeof(anode_t *)*(node->trans_len) );
+			if ((*(Exit+i))->rgrad > Exit_rgrad)
+				Exit_rgrad = (*(Exit+i))->rgrad;
+
+			node->trans = realloc( node->trans, sizeof(anode_t *)*(node->trans_len + (*(Exit+i))->trans_len) );
 			if (node->trans == NULL) {
 				perror( "patch_localfixpoint, realloc" );
 				return NULL;
 			}
-			*(node->trans + node->trans_len-1) = *(Exit+i);
+			for (j = 0; j < (*(Exit+i))->trans_len; j++)
+				*(node->trans + node->trans_len + j) = *((*(Exit+i))->trans + j);
+			node->trans_len += (*(Exit+i))->trans_len;
 		}
-		
+
+		for (i = 0; i < *(affected_len+goal_mode); i++) {
+			strategy = delete_anode( strategy, *(*(affected+goal_mode)+i) );
+			replace_anode_trans( strategy, *(*(affected+goal_mode)+i), NULL );
+		}
+
+		node = strategy;
+		while (node) {
+			if (node->mode != goal_mode) {
+				node = node->next;
+				continue;
+			}
+			for (i = 0; i < N_len; i++)
+				if (statecmp( node->state, *(N+i), num_env+num_sys ))
+					break;
+			if (i < N_len) {
+				strategy = delete_anode( strategy, node );
+				replace_anode_trans( strategy, node, NULL );
+				node = strategy;
+			} else {
+				node = node->next;
+			}
+		}
+
+		/* Scale reachability gradient values to make room for patch. */
+		i = 1;
+		while ((min_rgrad-Exit_rgrad)*i < (local_max_rgrad-local_min_rgrad))
+			i++;
+		node = strategy;
+		while (node) {
+			node->rgrad *= i;
+			node = node->next;
+		}
+
+		node = local_strategy;
+		while (node) {
+			node->mode = goal_mode;
+			node->rgrad += Exit_rgrad*i;
+			node = node->next;
+		}
+
 		head = strategy;
 		while (head->next)
 			head = head->next;
