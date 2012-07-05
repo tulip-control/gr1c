@@ -674,7 +674,8 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			}
 			Y = compute_sublevel_sets( manager, W,
 									   etrans_patched, strans_patched,
-									   egoals, sgoals,
+									   egoals, num_egoals,
+									   sgoals, num_sgoals,
 									   &num_sublevels, &X_ijr, verbose );
 			if (Y == NULL) {
 				fprintf( stderr, "Error levelset_interactive: failed to construct sublevel sets.\n" );

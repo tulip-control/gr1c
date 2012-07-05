@@ -39,15 +39,16 @@ game edge set changes
 
 Files of this form consist of two parts: first a list (one per line)
 of states considered to be in the neighborhood; and second a sequence
-of **restrict**, **relax**, **blocksys**, or **blockenv** commands (as
-defined in the section [Interaction](md_interaction.html)). Blank
-lines and lines beginning with # are ignored.
+of **restrict**, **relax**, or **blocksys** commands (as defined in
+the section [Interaction](md_interaction.html)). Blank lines and lines
+beginning with ``#`` are ignored.
 
 For example, if there are two variables, and we have declared the
 "neighborhood" to consist of states 00, 01, and 11 (with states given
 as bitvectors), and we wish to change the game graph by removing the
 controlled edge from 00 to 01, then the file would be
 
+    # This is a comment.
     0 0
     0 1
     1 1

@@ -2,7 +2,7 @@
  *                      Also see solve.c
  *
  *
- * SCL; Feb-Apr 2012.
+ * SCL; 2012.
  */
 
 
@@ -472,7 +472,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 DdNode ***compute_sublevel_sets( DdManager *manager,
 								 DdNode *W,
 								 DdNode *etrans, DdNode *strans,
-								 DdNode **egoals, DdNode **sgoals,
+								 DdNode **egoals, int num_env_goals,
+								 DdNode **sgoals, int num_sys_goals,
 								 int **num_sublevels,
 								 DdNode *****X_ijr,
 								 unsigned char verbose )
@@ -517,20 +518,20 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 	free( vars );
 	free( pvars );
 
-	if (num_sgoals > 0) {
-		Y = malloc( num_sgoals*sizeof(DdNode **) );
-		*num_sublevels = malloc( num_sgoals*sizeof(int) );
+	if (num_sys_goals > 0) {
+		Y = malloc( num_sys_goals*sizeof(DdNode **) );
+		*num_sublevels = malloc( num_sys_goals*sizeof(int) );
 		if (Y == NULL || *num_sublevels == NULL) {
 			perror( "compute_sublevel_sets, malloc" );
 			return NULL;
 		}
-		*X_ijr = malloc( num_sgoals*sizeof(DdNode ***) );
+		*X_ijr = malloc( num_sys_goals*sizeof(DdNode ***) );
 		if (*X_ijr == NULL) {
 			perror( "compute_sublevel_sets, malloc" );
 			return NULL;
 		}
 
-		for (i = 0; i < num_sgoals; i++) {
+		for (i = 0; i < num_sys_goals; i++) {
 			*(*num_sublevels+i) = 1;
 			*(Y+i) = malloc( *(*num_sublevels+i)*sizeof(DdNode *) );
 			if (*(Y+i) == NULL) {
@@ -545,12 +546,12 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 				perror( "compute_sublevel_sets, malloc" );
 				return NULL;
 			}
-			**(*X_ijr+i) = malloc( num_egoals*sizeof(DdNode *) );
+			**(*X_ijr+i) = malloc( num_env_goals*sizeof(DdNode *) );
 			if (**(*X_ijr+i) == NULL) {
 				perror( "compute_sublevel_sets, malloc" );
 				return NULL;
 			}
-			for (r = 0; r < num_egoals; r++) {
+			for (r = 0; r < num_env_goals; r++) {
 				*(**(*X_ijr+i) + r) = Cudd_Not( Cudd_ReadOne( manager ) );
 				Cudd_Ref( *(**(*X_ijr+i) + r) );
 			}
@@ -560,7 +561,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 	}
 
 	/* Build list of Y_i sets from iterations of the fixpoint formula. */
-	for (i = 0; i < num_sgoals; i++) {
+	for (i = 0; i < num_sys_goals; i++) {
 		while (True) {
 			(*(*num_sublevels+i))++;
 			*(Y+i) = realloc( *(Y+i), *(*num_sublevels+i)*sizeof(DdNode *) );
@@ -570,7 +571,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 				return NULL;
 			}
 
-			*(*(*X_ijr+i) + *(*num_sublevels+i)-1) = malloc( num_egoals*sizeof(DdNode *) );
+			*(*(*X_ijr+i) + *(*num_sublevels+i)-1) = malloc( num_env_goals*sizeof(DdNode *) );
 			if (*(*(*X_ijr+i) + *(*num_sublevels+i)-1) == NULL) {
 				perror( "compute_sublevel_sets, malloc" );
 				return NULL;
@@ -582,7 +583,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 
 			*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_Not( Cudd_ReadOne( manager ) );
 			Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
-			for (r = 0; r < num_egoals; r++) {
+			for (r = 0; r < num_env_goals; r++) {
 					
 				/* (Re)initialize X */
 				if (X != NULL)
@@ -645,7 +646,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 
 			if (Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-1), *(*(Y+i)+*(*num_sublevels+i)-2))*Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-2), *(*(Y+i)+*(*num_sublevels+i)-1) )) {
 				Cudd_RecursiveDeref( manager, *(*(Y+i)+*(*num_sublevels+i)-1) );
-				for (r = 0; r < num_egoals; r++) {
+				for (r = 0; r < num_env_goals; r++) {
 					Cudd_RecursiveDeref( manager, *(*(*(*X_ijr+i) + *(*num_sublevels+i)-1) + r) );
 				}
 				free( *(*(*X_ijr+i) + *(*num_sublevels+i)-1) );

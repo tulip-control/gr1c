@@ -15,8 +15,8 @@
 
 /** Read given strategy in "gr1c automaton" format from stream
    strategy_fp, using edge set changes to the game graph listed in
-   stream change_fp.  See external notes for format details.  If
-   strategy_fp = NULL, then read from stdin.
+   stream change_fp.  See [external_notes](md_formats.html) for format
+   details.  If strategy_fp = NULL, then read from stdin.
 
    Return the head pointer of the patched strategy, or NULL if error.
 

@@ -72,6 +72,8 @@ int main( int argc, char **argv )
 	unsigned char verbose = 0;
 	int input_index = -1;
 	int edges_input_index = -1;  /* If patching, command-line flag "-e". */
+	int aut_input_index = -1;  /* For command-line flag "-a". */
+	FILE *strategy_fp;
 	char dumpfilename[32];
 
 	int i, var_index;
@@ -126,6 +128,13 @@ int main( int argc, char **argv )
 				run_option = GR1C_MODE_PATCH;
 				edges_input_index = i+1;
 				i++;
+			} else if (argv[i][1] == 'a') {
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				aut_input_index = i+1;
+				i++;
 			} else {
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 				return 1;
@@ -137,8 +146,13 @@ int main( int argc, char **argv )
 		}
 	}
 
+	if (edges_input_index >= 0 && aut_input_index < 0) {
+		fprintf( stderr, "\"-e\" flag can only be used with \"-a\"\n" );
+		return 1;
+	}
+
 	if (help_flag) {
-		printf( "Usage: %s [-hVvspri] [-t TYPE] [-e FILE] [FILE]\n\n"
+		printf( "Usage: %s [-hVvspri] [-t TYPE] [-a FILE] [-e FILE] [FILE]\n\n"
 				"  -h        this help message\n"
 				"  -V        print version and exit\n"
 				"  -v        be verbose\n"
@@ -149,13 +163,13 @@ int main( int argc, char **argv )
 				"  -r        only check realizability; do not synthesize strategy\n"
 				"            (return 0 if realizable, -1 if not)\n"
 				"  -i        interactive mode\n"
-				"  -e FILE   patch, given game edge set change file\n", argv[0] );
+				"  -a FILE   automaton file in \"gr1c\" format\n"
+				"  -e FILE   patch, given game edge set change file; requires -a flag\n", argv[0] );
 		return 1;
 	}
 
-	if (input_index < 0 && (run_option == GR1C_MODE_INTERACTIVE
-							|| run_option == GR1C_MODE_PATCH)) {
-		printf( "Reading spec from stdin in interactive or patching mode is not yet implemented.\n" );
+	if (input_index < 0 && run_option == GR1C_MODE_INTERACTIVE) {
+		printf( "Reading spec from stdin in interactive mode is not yet implemented.\n" );
 		return 1;
 	}
 
@@ -202,20 +216,24 @@ int main( int argc, char **argv )
 	if (sys_init == NULL)
 		sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
 
-	/* Merge component safety (transition) formulas. */
-	if (et_array_len > 1) {
-		env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
-	} else if (et_array_len == 1) {
-		env_trans = *env_trans_array;
-	} else {  /* No restrictions on transitions. */
-		env_trans = init_ptree( PT_CONSTANT, NULL, 1 );
-	}
-	if (st_array_len > 1) {
-		sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
-	} else if (st_array_len == 1) {
-		sys_trans = *sys_trans_array;
-	} else {  /* No restrictions on transitions. */
-		sys_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+	/* Merge component safety (transition) formulas if not in patching
+	   (or incremental) mode, or if DOT dumps of the parse trees were
+	   requested. */
+	if ((run_option != GR1C_MODE_PATCH) || ptdump_flag) {
+		if (et_array_len > 1) {
+			env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
+		} else if (et_array_len == 1) {
+			env_trans = *env_trans_array;
+		} else {  /* No restrictions on transitions. */
+			env_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+		}
+		if (st_array_len > 1) {
+			sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
+		} else if (st_array_len == 1) {
+			sys_trans = *sys_trans_array;
+		} else {  /* No restrictions on transitions. */
+			sys_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+		}
 	}
 
 	if (ptdump_flag) {
@@ -331,12 +349,17 @@ int main( int argc, char **argv )
 			perror( "gr1c, fopen" );
 			return -1;
 		}
+		strategy_fp = fopen( argv[aut_input_index], "r" );
+		if (strategy_fp == NULL) {
+			perror( "gr1c, fopen" );
+			return -1;
+		}
 
 		if (verbose) {
 			printf( "Patching given strategy..." );
 			fflush( stdout );
 		}
-		strategy = patch_localfixpoint( manager, NULL, fp, verbose );
+		strategy = patch_localfixpoint( manager, strategy_fp, fp, verbose );
 		fclose( fp );
 		if (verbose) {
 			printf( "Done.\n" );

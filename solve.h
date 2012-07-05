@@ -2,7 +2,7 @@
  * \brief Compute realizability and a strategy for a GR(1) game.
  *
  *
- * SCL; Feb-Apr 2012.
+ * SCL; 2012.
  */
 
 
@@ -50,14 +50,14 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 /** Synthesize a strategy.  The specification is assumed to be
    realizable when this function is invoked.  Return pointer to
    automaton representing the strategy, or NULL if error. Also see
-   documentation for check_realizable. */
+   documentation for check_realizable(). */
 anode_t *synthesize( DdManager *manager, unsigned char init_flags,
 					 unsigned char verbose );
 
 /** Compute the set of states that are winning for the system, under
    the specification defined by the global parse trees (generated from
    gr1c input in main()). Basically creates BDDs from parse trees and
-   then calls compute_winning_set_BDD. */
+   then calls compute_winning_set_BDD(). */
 DdNode *compute_winning_set( DdManager *manager, unsigned char verbose );
 
 /** Compute the set of states that are winning for the system, under
@@ -72,9 +72,9 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 								 unsigned char verbose );
 
 /** W is assumed to be (the characteristic function of) the set of
-   winning states, e.g., as returned by compute_winning_set.
+   winning states, e.g., as returned by compute_winning_set().
    num_sublevels is an int array of length equal to the number of
-   system goals.  Space for it is allocated by compute_sublevel_sets
+   system goals.  Space for it is allocated by compute_sublevel_sets()
    and expected to be freed by the caller (or elsewhere).
 
    The argument X_ijr should be a reference to a pointer. Upon
@@ -85,7 +85,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 DdNode ***compute_sublevel_sets( DdManager *manager,
 								 DdNode *W,
 								 DdNode *etrans, DdNode *strans,
-								 DdNode **egoals, DdNode **sgoals,
+								 DdNode **egoals, int num_env_goals,
+								 DdNode **sgoals, int num_sys_goals,
 								 int **num_sublevels,
 								 DdNode *****X_ijr,
 								 unsigned char verbose );

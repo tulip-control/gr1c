@@ -2,7 +2,7 @@
  *            Also see solve_operators.c
  *
  *
- * SCL; Feb-Apr 2012.
+ * SCL; 2012.
  */
 
 
@@ -205,7 +205,9 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		fprintf( stderr, "Error synthesize: failed to construct winning set.\n" );
 		return NULL;
 	}
-	Y = compute_sublevel_sets( manager, W, etrans, strans, egoals, sgoals,
+	Y = compute_sublevel_sets( manager, W, etrans, strans,
+							   egoals, num_egoals,
+							   sgoals, num_sgoals,
 							   &num_sublevels, &X_ijr, verbose );
 	if (Y == NULL) {
 		fprintf( stderr, "Error synthesize: failed to construct sublevel sets.\n" );
