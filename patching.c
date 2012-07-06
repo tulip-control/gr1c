@@ -280,7 +280,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 
 	/* Synthesize local strategy */
 	for (i = 0; i < Entry_len; i++)
-		this_node_stack = insert_anode( this_node_stack, 0, -1, (*(Entry+i))->state, num_env+num_sys );
+		this_node_stack = insert_anode( this_node_stack, -1, -1, (*(Entry+i))->state, num_env+num_sys );
 
 	/* Insert all stacked, initial nodes into strategy. */
 	node = this_node_stack;
@@ -442,15 +442,15 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 			for (i = 0; i < num_env; i++)
 				*(state+i) = *(*(env_moves+k)+i);
 
-			new_node = find_anode( strategy, 0, state, num_env+num_sys );
+			new_node = find_anode( strategy, -1, state, num_env+num_sys );
 			if (new_node == NULL) {
-				strategy = insert_anode( strategy, 0, -1,
+				strategy = insert_anode( strategy, -1, -1,
 										 state, num_env+num_sys );
 				if (strategy == NULL) {
 					fprintf( stderr, "Error synthesize_patch: inserting new node into strategy.\n" );
 					return NULL;
 				}
-				this_node_stack = insert_anode( this_node_stack, 0, -1,
+				this_node_stack = insert_anode( this_node_stack, -1, -1,
 												state, num_env+num_sys );
 				if (this_node_stack == NULL) {
 					fprintf( stderr, "Error synthesize_patch: pushing node onto stack failed.\n" );
@@ -461,7 +461,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 			strategy = append_anode_trans( strategy,
 										   node->mode, node->state,
 										   num_env+num_sys,
-										   0, state );
+										   -1, state );
 			if (strategy == NULL) {
 				fprintf( stderr, "Error synthesize_patch: inserting new transition into strategy.\n" );
 				return NULL;
@@ -942,7 +942,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 							}
 							/* If affected state is not in N, then fail. */
 							for (i = 0; i < N_len; i++) {
-								if (statecmp( state, *(N+i), num_env+num_sys ))
+								if (statecmp( head->state, *(N+i), num_env+num_sys ))
 									break;
 							}
 							if (i == N_len) {
@@ -1068,6 +1068,17 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 			head = head->next;
 		}
 
+		if (verbose) {
+			printf( "Exit set before pruning:\n" );
+			for (i = 0; i < Exit_len; i++) {
+				printf( "   " );
+				for (j = 0; j < num_env+num_sys; j++)
+					printf( " %d", *((*(Exit+i))->state+j) );
+				printf( "\n" );
+			}
+			fflush( stdout );
+		}
+
 		/* Find minimum reachability gradient value among nodes in the
 		   Entry set, and remove any Exit nodes greater than or equal
 		   to it. */
@@ -1075,6 +1086,10 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		for (i = 0; i < Entry_len; i++) {
 			if ((*(Entry+i))->rgrad < min_rgrad || min_rgrad == -1)
 				min_rgrad = (*(Entry+i))->rgrad;
+		}
+		if (verbose) {
+			printf( "Minimum reachability gradient value in Exit: %d\n", min_rgrad );
+			fflush( stdout );
 		}
 		i = 0;
 		while (i < Exit_len) {
@@ -1211,6 +1226,8 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	if (goal_mode != num_sgoals) {  /* Did a local patching attempt fail? */
 		delete_aut( strategy );
 		strategy = NULL;
+	} else {
+		strategy = aut_prune_deadends( strategy );
 	}
 
 
