@@ -6,8 +6,8 @@
  */
 
 
-#ifndef _PATCHING_H_
-#define _PATCHING_H_
+#ifndef PATCHING_H
+#define PATCHING_H
 
 #include "solve.h"
 #include "automaton.h"
