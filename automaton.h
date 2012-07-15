@@ -88,7 +88,8 @@ anode_t *pop_anode( anode_t *head );
 anode_t *build_anode_trans( anode_t *head, int mode, bool *state, int state_len,
 							int next_mode, bool **next_states, int next_len );
 
-/** Append transition to array for the node with given state and mode. */
+/** Append transition to array for the node with given state and mode.
+   Return new head on success, NULL on error. */
 anode_t *append_anode_trans( anode_t *head,
 							 int mode, bool *state, int state_len,
 							 int next_mode, bool *next_state );
