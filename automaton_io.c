@@ -472,7 +472,7 @@ void list_aut_dump( anode_t *head, int state_len, FILE *fp )
 				width_count = 0;
 			}
 		}
-		fprintf( fp, " - %2d - [", node->mode );
+		fprintf( fp, " - %2d - %2d - [", node->mode, node->rgrad );
 		for (i = 0; i < node->trans_len; i++)
 			fprintf( fp, " %d",
 					 find_anode_index( head,
