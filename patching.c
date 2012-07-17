@@ -48,7 +48,6 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 	int local_max_rgrad;
 	int local_min_rgrad;
 
-
 	strategy_size = aut_size( strategy );
 	if (verbose)
 		printf( "Read in strategy of size %d\n", strategy_size );
@@ -180,10 +179,10 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 		fflush( stdout );
 	}
 
-	local_strategy = synthesize_patch( manager, num_env, num_sys,
-									   Entry, Entry_len, Exit, Exit_len,
-									   etrans, strans, egoals, N_BDD,
-									   verbose );
+	local_strategy = synthesize_reachgame( manager, num_env, num_sys,
+										   Entry, Entry_len, Exit, Exit_len,
+										   etrans, strans, egoals, N_BDD,
+										   verbose );
 	if (local_strategy == NULL)
 		return NULL;
 

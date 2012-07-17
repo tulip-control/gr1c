@@ -109,7 +109,7 @@ ptree_t *pusht_operator( ptree_t *head, int type );
 
 /** Return pointer to new item (which is of course accessible via given
    root node).  If argument head is NULL, then behave exactly as
-   init_ptree (and thus, a new tree root node is returned). */
+   init_ptree() (and thus, a new tree root node is returned). */
 ptree_t *append_list_item( ptree_t *head, int type, char *name, int value );
 
 /** 0-based indexing.  An index of -1 refers to the last item in the

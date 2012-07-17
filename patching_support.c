@@ -16,12 +16,12 @@
 extern int num_egoals;
 
 
-anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
-						   anode_t **Entry, int Entry_len,
-						   anode_t **Exit, int Exit_len,
-						   DdNode *etrans, DdNode *strans, DdNode **egoals,
-						   DdNode *N_BDD,
-						   unsigned char verbose )
+anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
+							   anode_t **Entry, int Entry_len,
+							   anode_t **Exit, int Exit_len,
+							   DdNode *etrans, DdNode *strans, DdNode **egoals,
+							   DdNode *N_BDD,
+							   unsigned char verbose )
 {
 	DdNode *Exit_BDD;
 	DdNode *Entry_BDD;
@@ -52,12 +52,12 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 
 	state = malloc( sizeof(bool)*(num_env+num_sys) );
 	if (state == NULL) {
-		perror( "synthesize_patch, malloc" );
+		perror( "synthesize_reachgame, malloc" );
 		return NULL;
 	}
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
-		perror( "synthesize_patch, malloc" );
+		perror( "synthesize_reachgame, malloc" );
 		return NULL;
 	}
 
@@ -89,7 +89,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 	num_sublevels = 1;
 	Y = malloc( num_sublevels*sizeof(DdNode *) );
 	if (Y == NULL) {
-		perror( "synthesize_patch, malloc" );
+		perror( "synthesize_reachgame, malloc" );
 		return NULL;
 	}
 	*Y = Exit_BDD;
@@ -97,13 +97,13 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 
 	X_jr = malloc( num_sublevels*sizeof(DdNode **) );
 	if (X_jr == NULL) {
-		perror( "synthesize_patch, malloc" );
+		perror( "synthesize_reachgame, malloc" );
 		return NULL;
 	}
 	
 	*X_jr = malloc( num_egoals*sizeof(DdNode *) );
 	if (*X_jr == NULL) {
-		perror( "synthesize_patch, malloc" );
+		perror( "synthesize_reachgame, malloc" );
 		return NULL;
 	}
 	for (r = 0; r < num_egoals; r++) {
@@ -116,13 +116,13 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 		Y = realloc( Y, num_sublevels*sizeof(DdNode *) );
 		X_jr = realloc( X_jr, num_sublevels*sizeof(DdNode **) );
 		if (Y == NULL || X_jr == NULL) {
-			perror( "synthesize_patch, realloc" );
+			perror( "synthesize_reachgame, realloc" );
 			return NULL;
 		}
 		
 		*(X_jr + num_sublevels-1) = malloc( num_egoals*sizeof(DdNode *) );
 		if (*(X_jr + num_sublevels-1) == NULL) {
-			perror( "synthesize_patch, malloc" );
+			perror( "synthesize_reachgame, malloc" );
 			return NULL;
 		}
 
@@ -209,7 +209,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 				Y = realloc( Y, num_sublevels*sizeof(DdNode *) );
 				X_jr = realloc( X_jr, num_sublevels*sizeof(DdNode **) );
 				if (Y == NULL || X_jr == NULL) {
-					perror( "synthesize_patch, realloc" );
+					perror( "synthesize_reachgame, realloc" );
 					return NULL;
 				}
 			}
@@ -224,7 +224,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 
 
 	/* Note that we assume the variable map has been appropriately
-	   defined in the CUDD manager before invocation of synthesize_patch. */
+	   defined in the CUDD manager before invocation of synthesize_reachgame. */
 	tmp = Cudd_bddVarMap( manager, N_BDD );
 	if (tmp == NULL) {
 		fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
@@ -245,7 +245,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 		strategy = insert_anode( strategy, node->mode, node->rgrad,
 								 node->state, num_env+num_sys );
 		if (strategy == NULL) {
-			fprintf( stderr, "Error synthesize_patch: inserting state node into strategy.\n" );
+			fprintf( stderr, "Error synthesize_reachgame: inserting state node into strategy.\n" );
 			return NULL;
 		}
 		node = node->next;
@@ -279,7 +279,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 		   compute_winning_set above. */
 		Y_i_primed = Cudd_bddVarMap( manager, *(Y+j-1) );
 		if (Y_i_primed == NULL) {
-			fprintf( stderr, "Error synthesize_patch: swapping variables with primed forms.\n" );
+			fprintf( stderr, "Error synthesize_reachgame: swapping variables with primed forms.\n" );
 			return NULL;
 		}
 		Cudd_Ref( Y_i_primed );
@@ -311,7 +311,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 			Cudd_AutodynDisable( manager );
 			gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
 			if (gen == NULL) {
-				fprintf( stderr, "Error synthesize_patch: failed to find cube.\n" );
+				fprintf( stderr, "Error synthesize_reachgame: failed to find cube.\n" );
 				return NULL;
 			}
 			if (Cudd_IsGenEmpty( gen )) {
@@ -325,7 +325,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 						Cudd_RecursiveDeref( manager, Y_i_primed );
 						Y_i_primed = Cudd_bddVarMap( manager, *(*(X_jr+j)+r) );
 						if (Y_i_primed == NULL) {
-							fprintf( stderr, "Error synthesize_patch: Error in swapping variables with primed forms.\n" );
+							fprintf( stderr, "Error synthesize_reachgame: Error in swapping variables with primed forms.\n" );
 							return NULL;
 						}
 						Cudd_Ref( Y_i_primed );
@@ -348,7 +348,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 							break;
 					}
 					if (r >= num_egoals) {
-						fprintf( stderr, "Error synthesize_patch: unexpected losing state.\n" );
+						fprintf( stderr, "Error synthesize_reachgame: unexpected losing state.\n" );
 						return NULL;
 					}
 				} else {
@@ -375,12 +375,12 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 				Cudd_AutodynDisable( manager );
 				gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
 				if (gen == NULL) {
-					fprintf( stderr, "Error synthesize_patch: failed to find cube.\n" );
+					fprintf( stderr, "Error synthesize_reachgame: failed to find cube.\n" );
 					return NULL;
 				}
 				if (Cudd_IsGenEmpty( gen )) {
 					Cudd_GenFree( gen );
-					fprintf( stderr, "Error synthesize_patch: unexpected losing state.\n" );
+					fprintf( stderr, "Error synthesize_reachgame: unexpected losing state.\n" );
 					return NULL;
 				}
 				for (i = 0; i < 2*(num_env+num_sys); i++)
@@ -404,13 +404,13 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 				strategy = insert_anode( strategy, -1, -1,
 										 state, num_env+num_sys );
 				if (strategy == NULL) {
-					fprintf( stderr, "Error synthesize_patch: inserting new node into strategy.\n" );
+					fprintf( stderr, "Error synthesize_reachgame: inserting new node into strategy.\n" );
 					return NULL;
 				}
 				this_node_stack = insert_anode( this_node_stack, -1, -1,
 												state, num_env+num_sys );
 				if (this_node_stack == NULL) {
-					fprintf( stderr, "Error synthesize_patch: pushing node onto stack failed.\n" );
+					fprintf( stderr, "Error synthesize_reachgame: pushing node onto stack failed.\n" );
 					return NULL;
 				}
 			} 
@@ -420,7 +420,7 @@ anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 										   num_env+num_sys,
 										   -1, state );
 			if (strategy == NULL) {
-				fprintf( stderr, "Error synthesize_patch: inserting new transition into strategy.\n" );
+				fprintf( stderr, "Error synthesize_reachgame: inserting new transition into strategy.\n" );
 				return NULL;
 			}
 		}
