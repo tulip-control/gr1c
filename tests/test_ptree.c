@@ -46,9 +46,6 @@ int main( int argc, char **argv )
 	char *result;
 	FILE *fp;
 
-	/* Repeatable random seed */
-	srand( 0 );
-
 
 	/************************************************
 	 * Linked list use case

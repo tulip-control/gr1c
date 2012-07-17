@@ -138,6 +138,17 @@ void cube_prime_sys( int *cube, int num_env, int num_sys )
 }
 
 
+bool statecmp( bool *state1, bool *state2, int state_len )
+{
+	int i;
+	for (i = 0; i < state_len; i++) {
+		if (*(state1+i) != *(state2+i))
+			return False;
+	}
+	return True;
+}
+
+
 DdNode *state2cof( DdManager *manager, int *cube, int cube_len,
 				   bool *state, DdNode *trans, int offset, int len )
 {

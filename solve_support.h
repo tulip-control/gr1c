@@ -50,6 +50,9 @@ void initialize_cube( bool *cube, int *gcube, int len );
    values in cube array at index len onward are set to 2. */
 void state2cube( bool *state, int *cube, int len );
 
+/* Compare state vectors; return True if equal. */
+bool statecmp( bool *state1, bool *state2, int state_len );
+
 /* Construct cofactor of trans BDD from state vector to get possible
    next states (via cube generation). */
 DdNode *state2cof( DdManager *manager, int *cube, int cube_len,

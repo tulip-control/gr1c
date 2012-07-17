@@ -29,17 +29,6 @@ extern int et_array_len;
 extern int st_array_len;
 
 
-bool statecmp( bool *state1, bool *state2, int state_len )
-{
-	int i;
-	for (i = 0; i < state_len; i++) {
-		if (*(state1+i) != *(state2+i))
-			return False;
-	}
-	return True;
-}
-
-
 anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
 						   anode_t **Entry, int Entry_len,
 						   anode_t **Exit, int Exit_len,

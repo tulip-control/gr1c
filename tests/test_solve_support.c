@@ -61,6 +61,53 @@ int main( int argc, char **argv )
 	bool **env_moves;
 	int emoves_len;
 
+	/* Repeatable random seed */
+	srand( 0 );
+
+
+	/************************************************
+	 * Small, not otherwise specified
+	 ************************************************/
+	len = 1024;
+	state = malloc( len*sizeof(bool) );
+	if (state == NULL) {
+		perror( "test_solve_support, malloc" );
+		abort();
+	}
+	ref_cube = malloc( len*sizeof(bool) );
+	if (ref_cube == NULL) {
+		perror( "test_solve_support, malloc" );
+		abort();
+	}
+
+	for (i = 0; i < len; i++)
+		*(state+i) = rand()%2;
+
+	if (!statecmp( state, state, len )) {
+		ERRPRINT( "state vector failed equality test with itself." );
+		for (i = 0; i < len; i++)
+			printf( "%d", *(state+i) );
+		printf( "\n" );
+		abort();
+	}
+
+	for (i = 0; i < len; i++)
+		*(ref_cube+i) = 0;
+
+	if (statecmp( state, ref_cube, len )) {
+		ERRPRINT( "different state vectors incorrectly detected as equal." );
+		for (i = 0; i < len; i++)
+			printf( "%d", *(state+i) );
+		printf( "\n\n" );
+		for (i = 0; i < len; i++)
+			printf( "%d", *(ref_cube+i) );
+		printf( "\n" );
+		abort();
+	}
+
+	free( state );
+	free( ref_cube );
+
 
 	/************************************************
 	 * Cube walking
