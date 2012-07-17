@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 #include "solve.h"
+#include "solve_support.h"
 
 
 extern ptree_t *evar_list;
@@ -23,115 +24,6 @@ extern ptree_t **env_goals;
 extern ptree_t **sys_goals;
 extern int num_egoals;
 extern int num_sgoals;
-
-
-/* Internal routines for setting typical cube arrays. */
-void cube_env( int *cube, int num_env, int num_sys );
-void cube_sys( int *cube, int num_env, int num_sys );
-void cube_prime_env( int *cube, int num_env, int num_sys );
-void cube_prime_sys( int *cube, int num_env, int num_sys );
-
-
-/* Compute exists modal operator applied to set C. */
-DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
-							 DdNode *etrans, DdNode *strans,
-							 int num_env, int num_sys, int *cube );
-
-
-void cube_env( int *cube, int num_env, int num_sys )
-{
-	int i;
-	for (i = num_env; i < 2*(num_env+num_sys); i++)
-		*(cube+i) = 2;
-
-	for (i = 0; i < num_env; i++)
-		*(cube+i) = 1;
-}
-
-void cube_sys( int *cube, int num_env, int num_sys )
-{
-	int i;
-	for (i = 0; i < 2*(num_env+num_sys); i++)
-		*(cube+i) = 2;
-
-	for (i = num_env; i < num_env+num_sys; i++)
-		*(cube+i) = 1;
-}
-
-void cube_prime_env( int *cube, int num_env, int num_sys )
-{
-	int i;
-	for (i = 0; i < 2*(num_env+num_sys); i++)
-		*(cube+i) = 2;
-
-	for (i = num_env+num_sys; i < 2*num_env+num_sys; i++)
-		*(cube+i) = 1;
-}
-
-void cube_prime_sys( int *cube, int num_env, int num_sys )
-{
-	int i;
-	for (i = 0; i < 2*num_env+num_sys; i++)
-		*(cube+i) = 2;
-
-	for (i = 2*num_env+num_sys; i < 2*(num_env+num_sys); i++)
-		*(cube+i) = 1;
-}
-
-
-DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
-							 DdNode *etrans, DdNode *strans,
-							 int num_env, int num_sys, int *cube )
-{
-	DdNode *tmp, *tmp2;
-	DdNode *ddcube;
-
-	C = Cudd_bddVarMap( manager, C );
-	if (C == NULL) {
-		fprintf( stderr, "compute_existsmodal: Error in swapping variables with primed forms." );
-		return NULL;
-	}
-	Cudd_Ref( C );
-
-	tmp = Cudd_bddAnd( manager, strans, C );
-	Cudd_Ref( tmp );
-	Cudd_RecursiveDeref( manager, C );
-	cube_prime_sys( cube, num_env, num_sys );
-	ddcube = Cudd_CubeArrayToBdd( manager, cube );
-	if (ddcube == NULL) {
-		fprintf( stderr, "compute_existsmodal: Error in generating cube for quantification." );
-		return NULL;
-	}
-	Cudd_Ref( ddcube );
-	tmp2 = Cudd_bddExistAbstract( manager, tmp, ddcube );
-	if (tmp2 == NULL) {
-		fprintf( stderr, "compute_existsmodal: Error in performing quantification." );
-		return NULL;
-	}
-	Cudd_Ref( tmp2 );
-	Cudd_RecursiveDeref( manager, ddcube );
-	Cudd_RecursiveDeref( manager, tmp );
-
-	tmp = Cudd_bddOr( manager, Cudd_Not( etrans ), tmp2 );
-	Cudd_Ref( tmp );
-	Cudd_RecursiveDeref( manager, tmp2 );
-	cube_prime_env( cube, num_env, num_sys );
-	ddcube = Cudd_CubeArrayToBdd( manager, cube );
-	if (ddcube == NULL) {
-		fprintf( stderr, "compute_existsmodal: Error in generating cube for quantification." );
-		return NULL;
-	}
-	Cudd_Ref( ddcube );
-	tmp2 = Cudd_bddUnivAbstract( manager, tmp, ddcube );
-	if (tmp2 == NULL) {
-		fprintf( stderr, "compute_existsmodal: Error in performing quantification." );
-		return NULL;
-	}
-	Cudd_Ref( tmp2 );
-	Cudd_RecursiveDeref( manager, ddcube );
-	Cudd_RecursiveDeref( manager, tmp );
-	return tmp2;
-}
 
 
 /* N.B., we assume there is at least one system goal.  This assumption

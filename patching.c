@@ -15,6 +15,7 @@
 #include "automaton.h"
 #include "ptree.h"
 #include "patching.h"
+#include "solve_support.h"
 
 
 extern ptree_t *evar_list;
@@ -26,26 +27,6 @@ extern ptree_t **env_trans_array;
 extern ptree_t **sys_trans_array;
 extern int et_array_len;
 extern int st_array_len;
-
-/* See interactive.c for definition and documentation. */
-extern int read_state_str( char *input, bool **state, int max_len );
-extern DdNode *state2BDD( DdManager *manager, bool *state, int offset, int len );
-
-/* See solve_operators.c for definition. */
-extern DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
-									DdNode *etrans, DdNode *strans,
-									int num_env, int num_sys, int *cube );
-
-/* See solve.c for documentation. */
-extern void increment_cube( bool *cube, int *gcube, int len );
-extern bool saturated_cube( bool *cube, int *gcube, int len );
-extern void initialize_cube( bool *cube, int *gcube, int len );
-extern void state2cube( bool *state, int *cube, int len );
-extern DdNode *state2cof( DdManager *manager, int *cube, int cube_len,
-						  bool *state, DdNode *trans, int offset, int len );
-extern bool **get_env_moves( DdManager *manager, int *cube,
-							 bool *state, DdNode *etrans,
-							 int num_env, int num_sys, int *emoves_len );
 
 
 bool statecmp( bool *state1, bool *state2, int state_len )

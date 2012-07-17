@@ -18,6 +18,7 @@
 
 #include "ptree.h"
 #include "solve.h"
+#include "solve_support.h"
 
 
 extern ptree_t *evar_list;
@@ -32,29 +33,8 @@ extern int num_egoals;
 extern int num_sgoals;
 
 
-/* Internal routines for setting typical cube arrays. */
-extern void cube_env( int *cube, int num_env, int num_sys );
-extern void cube_sys( int *cube, int num_env, int num_sys );
-extern void cube_prime_env( int *cube, int num_env, int num_sys );
-extern void cube_prime_sys( int *cube, int num_env, int num_sys );
-
-/* Functions for enumerating states represented by a cube array from
-   CUDD.  See solve.c for documentation. */
-extern void increment_cube( bool *cube, int *gcube, int len );
-extern bool saturated_cube( bool *cube, int *gcube, int len );
-extern void initialize_cube( bool *cube, int *gcube, int len );
-extern void state2cube( bool *state, int *cube, int len );
-
-/* More functions not yet globally exported.  See solve.c and
-   solve_operators.c for definitions and documentation. */
-extern DdNode *state2cof( DdManager *manager, int *cube, int cube_len,
-						  bool *state, DdNode *trans, int offset, int len );
-extern bool **get_env_moves( DdManager *manager, int *cube,
-							 bool *state, DdNode *etrans,
-							 int num_env, int num_sys, int *emoves_len );
-extern DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
-									DdNode *etrans, DdNode *strans,
-									int num_env, int num_sys, int *cube );
+/* Functions not yet globally exported.  See solve.c for definitions
+   and documentation. */
 extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 										  unsigned char init_flags, unsigned char verbose );
 
@@ -106,71 +86,6 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 bool *intcom_state;
 int intcom_index;  /* May be used to pass strategy goal mode or length
 					  of intcom_state. */
-
-
-/* Compute characteristic function for a single state. */
-DdNode *state2BDD( DdManager *manager, bool *state, int offset, int len )
-{
-	DdNode *v, *tmp;
-	int i;
-	v = Cudd_ReadOne( manager );
-	Cudd_Ref( v );
-	for (i = 0; i < len; i++) {
-		if (*(state+i)) {
-			tmp = Cudd_bddAnd( manager, v, Cudd_bddIthVar( manager, offset+i ) );
-		} else {
-			tmp = Cudd_bddAnd( manager, v, Cudd_Not( Cudd_bddIthVar( manager, offset+i ) ) );
-		}
-		Cudd_Ref( tmp );
-		Cudd_RecursiveDeref( manager, v );
-		v = tmp;
-	}
-	return v;
-}
-
-
-/* Read space-separated values from given string. Allocate space for
-   the resulting array and store a pointer to it in argument
-   "state". Read at most max_len values, and return the number of
-   values read (thus, the length of the array pointed to by state at
-   exit). */
-int read_state_str( char *input, bool **state, int max_len )
-{
-	int i;
-	char *start;
-	char *end;
-	if (max_len < 1 || strlen( input ) < 1) {
-		*state = NULL;
-		return 0;
-	}
-	*state = malloc( sizeof(bool)*max_len );
-	if (*state == NULL) {
-		perror( "read_state_str, malloc" );
-		return 0;
-	}
-
-	start = input;
-	end = input;
-	for (i = 0; i < max_len && *end != '\0'; i++) {
-		*((*state)+i) = strtol( start, &end, 10 );
-		if (start == end)
-			break;
-		start = end;
-	}
-	
-	if (i == 0) {
-		free( *state );
-		*state = NULL;
-		return 0;
-	}
-
-	*state = realloc( *state, sizeof(bool)*i );
-	if (*state == NULL) {
-		perror( "read_state_str, realloc" );
-		return 0;
-	}
-	return i;
-}
 
 
 char *fgets_wrap( char *prompt, int max_len, FILE *infp, FILE *outfp )

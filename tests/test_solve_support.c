@@ -10,14 +10,8 @@
 #include "common.h"
 #include "ptree.h"
 #include "automaton.h"
+#include "solve_support.h"
 #include "tests/common.h"
-
-extern void initialize_cube( bool *cube, int *gcube, int len );
-extern void increment_cube( bool *cube, int *gcube, int len );
-extern bool saturated_cube( bool *cube, int *gcube, int len );
-extern bool **get_env_moves( DdManager *manager, int *cube,
-							 bool *state, DdNode *etrans,
-							 int num_env, int num_sys, int *emoves_len );
 
 
 /**************************

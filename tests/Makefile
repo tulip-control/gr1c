@@ -32,7 +32,7 @@ test_automaton_io: test_automaton_io.c
 	gcc $(CFLAGS) $^ ../automaton.o ../automaton_io.o ../ptree.o -o $@ $(LDFLAGS)
 
 test_solve_support: test_solve_support.c
-	gcc $(CFLAGS) $^ ../automaton.o ../ptree.o ../solve.o ../solve_operators.o -o $@ $(LDFLAGS)
+	gcc $(CFLAGS) $^ ../automaton.o ../ptree.o ../solve_support.o -o $@ $(LDFLAGS)
 
 clean:
 	rm -fv *~ *.o $(PROGRAMS) temp_*_dump*
