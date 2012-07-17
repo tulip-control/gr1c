@@ -24,5 +24,14 @@
    finished. */
 anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *change_fp, unsigned char verbose );
 
+/** Solve a reachability game symbolically, by blocking an environment
+   goal or reaching Exit from Entry.  States are restricted to the set
+   N (given as a characteristic function named N_BDD). */
+anode_t *synthesize_patch( DdManager *manager, int num_env, int num_sys,
+						   anode_t **Entry, int Entry_len,
+						   anode_t **Exit, int Exit_len,
+						   DdNode *etrans, DdNode *strans, DdNode **egoals,
+						   DdNode *N_BDD, unsigned char verbose );
+
 
 #endif

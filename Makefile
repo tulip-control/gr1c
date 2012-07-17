@@ -20,7 +20,7 @@ LDFLAGS = $(CUDD_LIB) -lm
 #LDFLAGS += -lreadline
 
 
-gr1c: main.o interactive.o solve_support.o solve_operators.o solve.o patching.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
+gr1c: main.o interactive.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 main.o: main.c
@@ -32,6 +32,7 @@ solve_support.o: solve_support.c
 solve_operators.o: solve_operators.c
 solve.o: solve.c
 patching.o: patching.c
+patching_support.o: patching_support.c
 
 gr1c_scan.o: gr1c_scan.l gr1c_parse.c
 gr1c_parse.o: gr1c_parse.y
