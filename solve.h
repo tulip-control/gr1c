@@ -9,8 +9,6 @@
 #ifndef SOLVE_H
 #define SOLVE_H
 
-#include "cudd.h"
-
 #include "common.h"
 #include "ptree.h"
 #include "automaton.h"

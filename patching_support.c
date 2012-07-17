@@ -7,8 +7,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "cudd.h"
 
+#include "common.h"
 #include "patching.h"
 #include "solve_support.h"
 

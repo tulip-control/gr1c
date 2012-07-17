@@ -10,8 +10,6 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "util.h"
-#include "cudd.h"
 
 #include "common.h"
 #include "ptree.h"

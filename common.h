@@ -10,7 +10,7 @@
 #define COMMON_H
 
 
-#define GR1C_VERSION "0.2d"
+#define GR1C_VERSION "0.2e"
 #define GR1C_COPYRIGHT "Copyright (c) 2012 by Scott C. Livingston, California Institute of Technology\nThis is free software, released under the GNU GPLv3 and without warranty."
 
 
@@ -23,5 +23,8 @@ typedef char bool;
 
 typedef unsigned char byte;
 
+
+#include "util.h"
+#include "cudd.h"
 
 #endif

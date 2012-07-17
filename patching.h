@@ -9,7 +9,7 @@
 #ifndef PATCHING_H
 #define PATCHING_H
 
-#include "solve.h"
+#include "common.h"
 #include "automaton.h"
 
 

@@ -9,7 +9,6 @@
 #ifndef SOLVE_SUPPORT_H
 #define SOLVE_SUPPORT_H
 
-#include "cudd.h"
 #include "common.h"
 
 

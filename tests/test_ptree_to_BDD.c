@@ -5,8 +5,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "cudd.h"
 
+#include "common.h"
 #include "ptree.h"
 #include "tests/common.h"
 

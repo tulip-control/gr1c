@@ -19,7 +19,8 @@
 #define PTREE_H
 
 #include <stdio.h>
-#include "cudd.h"
+
+#include "common.h"
 
 
 /**
