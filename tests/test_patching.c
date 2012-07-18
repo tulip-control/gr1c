@@ -180,7 +180,7 @@ int main( int argc, char **argv )
 
 	/* Find node at which strategy for this small reachability game
 	   begins, and where it ends. */
-	start_node = start_node = NULL;
+	start_node = stop_node = NULL;
 	if ((strategy->state[0] == 0 && strategy->state[0] == 0)
 		&& (strategy->next->state[0] == 1 && strategy->next->state[0] == 1)) {
 		start_node = strategy;
