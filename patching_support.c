@@ -438,8 +438,18 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 	/* Pre-exit clean-up */
 	Cudd_RecursiveDeref( manager, Exit_BDD );
 	Cudd_RecursiveDeref( manager, Entry_BDD );
+	Cudd_RecursiveDeref( manager, strans_into_N );
 	free( cube );
 	free( state );
+	for (i = 0; i < num_sublevels; i++) {
+		Cudd_RecursiveDeref( manager, *(Y+i) );
+		for (j = 0; j < num_egoals; j++) {
+			Cudd_RecursiveDeref( manager, *(*(X_jr+i)+j) );
+		}
+		free( *(X_jr+i) );
+	}
+	free( Y );
+	free( X_jr );
 
 	return strategy;
 }
