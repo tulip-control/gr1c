@@ -71,6 +71,7 @@ int main( int argc, char **argv )
 	int input_index = -1;
 	int edges_input_index = -1;  /* If patching, command-line flag "-e". */
 	int aut_input_index = -1;  /* For command-line flag "-a". */
+	int output_file_index = -1;  /* For command-line flag "-o". */
 	FILE *strategy_fp;
 	char dumpfilename[32];
 
@@ -133,6 +134,13 @@ int main( int argc, char **argv )
 				}
 				aut_input_index = i+1;
 				i++;
+			} else if (argv[i][1] == 'o') {
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				output_file_index = i+1;
+				i++;
 			} else {
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 				return 1;
@@ -150,7 +158,7 @@ int main( int argc, char **argv )
 	}
 
 	if (help_flag) {
-		printf( "Usage: %s [-hVvspri] [-t TYPE] [-a FILE] [-e FILE] [FILE]\n\n"
+		printf( "Usage: %s [-hVvspri] [-t TYPE] [-aeo FILE] [FILE]\n\n"
 				"  -h        this help message\n"
 				"  -V        print version and exit\n"
 				"  -v        be verbose\n"
@@ -163,7 +171,8 @@ int main( int argc, char **argv )
 				"  -i        interactive mode\n"
 				"  -a FILE   automaton file in \"gr1c\" format;\n"
 				"            if FILE is -, then read from stdin\n"
-				"  -e FILE   patch, given game edge set change file; requires -a flag\n", argv[0] );
+				"  -e FILE   patch, given game edge set change file; requires -a flag\n"
+				"  -o FILE   output strategy to FILE, rather than stdout (default)\n", argv[0] );
 		return 1;
 	}
 
@@ -419,16 +428,30 @@ int main( int argc, char **argv )
 	}
 
 	if (strategy != NULL) {
+		/* Open output file if specified; else point to stdout. */
+		if (output_file_index >= 0) {
+			fp = fopen( argv[output_file_index], "w" );
+			if (fp == NULL) {
+				perror( "gr1c, fopen" );
+				return -1;
+			}
+		} else {
+			fp = stdout;
+		}
+
 		if (format_option == OUTPUT_FORMAT_TEXT) {
-			list_aut_dump( strategy, num_env+num_sys, stdout );
+			list_aut_dump( strategy, num_env+num_sys, fp );
 		} else if (format_option == OUTPUT_FORMAT_DOT) {
 			dot_aut_dump( strategy, evar_list, svar_list,
-						  DOT_AUT_BINARY | DOT_AUT_ATTRIB, stdout );
+						  DOT_AUT_BINARY | DOT_AUT_ATTRIB, fp );
 		} else if (format_option == OUTPUT_FORMAT_AUT) {
-			aut_aut_dump( strategy, num_env+num_sys, stdout );
+			aut_aut_dump( strategy, num_env+num_sys, fp );
 		} else { /* OUTPUT_FORMAT_TULIP */
-			tulip_aut_dump( strategy, evar_list, svar_list, stdout );
+			tulip_aut_dump( strategy, evar_list, svar_list, fp );
 		}
+
+		if (fp != stdout)
+			fclose( fp );
 	}
 
 	/* Clean-up */
