@@ -1,6 +1,6 @@
 # Unit and integration tests of gr1c
 #
-# SCL; 17 July 2012.
+# SCL; 21 July 2012.
 
 
 CUDD_LIB = ../$(CUDD_ROOT)/cudd/libcudd.a ../$(CUDD_ROOT)/mtr/libmtr.a ../$(CUDD_ROOT)/st/libst.a ../$(CUDD_ROOT)/util/libutil.a ../$(CUDD_ROOT)/epd/libepd.a
@@ -27,10 +27,10 @@ test_ptree_to_BDD: test_ptree_to_BDD.c
 	gcc $(CFLAGS) $^ ../ptree.o -o $@ $(LDFLAGS)
 
 test_automaton: test_automaton.c
-	gcc $(CFLAGS) $^ ../automaton.o ../automaton_io.o ../ptree.o -o $@ $(LDFLAGS)
+	gcc $(CFLAGS) $^ ../automaton.o ../automaton_io.o ../ptree.o ../solve_support.o -o $@ $(LDFLAGS)
 
 test_automaton_io: test_automaton_io.c
-	gcc $(CFLAGS) $^ ../automaton.o ../automaton_io.o ../ptree.o -o $@ $(LDFLAGS)
+	gcc $(CFLAGS) $^ ../automaton.o ../automaton_io.o ../ptree.o ../solve_support.o -o $@ $(LDFLAGS)
 
 test_solve_support: test_solve_support.c
 	gcc $(CFLAGS) $^ ../automaton.o ../ptree.o ../solve_support.o -o $@ $(LDFLAGS)

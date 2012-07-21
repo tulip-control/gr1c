@@ -198,7 +198,10 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 		Cudd_Ref( *(Y+num_sublevels-1) );
 		Cudd_RecursiveDeref( manager, tmp );
 
-		if (Cudd_bddLeq( manager, Entry_BDD, *(Y+num_sublevels-1) )) {
+		tmp = Cudd_bddOr( manager, Entry_BDD, *(Y+num_sublevels-1) );
+		Cudd_Ref( tmp );
+		if (Cudd_bddLeq( manager, tmp, *(Y+num_sublevels-1) )*Cudd_bddLeq( manager, *(Y+num_sublevels-1), tmp )) {
+			Cudd_RecursiveDeref( manager, tmp );
 			if (Cudd_bddLeq( manager, *(Y+num_sublevels-1), *(Y+num_sublevels-2) )*Cudd_bddLeq( manager, *(Y+num_sublevels-2), *(Y+num_sublevels-1) )) {
 				Cudd_RecursiveDeref( manager, *(Y+num_sublevels-1) );
 				for (r = 0; r < num_egoals; r++) {
@@ -215,6 +218,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 			}
 			break;
 		}
+		Cudd_RecursiveDeref( manager, tmp );
 
 		if (Cudd_bddLeq( manager, *(Y+num_sublevels-1), *(Y+num_sublevels-2) )*Cudd_bddLeq( manager, *(Y+num_sublevels-2), *(Y+num_sublevels-1) )) {
 			return NULL;  /* Local synthesis failed */
@@ -242,7 +246,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 	/* Insert all stacked, initial nodes into strategy. */
 	node = this_node_stack;
 	while (node) {
-		strategy = insert_anode( strategy, node->mode, node->rgrad,
+		strategy = insert_anode( strategy, -1, node->rgrad,
 								 node->state, num_env+num_sys );
 		if (strategy == NULL) {
 			fprintf( stderr, "Error synthesize_reachgame: inserting state node into strategy.\n" );
@@ -265,12 +269,12 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 				break;
 			}
 		} while (j > 0);
-		node = find_anode( strategy, this_node_stack->mode, this_node_stack->state,
+		node = find_anode( strategy, -1, this_node_stack->state,
 						   num_env+num_sys );
+		node->rgrad = j;
+		this_node_stack = pop_anode( this_node_stack );
 		if (node->trans_len > 0 || j == 0) {
 			/* This state and mode combination is already in strategy. */
-			node->rgrad = j;
-			this_node_stack = pop_anode( this_node_stack );
 			continue;
 		}
 
@@ -315,8 +319,8 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 				return NULL;
 			}
 			if (Cudd_IsGenEmpty( gen )) {
-				/* Cannot step closer to system goal, so must be in
-				   goal state or able to block environment goal. */
+				/* Cannot step closer to target set, so must be able
+				   to block environment liveness. */
 				Cudd_GenFree( gen );
 				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 				if (j > 0) {
@@ -415,8 +419,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 				}
 			} 
 
-			strategy = append_anode_trans( strategy,
-										   node->mode, node->state,
+			strategy = append_anode_trans( strategy, -1, node->state,
 										   num_env+num_sys,
 										   -1, state );
 			if (strategy == NULL) {

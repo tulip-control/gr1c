@@ -11,7 +11,7 @@
 #include "automaton.h"
 
 
-#define INPUT_STRING_LEN 256
+#define INPUT_STRING_LEN 1024
 
 /* Memory recovery in the case of error, whether from a system call or
    while parsing, is almost nil.  Correct this behavior before

@@ -73,7 +73,7 @@ int main( int argc, char **argv )
 	int aut_input_index = -1;  /* For command-line flag "-a". */
 	int output_file_index = -1;  /* For command-line flag "-o". */
 	FILE *strategy_fp;
-	char dumpfilename[32];
+	char dumpfilename[64];
 
 	int i, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */

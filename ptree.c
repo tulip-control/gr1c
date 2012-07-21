@@ -189,7 +189,7 @@ ptree_t *remove_list_item( ptree_t *head, int index )
 
 	/* Error-checking */
 	if (head == NULL) {
-		fprintf( stderr, "Warning: remove_list_item called with empty tree.\n" );
+		fprintf( stderr, "WARNING: remove_list_item called with empty tree.\n" );
 		return NULL;
 	}
 	if (index < -1 || index >= length) {
@@ -313,7 +313,7 @@ int tree_dot_dump( ptree_t *head, char *filename )
 void print_formula( ptree_t *head, FILE *fp )
 {
 	if (head == NULL) {
-		fprintf( stderr, "Warning: print_formula called with NULL node." );
+		fprintf( stderr, "WARNING: print_formula called with NULL node." );
 		return;
 	}
 
@@ -354,7 +354,7 @@ void print_formula( ptree_t *head, FILE *fp )
 		return;
 
 	default:
-		fprintf( stderr, "Warning: print_formula called with node of unknown type" );
+		fprintf( stderr, "WARNING: print_formula called with node of unknown type" );
 		return;
 	}
 

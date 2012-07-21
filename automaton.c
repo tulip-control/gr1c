@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "automaton.h"
+#include "solve_support.h"
 
 
 anode_t *insert_anode( anode_t *head, int mode, int rgrad, bool *state, int state_len )
@@ -33,6 +34,10 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad, bool *state, int stat
 	new_head->rgrad = rgrad;
 	new_head->trans = NULL;
 	new_head->trans_len = 0;
+
+	if (find_anode( head, mode, state, state_len )) {
+		fprintf( stderr, "WARNING: inserting indistinguishable nodes into automaton.\n" );
+	}
 
 	if (head == NULL) {
 		new_head->next = NULL;
@@ -291,4 +296,24 @@ int aut_size( anode_t *head )
 		head = head->next;
 	}
 	return len;
+}
+
+
+int forward_modereach( anode_t *head, anode_t *node, int mode, bool **N, int N_len, int magic_mode, int state_len )
+{
+	int i, j;
+	for (i = 0; i < node->trans_len; i++) {
+		if ((*(node->trans+i))->mode == mode) {
+			for (j = 0; j < N_len; j++)
+				if (statecmp( (*(node->trans+i))->state, *(N+j), state_len ))
+					break;
+			if (j < N_len) {
+				(*(node->trans+i))->mode = magic_mode;
+				if (forward_modereach( head, *(node->trans+i), mode, N, N_len, magic_mode, state_len ))
+					return -1;
+			}
+		}
+	}
+
+	return 0;
 }

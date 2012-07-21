@@ -39,7 +39,6 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 	anode_t **Exit;
 	anode_t **Entry;
 	int Exit_len, Entry_len;
-	int strategy_size = 0;
 	anode_t *local_strategy;
 	anode_t *head, *node;
 	int min_rgrad;  /* Minimum reachability gradient value of affected nodes. */
@@ -47,19 +46,15 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 	int local_max_rgrad;
 	int local_min_rgrad;
 
-	strategy_size = aut_size( strategy );
-	if (verbose)
-		printf( "Read in strategy of size %d\n", strategy_size );
-
 	/* Pre-allocate space for Entry and Exit sets; the number of
 	   elements actually used is tracked by Entry_len and Exit_len,
 	   respectively. */
-	Exit = malloc( sizeof(anode_t *)*strategy_size );
+	Exit = malloc( sizeof(anode_t *)*N_len );
 	if (Exit == NULL) {
 		perror( "localfixpoint_goalmode, malloc" );
 		return NULL;
 	}
-	Entry = malloc( sizeof(anode_t *)*strategy_size );
+	Entry = malloc( sizeof(anode_t *)*N_len );
 	if (Entry == NULL) {
 		perror( "localfixpoint_goalmode, malloc" );
 		return NULL;
@@ -74,6 +69,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 		fflush( stdout );
 	}
 
+	/* Build Entry set and initial Exit set */
 	Exit_len = Entry_len = 0;
 	head = strategy;
 	while (head) {
@@ -87,21 +83,8 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 					break;
 
 			if (i < N_len) {  /* Was a match found? */
-				/* Test for nominal membership in Exit set; i.e.,
-				   current node is in N, see if it leads out. */
-				for (j = 0; j < head->trans_len; j++) {
-					for (k = 0; k < N_len; k++)
-						if ((*(head->trans+j))->mode == goal_mode
-							&& statecmp( (*(head->trans+j))->state, *(N+k), num_env+num_sys ))
-							break;
-
-					if (k == N_len)
-						break;
-				}
-				if (j < head->trans_len) {
-					Exit_len++;
-					*(Exit+Exit_len-1) = head;
-					}
+				Exit_len++;
+				*(Exit+Exit_len-1) = head;
 			} else {
 				/* Test for nominal membership in Entry set; i.e.,
 				   current node is not in N, see if it leads into N. */
@@ -110,39 +93,35 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 						if ((*(head->trans+j))->mode == goal_mode
 							&& statecmp( (*(head->trans+j))->state, *(N+k), num_env+num_sys ))
 							break;
-						if (k < N_len)
-							break;
-				}
-				if (j < head->trans_len) {
-					Entry_len++;
-					*(Entry+Entry_len-1) = *(head->trans+j);
+					if (k < N_len) {
+						for (k = 0; k < Entry_len; k++)
+							if (statecmp((*(Entry+k))->state, (*(head->trans+j))->state, num_env+num_sys ))
+								break;
+						if (k == Entry_len) {
+							Entry_len++;
+							*(Entry+Entry_len-1) = *(head->trans+j);
+						}
+					}
 				}
 			}
 		}
 		head = head->next;
 	}
 
-	if (verbose) {
-		printf( "Exit set before pruning:\n" );
-		for (i = 0; i < Exit_len; i++) {
-			printf( "   " );
-			for (j = 0; j < num_env+num_sys; j++)
-				printf( " %d", *((*(Exit+i))->state+j) );
-			printf( "\n" );
-		}
-		fflush( stdout );
-	}
-
 	/* Find minimum reachability gradient value among nodes in the
-	   Entry set, and remove any Exit nodes greater than or equal
-	   to it. */
+	   Entry and U_i sets, and remove any initial Exit nodes greater
+	   than or equal to it. */
 	min_rgrad = -1;
 	for (i = 0; i < Entry_len; i++) {
 		if ((*(Entry+i))->rgrad < min_rgrad || min_rgrad == -1)
 			min_rgrad = (*(Entry+i))->rgrad;
 	}
+	for (i = 0; i < *(affected_len+goal_mode); i++) {
+		if ((*(*(affected+goal_mode)+i))->rgrad < min_rgrad || min_rgrad == -1)
+			min_rgrad = (*(*(affected+goal_mode)+i))->rgrad;
+	}
 	if (verbose) {
-		printf( "Minimum reachability gradient value in Exit: %d\n", min_rgrad );
+		printf( "Minimum reachability gradient value in Exit or U_i: %d\n", min_rgrad );
 		fflush( stdout );
 	}
 	i = 0;
@@ -153,7 +132,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 				Exit_len--;
 			} else {
 				Exit_len = 0;
-					break;
+				break;
 			}
 		} else {
 			i++;
@@ -182,13 +161,15 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 										   Entry, Entry_len, Exit, Exit_len,
 										   etrans, strans, egoals, N_BDD,
 										   verbose );
-	if (local_strategy == NULL)
+	if (local_strategy == NULL) {
+		free( Exit );
+		free( Entry );
 		return NULL;
+	}
 
 	node = local_strategy;
 	local_min_rgrad = local_max_rgrad = -1;
 	while (node) {
-		node->mode = goal_mode+10;
 		if (node->rgrad > local_max_rgrad)
 			local_max_rgrad = node->rgrad;
 		if (node->rgrad < local_min_rgrad || local_min_rgrad == -1)
@@ -210,43 +191,56 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 	}
 
 	Exit_rgrad = -1;
-	for (i = 0; i < Exit_len; i++) {
-		node = local_strategy;
-		while (node && !statecmp( (*(Exit+i))->state, node->state, num_env+num_sys ))
-			node = node->next;
-		if (node == NULL)
-			continue;
+	node = local_strategy;
+	while (node) {
+		if (node->trans_len == 0) {  /* Terminal node of the local strategy? */
+			for (i = 0; i < Exit_len; i++) {
+				if (statecmp( node->state, (*(Exit+i))->state, num_env+num_sys ))
+					break;
+			}
+			if (i == Exit_len) {
+				fprintf( stderr, "Error localfixpoint_goalmode: terminal node in local strategy does not have a\nmatching Exit node, in goal mode %d\n", goal_mode );
+				return NULL;
+			}
 
-		if ((*(Exit+i))->rgrad > Exit_rgrad)
-			Exit_rgrad = (*(Exit+i))->rgrad;
+			if ((*(Exit+i))->rgrad > Exit_rgrad)
+				Exit_rgrad = (*(Exit+i))->rgrad;
 
-		node->trans = realloc( node->trans, sizeof(anode_t *)*(node->trans_len + (*(Exit+i))->trans_len) );
-		if (node->trans == NULL) {
-			perror( "patch_localfixpoint, realloc" );
-			return NULL;
+			if (forward_modereach( strategy, *(Exit+i), goal_mode, N, N_len, -1, num_env+num_sys )) {
+				fprintf( stderr, "Error localfixpoint_goalmode: forward graph reachability computation failed\nfrom Entry node in goal mode %d\n", goal_mode );
+				return NULL;
+			}
+
+			node->trans = (*(Exit+i))->trans;
+			node->trans_len = (*(Exit+i))->trans_len;
+			(*(Exit+i))->trans = NULL;
+			(*(Exit+i))->trans_len = 0;
 		}
-		for (j = 0; j < (*(Exit+i))->trans_len; j++)
-			*(node->trans + node->trans_len + j) = *((*(Exit+i))->trans + j);
-		node->trans_len += (*(Exit+i))->trans_len;
+		node = node->next;
 	}
 
-	for (i = 0; i < *(affected_len+goal_mode); i++) {
-		strategy = delete_anode( strategy, *(*(affected+goal_mode)+i) );
-		replace_anode_trans( strategy, *(*(affected+goal_mode)+i), NULL );
-	}
-
+	/* Delete useless nodes from N_i (whose function is now replaced
+	   by the local strategy). */
 	node = strategy;
 	while (node) {
 		if (node->mode != goal_mode) {
+			if (node->mode == -1)
+				node->mode = goal_mode;
 			node = node->next;
 			continue;
 		}
 		for (i = 0; i < N_len; i++)
 			if (statecmp( node->state, *(N+i), num_env+num_sys ))
 				break;
-		if (i < N_len) {
-			strategy = delete_anode( strategy, node );
+		if (i < N_len)
+			node->mode = -2;
+		node = node->next;
+	}
+	node = strategy;
+	while (node) {
+		if (node->mode == -2) {
 			replace_anode_trans( strategy, node, NULL );
+			strategy = delete_anode( strategy, node );
 			node = strategy;
 		} else {
 			node = node->next;
@@ -282,7 +276,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 }
 
 
-#define INPUT_STRING_LEN 256
+#define INPUT_STRING_LEN 1024
 anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *change_fp, unsigned char verbose )
 {
 	ptree_t *var_separator;
@@ -331,6 +325,8 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	if (strategy == NULL) {
 		return NULL;
 	}
+	if (verbose)
+		printf( "Read in strategy of size %d\n", aut_size( strategy ) );
 
 	affected = malloc( sizeof(anode_t **)*num_sgoals );
 	if (affected == NULL) {
