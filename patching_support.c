@@ -227,7 +227,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 	   defined in the CUDD manager before invocation of synthesize_reachgame. */
 	tmp = Cudd_bddVarMap( manager, N_BDD );
 	if (tmp == NULL) {
-		fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
+		fprintf( stderr, "Error synthesize_reachgame: Error in swapping variables with primed forms.\n" );
 		return NULL;
 	}
 	Cudd_Ref( tmp );
