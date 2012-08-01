@@ -1,4 +1,4 @@
-# SCL; 3 July 2012.
+# SCL; 1 August 2012.
 #
 #
 
@@ -39,7 +39,7 @@ gr1c_parse.o: gr1c_parse.y
 
 
 install:
-	cp gr1c $(INSTALLDIR)
+	cp gr1c $(INSTALLDIR)/
 
 uninstall:
 	rm $(INSTALLDIR)/gr1c
