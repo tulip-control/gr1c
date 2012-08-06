@@ -386,7 +386,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	}
 
 	if (verbose) {
-		printf( "States in N:\n" );
+		printf( "States in N (%d total):\n", N_len );
 		for (i = 0; i < N_len; i++) {
 			printf( "   " );
 			for (j = 0; j < num_env+num_sys; j++)
