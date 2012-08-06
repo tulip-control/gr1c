@@ -121,7 +121,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 			min_rgrad = (*(*(affected+goal_mode)+i))->rgrad;
 	}
 	if (verbose) {
-		printf( "Minimum reachability gradient value in Exit or U_i: %d\n", min_rgrad );
+		printf( "Minimum reachability gradient value in Entry or U_i: %d\n", min_rgrad );
 		fflush( stdout );
 	}
 	i = 0;
