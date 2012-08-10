@@ -192,6 +192,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 			Cudd_RecursiveDeref( manager, X_prev );
 			X_prev = NULL;
 		}
+		Cudd_RecursiveDeref( manager, Y_exmod );
 
 		tmp = *(Y+num_sublevels-1);
 		*(Y+num_sublevels-1) = Cudd_bddOr( manager, *(Y+num_sublevels-1), *(Y+num_sublevels-2) );
@@ -223,7 +224,6 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 		if (Cudd_bddLeq( manager, *(Y+num_sublevels-1), *(Y+num_sublevels-2) )*Cudd_bddLeq( manager, *(Y+num_sublevels-2), *(Y+num_sublevels-1) )) {
 			return NULL;  /* Local synthesis failed */
 		}
-		Cudd_RecursiveDeref( manager, Y_exmod );
 	}
 
 
