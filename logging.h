@@ -32,9 +32,9 @@ void setlogopt( int options );
 #define LOGOPT_NOTIME 1
 
 
-/** Open a new log file, automatically name it with the current
-   timestamp, and return the resulting stream, or NULL if error.
-   If the file already exists, then it is appended to. */
+/** Open a new log file, automatically name it with the current date,
+   and return the resulting stream, or NULL if error.  If the file
+   already exists, then it is appended to. */
 FILE *openlogfile();
 
 /** Manually close the current log stream, unless it is stdout.

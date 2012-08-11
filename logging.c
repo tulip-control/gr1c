@@ -50,7 +50,7 @@ FILE *openlogfile()
 
 	clock = time( NULL );
 	timeptr = gmtime( &clock );  /* UTC */
-	if (strftime( logfilename, FILENAME_LEN, "gr1clog-%Y%m%d-%H%M%S.txt", timeptr ) == 0) {
+	if (strftime( logfilename, FILENAME_LEN, "gr1clog-%Y%m%d.txt", timeptr ) == 0) {
 		fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
 		return NULL;
 	}
