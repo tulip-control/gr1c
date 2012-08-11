@@ -161,7 +161,7 @@ int main( int argc, char **argv )
 	}
 
 	if (help_flag) {
-		printf( "Usage: %s [-hVvspri] [-t TYPE] [-aeo FILE] [FILE]\n\n"
+		printf( "Usage: %s [-hVvlspri] [-t TYPE] [-aeo FILE] [FILE]\n\n"
 				"  -h        this help message\n"
 				"  -V        print version and exit\n"
 				"  -v        be verbose\n"
