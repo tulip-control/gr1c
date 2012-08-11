@@ -19,6 +19,19 @@ void setlogstream( FILE *fp );
 
 FILE *getlogstream();
 
+
+/** Configure format of log entries.
+	
+   Combine non-conflicting options with or.  Options can be
+
+       LOGOPT_TIME : Show timestamp (default).
+
+       LOGOPT_NOTIME : Do not show timestamp. */
+void setlogopt( int options );
+#define LOGOPT_TIME 0
+#define LOGOPT_NOTIME 1
+
+
 /** Open a new log file, automatically name it with the current
    timestamp, and return the resulting stream, or NULL if error.
    If the file already exists, then it is appended to. */

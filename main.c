@@ -12,6 +12,7 @@
 #include <stdio.h>
 
 #include "common.h"
+#include "logging.h"
 #include "ptree.h"
 #include "solve.h"
 #include "patching.h"

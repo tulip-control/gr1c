@@ -16,6 +16,7 @@
 #define FILENAME_LEN 256
 char logfilename[FILENAME_LEN];
 FILE *logfp = NULL;
+int logopt = 0;
 
 
 void setlogstream( FILE *fp )
@@ -34,6 +35,13 @@ FILE *getlogstream()
 {
 	return logfp;
 }
+
+
+void setlogopt( int options )
+{
+	logopt = options;
+}
+
 
 FILE *openlogfile()
 {
@@ -83,13 +91,15 @@ void logprint( char *fmt, ... )
 		return;
 	}
 
-	clock = time( NULL );
-	timeptr = gmtime( &clock );  /* UTC */
-	if (strftime( timestamp, TIMESTAMP_LEN, "%Y-%m-%d %H:%M:%S", timeptr ) == 0) {
-		fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
-		return;
+	if ((logopt & 0x1) == LOGOPT_TIME) {
+		clock = time( NULL );
+		timeptr = gmtime( &clock );  /* UTC */
+		if (strftime( timestamp, TIMESTAMP_LEN, "%Y-%m-%d %H:%M:%S", timeptr ) == 0) {
+			fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
+			return;
+		}
+		fprintf( logfp, "%s ", timestamp );
 	}
-	fprintf( logfp, "%s ", timestamp );
 
 	va_start( ap, fmt );
 
