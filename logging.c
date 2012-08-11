@@ -30,6 +30,11 @@ void setlogstream( FILE *fp )
 	}
 }
 
+FILE *getlogstream()
+{
+	return logfp;
+}
+
 FILE *openlogfile()
 {
 	struct tm *timeptr;

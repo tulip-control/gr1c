@@ -70,12 +70,6 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	CUDD_VALUE_TYPE gvalue;
 	int *gcube;
 
-	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from synthesize ==========================\n" );
-		Cudd_PrintInfo( manager, stdout );
-		printf( "======================================================================\n" );
-	}
-
 	/* Set environment goal to True (i.e., any state) if none was
 	   given. This simplifies the implementation below. */
 	if (num_egoals == 0) {
@@ -120,21 +114,16 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	/* Generate BDDs for the various parse trees from the problem spec. */
 	einit = ptree_BDD( env_init, evar_list, manager );
 	sinit = ptree_BDD( sys_init, evar_list, manager );
-	if (verbose) {
-		printf( "Building environment transition BDD..." );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Building environment transition BDD..." );
 	etrans = ptree_BDD( env_trans, evar_list, manager );
 	if (verbose) {
-		printf( "Done.\n" );
-		printf( "Building system transition BDD..." );
-		fflush( stdout );
+		logprint( "Done." );
+		logprint( "Building system transition BDD..." );
 	}
 	strans = ptree_BDD( sys_trans, evar_list, manager );
-	if (verbose) {
-		printf( "Done.\n" );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Done." );
 
 	/* Build goal BDDs, if present. */
 	if (num_egoals > 0) {
@@ -494,12 +483,6 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			emoves_len = 0;
 		}
 		Cudd_RecursiveDeref( manager, Y_i_primed );
-	}
-
-	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from synthesize ==========================\n" );
-		Cudd_PrintInfo( manager, stdout );
-		printf( "======================================================================\n" );
 	}
 
 	/* Pre-exit clean-up */

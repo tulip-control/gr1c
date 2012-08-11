@@ -18,6 +18,12 @@ Recognized commands
 
 Use **help** to see the list of commands without descriptions.
 
+* **realizable {existsys,allsys}**
+
+  is specification realizable?  See documentation in solve.h for
+  interpretation of init_flags "existsys" (EXIST_SYS_INIT) and
+  "allsys" (ALL_SYS_INIT).
+
 * **winning STATE**
 
   is STATE in winning set?

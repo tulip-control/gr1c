@@ -66,6 +66,7 @@ int main( int argc, char **argv )
 	byte run_option = GR1C_MODE_SYNTHESIS;
 	bool help_flag = False;
 	bool ptdump_flag = False;
+	bool logging_flag = False;
 	byte format_option = OUTPUT_FORMAT_TULIP;
 	unsigned char verbose = 0;
 	int input_index = -1;
@@ -93,6 +94,8 @@ int main( int argc, char **argv )
 				return 0;
 			} else if (argv[i][1] == 'v') {
 				verbose = 1;
+			} else if (argv[i][1] == 'l') {
+				logging_flag = True;
 			} else if (argv[i][1] == 's') {
 				run_option = GR1C_MODE_SYNTAX;
 			} else if (argv[i][1] == 'p') {
@@ -162,6 +165,7 @@ int main( int argc, char **argv )
 				"  -h        this help message\n"
 				"  -V        print version and exit\n"
 				"  -v        be verbose\n"
+				"  -l        enable logging\n"
 				"  -t TYPE   strategy output format; default is \"tulip\";\n"
 				"            supported formats: txt, tulip, dot, aut\n"
 				"  -s        only check specification syntax (return -1 on error)\n"
@@ -181,6 +185,13 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
+	if (logging_flag) {
+		openlogfile();
+		verbose = 1;
+	} else {
+		setlogstream( stdout );
+	}
+
 	/* If filename for specification given at command-line, then use
 	   it.  Else, read from stdin. */
 	if (input_index > 0) {
@@ -197,16 +208,12 @@ int main( int argc, char **argv )
 	evar_list = NULL;
 	svar_list = NULL;
 	gen_tree_ptr = NULL;
-	if (verbose) {
-		printf( "Parsing input..." );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Parsing input..." );
 	if (yyparse())
 		return -1;
-	if (verbose) {
-		printf( "Done.\n" );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Done." );
 	if (stdin_backup != NULL) {
 		stdin = stdin_backup;
 	}
@@ -367,18 +374,14 @@ int main( int argc, char **argv )
 			}
 		}
 
-		if (verbose) {
-			printf( "Patching given strategy..." );
-			fflush( stdout );
-		}
+		if (verbose)
+			logprint( "Patching given strategy..." );
 		strategy = patch_localfixpoint( manager, strategy_fp, fp, verbose );
 		fclose( fp );
 		if (strategy_fp != stdin)
 			fclose( strategy_fp );
-		if (verbose) {
-			printf( "Done.\n" );
-			fflush( stdout );
-		}
+		if (verbose)
+			logprint( "Done." );
 		if (strategy == NULL) {
 			fprintf( stderr, "Failed to patch strategy.\n" );
 			return -1;
@@ -388,23 +391,26 @@ int main( int argc, char **argv )
 	} else {
 
 		T = check_realizable( manager, EXIST_SYS_INIT, verbose );
-		if (T != NULL && (run_option == GR1C_MODE_REALIZABLE || verbose)) {
+		if (T != NULL && (run_option == GR1C_MODE_REALIZABLE)) {
 			printf( "Realizable.\n" );
-		} else if (run_option == GR1C_MODE_REALIZABLE || verbose) {
+		} else if (run_option == GR1C_MODE_REALIZABLE) {
 			printf( "Not realizable.\n" );
+		}
+		if (verbose) {
+			if (T != NULL) {
+				logprint( "Realizable." );
+			} else {
+				logprint( "Not realizable." );
+			}
 		}
 
 		if (run_option == GR1C_MODE_SYNTHESIS && T != NULL) {
 
-			if (verbose) {
-				printf( "Synthesizing a strategy..." );
-				fflush( stdout );
-			}
+			if (verbose)
+				logprint( "Synthesizing a strategy..." );
 			strategy = synthesize( manager, EXIST_SYS_INIT, verbose );
-			if (verbose) {
-				printf( "Done.\n" );
-				fflush( stdout );
-			}
+			if (verbose)
+				logprint( "Done." );
 			if (strategy == NULL) {
 				fprintf( stderr, "Error while attempting synthesis.\n" );
 				return -1;
@@ -474,8 +480,10 @@ int main( int argc, char **argv )
 	if (strategy)
 		delete_aut( strategy );
 	if (verbose)
-		printf( "Cudd_CheckZeroRef -> %d\n", Cudd_CheckZeroRef( manager ) );
+		logprint( "Cudd_CheckZeroRef -> %d", Cudd_CheckZeroRef( manager ) );
 	Cudd_Quit(manager);
+	if (logging_flag)
+		closelogfile();
 
     /* Return 0 if realizable, -1 if not realizable. */
 	if (run_option == GR1C_MODE_INTERACTIVE || run_option == GR1C_MODE_PATCH

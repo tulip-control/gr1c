@@ -64,10 +64,8 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 	if (*(affected_len + goal_mode) == 0)
 		return strategy;
 
-	if (verbose) {
-		printf( "Processing for goal mode %d...\n", goal_mode );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Processing for goal mode %d...", goal_mode );
 
 	/* Build Entry set and initial Exit set */
 	Exit_len = Entry_len = 0;
@@ -120,10 +118,8 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 		if ((*(*(affected+goal_mode)+i))->rgrad < min_rgrad || min_rgrad == -1)
 			min_rgrad = (*(*(affected+goal_mode)+i))->rgrad;
 	}
-	if (verbose) {
-		printf( "Minimum reachability gradient value in Entry or U_i: %d\n", min_rgrad );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Minimum reachability gradient value in Entry or U_i: %d", min_rgrad );
 	i = 0;
 	while (i < Exit_len) {
 		if ((*(Exit+i))->rgrad >= min_rgrad) {
@@ -140,21 +136,18 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 	}
 
 	if (verbose) {
-		printf( "Entry set:\n" );
+		logprint( "Entry set:" );
 		for (i = 0; i < Entry_len; i++) {
-			printf( "   " );
+			/* printf( "   " ); */
 			for (j = 0; j < num_env+num_sys; j++)
-				printf( " %d", *((*(Entry+i))->state+j) );
-				printf( "\n" );
+				logprint( " %d", *((*(Entry+i))->state+j) );
 		}
-		printf( "Exit set:\n" );
+		logprint( "Exit set:" );
 		for (i = 0; i < Exit_len; i++) {
-			printf( "   " );
+			/* printf( "   " ); */
 			for (j = 0; j < num_env+num_sys; j++)
-				printf( " %d", *((*(Exit+i))->state+j) );
-			printf( "\n" );
+				logprint( " %d", *((*(Exit+i))->state+j) );
 		}
-		fflush( stdout );
 	}
 
 	local_strategy = synthesize_reachgame( manager, num_env, num_sys,
@@ -326,7 +319,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		return NULL;
 	}
 	if (verbose)
-		printf( "Read in strategy of size %d\n", aut_size( strategy ) );
+		logprint( "Read in strategy of size %d", aut_size( strategy ) );
 
 	affected = malloc( sizeof(anode_t **)*num_sgoals );
 	if (affected == NULL) {
@@ -386,14 +379,12 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	}
 
 	if (verbose) {
-		printf( "States in N (%d total):\n", N_len );
+		logprint( "States in N (%d total):", N_len );
 		for (i = 0; i < N_len; i++) {
-			printf( "   " );
+			/* printf( "   " ); */
 			for (j = 0; j < num_env+num_sys; j++)
-				printf( " %d", *(*(N+i)+j) );
-			printf( "\n" );
+				logprint( " %d", *(*(N+i)+j) );
 		}
-		fflush( stdout );
 	}
 
 	/* Build characteristic function for N */
@@ -426,15 +417,12 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 
 	/* Generate BDDs for parse trees from the problem spec transition
 	   rules that are relevant given restriction to N. */
-	if (verbose) {
-		printf( "Building local environment transition BDD..." );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Building local environment transition BDD..." );
 	etrans = Cudd_ReadOne( manager );
 	Cudd_Ref( etrans );
-	if (verbose) {
-		printf( "\nRelevant env trans:\n" );
-	}
+	if (verbose)
+		logprint( "Relevant env trans:" );
 	for (i = 0; i < et_array_len; i++) {
 		etrans_part = ptree_BDD( *(env_trans_array+i), evar_list, manager );
 		for (j = 0; j < N_len; j++) {
@@ -467,9 +455,8 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		}
 		if (j < N_len) {
 			if (verbose) {
-				printf( "    " );
-				print_formula( *(env_trans_array+i), stdout );
-				printf( "\n" );
+				/* printf( "    " ); */
+				print_formula( *(env_trans_array+i), getlogstream() );
 			}
 			tmp = Cudd_bddAnd( manager, etrans, etrans_part );
 			Cudd_Ref( tmp );
@@ -480,16 +467,14 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		
 	}
 	if (verbose) {
-		printf( "\nDone.\n" );
-		printf( "Building local system transition BDD..." );
-		fflush( stdout );
+		logprint( "Done." );
+		logprint( "Building local system transition BDD..." );
 	}
 
 	strans = Cudd_ReadOne( manager );
 	Cudd_Ref( strans );
-	if (verbose) {
-		printf( "\nRelevant sys trans:\n" );
-	}
+	if (verbose)
+		logprint( "\nRelevant sys trans:" );
 	for (i = 0; i < st_array_len; i++) {
 		strans_part = ptree_BDD( *(sys_trans_array+i), evar_list, manager );
 		for (j = 0; j < N_len; j++) {
@@ -522,9 +507,8 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		}
 		if (j < N_len) {
 			if (verbose) {
-				printf( "    " );
-				print_formula( *(sys_trans_array+i), stdout );
-				printf( "\n" );
+				/* printf( "    " ); */
+				print_formula( *(sys_trans_array+i), getlogstream() );
 			}
 			tmp = Cudd_bddAnd( manager, strans, strans_part );
 			Cudd_Ref( tmp );
@@ -534,10 +518,8 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		Cudd_RecursiveDeref( manager, strans_part );
 		
 	}
-	if (verbose) {
-		printf( "\nDone.\n" );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Done." );
 
 	/* Build goal BDDs, if present. */
 	if (num_egoals > 0) {
@@ -576,23 +558,22 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				if (verbose) {
 					if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
 						if (num_read == 2*(num_env+num_sys)) {
-							printf( "Removing controlled edge from" );
+							logprint( "Removing controlled edge from" );
 						} else {
-							printf( "Removing uncontrolled edge from" );
+							logprint( "Removing uncontrolled edge from" );
 						}
 					} else { /* "relax " */
 						if (num_read == 2*(num_env+num_sys)) {
-							printf( "Adding controlled edge from" );
+							logprint( "Adding controlled edge from" );
 						} else {
-							printf( "Adding uncontrolled edge from" );
+							logprint( "Adding uncontrolled edge from" );
 						}
 					}
 					for (i = 0; i < num_env+num_sys; i++)
-						printf( " %d", *(state+i) );
-					printf( " to" );
+						logprint( " %d", *(state+i) );
+					logprint( " to" );
 					for (i = num_env+num_sys; i < num_read; i++)
-						printf( " %d", *(state+i) );
-					printf( "\n" );
+						logprint( " %d", *(state+i) );
 				}
 				
 				/* Find nodes in strategy that are affected by this change */
@@ -699,10 +680,9 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 					return NULL;
 				}
 				if (verbose) {
-					printf( "Removing system moves into" );
+					logprint( "Removing system moves into" );
 					for (i = 0; i < num_sys; i++)
-						printf( " %d", *(state+i) );
-					printf( "\n" );
+						logprint( " %d", *(state+i) );
 				}
 				
 				/* Find nodes in strategy that are affected by this change */
@@ -752,9 +732,6 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				fprintf( stderr, "Error patch_localfixpoint: unrecognized line in given edge change file.\n" );
 				return NULL;
 			}
-			
-			if (verbose)
-				fflush( stdout );
 		} while (fgets( line, INPUT_STRING_LEN, change_fp ));
 	}
 

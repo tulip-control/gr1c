@@ -17,6 +17,8 @@
 /** Use given stream for logging.  If NULL, then use stdout. */
 void setlogstream( FILE *fp );
 
+FILE *getlogstream();
+
 /** Open a new log file, automatically name it with the current
    timestamp, and return the resulting stream, or NULL if error.
    If the file already exists, then it is appended to. */

@@ -448,12 +448,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	CUDD_VALUE_TYPE gvalue;
 	int *gcube;
 
-	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from levelset_interactive ================\n" );
-		Cudd_PrintInfo( manager, stdout );
-		printf( "======================================================================\n" );
-	}
-
 	/* Set environment goal to True (i.e., any state) if none was
 	   given. This simplifies the implementation below. */
 	if (num_egoals == 0) {
@@ -498,21 +492,16 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	/* Generate BDDs for the various parse trees from the problem spec. */
 	einit = ptree_BDD( env_init, evar_list, manager );
 	sinit = ptree_BDD( sys_init, evar_list, manager );
-	if (verbose) {
-		printf( "Building environment transition BDD..." );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Building environment transition BDD..." );
 	etrans = ptree_BDD( env_trans, evar_list, manager );
 	if (verbose) {
-		printf( "Done.\n" );
-		printf( "Building system transition BDD..." );
-		fflush( stdout );
+		logprint( "Done." );
+		logprint( "Building system transition BDD..." );
 	}
 	strans = ptree_BDD( sys_trans, evar_list, manager );
-	if (verbose) {
-		printf( "Done.\n" );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Done." );
 
 	/* Build goal BDDs, if present. */
 	if (num_egoals > 0) {
@@ -673,13 +662,13 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				tmp = tmp2;
 			}
 			if (verbose) {
-				printf( "From state " );
+				logprint( "From state " );
 				for (i = 0; i < num_env+num_sys; i++)
-					printf( " %d", *(intcom_state+i) );
-				printf( "; given env move " );
+					logprint( " %d", *(intcom_state+i) );
+				logprint( "; given env move " );
 				for (i = 0; i < num_env; i++)
-					printf( " %d", *(intcom_state+num_env+num_sys+i) );
-				printf( "; goal %d\n", intcom_index );
+					logprint( " %d", *(intcom_state+num_env+num_sys+i) );
+				logprint( "; goal %d", intcom_index );
 			}
 
 			Cudd_AutodynDisable( manager );
@@ -790,10 +779,9 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 		case INTCOM_WINNING:
 			if (verbose) {
-				printf( "Winning set membership check for state " );
+				logprint( "Winning set membership check for state " );
 				for (i = 0; i < num_env+num_sys; i++)
-					printf( " %d", *(intcom_state+i) );
-				printf( "\n" );
+					logprint( " %d", *(intcom_state+i) );
 			}
 			state2cube( intcom_state, cube, num_env+num_sys );
 			free( intcom_state );
@@ -807,10 +795,9 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 		case INTCOM_GETINDEX:
 			if (verbose) {
-				printf( "Reachability index for goal %d of state ", intcom_index );
+				logprint( "Reachability index for goal %d of state ", intcom_index );
 				for (i = 0; i < num_env+num_sys; i++)
-					printf( " %d", *(intcom_state+i) );
-				printf( "\n" );
+					logprint( " %d", *(intcom_state+i) );
 			}
 			state2cube( intcom_state, cube, num_env+num_sys );
 			free( intcom_state );
@@ -831,23 +818,22 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			if (verbose) {
 				if (command == INTCOM_RESTRICT) {
 					if (intcom_index == 2*num_env+num_sys) {
-						printf( "Removing uncontrolled edge from" );
+						logprint( "Removing uncontrolled edge from" );
 					} else { /* intcom_index == 2*(num_env+num_sys) */
-						printf( "Removing controlled edge from" );
+						logprint( "Removing controlled edge from" );
 					}
 				} else { /* INTCOM_RELAX */
 					if (intcom_index == 2*num_env+num_sys) {
-						printf( "Adding uncontrolled edge from" );
+						logprint( "Adding uncontrolled edge from" );
 					} else { /* intcom_index == 2*(num_env+num_sys) */
-						printf( "Adding controlled edge from" );
+						logprint( "Adding controlled edge from" );
 					}
 				}
 				for (i = 0; i < num_env+num_sys; i++)
-					printf( " %d", *(intcom_state+i) );
-				printf( " to " );
+					logprint( " %d", *(intcom_state+i) );
+				logprint( " to " );
 				for (i = num_env+num_sys; i < intcom_index; i++)
-					printf( " %d", *(intcom_state+i) );
-				printf( "\n" );
+					logprint( " %d", *(intcom_state+i) );
 			}
 			
 			vertex1 = state2BDD( manager, intcom_state, 0, num_env+num_sys );
@@ -891,10 +877,9 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 		case INTCOM_BLKENV:
 			if (verbose) {
-				printf( "Removing environment moves into" );
+				logprint( "Removing environment moves into" );
 				for (i = 0; i < num_env; i++)
-					printf( " %d", *(intcom_state+i) );
-				printf( "\n" );
+					logprint( " %d", *(intcom_state+i) );
 			}
 			vertex2 = state2BDD( manager, intcom_state, num_env+num_sys, num_env );
 			tmp = Cudd_Not( vertex2 );
@@ -913,10 +898,9 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 		case INTCOM_BLKSYS:
 			if (verbose) {
-				printf( "Removing system moves into" );
+				logprint( "Removing system moves into" );
 				for (i = 0; i < num_sys; i++)
-					printf( " %d", *(intcom_state+i) );
-				printf( "\n" );
+					logprint( " %d", *(intcom_state+i) );
 			}
 
 			vertex2 = state2BDD( manager, intcom_state, 2*num_env+num_sys, num_sys );
@@ -951,12 +935,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 		fflush( outfp );
 	} while ((command = command_loop( manager, infp, outfp )) > 0);
-
-	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from levelset_interactive ================\n" );
-		Cudd_PrintInfo( manager, stdout );
-		printf( "======================================================================\n" );
-	}
 
 	/* Pre-exit clean-up */
 	Cudd_RecursiveDeref( manager, etrans_patched );

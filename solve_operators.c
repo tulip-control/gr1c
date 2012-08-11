@@ -45,12 +45,6 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 		*env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
 	}
 
-	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from compute_winning_set =================\n" );
-		Cudd_PrintInfo( manager, stdout );
-		printf( "======================================================================\n" );
-	}
-
 	/* Chain together environment and system variable lists for
 	   working with BDD library. */
 	if (evar_list == NULL) {
@@ -67,21 +61,16 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 	}
 
 	/* Generate BDDs for the various parse trees from the problem spec. */
-	if (verbose) {
-		printf( "Building environment transition BDD..." );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Building environment transition BDD..." );
 	etrans = ptree_BDD( env_trans, evar_list, manager );
 	if (verbose) {
-		printf( "Done.\n" );
-		printf( "Building system transition BDD..." );
-		fflush( stdout );
+		logprint( "Done." );
+		logprint( "Building system transition BDD..." );
 	}
 	strans = ptree_BDD( sys_trans, evar_list, manager );
-	if (verbose) {
-		printf( "Done.\n" );
-		fflush( stdout );
-	}
+	if (verbose)
+		logprint( "Done." );
 
 	/* Build goal BDDs, if present. */
 	if (num_egoals > 0) {
@@ -150,12 +139,6 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 	int *cube;  /* length will be twice total number of variables (to
 				   account for both variables and their primes). */
 
-	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from compute_winning_set_BDD =============\n" );
-		Cudd_PrintInfo( manager, stdout );
-		printf( "======================================================================\n" );
-	}
-
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
 
@@ -199,10 +182,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 	num_it_Z = 0;
 	do {
 		num_it_Z++;
-		if (verbose) {
-			printf( "Z iteration %d\n", num_it_Z );
-			fflush( stdout );
-		}
+		if (verbose)
+			logprint( "Z iteration %d", num_it_Z );
 
 		for (i = 0; i < num_sgoals; i++) {
 			if (*(Z_prev+i) != NULL)
@@ -232,10 +213,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 			num_it_Y = 0;
 			do {
 				num_it_Y++;
-				if (verbose) {
-					printf( "\tY iteration %d\n", num_it_Y );
-					fflush( stdout );
-				}
+				if (verbose)
+					logprint( "\tY iteration %d", num_it_Y );
 
 				if (Y_prev != NULL)
 					Cudd_RecursiveDeref( manager, Y_prev );
@@ -263,10 +242,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 					num_it_X = 0;
 					do {
 						num_it_X++;
-						if (verbose) {
-							printf( "\t\tX iteration %d\n", num_it_X );
-							fflush( stdout );
-						}
+						if (verbose)
+							logprint( "\t\tX iteration %d", num_it_X );
 						
 						if (X_prev != NULL)
 							Cudd_RecursiveDeref( manager, X_prev );
@@ -340,12 +317,6 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 		}
 	} while (Z_changed);
 
-	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from compute_winning_set_BDD =============\n" );
-		Cudd_PrintInfo( manager, stdout );
-		printf( "======================================================================\n" );
-	}
-
 	/* Pre-exit clean-up */
 	tmp = *Z;
 	Cudd_RecursiveDeref( manager, *Z_prev );
@@ -379,12 +350,6 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 
 	DdNode *tmp, *tmp2;
 	int i, r;
-
-	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from compute_sublevel_sets ===============\n" );
-		Cudd_PrintInfo( manager, stdout );
-		printf( "======================================================================\n" );
-	}
 
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
@@ -553,12 +518,6 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 			}
 			Cudd_RecursiveDeref( manager, Y_exmod );
 		}
-	}
-
-	if (verbose) {
-		printf( "== Cudd_PrintInfo(), called from compute_sublevel_sets ===============\n" );
-		Cudd_PrintInfo( manager, stdout );
-		printf( "======================================================================\n" );
 	}
 
 	return Y;

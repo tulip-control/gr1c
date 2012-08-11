@@ -21,6 +21,8 @@ all: $(PROGRAMS)
 	@echo "============================================================\nPASSED\n"
 
 
+COMMON_BINS = ../automaton.o ../automaton_io.o ../ptree.o ../solve_support.o ../logging.o
+
 test_logging: test_logging.c
 	gcc $(CFLAGS) $^ ../logging.o -o $@ $(LDFLAGS)
 
@@ -31,16 +33,16 @@ test_ptree_to_BDD: test_ptree_to_BDD.c
 	gcc $(CFLAGS) $^ ../ptree.o -o $@ $(LDFLAGS)
 
 test_automaton: test_automaton.c
-	gcc $(CFLAGS) $^ ../automaton.o ../automaton_io.o ../ptree.o ../solve_support.o -o $@ $(LDFLAGS)
+	gcc $(CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
 
 test_automaton_io: test_automaton_io.c
-	gcc $(CFLAGS) $^ ../automaton.o ../automaton_io.o ../ptree.o ../solve_support.o -o $@ $(LDFLAGS)
+	gcc $(CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
 
 test_solve_support: test_solve_support.c
-	gcc $(CFLAGS) $^ ../automaton.o ../ptree.o ../solve_support.o -o $@ $(LDFLAGS)
+	gcc $(CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
 
 test_patching: test_patching.c
-	gcc $(CFLAGS) $^  ../automaton.o ../automaton_io.o ../ptree.o ../solve_support.o ../patching.o ../patching_support.o -o $@ $(LDFLAGS)
+	gcc $(CFLAGS) $^ $(COMMON_BINS) ../patching.o ../patching_support.o -o $@ $(LDFLAGS)
 
 clean:
 	rm -fv *~ *.o $(PROGRAMS) temp_*_dump*
