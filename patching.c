@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "common.h"
+#include "logging.h"
 #include "automaton.h"
 #include "ptree.h"
 #include "patching.h"
@@ -138,15 +139,17 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 	if (verbose) {
 		logprint( "Entry set:" );
 		for (i = 0; i < Entry_len; i++) {
-			/* printf( "   " ); */
+			logprint_startline();
 			for (j = 0; j < num_env+num_sys; j++)
-				logprint( " %d", *((*(Entry+i))->state+j) );
+				logprint_raw( " %d", *((*(Entry+i))->state+j) );
+			logprint_endline();
 		}
 		logprint( "Exit set:" );
 		for (i = 0; i < Exit_len; i++) {
-			/* printf( "   " ); */
+			logprint_startline();
 			for (j = 0; j < num_env+num_sys; j++)
-				logprint( " %d", *((*(Exit+i))->state+j) );
+				logprint_raw( " %d", *((*(Exit+i))->state+j) );
+			logprint_endline();
 		}
 	}
 
@@ -381,9 +384,10 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	if (verbose) {
 		logprint( "States in N (%d total):", N_len );
 		for (i = 0; i < N_len; i++) {
-			/* printf( "   " ); */
+			logprint_startline();
 			for (j = 0; j < num_env+num_sys; j++)
-				logprint( " %d", *(*(N+i)+j) );
+				logprint_raw( " %d", *(*(N+i)+j) );
+			logprint_endline();
 		}
 	}
 
@@ -455,7 +459,6 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		}
 		if (j < N_len) {
 			if (verbose) {
-				/* printf( "    " ); */
 				print_formula( *(env_trans_array+i), getlogstream() );
 			}
 			tmp = Cudd_bddAnd( manager, etrans, etrans_part );
@@ -507,7 +510,6 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		}
 		if (j < N_len) {
 			if (verbose) {
-				/* printf( "    " ); */
 				print_formula( *(sys_trans_array+i), getlogstream() );
 			}
 			tmp = Cudd_bddAnd( manager, strans, strans_part );
@@ -569,11 +571,13 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 							logprint( "Adding uncontrolled edge from" );
 						}
 					}
+					logprint_startline();
 					for (i = 0; i < num_env+num_sys; i++)
-						logprint( " %d", *(state+i) );
+						logprint_raw( " %d", *(state+i) );
 					logprint( " to" );
 					for (i = num_env+num_sys; i < num_read; i++)
-						logprint( " %d", *(state+i) );
+						logprint_raw( " %d", *(state+i) );
+					logprint_endline();
 				}
 				
 				/* Find nodes in strategy that are affected by this change */
@@ -680,9 +684,11 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 					return NULL;
 				}
 				if (verbose) {
-					logprint( "Removing system moves into" );
+					logprint_startline();
+					logprint_raw( "Removing system moves into" );
 					for (i = 0; i < num_sys; i++)
-						logprint( " %d", *(state+i) );
+						logprint_raw( " %d", *(state+i) );
+					logprint_endline();
 				}
 				
 				/* Find nodes in strategy that are affected by this change */

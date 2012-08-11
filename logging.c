@@ -129,3 +129,67 @@ void logprint( char *fmt, ... )
 	va_end( ap );
 	fflush( logfp );
 }
+
+
+void logprint_startline()
+{
+	struct tm *timeptr;
+	time_t clock;
+	char timestamp[TIMESTAMP_LEN];
+
+	if (logfp == NULL) {
+		fprintf( stderr, "WARNING: Attempted to write to non-existent log." );
+		return;
+	}
+
+	if ((logopt & 0x1) == LOGOPT_TIME) {
+		clock = time( NULL );
+		timeptr = gmtime( &clock );  /* UTC */
+		if (strftime( timestamp, TIMESTAMP_LEN, "%Y-%m-%d %H:%M:%S", timeptr ) == 0) {
+			fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
+			return;
+		}
+		fprintf( logfp, "%s ", timestamp );
+	}
+}
+
+void logprint_endline()
+{
+	fputc( '\n', logfp );
+	fflush( logfp );
+}
+
+void logprint_raw( char *fmt, ... )
+{
+	va_list ap;
+
+	if (logfp == NULL) {
+		fprintf( stderr, "WARNING: Attempted to write to non-existent log." );
+		return;
+	}
+
+	va_start( ap, fmt );
+	while (*fmt != '\0') {
+		if (*fmt == '%') {
+			fmt++;
+			switch(*fmt) {
+			case 'f':
+				fprintf( logfp, "%f", va_arg( ap, double ) );
+				break;
+			case 'd':
+				fprintf( logfp, "%d", va_arg( ap, int ) );
+				break;
+			case 's':
+				fprintf( logfp, "%s", va_arg( ap, char * ) );
+				break;
+			default:
+				fputc( *fmt, logfp );
+			}
+		} else {
+			fputc( *fmt, logfp );
+		}
+		fmt++;
+	}
+
+	va_end( ap );
+}

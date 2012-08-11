@@ -44,5 +44,16 @@ int closelogfile();
 /** Rudimentary printing routine. Supports %d, %f, and %s flags. */
 void logprint( char *fmt, ... );
 
+/** Write to log stream.  Do not automatically end line, do not flush, etc. */
+void logprint_raw( char *fmt, ... );
+
+/** Start a new line.  Intended for use with logprint_raw() and
+   logprint_endline(). */
+void logprint_startline();
+
+/** End line and flush log stream.  Intended for use with
+   logprint_raw() and logprint_startline(). */
+void logprint_endline();
+
 
 #endif
