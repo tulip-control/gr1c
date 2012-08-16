@@ -191,6 +191,7 @@ int main( int argc, char **argv )
 		verbose = 1;
 	} else {
 		setlogstream( stdout );
+		setlogopt( LOGOPT_NOTIME );
 	}
 
 	/* If filename for specification given at command-line, then use
