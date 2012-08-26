@@ -1,6 +1,6 @@
 /* gr1c -- lexical analyzer (or "scanner")
  *
- * SCL; Jan, Feb 2012.
+ * SCL; Jan-Feb, Aug 2012.
  */
 
 %{
@@ -23,6 +23,7 @@ number  (-)?[0-9]+([.][0-9]+)?
 
 "[]<>"  { return LIVENESS_OP; }
 "[]"  { return SAFETY_OP; }
+"<>" { return EVENTUALLY_OP; }
 
 "->"  { return IMPLIES; }
 [()&|!=';]  { return yytext[0]; }

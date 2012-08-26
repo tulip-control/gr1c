@@ -21,6 +21,12 @@ be placed under ``doc``. API-related documents are built with `Doxygen
 <http://www.doxygen.org>`_; version 1.8.0 or later required for
 Markdown support.
 
+**rg** is a tool for solving "reachability games," which are similar
+to GR(1) formulae except with at most one system goal and where that
+system goal must be reached once (not necessarily infinitely often).
+The accepted input specifications are slightly different; the single
+system goal is preceded by "<>" (as the "eventually" operator).
+
 
 Installation
 ============

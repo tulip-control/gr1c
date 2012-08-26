@@ -16,16 +16,12 @@
 extern int num_egoals;
 
 
-anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
-							   anode_t **Entry, int Entry_len,
-							   anode_t **Exit, int Exit_len,
-							   DdNode *etrans, DdNode *strans, DdNode **egoals,
-							   DdNode *N_BDD,
-							   unsigned char verbose )
+anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
+								   DdNode *Entry, DdNode *Exit,
+								   DdNode *etrans, DdNode *strans,
+								   DdNode **egoals, DdNode *N_BDD,
+								   unsigned char verbose )
 {
-	DdNode *Exit_BDD;
-	DdNode *Entry_BDD;
-
 	anode_t *strategy = NULL;
 	anode_t *this_node_stack = NULL;
 	anode_t *node, *new_node;
@@ -61,38 +57,13 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 		return NULL;
 	}
 
-	/* Build characteristic functions (as BDDs) for Entry and Exit sets. */
-	Entry_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
-	Cudd_Ref( Entry_BDD );
-	for (i = 0; i < Entry_len; i++) {
-		ddval = state2BDD( manager, (*(Entry+i))->state, 0, num_env+num_sys );
-		tmp = Cudd_bddOr( manager, Entry_BDD, ddval );
-		Cudd_Ref( tmp );
-		Cudd_RecursiveDeref( manager, Entry_BDD );
-		Cudd_RecursiveDeref( manager, ddval );
-		Entry_BDD = tmp;
-	}
-	ddval = NULL;
-	
-	Exit_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
-	Cudd_Ref( Exit_BDD );
-	for (i = 0; i < Exit_len; i++) {
-		ddval = state2BDD( manager, (*(Exit+i))->state, 0, num_env+num_sys );
-		tmp = Cudd_bddOr( manager, Exit_BDD, ddval );
-		Cudd_Ref( tmp );
-		Cudd_RecursiveDeref( manager, Exit_BDD );
-		Cudd_RecursiveDeref( manager, ddval );
-		Exit_BDD = tmp;
-	}
-	ddval = NULL;
-	
 	num_sublevels = 1;
 	Y = malloc( num_sublevels*sizeof(DdNode *) );
 	if (Y == NULL) {
 		perror( "synthesize_reachgame, malloc" );
 		return NULL;
 	}
-	*Y = Exit_BDD;
+	*Y = Exit;
 	Cudd_Ref( *Y );
 
 	X_jr = malloc( num_sublevels*sizeof(DdNode **) );
@@ -160,7 +131,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 				Cudd_RecursiveDeref( manager, X );
 				X = tmp;
 								
-				tmp2 = Cudd_bddOr( manager, Exit_BDD, Y_exmod );
+				tmp2 = Cudd_bddOr( manager, Exit, Y_exmod );
 				Cudd_Ref( tmp2 );
 
 				tmp = Cudd_bddAnd( manager, X, Cudd_Not( *(egoals+r) ) );
@@ -199,7 +170,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 		Cudd_Ref( *(Y+num_sublevels-1) );
 		Cudd_RecursiveDeref( manager, tmp );
 
-		tmp = Cudd_bddOr( manager, Entry_BDD, *(Y+num_sublevels-1) );
+		tmp = Cudd_bddOr( manager, Entry, *(Y+num_sublevels-1) );
 		Cudd_Ref( tmp );
 		if (Cudd_bddLeq( manager, tmp, *(Y+num_sublevels-1) )*Cudd_bddLeq( manager, *(Y+num_sublevels-1), tmp )) {
 			Cudd_RecursiveDeref( manager, tmp );
@@ -231,7 +202,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 	   defined in the CUDD manager before invocation of synthesize_reachgame. */
 	tmp = Cudd_bddVarMap( manager, N_BDD );
 	if (tmp == NULL) {
-		fprintf( stderr, "Error synthesize_reachgame: Error in swapping variables with primed forms.\n" );
+		fprintf( stderr, "Error synthesize_reachgame_BDD: Error in swapping variables with primed forms.\n" );
 		return NULL;
 	}
 	Cudd_Ref( tmp );
@@ -240,8 +211,24 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 	Cudd_RecursiveDeref( manager, tmp );
 
 	/* Synthesize local strategy */
-	for (i = 0; i < Entry_len; i++)
-		this_node_stack = insert_anode( this_node_stack, -1, -1, (*(Entry+i))->state, num_env+num_sys );
+	Cudd_AutodynDisable( manager );
+	Cudd_ForeachCube( manager, Entry, gen, gcube, gvalue ) {
+		initialize_cube( state, gcube, num_env+num_sys );
+		while (!saturated_cube( state, gcube, num_env+num_sys )) {
+			this_node_stack = insert_anode( this_node_stack, -1, -1, state, num_env+num_sys );
+			if (this_node_stack == NULL) {
+				fprintf( stderr, "Error synthesize_reachgame_BDD: building list of initial states.\n" );
+				return NULL;
+			}
+			increment_cube( state, gcube, num_env+num_sys );
+		}
+		this_node_stack = insert_anode( this_node_stack, -1, -1, state, num_env+num_sys );
+		if (this_node_stack == NULL) {
+			fprintf( stderr, "Error synthesize_reachgame_BDD: building list of initial states.\n" );
+			return NULL;
+		}
+	}
+	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 
 	/* Insert all stacked, initial nodes into strategy. */
 	node = this_node_stack;
@@ -249,7 +236,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 		strategy = insert_anode( strategy, -1, node->rgrad,
 								 node->state, num_env+num_sys );
 		if (strategy == NULL) {
-			fprintf( stderr, "Error synthesize_reachgame: inserting state node into strategy.\n" );
+			fprintf( stderr, "Error synthesize_reachgame_BDD: inserting state node into strategy.\n" );
 			return NULL;
 		}
 		node = node->next;
@@ -278,12 +265,9 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 			continue;
 		}
 
-		/* Note that we assume the variable map has been appropriately
-		   defined in the CUDD manager, after the call to
-		   compute_winning_set above. */
 		Y_i_primed = Cudd_bddVarMap( manager, *(Y+j-1) );
 		if (Y_i_primed == NULL) {
-			fprintf( stderr, "Error synthesize_reachgame: swapping variables with primed forms.\n" );
+			fprintf( stderr, "Error synthesize_reachgame_BDD: swapping variables with primed forms.\n" );
 			return NULL;
 		}
 		Cudd_Ref( Y_i_primed );
@@ -315,7 +299,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 			Cudd_AutodynDisable( manager );
 			gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
 			if (gen == NULL) {
-				fprintf( stderr, "Error synthesize_reachgame: failed to find cube.\n" );
+				fprintf( stderr, "Error synthesize_reachgame_BDD: failed to find cube.\n" );
 				return NULL;
 			}
 			if (Cudd_IsGenEmpty( gen )) {
@@ -329,7 +313,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 						Cudd_RecursiveDeref( manager, Y_i_primed );
 						Y_i_primed = Cudd_bddVarMap( manager, *(*(X_jr+j)+r) );
 						if (Y_i_primed == NULL) {
-							fprintf( stderr, "Error synthesize_reachgame: Error in swapping variables with primed forms.\n" );
+							fprintf( stderr, "Error synthesize_reachgame_BDD: Error in swapping variables with primed forms.\n" );
 							return NULL;
 						}
 						Cudd_Ref( Y_i_primed );
@@ -352,7 +336,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 							break;
 					}
 					if (r >= num_egoals) {
-						fprintf( stderr, "Error synthesize_reachgame: unexpected losing state.\n" );
+						fprintf( stderr, "Error synthesize_reachgame_BDD: unexpected losing state.\n" );
 						return NULL;
 					}
 				} else {
@@ -379,12 +363,12 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 				Cudd_AutodynDisable( manager );
 				gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
 				if (gen == NULL) {
-					fprintf( stderr, "Error synthesize_reachgame: failed to find cube.\n" );
+					fprintf( stderr, "Error synthesize_reachgame_BDD: failed to find cube.\n" );
 					return NULL;
 				}
 				if (Cudd_IsGenEmpty( gen )) {
 					Cudd_GenFree( gen );
-					fprintf( stderr, "Error synthesize_reachgame: unexpected losing state.\n" );
+					fprintf( stderr, "Error synthesize_reachgame_BDD: unexpected losing state.\n" );
 					return NULL;
 				}
 				for (i = 0; i < 2*(num_env+num_sys); i++)
@@ -408,13 +392,13 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 				strategy = insert_anode( strategy, -1, -1,
 										 state, num_env+num_sys );
 				if (strategy == NULL) {
-					fprintf( stderr, "Error synthesize_reachgame: inserting new node into strategy.\n" );
+					fprintf( stderr, "Error synthesize_reachgame_BDD: inserting new node into strategy.\n" );
 					return NULL;
 				}
 				this_node_stack = insert_anode( this_node_stack, -1, -1,
 												state, num_env+num_sys );
 				if (this_node_stack == NULL) {
-					fprintf( stderr, "Error synthesize_reachgame: pushing node onto stack failed.\n" );
+					fprintf( stderr, "Error synthesize_reachgame_BDD: pushing node onto stack failed.\n" );
 					return NULL;
 				}
 			} 
@@ -423,7 +407,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 										   num_env+num_sys,
 										   -1, state );
 			if (strategy == NULL) {
-				fprintf( stderr, "Error synthesize_reachgame: inserting new transition into strategy.\n" );
+				fprintf( stderr, "Error synthesize_reachgame_BDD: inserting new transition into strategy.\n" );
 				return NULL;
 			}
 		}
@@ -439,8 +423,6 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 
 	
 	/* Pre-exit clean-up */
-	Cudd_RecursiveDeref( manager, Exit_BDD );
-	Cudd_RecursiveDeref( manager, Entry_BDD );
 	Cudd_RecursiveDeref( manager, strans_into_N );
 	free( cube );
 	free( state );
@@ -453,6 +435,56 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 	}
 	free( Y );
 	free( X_jr );
+
+	return strategy;
+}
+
+
+anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
+							   anode_t **Entry, int Entry_len,
+							   anode_t **Exit, int Exit_len,
+							   DdNode *etrans, DdNode *strans, DdNode **egoals,
+							   DdNode *N_BDD,
+							   unsigned char verbose )
+{
+	DdNode *Entry_BDD;
+	DdNode *Exit_BDD;
+	anode_t *strategy;
+	DdNode *tmp, *tmp2;
+	int i;
+	
+	/* Build characteristic functions (as BDDs) for Entry and Exit sets. */
+	Entry_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
+	Cudd_Ref( Entry_BDD );
+	for (i = 0; i < Entry_len; i++) {
+		tmp2 = state2BDD( manager, (*(Entry+i))->state, 0, num_env+num_sys );
+		tmp = Cudd_bddOr( manager, Entry_BDD, tmp2 );
+		Cudd_Ref( tmp );
+		Cudd_RecursiveDeref( manager, Entry_BDD );
+		Cudd_RecursiveDeref( manager, tmp2 );
+		Entry_BDD = tmp;
+	}
+	tmp2 = NULL;
+	
+	Exit_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
+	Cudd_Ref( Exit_BDD );
+	for (i = 0; i < Exit_len; i++) {
+		tmp2 = state2BDD( manager, (*(Exit+i))->state, 0, num_env+num_sys );
+		tmp = Cudd_bddOr( manager, Exit_BDD, tmp2 );
+		Cudd_Ref( tmp );
+		Cudd_RecursiveDeref( manager, Exit_BDD );
+		Cudd_RecursiveDeref( manager, tmp2 );
+		Exit_BDD = tmp;
+	}
+	tmp2 = NULL;
+	
+	strategy =  synthesize_reachgame_BDD( manager, num_env, num_sys,
+										  Entry_BDD, Exit_BDD, etrans, strans,
+										  egoals, N_BDD, verbose );
+
+	/* Pre-exit clean-up */
+	Cudd_RecursiveDeref( manager, Exit_BDD );
+	Cudd_RecursiveDeref( manager, Entry_BDD );
 
 	return strategy;
 }

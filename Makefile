@@ -1,6 +1,7 @@
+# Build gr1c and rg executables, build documentation, run tests.
+#
 # SCL; 2012.
-#
-#
+
 
 INSTALLDIR = /usr/local/bin
 export CUDD_ROOT = extern/cudd-2.5.0
@@ -20,7 +21,12 @@ LDFLAGS = $(CUDD_LIB) -lm
 #LDFLAGS += -lreadline
 
 
+all: gr1c rg
+
 gr1c: main.o logging.o interactive.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+rg: rg_main.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o gr1c_scan.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 main.o: main.c
@@ -35,15 +41,16 @@ solve.o: solve.c
 patching.o: patching.c
 patching_support.o: patching_support.c
 
-gr1c_scan.o: gr1c_scan.l gr1c_parse.c
+gr1c_scan.o: gr1c_scan.l gr1c_parse.c rg_parse.y
 gr1c_parse.o: gr1c_parse.y
+rg_parse.o: rg_parse.y
 
 
 install:
-	cp gr1c $(INSTALLDIR)/
+	cp gr1c rg $(INSTALLDIR)/
 
 uninstall:
-	rm $(INSTALLDIR)/gr1c
+	rm $(INSTALLDIR)/gr1c $(INSTALLDIR)/rg
 
 check: gr1c
 	$(MAKE) -C tests
@@ -60,6 +67,6 @@ doc:
 	@(cd doc; doxygen; cd ..)
 
 clean:
-	rm -fv *~ *.o y.tab.h gr1c_parse.c gr1c
+	rm -fv *~ *.o y.tab.h gr1c_parse.c rg_parse.c gr1c rg
 	rm -fr doc/build/*
 	$(MAKE) -C tests clean

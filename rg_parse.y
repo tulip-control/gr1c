@@ -1,7 +1,7 @@
-/* gr1c -- Bison (and Yacc) grammar file
+/* rg -- Bison (and Yacc) grammar file for reach game formulae
  *
  *
- * SCL; Jan, Feb 2012.
+ * SCL; Aug 2012.
  */
 
 
@@ -125,7 +125,7 @@ etransformula: SAFETY_OP tpropformula  {
                    et_array_len++;
                    env_trans_array = realloc( env_trans_array, sizeof(ptree_t *)*et_array_len );
                    if (env_trans_array == NULL) {
-                       perror( "gr1c_parse.y, etransformula, realloc" );
+                       perror( "rg_parse.y, etransformula, realloc" );
                        YYABORT;
                    }
                    *(env_trans_array+et_array_len-1) = gen_tree_ptr;
@@ -135,7 +135,7 @@ etransformula: SAFETY_OP tpropformula  {
                    et_array_len++;
                    env_trans_array = realloc( env_trans_array, sizeof(ptree_t *)*et_array_len );
                    if (env_trans_array == NULL) {
-                       perror( "gr1c_parse.y, etransformula, realloc" );
+                       perror( "rg_parse.y, etransformula, realloc" );
                        YYABORT;
                    }
                    *(env_trans_array+et_array_len-1) = gen_tree_ptr;
@@ -147,7 +147,7 @@ stransformula: SAFETY_OP tpropformula  {
                    st_array_len++;
                    sys_trans_array = realloc( sys_trans_array, sizeof(ptree_t *)*st_array_len );
                    if (sys_trans_array == NULL) {
-                       perror( "gr1c_parse.y, stransformula, realloc" );
+                       perror( "rg_parse.y, stransformula, realloc" );
                        YYABORT;
                    }
                    *(sys_trans_array+st_array_len-1) = gen_tree_ptr;
@@ -157,7 +157,7 @@ stransformula: SAFETY_OP tpropformula  {
                    st_array_len++;
                    sys_trans_array = realloc( sys_trans_array, sizeof(ptree_t *)*st_array_len );
                    if (sys_trans_array == NULL) {
-                       perror( "gr1c_parse.y, stransformula, realloc" );
+                       perror( "rg_parse.y, stransformula, realloc" );
                        YYABORT;
                    }
                    *(sys_trans_array+st_array_len-1) = gen_tree_ptr;
@@ -169,7 +169,7 @@ egoalformula: LIVENESS_OP propformula  {
                   num_egoals++;
                   env_goals = realloc( env_goals, sizeof(ptree_t *)*num_egoals );
                   if (env_goals == NULL) {
-                      perror( "gr1c_parse.y, egoalformula, realloc" );
+                      perror( "rg_parse.y, egoalformula, realloc" );
                       YYABORT;
                   }
                   *(env_goals+num_egoals-1) = gen_tree_ptr;
@@ -179,7 +179,7 @@ egoalformula: LIVENESS_OP propformula  {
                   num_egoals++;
                   env_goals = realloc( env_goals, sizeof(ptree_t *)*num_egoals );
                   if (env_goals == NULL) {
-                      perror( "gr1c_parse.y, egoalformula, realloc" );
+                      perror( "rg_parse.y, egoalformula, realloc" );
                       YYABORT;
                   }
                   *(env_goals+num_egoals-1) = gen_tree_ptr;
@@ -187,21 +187,11 @@ egoalformula: LIVENESS_OP propformula  {
               }
 ;
 
-sgoalformula: LIVENESS_OP propformula  {
+sgoalformula: EVENTUALLY_OP propformula  {
                   num_sgoals++;
                   sys_goals = realloc( sys_goals, sizeof(ptree_t *)*num_sgoals );
                   if (sys_goals == NULL) {
-                      perror( "gr1c_parse.y, sgoalformula, realloc" );
-                      YYABORT;
-                  }
-                  *(sys_goals+num_sgoals-1) = gen_tree_ptr;
-                  gen_tree_ptr = NULL;
-              }
-            | sgoalformula AND_LIVENESS_OP propformula  {
-                  num_sgoals++;
-                  sys_goals = realloc( sys_goals, sizeof(ptree_t *)*num_sgoals );
-                  if (sys_goals == NULL) {
-                      perror( "gr1c_parse.y, sgoalformula, realloc" );
+                      perror( "rg_parse.y, sgoalformula, realloc" );
                       YYABORT;
                   }
                   *(sys_goals+num_sgoals-1) = gen_tree_ptr;
