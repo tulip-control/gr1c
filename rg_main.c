@@ -439,10 +439,16 @@ int main( int argc, char **argv )
 	delete_tree( sys_init );
 	delete_tree( env_trans );
 	delete_tree( sys_trans );
-	for (i = 0; i < num_egoals; i++)
-		delete_tree( *(env_goals+i) );
-	if (num_egoals > 0)
+	if (env_nogoal_flag) {
+		num_egoals = 0;
+		delete_tree( *env_goals );
 		free( env_goals );
+	} else {
+		for (i = 0; i < num_egoals; i++)
+			delete_tree( *(env_goals+i) );
+		if (num_egoals > 0)
+			free( env_goals );
+	}
 	if (num_sgoals > 0) {
 		delete_tree( *sys_goals );
 		free( sys_goals );
@@ -455,13 +461,6 @@ int main( int argc, char **argv )
 	Cudd_RecursiveDeref( manager, Exit );
 	for (i = 0; i < num_egoals; i++)
 		Cudd_RecursiveDeref( manager, *(egoals+i) );
-	if (num_egoals > 0)
-		free( egoals );
-	if (env_nogoal_flag) {
-		num_egoals = 0;
-		delete_tree( *env_goals );
-		free( env_goals );
-	}
 	if (strategy)
 		delete_aut( strategy );
 	if (verbose)
