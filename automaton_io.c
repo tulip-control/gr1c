@@ -1,4 +1,4 @@
-/* automaton_io.c -- Definitions for input and output routines on automaton objects.
+/* automaton_io.c -- Definitions for input/output routines on automata.
  *
  *
  * SCL; 2012.
