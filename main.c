@@ -187,7 +187,7 @@ int main( int argc, char **argv )
 	}
 
 	if (logging_flag) {
-		openlogfile();
+		openlogfile( NULL );  /* Use default filename prefix */
 		verbose = 1;
 	} else {
 		setlogstream( stdout );
