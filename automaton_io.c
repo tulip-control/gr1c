@@ -403,7 +403,7 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 	num_sys = tree_size( svar_list );
 
 	fprintf( fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
-	fprintf( fp, "<tulipcon xmlns=\"http://tulip-control.sourceforge.net/ns/0\" version=\"0\">\n" );
+	fprintf( fp, "<tulipcon xmlns=\"http://tulip-control.sourceforge.net/ns/1\" version=\"1\">\n" );
 	fprintf( fp, "  <env_vars>\n" );
 	for (i = 0; i < num_env; i++) {
 		var = get_list_item( evar_list, i );
@@ -418,13 +418,13 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 	fprintf( fp, "  </sys_vars>\n" );
 	fprintf( fp, "  <spec>\n    <env_init></env_init><env_safety></env_safety><env_prog></env_prog><sys_init></sys_init><sys_safety></sys_safety><sys_prog></sys_prog>\n  </spec>\n" );
 	
-	fprintf( fp, "  <aut>\n" );
+	fprintf( fp, "  <aut type=\"basic\">\n" );
 	node = head;
 	while (node) {
-		fprintf( fp, "    <node>\n      <id>%d</id><name>", node_counter );
+		fprintf( fp, "    <node>\n      <id>%d</id><anno>", node_counter );
 		if (node->mode != -1 && node->rgrad != -1)
 			fprintf( fp, "%d %d", node->mode, node->rgrad );
-		fprintf( fp, "</name>\n      <child_list>" );
+		fprintf( fp, "</anno>\n      <child_list>" );
 		for (i = 0; i < node->trans_len; i++)
 			fprintf( fp, " %d",
 					 find_anode_index( head,
