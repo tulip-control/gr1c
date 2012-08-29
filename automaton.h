@@ -2,7 +2,7 @@
  * \brief Routines for working with a strategy, as a finite automaton.
  *
  * A node is uniquely determined by its state and goal mode.  Thus
- * other attributes such as values for a reachability gradient are not
+ * other attributes such as values for a reach annotation are not
  * required when invoking some functions.  Note that the length of the
  * state vector in each node is not stored anywhere in this data
  * structure.  It is assumed to be positive and constant for a
@@ -28,7 +28,7 @@ typedef struct anode_t
 	bool *state;
 	int mode;  /**<\brief Goal mode; indicates which system goal is
 				  currently being pursued. */
-	int rgrad;  /**<\brief Reachability gradient value; unset value is
+	int rgrad;  /**<\brief reach annotation value; unset value is
 				   indicated by -1. */
 	struct anode_t **trans;  /**<\brief Array of transitions */
 	int trans_len;
@@ -60,7 +60,7 @@ typedef struct anode_t
 							     (m, r)
 
 							 where i is the node ID, m the goal mode,
-							 and r the reachability gradient value. */
+							 and r the reach annotation value. */
 /**@}*/
 
 
@@ -118,8 +118,8 @@ anode_t *aut_prune_deadends( anode_t *head );
    the combined order is assumed to match that of the state vector in
    each automaton node.
 
-   For each node, the goal mode and reachability gradient value are
-   placed in a <anno> tag in that order.
+   For each node, the goal mode and reach annotation value are
+   placed in a <name> tag in that order.
 
    If fp = NULL, then write to stdout.  Return nonzero if error. */
 int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp );
@@ -136,7 +136,7 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 
    where i is the node ID (used only as a means to uniquely refer to
    nodes), S is the state (as a bitvector) at that node, m is the goal
-   mode, r is the reachability gradient value, and [t0 t1 ...] is the
+   mode, r is the reach annotation value, and [t0 t1 ...] is the
    list of IDs of nodes reachable in one step. */
 void list_aut_dump( anode_t *head, int state_len, FILE *fp );
 

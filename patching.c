@@ -42,7 +42,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 	int Exit_len, Entry_len;
 	anode_t *local_strategy;
 	anode_t *head, *node;
-	int min_rgrad;  /* Minimum reachability gradient value of affected nodes. */
+	int min_rgrad;  /* Minimum reach annotation value of affected nodes. */
 	int Exit_rgrad;  /* Maximum value among reached Exit nodes. */
 	int local_max_rgrad;
 	int local_min_rgrad;
@@ -107,7 +107,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 		head = head->next;
 	}
 
-	/* Find minimum reachability gradient value among nodes in the
+	/* Find minimum reach annotation value among nodes in the
 	   Entry and U_i sets, and remove any initial Exit nodes greater
 	   than or equal to it. */
 	min_rgrad = -1;
@@ -120,7 +120,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 			min_rgrad = (*(*(affected+goal_mode)+i))->rgrad;
 	}
 	if (verbose)
-		logprint( "Minimum reachability gradient value in Entry or U_i: %d", min_rgrad );
+		logprint( "Minimum reach annotation value in Entry or U_i: %d", min_rgrad );
 	i = 0;
 	while (i < Exit_len) {
 		if ((*(Exit+i))->rgrad >= min_rgrad) {
@@ -243,7 +243,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 		}
 	}
 
-	/* Scale reachability gradient values to make room for patch. */
+	/* Scale reach annotation values to make room for patch. */
 	i = 1;
 	while ((min_rgrad-Exit_rgrad)*i < (local_max_rgrad-local_min_rgrad))
 		i++;
