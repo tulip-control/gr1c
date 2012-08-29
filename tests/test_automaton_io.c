@@ -76,7 +76,7 @@ int main( int argc, char **argv )
 		abort();
 	}
 	if (node->rgrad != 2) {
-		ERRPRINT1( "node should have reachability gradient value of 2 but actually has %d", node->rgrad );
+		ERRPRINT1( "node should have reach annotation value of 2 but actually has %d", node->rgrad );
 		abort();
 	}
 	
@@ -88,7 +88,7 @@ int main( int argc, char **argv )
 		abort();
 	}
 	if (out_node->rgrad != 1) {
-		ERRPRINT1( "node should have reachability gradient value of 2 but actually has %d", out_node->rgrad );
+		ERRPRINT1( "node should have reach annotation value of 1 but actually has %d", out_node->rgrad );
 		abort();
 	}
 	
