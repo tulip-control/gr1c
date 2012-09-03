@@ -66,7 +66,18 @@ png:
 doc:
 	@(cd doc; doxygen; cd ..)
 
+# Clean everything
 clean:
 	rm -fv *~ *.o y.tab.h gr1c_parse.c rg_parse.c gr1c rg
 	rm -fr doc/build/*
+	$(MAKE) -C tests clean
+
+# Delete only executables and corresponding object code
+.PHONY: eclean
+eclean:
+	rm -fv *~ *.o y.tab.h gr1c_parse.c rg_parse.c gr1c rg
+
+# Delete testing-related things
+.PHONY: tclean
+tclean:
 	$(MAKE) -C tests clean
