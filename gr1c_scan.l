@@ -1,6 +1,6 @@
 /* gr1c -- lexical analyzer (or "scanner")
  *
- * SCL; Jan-Feb, Aug 2012.
+ * SCL; Jan-Feb, Aug-Sep 2012.
  */
 
 %{
@@ -50,7 +50,7 @@ number  (-)?[0-9]+([.][0-9]+)?
 ^("SYSGOAL:")  { return S_GOAL; }
 
 {identifier}  { yylval->str = strdup( yytext ); return VARIABLE; }
-{number}  { yylval->num = atoi( yytext ); return NUMBER; }
+{number}  { yylval->num = strtol( yytext, NULL, 10 ); return NUMBER; }
 
 "#".*"\n"  { unput( '\n' ); }  /* Comments.
                                   unput is used to preserve line count. */

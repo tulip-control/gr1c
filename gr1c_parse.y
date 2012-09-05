@@ -1,7 +1,7 @@
 /* gr1c -- Bison (and Yacc) grammar file
  *
  *
- * SCL; Jan, Feb 2012.
+ * SCL; Jan-Feb, Sep 2012.
  */
 
 
@@ -265,6 +265,11 @@ tpropformula: TRUE_CONSTANT  {
 	    | VARIABLE '=' NUMBER  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
+	      }
+	    | VARIABLE '\'' '=' NUMBER  {
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_NEXT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
 	      }
 	    | '(' tpropformula ')'

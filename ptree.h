@@ -100,6 +100,41 @@ int tree_dot_dump( ptree_t *head, char *filename );
 /** Delete tree with given root node. */
 void delete_tree( ptree_t *head );
 
+/** Return the minimum value among PT_CONSTANT nodes in given tree.
+
+   N.B., -9999 is used as a special indicator value to allow
+   min_tree_value() to work on the tree recursively.
+
+   If head is NULL or there are not any PT_CONSTANT nodes, then the
+   output is undefined. */
+int min_tree_value( ptree_t *head );
+
+/** Return the maximum value among PT_CONSTANT nodes in given tree.
+
+   Also see documentation for min_tree_value(). */
+int max_tree_value( ptree_t *head );
+
+/** Same as min_tree_value() but restrict attention to specified variable. */
+int rmin_tree_value( ptree_t *head, char *name );
+
+/** Same as max_tree_value() but restrict attention to specified variable. */
+int rmax_tree_value( ptree_t *head, char *name );
+
+/** name is a variable with domain {0,...,maxval}, where we assume
+   that maxval is at least 2.  Return a list of variables in order of
+   increasing bit index, e.g., invoking with a variable named "foo"
+   and maxval=2 causes a list to be returned of the form foo0,foo1.
+
+   Return NULL on error. */
+ptree_t *var_to_bool( char *name, int maxval );
+
+/** Expand all occurrences of name (a variable) in formula described
+   by the tree head, replacing by Boolean variables as would be found
+   by var_to_bool().  Changes are made in-place.
+
+   Return the (possibly new) head pointer, or NULL if error. */
+ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval );
+
 /** Push variable or constant into top of tree.  (Behavior is
    like reverse Polish notation.)  Return the new head. */
 ptree_t *pusht_terminal( ptree_t *head, int type, char *name, int value );

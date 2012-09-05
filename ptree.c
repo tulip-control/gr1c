@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "ptree.h"
 
@@ -55,6 +56,244 @@ void delete_tree( ptree_t *head )
 		free( head->name );
 	}
 	free( head );
+}
+
+
+int min_tree_value( ptree_t *head )
+{
+	int childval, minval;
+
+	if (head == NULL)
+		return -9999;
+
+	if (head->type == PT_CONSTANT) {
+		minval = head->value;
+	} else {
+		minval = -9999;
+	}
+
+	childval = min_tree_value( head->left );
+
+	if (childval != -9999 && minval != -9999) {
+		minval = (childval < minval) ? childval : minval;
+	} else if (childval != -9999) {
+		minval = childval;
+	}
+
+	childval = min_tree_value( head->right );
+
+	if (childval != -9999 && minval != -9999) {
+		minval = (childval < minval) ? childval : minval;
+	} else if (childval != -9999) {
+		minval = childval;
+	}
+
+	return minval;
+}
+
+int max_tree_value( ptree_t *head )
+{
+	int childval, maxval;
+
+	if (head == NULL)
+		return -9999;
+
+	if (head->type == PT_CONSTANT) {
+		maxval = head->value;
+	} else {
+		maxval = -9999;
+	}
+
+	childval = max_tree_value( head->left );
+
+	if (childval != -9999 && maxval != -9999) {
+		maxval = (childval > maxval) ? childval : maxval;
+	} else if (childval != -9999) {
+		maxval = childval;
+	}
+
+	childval = max_tree_value( head->right );
+
+	if (childval != -9999 && maxval != -9999) {
+		maxval = (childval > maxval) ? childval : maxval;
+	} else if (childval != -9999) {
+		maxval = childval;
+	}
+
+	return maxval;
+}
+
+int rmin_tree_value( ptree_t *head, char *name )
+{
+	int childval, minval;
+
+	if (head == NULL)
+		return -9999;
+
+	if (head->type == PT_EQUALS) {
+		if ((head->left->type == PT_VARIABLE || head->left->type == PT_NEXT_VARIABLE)
+			&& head->right->type == PT_CONSTANT
+			&& !strncmp(head->left->name, name, strlen(name))) {
+			minval = head->right->value;
+		} else if ((head->right->type == PT_VARIABLE || head->right->type == PT_NEXT_VARIABLE)
+				   && head->left->type == PT_CONSTANT
+				   && !strncmp(head->right->name, name, strlen(name))) {
+			minval = head->left->value;
+		} else {
+			minval = -9999;
+		}
+	} else {
+		minval = -9999;
+	}
+
+	childval = rmin_tree_value( head->left, name );
+
+	if (childval != -9999 && minval != -9999) {
+		minval = (childval < minval) ? childval : minval;
+	} else if (childval != -9999) {
+		minval = childval;
+	}
+
+	childval = rmin_tree_value( head->right, name );
+
+	if (childval != -9999 && minval != -9999) {
+		minval = (childval < minval) ? childval : minval;
+	} else if (childval != -9999) {
+		minval = childval;
+	}
+
+	return minval;
+}
+
+int rmax_tree_value( ptree_t *head, char *name )
+{
+	int childval, maxval;
+
+	if (head == NULL)
+		return -9999;
+
+	if (head->type == PT_EQUALS) {
+		if ((head->left->type == PT_VARIABLE || head->left->type == PT_NEXT_VARIABLE)
+			&& head->right->type == PT_CONSTANT
+			&& !strncmp(head->left->name, name, strlen(name))) {
+			maxval = head->right->value;
+		} else if ((head->right->type == PT_VARIABLE || head->right->type == PT_NEXT_VARIABLE)
+				   && head->left->type == PT_CONSTANT
+				   && !strncmp(head->right->name, name, strlen(name))) {
+			maxval = head->left->value;
+		} else {
+			maxval = -9999;
+		}
+	} else {
+		maxval = -9999;
+	}
+
+	childval = rmax_tree_value( head->left, name );
+
+	if (childval != -9999 && maxval != -9999) {
+		maxval = (childval > maxval) ? childval : maxval;
+	} else if (childval != -9999) {
+		maxval = childval;
+	}
+
+	childval = rmax_tree_value( head->right, name );
+
+	if (childval != -9999 && maxval != -9999) {
+		maxval = (childval > maxval) ? childval : maxval;
+	} else if (childval != -9999) {
+		maxval = childval;
+	}
+
+	return maxval;
+}
+
+
+#define VARNAME_STRING_LEN 1024
+ptree_t *var_to_bool( char *name, int maxval )
+{
+	ptree_t *head;
+	char varname[VARNAME_STRING_LEN];
+	int i;
+
+	if (name == NULL || maxval < 2)
+		return NULL;
+
+	maxval = (int)(ceil(log2( maxval+1 )));
+
+	snprintf( varname, VARNAME_STRING_LEN, "%s0", name );
+	head = init_ptree( PT_VARIABLE, varname, 0 );
+	for (i = 1; i < maxval; i++) {
+		snprintf( varname, VARNAME_STRING_LEN, "%s%d", name, i );
+		append_list_item( head, PT_VARIABLE, varname, 0 );
+	}
+
+	return head;
+}
+
+
+ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
+{
+	ptree_t **heads;
+	int this_val, i;
+	bool is_next;
+	int num_bits = (int)(ceil(log2( maxval+1 )));
+	ptree_t *expanded_varlist;
+
+	if (head == NULL)
+		return NULL;
+
+	expanded_varlist = var_to_bool( name, maxval );
+	if (expanded_varlist == NULL)
+		return NULL;
+
+	if (head->type == PT_EQUALS && ((head->left->type != PT_CONSTANT && !strcmp( head->left->name, name )) || (head->right->type != PT_CONSTANT && !strcmp( head->right->name, name )))) {
+		/* We assume that equality is only between a variable and a
+		   number; will be generalized soon. */
+		if (head->left->type == PT_CONSTANT) {
+			this_val = head->left->value;
+			if (head->right->type == PT_VARIABLE) {
+				is_next = False;
+			} else { /* head->right->type == PT_NEXT_VARIABLE */
+				is_next = True;
+			}
+		} else {
+			this_val = head->right->value;
+			if (head->left->type == PT_VARIABLE) {
+				is_next = False;
+			} else { /* head->right->type == PT_NEXT_VARIABLE */
+				is_next = True;
+			}
+		}
+		delete_tree( head );
+		heads = malloc( num_bits*sizeof(ptree_t *) );
+		if (heads == NULL) {
+			perror( "expand_to_bool, malloc" );
+			return NULL;
+		}
+
+		for (i = num_bits-1; i >= 0; i--) {
+			if ((this_val >> i)&1) {
+				*(heads+i) = get_list_item( expanded_varlist, i );
+				(*(heads+i))->left = (*(heads+i))->right = NULL;
+				if (is_next)
+					(*(heads+i))->type = PT_NEXT_VARIABLE;
+			} else {
+				*(heads+i) = init_ptree( PT_NEG, NULL, 0 );
+				(*(heads+i))->right = get_list_item( expanded_varlist, i );
+				(*(heads+i))->right->left = (*(heads+i))->right->right = NULL;
+				if (is_next)
+					(*(heads+i))->right->type = PT_NEXT_VARIABLE;
+			}
+		}
+		head = merge_ptrees( heads, num_bits, PT_AND );
+
+		free( heads );
+	} else {
+		head->left = expand_to_bool( head->left, name, maxval );
+		head->right = expand_to_bool( head->right, name, maxval );
+	}
+
+	return head;
 }
 
 

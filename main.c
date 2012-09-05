@@ -77,8 +77,9 @@ int main( int argc, char **argv )
 	FILE *strategy_fp;
 	char dumpfilename[64];
 
-	int i, var_index;
+	int i, var_index, maxval, val;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
+	ptree_t *prevpt, *expt, *var_separator;
 
 	DdManager *manager;
 	DdNode *T = NULL;
@@ -275,16 +276,16 @@ int main( int argc, char **argv )
 		}
 
 		var_index = 0;
-		printf( "Environment variables (indices): " );
+		printf( "Environment variables (indices; domains): " );
 		if (evar_list == NULL) {
 			printf( "(none)" );
 		} else {
 			tmppt = evar_list;
 			while (tmppt) {
 				if (tmppt->left == NULL) {
-					printf( "%s (%d)", tmppt->name, var_index );
+					printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
 				} else {
-					printf( "%s (%d), ", tmppt->name, var_index );
+					printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
 				}
 				tmppt = tmppt->left;
 				var_index++;
@@ -292,16 +293,16 @@ int main( int argc, char **argv )
 		}
 		printf( "\n\n" );
 
-		printf( "System variables (indices): " );
+		printf( "System variables (indices; domains): " );
 		if (svar_list == NULL) {
 			printf( "(none)" );
 		} else {
 			tmppt = svar_list;
 			while (tmppt) {
 				if (tmppt->left == NULL) {
-					printf( "%s (%d)", tmppt->name, var_index );
+					printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
 				} else {
-					printf( "%s (%d), ", tmppt->name, var_index );
+					printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
 				}
 				tmppt = tmppt->left;
 				var_index++;
@@ -351,6 +352,232 @@ int main( int argc, char **argv )
 		}
 		printf( "\n" );
 	}
+
+
+	/* Compute domains of every variable, and encode the result in the
+	   "value" field.  The domain is of the form {0,1,...,n}, where n
+	   is a positive integer; for Boolean variables the domain is {0,1}. */
+	if (evar_list == NULL) {
+		var_separator = NULL;
+		evar_list = svar_list;  /* that this is the deterministic case
+								   is indicated by var_separator = NULL. */
+	} else {
+		var_separator = get_list_item( evar_list, -1 );
+		if (var_separator == NULL) {
+			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			return NULL;
+		}
+		var_separator->left = svar_list;
+	}
+	tmppt = evar_list;
+	while (tmppt) {
+		maxval = rmax_tree_value( env_init, tmppt->name );
+		val = rmax_tree_value( sys_init, tmppt->name );
+		if (val != -9999 && maxval != -9999) {
+			maxval = (val > maxval) ? val : maxval;
+		} else if (val != -9999) {
+			maxval = val;
+		}
+
+		val = rmax_tree_value( env_trans, tmppt->name );
+		if (val != -9999 && maxval != -9999) {
+			maxval = (val > maxval) ? val : maxval;
+		} else if (val != -9999) {
+			maxval = val;
+		}
+
+		val = rmax_tree_value( sys_trans, tmppt->name );
+		if (val != -9999 && maxval != -9999) {
+			maxval = (val > maxval) ? val : maxval;
+		} else if (val != -9999) {
+			maxval = val;
+		}
+
+		for (i = 0; i < num_egoals; i++) {
+			val = rmax_tree_value( *(env_goals+i), tmppt->name );
+			if (val != -9999 && maxval != -9999) {
+				maxval = (val > maxval) ? val : maxval;
+			} else if (val != -9999) {
+				maxval = val;
+			}
+		}
+
+		for (i = 0; i < num_sgoals; i++) {
+			val = rmax_tree_value( *(sys_goals+i), tmppt->name );
+			if (val != -9999 && maxval != -9999) {
+				maxval = (val > maxval) ? val : maxval;
+			} else if (val != -9999) {
+				maxval = val;
+			}
+		}
+
+		if (maxval == -9999) {  /* ...must be Boolean */
+			tmppt->value = 1;
+		} else {
+			tmppt->value = maxval;
+		}
+
+		tmppt = tmppt->left;
+	}
+
+	/* Make all variables Boolean. */
+	tmppt = evar_list;
+	while (tmppt) {
+		if (tmppt->value > 1) {
+			sys_init = expand_to_bool( sys_init, tmppt->name, tmppt->value );
+			env_init = expand_to_bool( env_init, tmppt->name, tmppt->value );
+			sys_trans = expand_to_bool( sys_trans, tmppt->name, tmppt->value );
+			env_trans = expand_to_bool( env_trans, tmppt->name, tmppt->value );
+			if (sys_init == NULL || env_init == NULL || sys_trans == NULL || env_trans == NULL) {
+				fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
+				return -1;
+			}
+			for (i = 0; i < num_egoals; i++) {
+				*(env_goals+i) = expand_to_bool( *(env_goals+i), tmppt->name, tmppt->value );
+				if (*(env_goals+i) == NULL) {
+					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
+					return -1;
+				}
+			}
+			for (i = 0; i < num_sgoals; i++) {
+				*(sys_goals+i) = expand_to_bool( *(sys_goals+i), tmppt->name, tmppt->value );
+				if (*(sys_goals+i) == NULL) {
+					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
+					return -1;
+				}
+			}
+		}
+		tmppt = tmppt->left;
+	}
+	if (var_separator == NULL) {
+		evar_list = NULL;
+	} else {
+		var_separator->left = NULL;
+	}
+
+	/* Finally, expand the variable list. */
+	if (evar_list != NULL) {
+		tmppt = evar_list;
+		if (tmppt->value > 1) {  /* Handle special case of head node */
+			expt = var_to_bool( tmppt->name, tmppt->value );
+			evar_list = expt;
+			prevpt = get_list_item( expt, -1 );
+			prevpt->left = tmppt->left;
+		}
+		tmppt = tmppt->left;
+		while (tmppt) {
+			if (tmppt->value > 1) {
+				expt = var_to_bool( tmppt->name, tmppt->value );
+				prevpt->left = expt;
+				prevpt = get_list_item( expt, -1 );
+				prevpt->left = tmppt->left;
+			} else {
+				prevpt = tmppt;
+			}
+			tmppt = tmppt->left;
+		}
+	}
+
+	if (svar_list != NULL) {
+		tmppt = svar_list;
+		if (tmppt->value > 1) {  /* Handle special case of head node */
+			expt = var_to_bool( tmppt->name, tmppt->value );
+			svar_list = expt;
+			prevpt = get_list_item( expt, -1 );
+			prevpt->left = tmppt->left;
+		}
+		tmppt = tmppt->left;
+		while (tmppt) {
+			if (tmppt->value > 1) {
+				expt = var_to_bool( tmppt->name, tmppt->value );
+				prevpt->left = expt;
+				prevpt = get_list_item( expt, -1 );
+				prevpt->left = tmppt->left;
+			} else {
+				prevpt = tmppt;
+			}
+			tmppt = tmppt->left;
+		}
+	}
+
+
+	if (verbose) {
+		/* Dump the spec to show results of conversion (if any). */
+		logprint_startline();
+		logprint_raw( "ENV:" );
+		tmppt = evar_list;
+		while (tmppt) {
+			logprint_raw( " %s", tmppt->name );
+			tmppt = tmppt->left;
+		}
+		logprint_raw( ";" );
+		logprint_endline();
+
+		logprint_startline();
+		logprint_raw( "SYS:" );
+		tmppt = svar_list;
+		while (tmppt) {
+			logprint_raw( " %s", tmppt->name );
+			tmppt = tmppt->left;
+		}
+		logprint_raw( ";" );
+		logprint_endline();
+
+		logprint_startline();
+		logprint_raw( "ENV INIT:  " );
+		print_formula( env_init, getlogstream() );
+		logprint_raw( ";" );
+		logprint_endline();
+
+		logprint_startline();
+		logprint_raw( "SYS INIT:  " );
+		print_formula( sys_init, getlogstream() );
+		logprint_raw( ";" );
+		logprint_endline();
+
+		logprint_startline();
+		logprint_raw( "ENV TRANS:  [] " );
+		print_formula( env_trans, getlogstream() );
+		logprint_raw( ";" );
+		logprint_endline();
+
+		logprint_startline();
+		logprint_raw( "SYS TRANS:  [] " );
+		print_formula( sys_trans, getlogstream() );
+		logprint_raw( ";" );
+		logprint_endline();
+
+		logprint_startline();
+		logprint_raw( "ENV GOALS:  " );
+		if (num_egoals == 0) {
+			logprint_raw( "(none)" );
+		} else {
+			logprint_raw( "[]<> " );
+			print_formula( *env_goals, getlogstream() );
+			for (i = 1; i < num_egoals; i++) {
+				logprint_raw( " & []<> " );
+				print_formula( *(env_goals+i), getlogstream() );
+			}
+		}
+		logprint_raw( ";" );
+		logprint_endline();
+
+		logprint_startline();
+		logprint_raw( "SYS GOALS:  " );
+		if (num_sgoals == 0) {
+			logprint_raw( "(none)" );
+		} else {
+			logprint_raw( "[]<> " );
+			print_formula( *sys_goals, getlogstream() );
+			for (i = 1; i < num_sgoals; i++) {
+				logprint_raw( " & []<> " );
+				print_formula( *(sys_goals+i), getlogstream() );
+			}
+		}
+		logprint_raw( ";" );
+		logprint_endline();
+	}
+
 
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
