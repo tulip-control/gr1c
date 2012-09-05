@@ -46,3 +46,4 @@ test_patching: test_patching.c
 
 clean:
 	rm -fv *~ *.o $(PROGRAMS) temp_*_dump*
+	rm -rfv *.dSYM
