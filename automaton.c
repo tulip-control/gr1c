@@ -319,17 +319,7 @@ int forward_modereach( anode_t *head, anode_t *node, int mode, bool **N, int N_l
 }
 
 
-/* least significant bit first; unsigned. */
-int bitvec_to_int( bool *vec, int vec_len )
-{
-	int i;
-	int result = 0;
-	for (i = 0; i < vec_len; i++) {
-		if (*(vec+i))
-			result += (1 << i);
-	}
-	return result;
-}
+extern int bitvec_to_int( bool *vec, int vec_len );  /* See util.c */
 
 int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, char *name )
 {

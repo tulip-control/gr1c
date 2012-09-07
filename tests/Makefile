@@ -21,7 +21,7 @@ all: $(PROGRAMS)
 	@echo "============================================================\nPASSED\n"
 
 
-COMMON_BINS = ../automaton.o ../automaton_io.o ../ptree.o ../solve_support.o ../logging.o
+COMMON_BINS = ../util.o ../automaton.o ../automaton_io.o ../ptree.o ../solve_support.o ../logging.o
 
 test_logging: test_logging.c
 	gcc $(CFLAGS) $^ ../logging.o -o $@ $(LDFLAGS)
