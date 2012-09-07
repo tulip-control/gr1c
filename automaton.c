@@ -317,3 +317,89 @@ int forward_modereach( anode_t *head, anode_t *node, int mode, bool **N, int N_l
 
 	return 0;
 }
+
+
+/* least significant bit first; unsigned. */
+int bitvec_to_int( bool *vec, int vec_len )
+{
+	int i;
+	int result = 0;
+	for (i = 0; i < vec_len; i++) {
+		if (*(vec+i))
+			result += (1 << i);
+	}
+	return result;
+}
+
+int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, char *name )
+{
+	int num_env, num_sys;
+	ptree_t *var = evar_list, *var_tail, *var_next;
+	int start_index, stop_index, i;
+	bool *new_state;
+
+	num_env = tree_size( evar_list );
+	num_sys = tree_size( svar_list );
+
+	start_index = 0;
+	while (var) {
+		if (strstr( var->name, name ) == var->name)
+			break;
+		var = var->left;
+		start_index++;
+	}
+	if (var == NULL) {
+		var = svar_list;
+		while (var) {
+			if (strstr( var->name, name ) == var->name)
+				break;
+			var = var->left;
+			start_index++;
+		}
+		if (var == NULL)
+			return -1;  /* Could not find match. */
+	}
+
+	var_tail = var;
+	stop_index = start_index;
+	while (var_tail->left) {
+		if (strstr( var_tail->left->name, name ) != var_tail->left->name )
+			break;
+		var_tail = var_tail->left;
+		stop_index++;
+	}
+	free( var->name );
+	var->name = strdup( name );
+	if (var->name == NULL) {
+		perror( "aut_compact_nonbool, strdup" );
+		return -1;
+	}
+	if (var != var_tail) {  /* More than one bit? */
+		var_next = var->left;
+		var->left = var_tail->left;
+		var_tail->left = NULL;
+		delete_tree( var_next );
+	}
+
+	while (head) {
+		new_state = malloc( (num_env+num_sys - (stop_index-start_index))*sizeof(bool) );
+		if (new_state == NULL) {
+			perror( "aut_compact_nonbool, malloc" );
+			return -1;
+		}
+
+		for (i = 0; i < start_index; i++)
+			*(new_state+i) = *(head->state+i);
+		*(new_state+start_index) = bitvec_to_int( head->state+start_index,
+												  stop_index-start_index+1 );
+		for (i = start_index+1; i < num_env+num_sys - (stop_index-start_index); i++)
+			*(new_state+i) = *(head->state+i+stop_index-start_index);
+		
+		free( head->state );
+		head->state = new_state;
+
+		head = head->next;
+	}
+
+	return num_env+num_sys - (stop_index-start_index);
+}

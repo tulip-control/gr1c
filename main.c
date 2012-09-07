@@ -80,6 +80,7 @@ int main( int argc, char **argv )
 	int i, var_index, maxval, val;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
 	ptree_t *prevpt, *expt, *var_separator;
+	ptree_t *nonbool_var_list = NULL;
 
 	DdManager *manager;
 	DdNode *T = NULL;
@@ -254,6 +255,79 @@ int main( int argc, char **argv )
 		}
 	}
 
+
+	/* Compute domains of every variable, and encode the result in the
+	   "value" field.  The domain is of the form {0,1,...,n}, where n
+	   is a positive integer; for Boolean variables the domain is {0,1}. */
+	if (evar_list == NULL) {
+		var_separator = NULL;
+		evar_list = svar_list;  /* that this is the deterministic case
+								   is indicated by var_separator = NULL. */
+	} else {
+		var_separator = get_list_item( evar_list, -1 );
+		if (var_separator == NULL) {
+			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			return NULL;
+		}
+		var_separator->left = svar_list;
+	}
+	tmppt = evar_list;
+	while (tmppt) {
+		maxval = rmax_tree_value( env_init, tmppt->name );
+		val = rmax_tree_value( sys_init, tmppt->name );
+		if (val != -9999 && maxval != -9999) {
+			maxval = (val > maxval) ? val : maxval;
+		} else if (val != -9999) {
+			maxval = val;
+		}
+
+		val = rmax_tree_value( env_trans, tmppt->name );
+		if (val != -9999 && maxval != -9999) {
+			maxval = (val > maxval) ? val : maxval;
+		} else if (val != -9999) {
+			maxval = val;
+		}
+
+		val = rmax_tree_value( sys_trans, tmppt->name );
+		if (val != -9999 && maxval != -9999) {
+			maxval = (val > maxval) ? val : maxval;
+		} else if (val != -9999) {
+			maxval = val;
+		}
+
+		for (i = 0; i < num_egoals; i++) {
+			val = rmax_tree_value( *(env_goals+i), tmppt->name );
+			if (val != -9999 && maxval != -9999) {
+				maxval = (val > maxval) ? val : maxval;
+			} else if (val != -9999) {
+				maxval = val;
+			}
+		}
+
+		for (i = 0; i < num_sgoals; i++) {
+			val = rmax_tree_value( *(sys_goals+i), tmppt->name );
+			if (val != -9999 && maxval != -9999) {
+				maxval = (val > maxval) ? val : maxval;
+			} else if (val != -9999) {
+				maxval = val;
+			}
+		}
+
+		if (maxval == -9999) {  /* ...must be Boolean */
+			tmppt->value = 1;
+		} else {
+			tmppt->value = maxval;
+		}
+
+		tmppt = tmppt->left;
+	}
+	if (var_separator == NULL) {
+		evar_list = NULL;
+	} else {
+		var_separator->left = NULL;
+	}
+
+
 	if (ptdump_flag) {
 		tree_dot_dump( env_init, "env_init_ptree.dot" );
 		tree_dot_dump( sys_init, "sys_init_ptree.dot" );
@@ -354,9 +428,7 @@ int main( int argc, char **argv )
 	}
 
 
-	/* Compute domains of every variable, and encode the result in the
-	   "value" field.  The domain is of the form {0,1,...,n}, where n
-	   is a positive integer; for Boolean variables the domain is {0,1}. */
+	/* Make all variables Boolean. */
 	if (evar_list == NULL) {
 		var_separator = NULL;
 		evar_list = svar_list;  /* that this is the deterministic case
@@ -371,59 +443,13 @@ int main( int argc, char **argv )
 	}
 	tmppt = evar_list;
 	while (tmppt) {
-		maxval = rmax_tree_value( env_init, tmppt->name );
-		val = rmax_tree_value( sys_init, tmppt->name );
-		if (val != -9999 && maxval != -9999) {
-			maxval = (val > maxval) ? val : maxval;
-		} else if (val != -9999) {
-			maxval = val;
-		}
-
-		val = rmax_tree_value( env_trans, tmppt->name );
-		if (val != -9999 && maxval != -9999) {
-			maxval = (val > maxval) ? val : maxval;
-		} else if (val != -9999) {
-			maxval = val;
-		}
-
-		val = rmax_tree_value( sys_trans, tmppt->name );
-		if (val != -9999 && maxval != -9999) {
-			maxval = (val > maxval) ? val : maxval;
-		} else if (val != -9999) {
-			maxval = val;
-		}
-
-		for (i = 0; i < num_egoals; i++) {
-			val = rmax_tree_value( *(env_goals+i), tmppt->name );
-			if (val != -9999 && maxval != -9999) {
-				maxval = (val > maxval) ? val : maxval;
-			} else if (val != -9999) {
-				maxval = val;
-			}
-		}
-
-		for (i = 0; i < num_sgoals; i++) {
-			val = rmax_tree_value( *(sys_goals+i), tmppt->name );
-			if (val != -9999 && maxval != -9999) {
-				maxval = (val > maxval) ? val : maxval;
-			} else if (val != -9999) {
-				maxval = val;
-			}
-		}
-
-		if (maxval == -9999) {  /* ...must be Boolean */
-			tmppt->value = 1;
-		} else {
-			tmppt->value = maxval;
-		}
-
-		tmppt = tmppt->left;
-	}
-
-	/* Make all variables Boolean. */
-	tmppt = evar_list;
-	while (tmppt) {
 		if (tmppt->value > 1) {
+			if (nonbool_var_list == NULL) {
+				nonbool_var_list = init_ptree( PT_VARIABLE, tmppt->name, tmppt->value );
+			} else {
+				append_list_item( nonbool_var_list, PT_VARIABLE, tmppt->name, tmppt->value );
+			}
+
 			sys_init = expand_to_bool( sys_init, tmppt->name, tmppt->value );
 			env_init = expand_to_bool( env_init, tmppt->name, tmppt->value );
 			sys_trans = expand_to_bool( sys_trans, tmppt->name, tmppt->value );
@@ -662,6 +688,17 @@ int main( int argc, char **argv )
 		}
 	}
 
+	if (strategy != NULL) {  /* De-expand nonboolean variables */
+		tmppt = nonbool_var_list;
+		while (tmppt) {
+			aut_compact_nonbool( strategy, evar_list, svar_list, tmppt->name );
+			tmppt = tmppt->left;
+		}
+
+		num_env = tree_size( evar_list );
+		num_sys = tree_size( svar_list );
+	}
+
 	if (strategy != NULL) {
 		/* Open output file if specified; else point to stdout. */
 		if (output_file_index >= 0) {
@@ -678,7 +715,7 @@ int main( int argc, char **argv )
 			list_aut_dump( strategy, num_env+num_sys, fp );
 		} else if (format_option == OUTPUT_FORMAT_DOT) {
 			dot_aut_dump( strategy, evar_list, svar_list,
-						  DOT_AUT_BINARY | DOT_AUT_ATTRIB, fp );
+						  DOT_AUT_ATTRIB, fp );
 		} else if (format_option == OUTPUT_FORMAT_AUT) {
 			aut_aut_dump( strategy, num_env+num_sys, fp );
 		} else { /* OUTPUT_FORMAT_TULIP */

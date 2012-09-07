@@ -171,4 +171,9 @@ int forward_modereach( anode_t *head, anode_t *node,
 					   int state_len );
 
 
+/** Convert binary-expanded form of a variable back into nonboolean.
+   Returns the new state vector length, or -1 on error. */
+int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, char *name );
+
+
 #endif
