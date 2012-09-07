@@ -215,7 +215,7 @@ ptree_t *var_to_bool( char *name, int maxval )
 	char varname[VARNAME_STRING_LEN];
 	int i;
 
-	if (name == NULL || maxval < 2)
+	if (name == NULL || maxval < 1)
 		return NULL;
 
 	maxval = (int)(ceil(log2( maxval+1 )));
@@ -297,6 +297,30 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 }
 
 
+ptree_t *unreach_expanded_bool( char *name, int lower, int upper )
+{
+	ptree_t *head, *node;
+	int i;
+	if (lower > upper)
+		return NULL;
+	head = init_ptree( PT_NEG, NULL, 0 );
+	head->right = init_ptree( PT_EQUALS, NULL, 0 );
+	head->right->left = init_ptree( PT_NEXT_VARIABLE, name, 0 );
+	head->right->right = init_ptree( PT_CONSTANT, NULL, lower );
+	for (i = lower+1; i <= upper; i++) {
+		node = head;
+		head = init_ptree( PT_AND, NULL, 0 );
+		head->right = node;
+		head->left = init_ptree( PT_NEG, NULL, 0 );
+		head->left->right = init_ptree( PT_EQUALS, NULL, 0 );
+		head->left->right->left = init_ptree( PT_NEXT_VARIABLE, name, 0 );
+		head->left->right->right = init_ptree( PT_CONSTANT, NULL, i );
+	}
+
+	return expand_to_bool( head, name, upper );
+}
+
+
 int tree_size( ptree_t *head )
 {
 	if (head == NULL)
@@ -371,8 +395,11 @@ ptree_t *merge_ptrees( ptree_t **heads, int len, int type )
 	ptree_t *head, *node;
 	int i;
 
-	if (len <= 1 || heads == NULL)  /* Vacuous call. */
+	if (len <= 0 || heads == NULL)  /* Vacuous call. */
 		return NULL;
+
+	if (len == 1)  /* Special case */
+		return *heads;
 
 	/* Check whether valid merging operator requested. */
 	switch (type) {

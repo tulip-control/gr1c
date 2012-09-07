@@ -135,6 +135,12 @@ ptree_t *var_to_bool( char *name, int maxval );
    Return the (possibly new) head pointer, or NULL if error. */
 ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval );
 
+/** Create tree describing unreachable values of the primed form of a
+   nonboolean-expanded-to-boolean variable.  E.g., this can be used to
+   handle "don't care" values that appear as a side-effect of
+   conversion to a bitvector. */
+ptree_t *unreach_expanded_bool( char *name, int min, int max );
+
 /** Push variable or constant into top of tree.  (Behavior is
    like reverse Polish notation.)  Return the new head. */
 ptree_t *pusht_terminal( ptree_t *head, int type, char *name, int value );

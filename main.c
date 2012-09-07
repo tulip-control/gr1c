@@ -8,6 +8,7 @@
  */
 
 
+#include <math.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -60,6 +61,9 @@ ptree_t *gen_tree_ptr = NULL;
 #define GR1C_MODE_PATCH 4
 
 
+extern int compute_minmax( DdManager *manager, unsigned char verbose );
+
+
 int main( int argc, char **argv )
 {
 	FILE *fp;
@@ -81,6 +85,7 @@ int main( int argc, char **argv )
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
 	ptree_t *prevpt, *expt, *var_separator;
 	ptree_t *nonbool_var_list = NULL;
+	int maxbitval;
 
 	DdManager *manager;
 	DdNode *T = NULL;
@@ -314,7 +319,7 @@ int main( int argc, char **argv )
 		}
 
 		if (maxval == -9999) {  /* ...must be Boolean */
-			tmppt->value = 1;
+			tmppt->value = 0;
 		} else {
 			tmppt->value = maxval;
 		}
@@ -325,6 +330,32 @@ int main( int argc, char **argv )
 		evar_list = NULL;
 	} else {
 		var_separator->left = NULL;
+	}
+
+
+	/* Handle "don't care" bits */
+	tmppt = evar_list;
+	while (tmppt) {
+		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
+		if (maxbitval-1 > tmppt->value) {
+			prevpt = env_trans;
+			env_trans = init_ptree( PT_AND, NULL, 0 );
+			env_trans->right = prevpt;
+			env_trans->left = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1 );
+		}
+		tmppt = tmppt->left;
+	}
+
+	tmppt = svar_list;
+	while (tmppt) {
+		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
+		if (maxbitval-1 > tmppt->value) {
+			prevpt = sys_trans;
+			sys_trans = init_ptree( PT_AND, NULL, 0 );
+			sys_trans->right = prevpt;
+			sys_trans->left = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1 );
+		}
+		tmppt = tmppt->left;
 	}
 
 
@@ -443,7 +474,7 @@ int main( int argc, char **argv )
 	}
 	tmppt = evar_list;
 	while (tmppt) {
-		if (tmppt->value > 1) {
+		if (tmppt->value > 0) {
 			if (nonbool_var_list == NULL) {
 				nonbool_var_list = init_ptree( PT_VARIABLE, tmppt->name, tmppt->value );
 			} else {
@@ -484,7 +515,7 @@ int main( int argc, char **argv )
 	/* Finally, expand the variable list. */
 	if (evar_list != NULL) {
 		tmppt = evar_list;
-		if (tmppt->value > 1) {  /* Handle special case of head node */
+		if (tmppt->value > 0) {  /* Handle special case of head node */
 			expt = var_to_bool( tmppt->name, tmppt->value );
 			evar_list = expt;
 			prevpt = get_list_item( expt, -1 );
@@ -492,7 +523,7 @@ int main( int argc, char **argv )
 		}
 		tmppt = tmppt->left;
 		while (tmppt) {
-			if (tmppt->value > 1) {
+			if (tmppt->value > 0) {
 				expt = var_to_bool( tmppt->name, tmppt->value );
 				prevpt->left = expt;
 				prevpt = get_list_item( expt, -1 );
@@ -506,7 +537,7 @@ int main( int argc, char **argv )
 
 	if (svar_list != NULL) {
 		tmppt = svar_list;
-		if (tmppt->value > 1) {  /* Handle special case of head node */
+		if (tmppt->value > 0) {  /* Handle special case of head node */
 			expt = var_to_bool( tmppt->name, tmppt->value );
 			svar_list = expt;
 			prevpt = get_list_item( expt, -1 );
@@ -514,7 +545,7 @@ int main( int argc, char **argv )
 		}
 		tmppt = tmppt->left;
 		while (tmppt) {
-			if (tmppt->value > 1) {
+			if (tmppt->value > 0) {
 				expt = var_to_bool( tmppt->name, tmppt->value );
 				prevpt->left = expt;
 				prevpt = get_list_item( expt, -1 );
