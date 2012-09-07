@@ -690,6 +690,10 @@ int main( int argc, char **argv )
 			}
 		}
 
+		if (T != NULL) { /* Print measure data */
+			compute_minmax( manager, verbose );
+		}
+
 		if (run_option == GR1C_MODE_SYNTHESIS && T != NULL) {
 
 			if (verbose)

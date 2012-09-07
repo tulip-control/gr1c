@@ -23,7 +23,7 @@ LDFLAGS = $(CUDD_LIB) -lm
 
 all: gr1c rg
 
-gr1c: main.o util.o logging.o interactive.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
+gr1c: main.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o gr1c_scan.o
@@ -36,6 +36,7 @@ logging.o: logging.c
 automaton.o: automaton.c
 automaton_io.o: automaton_io.c
 interactive.o: interactive.c
+solve_metric.o: solve_metric.c
 solve_support.o: solve_support.c
 solve_operators.o: solve_operators.c
 solve.o: solve.c
