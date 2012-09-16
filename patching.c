@@ -28,6 +28,32 @@ extern int et_array_len;
 extern int st_array_len;
 
 
+/* Pretty print state vector, default is to list nonzero variables.
+   Output written to fp if not NULL, otherwise to stdout. */
+void pprint_state( bool *state, int num_env, int num_sys, FILE *fp )
+{
+	int i;
+	ptree_t *node;
+
+	if (fp == NULL)
+		fp = stdout;
+
+	node = evar_list;
+	for (i = 0; i < num_env; i++) {
+		if (*(state+i))
+			fprintf( fp, " %s", node->name );
+		node = node->left;
+	}
+
+	node = svar_list;
+	for (i = num_env; i < num_sys+num_env; i++) {
+		if (*(state+i))
+			fprintf( fp, " %s", node->name );
+		node = node->left;
+	}
+}
+
+
 /* Returns strategy with patched goal mode, or NULL if error. */
 anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 								 anode_t *strategy, int goal_mode,
@@ -140,15 +166,13 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 		logprint( "Entry set:" );
 		for (i = 0; i < Entry_len; i++) {
 			logprint_startline();
-			for (j = 0; j < num_env+num_sys; j++)
-				logprint_raw( " %d", *((*(Entry+i))->state+j) );
+			pprint_state( (*(Entry+i))->state, num_env, num_sys, getlogstream() );
 			logprint_endline();
 		}
 		logprint( "Exit set:" );
 		for (i = 0; i < Exit_len; i++) {
 			logprint_startline();
-			for (j = 0; j < num_env+num_sys; j++)
-				logprint_raw( " %d", *((*(Exit+i))->state+j) );
+			pprint_state( (*(Exit+i))->state, num_env, num_sys, getlogstream() );
 			logprint_endline();
 		}
 	}
@@ -385,8 +409,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		logprint( "States in N (%d total):", N_len );
 		for (i = 0; i < N_len; i++) {
 			logprint_startline();
-			for (j = 0; j < num_env+num_sys; j++)
-				logprint_raw( " %d", *(*(N+i)+j) );
+			pprint_state( *(N+i), num_env, num_sys, getlogstream() );
 			logprint_endline();
 		}
 	}
