@@ -62,7 +62,7 @@ ptree_t *gen_tree_ptr = NULL;
 #define GR1C_MODE_PATCH 4
 
 
-extern int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, unsigned char verbose );
+extern int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals, unsigned char verbose );
 
 
 int main( int argc, char **argv )
@@ -88,7 +88,7 @@ int main( int argc, char **argv )
 	ptree_t *nonbool_var_list = NULL;
 	int maxbitval;
 	int horizon;
-	DdNode *W, *etrans, *strans;
+	DdNode *W, *etrans, *strans, **sgoals;
 	anode_t *play;
 	bool *init_state;
 
@@ -696,7 +696,7 @@ int main( int argc, char **argv )
 		}
 
 		if (T != NULL) { /* Print measure data and simulate. */
-			horizon = compute_horizon( manager, &W, &etrans, &strans, verbose );
+			horizon = compute_horizon( manager, &W, &etrans, &strans, &sgoals, verbose );
 			logprint( "horizon: %d", horizon );
 
 			if (horizon > -1) {
@@ -709,7 +709,7 @@ int main( int argc, char **argv )
 					*(init_state+i) = 0;
 				*(init_state+num_env+num_sys-1) = 1;
 				
-				play = sim_rhc( manager, W, etrans, strans, horizon, init_state, 40 );
+				play = sim_rhc( manager, W, etrans, strans, sgoals, horizon, init_state, 40 );
 				if (play == NULL) {
 					fprintf( stderr, "Error while attempting receding horizon simulation.\n" );
 					return -1;

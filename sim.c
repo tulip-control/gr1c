@@ -23,19 +23,25 @@ extern int num_egoals;
 extern int num_sgoals;
 
 
-anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, int horizon, bool *init_state, int num_it )
+extern int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
+						 int *Min, int *Max, unsigned char verbose );
+
+
+anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, int horizon, bool *init_state, int num_it )
 {
 	anode_t *play;
 	int num_env, num_sys;
-	bool *next_state;
+	bool *candidate_state, *next_state;
+	int current_goal = 0;
 	int current_it = 0, i;
 	bool **env_moves;
 	int emoves_len, emove_index;
 	DdNode *strans_into_W;
+	int Max, Min, next_min;
 
 	int *cube;  /* length will be twice total number of variables (to
 				   account for both variables and their primes). */
-	DdNode *tmp, *tmp2;
+	DdNode *tmp, *tmp2, *ddval;
 
 	/* Variables used during CUDD generation (state enumeration). */
 	DdGen *gen;
@@ -64,7 +70,8 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 	free( pvars );
 
 	next_state = malloc( (num_env+num_sys)*sizeof(bool) );
-	if (next_state == NULL) {
+	candidate_state = malloc( (num_env+num_sys)*sizeof(bool) );
+	if (next_state == NULL || candidate_state == NULL) {
 		perror( "sim_rhc, malloc" );
 		return NULL;
 	}
@@ -89,6 +96,12 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 	while (current_it < num_it) {
 		current_it++;
 
+		/* See if time to switch attention to next goal. */
+		state2cube( init_state, cube, num_env+num_sys );
+		ddval = Cudd_Eval( manager, *(sgoals+current_goal), cube );
+		if (ddval->type.value > .9)
+			current_goal = (current_goal+1) % num_sgoals;
+
 		env_moves = get_env_moves( manager, cube,
 								   init_state, etrans,
 								   num_env, num_sys,
@@ -99,18 +112,30 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 		tmp2 = state2cof( manager, cube, 2*(num_env+num_sys), *(env_moves+emove_index), tmp, num_env+num_sys, num_env );
 		Cudd_RecursiveDeref( manager, tmp );
 
+		next_min = -1;
 		Cudd_AutodynDisable( manager );
-		gen = Cudd_FirstCube( manager, tmp2, &gcube, &gvalue );
-		if (gen == NULL) {
-			fprintf( stderr, "Error sim_rhc: failed to find cube.\n" );
-			return NULL;
+		Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
+			initialize_cube( candidate_state, gcube+num_sys+num_env, num_env+num_sys );
+			while (!saturated_cube( candidate_state, gcube+num_sys+num_env, num_env+num_sys )) {
+				bounds_state( manager, *(sgoals+current_goal), candidate_state, "x", &Min, &Max, 0 );
+				if (next_min == -1 || Min < next_min) {
+					next_min = Min;
+					for (i = 0; i < num_env+num_sys; i++)
+						*(next_state+i) = *(candidate_state+i);
+				}
+
+				increment_cube( candidate_state, gcube+num_sys+num_env, num_env+num_sys );
+			}
+			bounds_state( manager, *(sgoals+current_goal), candidate_state, "x", &Min, &Max, 0 );
+			if (next_min == -1 || Min < next_min) {
+				next_min = Min;
+				for (i = 0; i < num_env+num_sys; i++)
+					*(next_state+i) = *(candidate_state);
+			}
 		}
-		for (i = 0; i < 2*(num_env+num_sys); i++)
-			*(cube+i) = *(gcube+i);
-		Cudd_GenFree( gen );
 		Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 		Cudd_RecursiveDeref( manager, tmp2 );
-		initialize_cube( next_state, cube+num_env+num_sys, num_env+num_sys );
+
 		for (i = 0; i < num_env; i++)
 			*(next_state+i) = *(*(env_moves+emove_index)+i);
 

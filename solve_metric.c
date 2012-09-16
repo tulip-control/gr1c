@@ -197,11 +197,11 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
 }
 
 
-int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans,
+int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals,
 					int **num_sublevels, int ***Min, int ***Max,
 					unsigned char verbose )
 {
-	DdNode **egoals, **sgoals;
+	DdNode **egoals;
 	ptree_t *var_separator;
 	DdNode ***Y = NULL;
 	DdNode ****X_ijr = NULL;
@@ -249,11 +249,11 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 		egoals = NULL;
 	}
 	if (num_sgoals > 0) {
-		sgoals = malloc( num_sgoals*sizeof(DdNode *) );
+		(*sgoals) = malloc( num_sgoals*sizeof(DdNode *) );
 		for (i = 0; i < num_sgoals; i++)
-			*(sgoals+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
+			*((*sgoals)+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
 	} else {
-		sgoals = NULL;
+		(*sgoals) = NULL;
 	}
 
 	if (var_separator == NULL) {
@@ -262,14 +262,14 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 		var_separator->left = NULL;
 	}
 
-	*W = compute_winning_set_BDD( manager, (*etrans), (*strans), egoals, sgoals, verbose );
+	*W = compute_winning_set_BDD( manager, (*etrans), (*strans), egoals, (*sgoals), verbose );
 	if (*W == NULL) {
 		fprintf( stderr, "Error compute_minmax: failed to construct winning set.\n" );
 		return -1;
 	}
 	Y = compute_sublevel_sets( manager, *W, (*etrans), (*strans),
 							   egoals, num_egoals,
-							   sgoals, num_sgoals,
+							   (*sgoals), num_sgoals,
 							   num_sublevels, &X_ijr, verbose );
 	if (Y == NULL) {
 		fprintf( stderr, "Error compute_minmax: failed to construct sublevel sets.\n" );
@@ -305,12 +305,8 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 	/* Pre-exit clean-up */
 	for (i = 0; i < num_egoals; i++)
 		Cudd_RecursiveDeref( manager, *(egoals+i) );
-	for (i = 0; i < num_sgoals; i++)
-		Cudd_RecursiveDeref( manager, *(sgoals+i) );
 	if (num_egoals > 0)
 		free( egoals );
-	if (num_sgoals > 0)
-		free( sgoals );
 	if (env_nogoal_flag) {
 		num_egoals = 0;
 		delete_tree( *env_goals );
@@ -338,14 +334,14 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 }
 
 
-int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, unsigned char verbose )
+int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***(*sgoals), unsigned char verbose )
 {
 	int horizon = -1, horiz_j;
 	int *num_sublevels;
 	int **Min, **Max;
 	int i, j, k;
 
-	if (compute_minmax( manager, W, etrans, strans, &num_sublevels, &Min, &Max, verbose ))
+	if (compute_minmax( manager, W, etrans, strans, sgoals, &num_sublevels, &Min, &Max, verbose ))
 		return -1;  /* Error in compute_minmax() */
 
 	for (i = 0; i < num_sgoals; i++) {
