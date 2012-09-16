@@ -5,7 +5,11 @@ ENV: obs_x obs_y;
 SYS: x y;
 
 ENVINIT: obs_x=2 & obs_y=1;
-ENVTRANS: [](obs_x' = 2);
+ENVTRANS: [](obs_x' = 2)
+& []((obs_y=0) -> (obs_y'=0 | obs_y'=1))
+& []((obs_y=1) -> (obs_y'=0 | obs_y'=1 | obs_y'=2))
+& []((obs_y=2) -> (obs_y'=1 | obs_y'=2))
+;
 ENVGOAL: []<>(obs_x=2 & obs_y=1);
 
 SYSINIT: x=0 & y=0;
@@ -24,7 +28,7 @@ SYSTRANS:
 & []((y=1) -> (y'=0 | y'=1 | y'=2))
 & []((y=0) -> (y'=0 | y'=1))
 
-& []!((obs_y'=0 & y'=0) | (obs_y'=1 & y'=1) | (obs_y'=2 & y'=2))
+& []!(x'=2 & ((obs_y'=0 & y'=0) | (obs_y'=1 & y'=1) | (obs_y'=2 & y'=2)))
 ;
 
 SYSGOAL: []<>(x=0) & []<>(x=7);
