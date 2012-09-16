@@ -742,7 +742,17 @@ int main( int argc, char **argv )
 					dot_aut_dump( play, evar_list, svar_list,
 								  DOT_AUT_ATTRIB, fp );
 				} else if (format_option == OUTPUT_FORMAT_AUT) {
-					aut_aut_dump( play, num_env+num_sys, fp );
+					while (play->mode != 0)
+						play = play->next;
+					while (play->trans_len > 0) {
+						printf( "%d %d %d %d\n",
+								*(play->state), *(play->state+1),
+								*(play->state+2), *(play->state+3) );
+						play = *(play->trans);
+					}
+					printf( "%d %d %d %d\n",
+							*(play->state), *(play->state+1),
+							*(play->state+2), *(play->state+3) );
 				} else { /* OUTPUT_FORMAT_TULIP */
 					tulip_aut_dump( play, evar_list, svar_list, fp );
 				}
