@@ -34,7 +34,7 @@ extern int st_array_len;
    (resp. environment variables) are printed.  */
 void pprint_state( bool *state, int num_env, int num_sys, FILE *fp )
 {
-	int i;
+	int i, nnz = 0;
 	ptree_t *node;
 
 	if (fp == NULL)
@@ -42,23 +42,33 @@ void pprint_state( bool *state, int num_env, int num_sys, FILE *fp )
 
 	node = evar_list;
 	for (i = 0; i < num_env; i++) {
-		if (*(state+i))
+		if (*(state+i)) {
 			fprintf( fp, " %s", node->name );
+			nnz++;
+		}
 		node = node->left;
 	}
 
-	if (num_sys == -1)
+	if (num_sys == -1) {
+		if (nnz == 0)
+			fprintf( fp, " (nil)" );
 		return;
+	}
 
 	if (num_env == -1)
 		num_env = tree_size( evar_list );
 
 	node = svar_list;
 	for (i = num_env; i < num_sys+num_env; i++) {
-		if (*(state+i))
+		if (*(state+i)) {
 			fprintf( fp, " %s", node->name );
+			nnz++;
+		}
 		node = node->left;
 	}
+
+	if (nnz == 0)
+		fprintf( fp, " (nil)" );
 }
 
 
@@ -589,25 +599,23 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 					return NULL;
 				}
 				if (verbose) {
+					logprint_startline();					
 					if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
 						if (num_read == 2*(num_env+num_sys)) {
-							logprint( "Removing controlled edge from" );
+							logprint_raw( "Removing controlled edge from" );
 						} else {
-							logprint( "Removing uncontrolled edge from" );
+							logprint_raw( "Removing uncontrolled edge from" );
 						}
 					} else { /* "relax " */
 						if (num_read == 2*(num_env+num_sys)) {
-							logprint( "Adding controlled edge from" );
+							logprint_raw( "Adding controlled edge from" );
 						} else {
-							logprint( "Adding uncontrolled edge from" );
+							logprint_raw( "Adding uncontrolled edge from" );
 						}
 					}
-					logprint_startline();
 					pprint_state( state, num_env, num_sys, getlogstream() );
-					logprint( " to" );
+					logprint_raw( " to" );
 					pprint_state( state+num_env+num_sys, num_env, num_read-(2*num_env+num_sys), getlogstream() );
-					for (i = num_env+num_sys; i < num_read; i++)
-						logprint_raw( " %d", *(state+i) );
 					logprint_endline();
 				}
 				
