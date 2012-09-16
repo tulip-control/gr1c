@@ -61,7 +61,7 @@ ptree_t *gen_tree_ptr = NULL;
 #define GR1C_MODE_PATCH 4
 
 
-extern int compute_minmax( DdManager *manager, unsigned char verbose );
+extern int compute_horizon( DdManager *manager, DdNode **W, unsigned char verbose );
 
 
 int main( int argc, char **argv )
@@ -86,6 +86,8 @@ int main( int argc, char **argv )
 	ptree_t *prevpt, *expt, *var_separator;
 	ptree_t *nonbool_var_list = NULL;
 	int maxbitval;
+	int horizon;
+	DdNode *W;
 
 	DdManager *manager;
 	DdNode *T = NULL;
@@ -691,7 +693,11 @@ int main( int argc, char **argv )
 		}
 
 		if (T != NULL) { /* Print measure data */
-			compute_minmax( manager, verbose );
+			horizon = compute_horizon( manager, &W, verbose );
+
+			logprint( "horizon: %d", horizon );
+
+			Cudd_RecursiveDeref( manager, W );
 		}
 
 		if (run_option == GR1C_MODE_SYNTHESIS && T != NULL) {
