@@ -29,7 +29,9 @@ extern int st_array_len;
 
 
 /* Pretty print state vector, default is to list nonzero variables.
-   Output written to fp if not NULL, otherwise to stdout. */
+   Output written to fp if not NULL, otherwise to stdout.  If num_env
+   (respectively, num_sys) is -1, then only the system variables
+   (resp. environment variables) are printed.  */
 void pprint_state( bool *state, int num_env, int num_sys, FILE *fp )
 {
 	int i;
@@ -44,6 +46,12 @@ void pprint_state( bool *state, int num_env, int num_sys, FILE *fp )
 			fprintf( fp, " %s", node->name );
 		node = node->left;
 	}
+
+	if (num_sys == -1)
+		return;
+
+	if (num_env == -1)
+		num_env = tree_size( evar_list );
 
 	node = svar_list;
 	for (i = num_env; i < num_sys+num_env; i++) {
@@ -595,9 +603,9 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 						}
 					}
 					logprint_startline();
-					for (i = 0; i < num_env+num_sys; i++)
-						logprint_raw( " %d", *(state+i) );
+					pprint_state( state, num_env, num_sys, getlogstream() );
 					logprint( " to" );
+					pprint_state( state+num_env+num_sys, num_env, num_read-(2*num_env+num_sys), getlogstream() );
 					for (i = num_env+num_sys; i < num_read; i++)
 						logprint_raw( " %d", *(state+i) );
 					logprint_endline();
@@ -709,8 +717,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				if (verbose) {
 					logprint_startline();
 					logprint_raw( "Removing system moves into" );
-					for (i = 0; i < num_sys; i++)
-						logprint_raw( " %d", *(state+i) );
+					pprint_state( state, -1, num_sys, getlogstream() );
 					logprint_endline();
 				}
 				
