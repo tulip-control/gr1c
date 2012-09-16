@@ -10,7 +10,7 @@
 #define COMMON_H
 
 
-#define GR1C_VERSION "0.4g"
+#define GR1C_VERSION "0.4h"
 #define GR1C_COPYRIGHT "Copyright (c) 2012 by Scott C. Livingston, California Institute of Technology\nThis is free software, released under the GNU GPLv3 and without warranty."
 
 

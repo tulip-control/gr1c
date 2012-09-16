@@ -197,11 +197,11 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
 }
 
 
-int compute_minmax( DdManager *manager, DdNode **W,
+int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans,
 					int **num_sublevels, int ***Min, int ***Max,
 					unsigned char verbose )
 {
-	DdNode *etrans, *strans, **egoals, **sgoals;
+	DdNode **egoals, **sgoals;
 	ptree_t *var_separator;
 	DdNode ***Y = NULL;
 	DdNode ****X_ijr = NULL;
@@ -231,12 +231,12 @@ int compute_minmax( DdManager *manager, DdNode **W,
 
 	if (verbose)
 		logprint( "Building environment transition BDD..." );
-	etrans = ptree_BDD( env_trans, evar_list, manager );
+	(*etrans) = ptree_BDD( env_trans, evar_list, manager );
 	if (verbose) {
 		logprint( "Done." );
 		logprint( "Building system transition BDD..." );
 	}
-	strans = ptree_BDD( sys_trans, evar_list, manager );
+	(*strans) = ptree_BDD( sys_trans, evar_list, manager );
 	if (verbose)
 		logprint( "Done." );
 
@@ -262,12 +262,12 @@ int compute_minmax( DdManager *manager, DdNode **W,
 		var_separator->left = NULL;
 	}
 
-	*W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals, verbose );
+	*W = compute_winning_set_BDD( manager, (*etrans), (*strans), egoals, sgoals, verbose );
 	if (*W == NULL) {
 		fprintf( stderr, "Error compute_minmax: failed to construct winning set.\n" );
 		return -1;
 	}
-	Y = compute_sublevel_sets( manager, *W, etrans, strans,
+	Y = compute_sublevel_sets( manager, *W, (*etrans), (*strans),
 							   egoals, num_egoals,
 							   sgoals, num_sgoals,
 							   num_sublevels, &X_ijr, verbose );
@@ -303,8 +303,6 @@ int compute_minmax( DdManager *manager, DdNode **W,
 
 
 	/* Pre-exit clean-up */
-	Cudd_RecursiveDeref( manager, etrans );
-	Cudd_RecursiveDeref( manager, strans );
 	for (i = 0; i < num_egoals; i++)
 		Cudd_RecursiveDeref( manager, *(egoals+i) );
 	for (i = 0; i < num_sgoals; i++)
@@ -340,14 +338,14 @@ int compute_minmax( DdManager *manager, DdNode **W,
 }
 
 
-int compute_horizon( DdManager *manager, DdNode **W, unsigned char verbose )
+int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, unsigned char verbose )
 {
 	int horizon = -1, horiz_j;
 	int *num_sublevels;
 	int **Min, **Max;
 	int i, j, k;
 
-	if (compute_minmax( manager, W, &num_sublevels, &Min, &Max, verbose ))
+	if (compute_minmax( manager, W, etrans, strans, &num_sublevels, &Min, &Max, verbose ))
 		return -1;  /* Error in compute_minmax() */
 
 	for (i = 0; i < num_sgoals; i++) {

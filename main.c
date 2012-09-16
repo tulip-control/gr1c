@@ -18,6 +18,7 @@
 #include "solve.h"
 #include "patching.h"
 #include "automaton.h"
+#include "sim.h"
 extern int yyparse( void );
 
 
@@ -61,7 +62,7 @@ ptree_t *gen_tree_ptr = NULL;
 #define GR1C_MODE_PATCH 4
 
 
-extern int compute_horizon( DdManager *manager, DdNode **W, unsigned char verbose );
+extern int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, unsigned char verbose );
 
 
 int main( int argc, char **argv )
@@ -87,7 +88,9 @@ int main( int argc, char **argv )
 	ptree_t *nonbool_var_list = NULL;
 	int maxbitval;
 	int horizon;
-	DdNode *W;
+	DdNode *W, *etrans, *strans;
+	anode_t *play;
+	bool *init_state;
 
 	DdManager *manager;
 	DdNode *T = NULL;
@@ -692,12 +695,66 @@ int main( int argc, char **argv )
 			}
 		}
 
-		if (T != NULL) { /* Print measure data */
-			horizon = compute_horizon( manager, &W, verbose );
-
+		if (T != NULL) { /* Print measure data and simulate. */
+			horizon = compute_horizon( manager, &W, &etrans, &strans, verbose );
 			logprint( "horizon: %d", horizon );
 
+			if (horizon > -1) {
+				init_state = malloc( (num_env+num_sys)*sizeof(bool) );
+				if (init_state == NULL) {
+					perror( "gr1c, malloc" );
+					return -1;
+				}
+				for (i = 0; i < num_env+num_sys-1; i++)
+					*(init_state+i) = 0;
+				*(init_state+num_env+num_sys-1) = 1;
+				
+				play = sim_rhc( manager, W, etrans, strans, horizon, init_state, 40 );
+				if (play == NULL) {
+					fprintf( stderr, "Error while attempting receding horizon simulation.\n" );
+					return -1;
+				}
+				free( init_state );
+				logprint( "play length: %d", aut_size( play ) );
+				tmppt = nonbool_var_list;
+				while (tmppt) {
+					aut_compact_nonbool( play, evar_list, svar_list, tmppt->name );
+					tmppt = tmppt->left;
+				}
+
+				num_env = tree_size( evar_list );
+				num_sys = tree_size( svar_list );
+
+				/* Open output file if specified; else point to stdout. */
+				if (output_file_index >= 0) {
+					fp = fopen( argv[output_file_index], "w" );
+					if (fp == NULL) {
+						perror( "gr1c, fopen" );
+						return -1;
+					}
+				} else {
+					fp = stdout;
+				}
+				
+				if (format_option == OUTPUT_FORMAT_TEXT) {
+					list_aut_dump( play, num_env+num_sys, fp );
+				} else if (format_option == OUTPUT_FORMAT_DOT) {
+					dot_aut_dump( play, evar_list, svar_list,
+								  DOT_AUT_ATTRIB, fp );
+				} else if (format_option == OUTPUT_FORMAT_AUT) {
+					aut_aut_dump( play, num_env+num_sys, fp );
+				} else { /* OUTPUT_FORMAT_TULIP */
+					tulip_aut_dump( play, evar_list, svar_list, fp );
+				}
+				
+				if (fp != stdout)
+					fclose( fp );
+			}
+
 			Cudd_RecursiveDeref( manager, W );
+			Cudd_RecursiveDeref( manager, etrans );
+			Cudd_RecursiveDeref( manager, strans );
+			return 0;
 		}
 
 		if (run_option == GR1C_MODE_SYNTHESIS && T != NULL) {
