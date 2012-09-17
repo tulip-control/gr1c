@@ -707,11 +707,12 @@ int main( int argc, char **argv )
 					perror( "gr1c, malloc" );
 					return -1;
 				}
-				for (i = 0; i < num_env+num_sys-1; i++)
+				for (i = 0; i < num_env+num_sys; i++)
 					*(init_state+i) = 0;
-				*(init_state+num_env+num_sys-1) = 1;
+				/* *(init_state+0) = *(init_state+1) = *(init_state+5) = 1; */ /* (3,2) */
+				*(init_state+0) = *(init_state+5) = 1; /* (1,2) */
 				
-				play = sim_rhc( manager, W, etrans, strans, sgoals, horizon, init_state, 40 );
+				play = sim_rhc( manager, W, etrans, strans, sgoals, horizon, init_state, 30 );
 				if (play == NULL) {
 					fprintf( stderr, "Error while attempting receding horizon simulation.\n" );
 					return -1;
@@ -766,6 +767,7 @@ int main( int argc, char **argv )
 			Cudd_RecursiveDeref( manager, W );
 			Cudd_RecursiveDeref( manager, etrans );
 			Cudd_RecursiveDeref( manager, strans );
+			closelogfile();
 			return 0;
 		}
 

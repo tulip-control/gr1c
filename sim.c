@@ -6,10 +6,12 @@
 
 
 #include <stdlib.h>
+#include <time.h>
 
 #include "sim.h"
 #include "common.h"
 #include "automaton.h"
+#include "logging.h"
 #include "solve_support.h"
 
 
@@ -25,6 +27,7 @@ extern int num_sgoals;
 
 extern int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 						 double *Min, double *Max, unsigned char verbose );
+extern int bitvec_to_int( bool *vec, int vec_len );  /* See util.c */
 
 
 anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, int horizon, bool *init_state, int num_it )
@@ -33,11 +36,15 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 	int num_env, num_sys;
 	bool *candidate_state, *next_state;
 	int current_goal = 0;
-	int current_it = 0, i;
+	int current_it = 0, i, j;
 	bool **env_moves;
 	int emoves_len, emove_index;
 	DdNode *strans_into_W;
 	double Max, Min, next_min;
+
+	anode_t *node, *prev_node, **hstacks = NULL;  /* Number of stacks is equal to the horizon. */
+	int hdepth;
+	bool *fnext_state, *finit_state;
 
 	int *cube;  /* length will be twice total number of variables (to
 				   account for both variables and their primes). */
@@ -49,10 +56,10 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 	int *gcube;
 	DdNode **vars, **pvars;
 
-	if (init_state == NULL)
+	if (init_state == NULL || horizon < 1)
 		return NULL;
 
-	srand( 0 );
+	srand( time(NULL) );
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
 
@@ -69,9 +76,19 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 	free( vars );
 	free( pvars );
 
+	hstacks = malloc( horizon*sizeof(anode_t *) );
+	if (hstacks == NULL) {
+		perror( "sim_rhc, malloc" );
+		return NULL;
+	}
+	for (i = 0; i < horizon; i++)
+		*(hstacks+i) = NULL;
+
 	next_state = malloc( (num_env+num_sys)*sizeof(bool) );
 	candidate_state = malloc( (num_env+num_sys)*sizeof(bool) );
-	if (next_state == NULL || candidate_state == NULL) {
+	finit_state = malloc( (num_env+num_sys)*sizeof(bool) );
+	fnext_state = malloc( (num_env+num_sys)*sizeof(bool) );
+	if (next_state == NULL || candidate_state == NULL || finit_state == NULL || fnext_state == NULL) {
 		perror( "sim_rhc, malloc" );
 		return NULL;
 	}
@@ -84,7 +101,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 
 	tmp = Cudd_bddVarMap( manager, W );
 	if (tmp == NULL) {
-		fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
+		fprintf( stderr, "Error sim_rhc: Error in swapping variables with primed forms.\n" );
 		return NULL;
 	}
 	Cudd_Ref( tmp );
@@ -112,45 +129,182 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 		tmp2 = state2cof( manager, cube, 2*(num_env+num_sys), *(env_moves+emove_index), tmp, num_env+num_sys, num_env );
 		Cudd_RecursiveDeref( manager, tmp );
 
-		next_min = -1;
+		tmp = Cudd_bddAnd( manager, *(sgoals+current_goal), W );
+		Cudd_Ref( tmp );
+
+		next_min = -1.;
 		Cudd_AutodynDisable( manager );
 		Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
-			initialize_cube( candidate_state, gcube+num_sys+num_env, num_env+num_sys );
-			while (!saturated_cube( candidate_state, gcube+num_sys+num_env, num_env+num_sys )) {
-				bounds_state( manager, *(sgoals+current_goal), candidate_state, "x", &Min, &Max, 0 );
-				if (next_min == -1 || Min < next_min) {
+			for (i = 0; i < num_env; i++)
+				*(candidate_state+i) = *(*(env_moves+emove_index)+i);
+			initialize_cube( candidate_state+num_env, gcube+num_sys+2*num_env, num_sys );
+			while (!saturated_cube( candidate_state+num_env, gcube+num_sys+2*num_env, num_sys )) {
+				if (find_anode( *hstacks, 0, candidate_state, num_env+num_sys ) == NULL) {
+					*hstacks = insert_anode( *hstacks, 0, -1, candidate_state, num_env+num_sys );
+
+					bounds_state( manager, tmp, candidate_state, "x", &Min, &Max, 0 );
+					if (next_min == -1. || Min < next_min) {
+						next_min = Min;
+						for (i = 0; i < num_env+num_sys; i++)
+							*(next_state+i) = *(candidate_state+i);
+						logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
+								  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
+					}
+				}
+
+				increment_cube( candidate_state+num_env, gcube+num_sys+2*num_env, num_sys );
+			}
+			if (find_anode( *hstacks, 0, candidate_state, num_env+num_sys ) == NULL) {
+				*hstacks = insert_anode( *hstacks, 0, -1, candidate_state, num_env+num_sys );
+				bounds_state( manager, tmp, candidate_state, "x", &Min, &Max, 0 );
+				if (next_min == -1. || Min < next_min) {
 					next_min = Min;
 					for (i = 0; i < num_env+num_sys; i++)
 						*(next_state+i) = *(candidate_state+i);
+					logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
+							  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
 				}
-
-				increment_cube( candidate_state, gcube+num_sys+num_env, num_env+num_sys );
-			}
-			bounds_state( manager, *(sgoals+current_goal), candidate_state, "x", &Min, &Max, 0 );
-			if (next_min == -1 || Min < next_min) {
-				next_min = Min;
-				for (i = 0; i < num_env+num_sys; i++)
-					*(next_state+i) = *(candidate_state);
 			}
 		}
 		Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 		Cudd_RecursiveDeref( manager, tmp2 );
+		Cudd_RecursiveDeref( manager, tmp );
 
-		for (i = 0; i < num_env; i++)
-			*(next_state+i) = *(*(env_moves+emove_index)+i);
+		logprint( "%d possible states at horizon 1.", aut_size( *hstacks ) );
 
-		play = insert_anode( play, current_it, -1, next_state, num_env+num_sys );
-		play = append_anode_trans( play, current_it-1, init_state, num_env+num_sys, current_it, next_state );
-
-		for (i = 0; i < num_env+num_sys; i++)
-			*(init_state+i) = *(next_state+i);
 		for (i = 0; i < emoves_len; i++)
 			free( *(env_moves+i) );
 		free( env_moves );
+
+		for (hdepth = 1; hdepth < horizon; hdepth++) {
+
+			node = *(hstacks+hdepth-1);
+			while (node) {
+				for (i = 0; i < num_env+num_sys; i++)
+					*(finit_state+i) = *(node->state+i);
+
+				env_moves = get_env_moves( manager, cube,
+										   finit_state, etrans,
+										   num_env, num_sys,
+										   &emoves_len );
+				emove_index = rand() % emoves_len;
+				
+				tmp = state2cof( manager, cube, 2*(num_env+num_sys), finit_state, strans_into_W, 0, num_env+num_sys );
+				tmp2 = state2cof( manager, cube, 2*(num_env+num_sys), *(env_moves+emove_index), tmp, num_env+num_sys, num_env );
+				Cudd_RecursiveDeref( manager, tmp );
+				
+				tmp = Cudd_bddAnd( manager, *(sgoals+current_goal), W );
+				Cudd_Ref( tmp );
+				
+				Cudd_AutodynDisable( manager );
+				Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
+					for (i = 0; i < num_env; i++)
+						*(fnext_state+i) = *(*(env_moves+emove_index)+i);
+					initialize_cube( fnext_state+num_env, gcube+num_sys+2*num_env, num_sys );
+					while (!saturated_cube( fnext_state+num_env, gcube+num_sys+2*num_env, num_sys )) {
+						for (j = 0; j <= hdepth; j++) {
+							if (find_anode( *(hstacks+j), 0, fnext_state, num_env+num_sys ) != NULL)
+								break;
+						}
+						if (j > hdepth) {  /* First time to find this state? */
+							*(hstacks+hdepth) = insert_anode( *(hstacks+hdepth), 0, -1, fnext_state, num_env+num_sys );
+							
+							bounds_state( manager, tmp, fnext_state, "x", &Min, &Max, 0 );
+							if (next_min == -1. || Min < next_min) {
+								next_min = Min;
+								for (i = 0; i < num_env+num_sys; i++)
+									*(next_state+i) = *(fnext_state+i);
+								logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
+										  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
+							}
+						}
+						
+						increment_cube( fnext_state+num_env, gcube+num_sys+2*num_env, num_sys );
+					}
+					for (j = 0; j <= hdepth; j++) {
+						if (find_anode( *(hstacks+j), 0, fnext_state, num_env+num_sys ) != NULL)
+							break;
+					}
+					if (j > hdepth) {
+						*(hstacks+hdepth) = insert_anode( *(hstacks+hdepth), 0, -1, fnext_state, num_env+num_sys );
+						bounds_state( manager, tmp, fnext_state, "x", &Min, &Max, 0 );
+						if (next_min == -1. || Min < next_min) {
+							next_min = Min;
+							for (i = 0; i < num_env+num_sys; i++)
+								*(next_state+i) = *(fnext_state+i);
+							logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
+									  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
+						}
+					}
+				}
+				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+				Cudd_RecursiveDeref( manager, tmp2 );
+				Cudd_RecursiveDeref( manager, tmp );
+
+				for (i = 0; i < emoves_len; i++)
+					free( *(env_moves+i) );
+				free( env_moves );
+				node = node->next;
+			}
+
+			logprint( "%d possible states at horizon %d.", aut_size( *(hstacks+hdepth) ), hdepth+1 );
+		}
+
+
+		if (horizon > 1 && find_anode( *hstacks, 0, next_state, num_env+num_sys ) == NULL) {  /* Treat horizon of 1 as special case. */
+			
+			for (j = 1; j < horizon; j++) {
+				if ((node = find_anode( *(hstacks+j), 0, next_state, num_env+num_sys )) != NULL)
+					break;
+			}
+			if (j >= horizon) {
+				fprintf( stderr, "ERROR: failed to backtrack in sim_rhc().\n" );
+				return NULL;
+			}
+
+			tmp = Cudd_bddAnd( manager, etrans, strans );
+			Cudd_Ref( tmp );
+
+			while (j > 0) {
+				j--;
+				prev_node = *(hstacks+j);
+				while (prev_node) {
+					for (i = 0; i < num_env+num_sys; i++)
+						*(cube+i) = *(prev_node->state+i);
+					for (i = 0; i < num_env+num_sys; i++)
+						*(cube+num_env+num_sys+i) = *(node->state+i);
+					ddval = Cudd_Eval( manager, tmp, cube );
+					if (ddval->type.value > .9) {
+						node = prev_node;
+						break;
+					}
+
+					prev_node = prev_node->next;
+				}
+				if (prev_node == NULL) {
+					fprintf( stderr, "ERROR: failed to backtrack in sim_rhc().\n" );
+					return NULL;
+				}
+			}
+			for (i = 0; i < num_env+num_sys; i++)
+				*(next_state+i) = *(node->state+i);
+
+			Cudd_RecursiveDeref( manager, tmp );
+		}
+
+		play = insert_anode( play, current_it, -1, next_state, num_env+num_sys );
+		play = append_anode_trans( play, current_it-1, init_state, num_env+num_sys, current_it, next_state );
+		for (i = 0; i < num_env+num_sys; i++)
+			*(init_state+i) = *(next_state+i);
 	}
 	
 
 	Cudd_RecursiveDeref( manager, strans_into_W );
 	free( next_state );
+	free( candidate_state );
+	free( finit_state );
+	free( fnext_state );
+	free( hstacks );
+	free( cube );
 	return play;
 }
