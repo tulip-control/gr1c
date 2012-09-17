@@ -46,6 +46,9 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 	int hdepth;
 	bool *fnext_state, *finit_state;
 
+	anode_t **MEM = NULL;
+	int MEM_len = 0, MEM_index;
+
 	int *cube;  /* length will be twice total number of variables (to
 				   account for both variables and their primes). */
 	DdNode *tmp, *tmp2, *ddval;
@@ -116,8 +119,23 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 		/* See if time to switch attention to next goal. */
 		state2cube( init_state, cube, num_env+num_sys );
 		ddval = Cudd_Eval( manager, *(sgoals+current_goal), cube );
-		if (ddval->type.value > .9)
+		if (ddval->type.value > .9) {
 			current_goal = (current_goal+1) % num_sgoals;
+			free( MEM );
+			MEM = NULL;
+			MEM_len = 0;
+		}
+
+		for (MEM_index = 0; MEM_index < MEM_len; MEM_index++) {
+			if (statecmp( (*(MEM+MEM_index))->state, init_state, num_env+num_sys ))
+				break;
+		}
+		if (MEM_index >= MEM_len) {
+			MEM_len++;
+			MEM_index = MEM_len-1;
+			MEM = realloc( MEM, MEM_len*sizeof(anode_t *) );
+			*(MEM+MEM_index) = insert_anode( NULL, 0, -1, init_state, num_env+num_sys );
+		}
 
 		env_moves = get_env_moves( manager, cube,
 								   init_state, etrans,
@@ -142,6 +160,36 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 				if (find_anode( *hstacks, 0, candidate_state, num_env+num_sys ) == NULL) {
 					*hstacks = insert_anode( *hstacks, 0, -1, candidate_state, num_env+num_sys );
 
+					node = (*(MEM+MEM_index))->next;
+					while (node) {
+						if (statecmp( node->state, candidate_state, num_env+num_sys ))
+							break;
+						node = node->next;
+					}
+					if (node == NULL) {
+						bounds_state( manager, tmp, candidate_state, "x", &Min, &Max, 0 );
+						if (next_min == -1. || Min < next_min) {
+							next_min = Min;
+							for (i = 0; i < num_env+num_sys; i++)
+								*(next_state+i) = *(candidate_state+i);
+							logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
+									  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
+						}
+					}
+				}
+
+				increment_cube( candidate_state+num_env, gcube+num_sys+2*num_env, num_sys );
+			}
+			if (find_anode( *hstacks, 0, candidate_state, num_env+num_sys ) == NULL) {
+				*hstacks = insert_anode( *hstacks, 0, -1, candidate_state, num_env+num_sys );
+				
+				node = (*(MEM+MEM_index))->next;
+				while (node) {
+					if (statecmp( node->state, candidate_state, num_env+num_sys ))
+						break;
+					node = node->next;
+				}
+				if (node == NULL) {
 					bounds_state( manager, tmp, candidate_state, "x", &Min, &Max, 0 );
 					if (next_min == -1. || Min < next_min) {
 						next_min = Min;
@@ -150,19 +198,6 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 						logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
 								  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
 					}
-				}
-
-				increment_cube( candidate_state+num_env, gcube+num_sys+2*num_env, num_sys );
-			}
-			if (find_anode( *hstacks, 0, candidate_state, num_env+num_sys ) == NULL) {
-				*hstacks = insert_anode( *hstacks, 0, -1, candidate_state, num_env+num_sys );
-				bounds_state( manager, tmp, candidate_state, "x", &Min, &Max, 0 );
-				if (next_min == -1. || Min < next_min) {
-					next_min = Min;
-					for (i = 0; i < num_env+num_sys; i++)
-						*(next_state+i) = *(candidate_state+i);
-					logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
-							  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
 				}
 			}
 		}
@@ -209,13 +244,21 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 						if (j > hdepth) {  /* First time to find this state? */
 							*(hstacks+hdepth) = insert_anode( *(hstacks+hdepth), 0, -1, fnext_state, num_env+num_sys );
 							
-							bounds_state( manager, tmp, fnext_state, "x", &Min, &Max, 0 );
-							if (next_min == -1. || Min < next_min) {
-								next_min = Min;
-								for (i = 0; i < num_env+num_sys; i++)
-									*(next_state+i) = *(fnext_state+i);
-								logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
-										  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
+							prev_node = (*(MEM+MEM_index))->next;
+							while (prev_node) {
+								if (statecmp( prev_node->state, fnext_state, num_env+num_sys ))
+									break;
+								prev_node = prev_node->next;
+							}
+							if (prev_node == NULL) {
+								bounds_state( manager, tmp, fnext_state, "x", &Min, &Max, 0 );
+								if (next_min == -1. || Min < next_min) {
+									next_min = Min;
+									for (i = 0; i < num_env+num_sys; i++)
+										*(next_state+i) = *(fnext_state+i);
+									logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
+											  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
+								}
 							}
 						}
 						
@@ -227,13 +270,22 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 					}
 					if (j > hdepth) {
 						*(hstacks+hdepth) = insert_anode( *(hstacks+hdepth), 0, -1, fnext_state, num_env+num_sys );
-						bounds_state( manager, tmp, fnext_state, "x", &Min, &Max, 0 );
-						if (next_min == -1. || Min < next_min) {
-							next_min = Min;
-							for (i = 0; i < num_env+num_sys; i++)
-								*(next_state+i) = *(fnext_state+i);
-							logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
-									  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
+
+						prev_node = (*(MEM+MEM_index))->next;
+						while (prev_node) {
+							if (statecmp( prev_node->state, fnext_state, num_env+num_sys ))
+								break;
+							prev_node = prev_node->next;
+						}
+						if (prev_node == NULL) {
+							bounds_state( manager, tmp, fnext_state, "x", &Min, &Max, 0 );
+							if (next_min == -1. || Min < next_min) {
+								next_min = Min;
+								for (i = 0; i < num_env+num_sys; i++)
+									*(next_state+i) = *(fnext_state+i);
+								logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
+										  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
+							}
 						}
 					}
 				}
@@ -250,6 +302,10 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 			logprint( "%d possible states at horizon %d.", aut_size( *(hstacks+hdepth) ), hdepth+1 );
 		}
 
+		node = *(MEM+MEM_index);
+		while (node->next)
+			node = node->next;
+		node->next = insert_anode( NULL, 0, -1, next_state, num_env+num_sys );
 
 		if (horizon > 1 && find_anode( *hstacks, 0, next_state, num_env+num_sys ) == NULL) {  /* Treat horizon of 1 as special case. */
 			
