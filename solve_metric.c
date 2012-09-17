@@ -86,10 +86,10 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 	}
 
 	/* ref_mapped = bitvec_to_int( ref_state+start_index, stop_index-start_index+1 ); */
-	/* ref_mapped_x = bitvec_to_int( ref_state+4, 4 ); */
-	/* ref_mapped_y = bitvec_to_int( ref_state+8, 3 ); */
-	ref_mapped_x = bitvec_to_int( ref_state+7, 4 );
-	ref_mapped_y = bitvec_to_int( ref_state+11, 3 );
+	ref_mapped_y = bitvec_to_int( ref_state+8, 3 );
+	ref_mapped_x = bitvec_to_int( ref_state+4, 4 );
+	/* ref_mapped_x = bitvec_to_int( ref_state+7, 4 ); */
+	/* ref_mapped_y = bitvec_to_int( ref_state+11, 3 ); */
 	*Min = *Max = -1.;  /* Distance is non-negative; thus use -1 as "unset". */
 
 	Cudd_AutodynDisable( manager );
@@ -98,10 +98,10 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 		while (!saturated_cube( state, gcube, num_env+num_sys )) {
 
 			/* this_mapped = bitvec_to_int( state+start_index, stop_index-start_index+1 ); */
-			/* this_mapped_x = bitvec_to_int( state+4, 4 ); */
-			/* this_mapped_y = bitvec_to_int( state+8, 3 ); */
-			this_mapped_x = bitvec_to_int( state+7, 4 );
-			this_mapped_y = bitvec_to_int( state+11, 3 );
+			this_mapped_x = bitvec_to_int( state+4, 4 );
+			this_mapped_y = bitvec_to_int( state+8, 3 );
+			/* this_mapped_x = bitvec_to_int( state+7, 4 ); */
+			/* this_mapped_y = bitvec_to_int( state+11, 3 ); */
 			dist = sqrt( pow((this_mapped_x-ref_mapped_x), 2) + pow((this_mapped_y-ref_mapped_y), 2) );
 			if (*Min == -1. || dist < *Min)
 				*Min = dist;
@@ -120,10 +120,10 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 			increment_cube( state, gcube, num_env+num_sys );
 		}
 
-		/* this_mapped_x = bitvec_to_int( state+4, 4 ); */
-		/* this_mapped_y = bitvec_to_int( state+8, 3 ); */
-		this_mapped_x = bitvec_to_int( state+7, 4 );
-		this_mapped_y = bitvec_to_int( state+11, 3 );
+		this_mapped_x = bitvec_to_int( state+4, 4 );
+		this_mapped_y = bitvec_to_int( state+8, 3 );
+		/* this_mapped_x = bitvec_to_int( state+7, 4 ); */
+		/* this_mapped_y = bitvec_to_int( state+11, 3 ); */
 		dist = sqrt( pow((this_mapped_x-ref_mapped_x), 2) + pow((this_mapped_y-ref_mapped_y), 2) );
 		if (*Min == -1. || dist < *Min)
 			*Min = dist;
@@ -253,10 +253,14 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
 		/* logprint_endline(); */
 
 		logprint( "%d,%d; %d,%d; mi = %f",
-				  bitvec_to_int( *(states+k), 4 ),
-				  bitvec_to_int( *(states+k)+4, 3 ),
-				  bitvec_to_int( *(states+k)+7, 4 ),
-				  bitvec_to_int( *(states+k)+11, 3 ),
+				  bitvec_to_int( *(states+k), 2 ),
+				  bitvec_to_int( *(states+k)+2, 2 ),
+				  bitvec_to_int( *(states+k)+4, 4 ),
+				  bitvec_to_int( *(states+k)+8, 3 ),
+				  /* bitvec_to_int( *(states+k), 4 ), */
+				  /* bitvec_to_int( *(states+k)+4, 3 ), */
+				  /* bitvec_to_int( *(states+k)+7, 4 ), */
+				  /* bitvec_to_int( *(states+k)+11, 3 ), */
 				  tMin );
 	}
    
