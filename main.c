@@ -343,6 +343,7 @@ int main( int argc, char **argv )
 	while (tmppt) {
 		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
 		if (maxbitval-1 > tmppt->value) {
+			logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
 			prevpt = env_trans;
 			env_trans = init_ptree( PT_AND, NULL, 0 );
 			env_trans->right = prevpt;
@@ -355,6 +356,7 @@ int main( int argc, char **argv )
 	while (tmppt) {
 		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
 		if (maxbitval-1 > tmppt->value) {
+			logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
 			prevpt = sys_trans;
 			sys_trans = init_ptree( PT_AND, NULL, 0 );
 			sys_trans->right = prevpt;

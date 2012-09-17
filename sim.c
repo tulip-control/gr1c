@@ -24,7 +24,7 @@ extern int num_sgoals;
 
 
 extern int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
-						 int *Min, int *Max, unsigned char verbose );
+						 double *Min, double *Max, unsigned char verbose );
 
 
 anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, int horizon, bool *init_state, int num_it )
@@ -37,7 +37,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 	bool **env_moves;
 	int emoves_len, emove_index;
 	DdNode *strans_into_W;
-	int Max, Min, next_min;
+	double Max, Min, next_min;
 
 	int *cube;  /* length will be twice total number of variables (to
 				   account for both variables and their primes). */

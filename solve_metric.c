@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "common.h"
 #include "logging.h"
@@ -31,13 +32,15 @@ extern int num_sgoals;
 extern int bitvec_to_int( bool *vec, int vec_len );  /* See util.c */
 
 int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
-				  int *Min, int *Max, unsigned char verbose )
+				  double *Min, double *Max, unsigned char verbose )
 {
 	bool *state;
-	int ref_mapped, this_mapped;
+	int ref_mapped_x, this_mapped_x, ref_mapped_y, this_mapped_y;
+	double dist;
 	int num_env, num_sys;
 	ptree_t *var = evar_list, *var_tail;
 	int start_index, stop_index;
+	int i;
 
 	/* Variables used during CUDD generation (state enumeration). */
 	DdGen *gen;
@@ -82,28 +85,44 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 		stop_index++;
 	}
 
-	ref_mapped = bitvec_to_int( ref_state+start_index, stop_index-start_index+1 );
-	*Min = *Max = -1;  /* Distance is non-negative; thus use -1 as "unset". */
+	/* ref_mapped = bitvec_to_int( ref_state+start_index, stop_index-start_index+1 ); */
+	ref_mapped_x = bitvec_to_int( ref_state+4, 4 );
+	ref_mapped_y = bitvec_to_int( ref_state+8, 3 );
+	*Min = *Max = -1.;  /* Distance is non-negative; thus use -1 as "unset". */
 
 	Cudd_AutodynDisable( manager );
 	Cudd_ForeachCube( manager, T, gen, gcube, gvalue ) {
 		initialize_cube( state, gcube, num_env+num_sys );
 		while (!saturated_cube( state, gcube, num_env+num_sys )) {
 
-			this_mapped = bitvec_to_int( state+start_index, stop_index-start_index+1 );
-			if (*Min == -1 || abs(this_mapped - ref_mapped) < *Min)
-				*Min = abs(this_mapped - ref_mapped);
-			if (*Max == -1 || abs(this_mapped - ref_mapped) > *Max)
-				*Max = abs(this_mapped - ref_mapped);
+			/* this_mapped = bitvec_to_int( state+start_index, stop_index-start_index+1 ); */
+			this_mapped_x = bitvec_to_int( state+4, 4 );
+			this_mapped_y = bitvec_to_int( state+8, 3 );
+			dist = sqrt( pow((this_mapped_x-ref_mapped_x), 2) + pow((this_mapped_y-ref_mapped_y), 2) );
+			if (*Min == -1. || dist < *Min)
+				*Min = dist;
+			if (*Max == -1. || dist > *Max)
+				*Max = dist;
+
+			/* logprint_startline(); */
+			/* for (i = 0; i < num_env; i++) */
+			/* 	logprint_raw( "%d", *(state+i) ); */
+			/* logprint_raw( " " ); */
+			/* for (i = num_env; i < num_env+num_sys; i++) */
+			/* 	logprint_raw( "%d", *(state+i) ); */
+			/* logprint_raw( "; %d -> %d", ref_mapped, this_mapped ); */
+			/* logprint_endline(); */
 
 			increment_cube( state, gcube, num_env+num_sys );
 		}
 
-		this_mapped = bitvec_to_int( state+start_index, stop_index-start_index+1 );
-		if (*Min == -1 || abs(this_mapped - ref_mapped) < *Min)
-			*Min = abs(this_mapped - ref_mapped);
-		if (*Max == -1 || abs(this_mapped - ref_mapped) > *Max)
-			*Max = abs(this_mapped - ref_mapped);
+		this_mapped_x = bitvec_to_int( state+4, 4 );
+		this_mapped_y = bitvec_to_int( state+8, 3 );
+		dist = sqrt( pow((this_mapped_x-ref_mapped_x), 2) + pow((this_mapped_y-ref_mapped_y), 2) );
+		if (*Min == -1. || dist < *Min)
+			*Min = dist;
+		if (*Max == -1. || dist > *Max)
+			*Max = dist;
 
 	}
 	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
@@ -116,13 +135,16 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
    Result is written into given integer variables Min and Max;
    return 0 on success, -1 error. */
 int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
-				  int *Min, int *Max, unsigned char verbose )
+				  double *Min, double *Max, unsigned char verbose )
 {
+	bool **states = NULL;
+	int num_states = 0;
 	bool *state;
-	int tMin, tMax;  /* Particular distance to goal set */
+	double tMin, tMax;  /* Particular distance to goal set */
 	int num_env, num_sys;
 	ptree_t *var = evar_list, *var_tail;
 	int start_index, stop_index;
+	int i, k;
 
 	/* Variables used during CUDD generation (state enumeration). */
 	DdGen *gen;
@@ -132,8 +154,7 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
 
-	/* State vector (i.e., valuation of the variables) */
-	state = malloc( sizeof(bool)*(num_env+num_sys) );
+	state = malloc( (num_env+num_sys)*sizeof(bool) );
 	if (state == NULL) {
 		perror( "bounds_DDset, malloc" );
 		return -1;
@@ -167,38 +188,75 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
 		stop_index++;
 	}
 
-	*Min = *Max = -1;  /* Distance is non-negative; thus use -1 as "unset". */
+	*Min = *Max = -1.;  /* Distance is non-negative; thus use -1 as "unset". */
 
 	Cudd_AutodynDisable( manager );
 	Cudd_ForeachCube( manager, T, gen, gcube, gvalue ) {
 		initialize_cube( state, gcube, num_env+num_sys );
 		while (!saturated_cube( state, gcube, num_env+num_sys )) {
-
-			bounds_state( manager, G, state, name, &tMin, &tMax, verbose );
-			if (*Min == -1 || tMin < *Min)
-				*Min = tMin;
-			if (*Max == -1 || tMin > *Max)
-				*Max = tMin;
+			
+			num_states++;
+			states = realloc( states, num_states*sizeof(bool *) );
+			if (states == NULL) {
+				perror( "bounds_DDset, realloc" );
+				return -1;
+			}
+			*(states+num_states-1) = malloc( (num_env+num_sys)*sizeof(bool) );
+			if (*(states+num_states-1) == NULL) {
+				perror( "bounds_DDset, malloc" );
+				return -1;
+			}
+			for (i = 0; i < num_env+num_sys; i++)
+				*(*(states+num_states-1)+i) = *(state+i);
 
 			increment_cube( state, gcube, num_env+num_sys );
 		}
 
-		bounds_state( manager, G, state, name, &tMin, &tMax, verbose );
-		if (*Min == -1 || tMin < *Min)
-			*Min = tMin;
-		if (*Max == -1 || tMin > *Max)
-			*Max = tMin;
+		num_states++;
+		states = realloc( states, num_states*sizeof(bool *) );
+		if (states == NULL) {
+			perror( "bounds_DDset, realloc" );
+			return -1;
+		}
+		
+		*(states+num_states-1) = malloc( (num_env+num_sys)*sizeof(bool) );
+		if (*(states+num_states-1) == NULL) {
+			perror( "bounds_DDset, malloc" );
+			return -1;
+		}
+		for (i = 0; i < num_env+num_sys; i++)
+			*(*(states+num_states-1)+i) = *(state+i);
 
 	}
 	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+
+	for (k = 0; k < num_states; k++) {
+		bounds_state( manager, G, *(states+k), name, &tMin, &tMax, verbose );
+		if (*Min == -1. || tMin < *Min)
+			*Min = tMin;
+		if (*Max == -1. || tMin > *Max)
+			*Max = tMin;
+
+		logprint_startline();
+		for (i = 0; i < num_env; i++)
+			logprint_raw( "%d", *(*(states+k)+i) );
+		logprint_raw( " " );
+		for (i = num_env; i < num_env+num_sys; i++)
+			logprint_raw( "%d", *(*(states+k)+i) );
+		logprint_raw( "; mi = %f", tMin );
+		logprint_endline();
+	}
    
+	for (i = 0; i < num_states; i++)
+		free( *(states+i) );
+	free( states );
 	free( state );
 	return 0;
 }
 
 
 int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals,
-					int **num_sublevels, int ***Min, int ***Max,
+					int **num_sublevels, double ***Min, double ***Max,
 					unsigned char verbose )
 {
 	DdNode **egoals;
@@ -276,26 +334,27 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 		return -1;
 	}
 
-	*Min = malloc( num_sgoals*sizeof(int *) );
-	*Max = malloc( num_sgoals*sizeof(int *) );
+	*Min = malloc( num_sgoals*sizeof(double *) );
+	*Max = malloc( num_sgoals*sizeof(double *) );
 	if (*Min == NULL || *Max == NULL) {
 		perror( "compute_minmax, malloc" );
 		return -1;
 	}
 
 	for (i = 0; i < num_sgoals; i++) {
-		*(*Min + i) = malloc( (*(*num_sublevels+i)-1)*sizeof(int) );
-		*(*Max + i) = malloc( (*(*num_sublevels+i)-1)*sizeof(int) );
+		*(*Min + i) = malloc( (*(*num_sublevels+i)-1)*sizeof(double) );
+		*(*Max + i) = malloc( (*(*num_sublevels+i)-1)*sizeof(double) );
 		if (*(*Min + i) == NULL || *(*Max + i) == NULL) {
 			perror( "compute_minmax, malloc" );
 			return -1;
 		}
 		for (j = 1; j < *(*num_sublevels+i); j++) {
+			logprint( "goal %d, level %d...", i, j );
 			tmp = Cudd_bddAnd( manager, *(*(Y+i)+j), Cudd_Not( *(*(Y+i)+j-1) ) );
 			Cudd_Ref( tmp );
 			if (bounds_DDset( manager, tmp, **(Y+i), "x", *(*Min+i)+j-1, *(*Max+i)+j-1,
 							  verbose )) {
-				*(*(*Min+i)+j-1) = *(*(*Max+i)+j-1) = -1;
+				*(*(*Min+i)+j-1) = *(*(*Max+i)+j-1) = -1.;
 			}
 			Cudd_RecursiveDeref( manager, tmp );
 		}
@@ -334,11 +393,11 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 }
 
 
-int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***(*sgoals), unsigned char verbose )
+int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals, unsigned char verbose )
 {
 	int horizon = -1, horiz_j;
 	int *num_sublevels;
-	int **Min, **Max;
+	double **Min, **Max;
 	int i, j, k;
 
 	if (compute_minmax( manager, W, etrans, strans, sgoals, &num_sublevels, &Min, &Max, verbose ))
@@ -348,7 +407,7 @@ int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **s
 		for (j = 1; j < *(num_sublevels+i); j++) {
 			logprint_startline();
 			logprint_raw( "goal %d, level %d: ", i, j );
-			logprint_raw( "%d, %d", *(*(Min+i)+j-1), *(*(Max+i)+j-1) );
+			logprint_raw( "%f, %f", *(*(Min+i)+j-1), *(*(Max+i)+j-1) );
 			logprint_endline();
 		}
 	}

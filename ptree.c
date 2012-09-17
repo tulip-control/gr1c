@@ -315,9 +315,18 @@ ptree_t *unreach_expanded_bool( char *name, int lower, int upper )
 		head->left->right = init_ptree( PT_EQUALS, NULL, 0 );
 		head->left->right->left = init_ptree( PT_NEXT_VARIABLE, name, 0 );
 		head->left->right->right = init_ptree( PT_CONSTANT, NULL, i );
+
+		node = head;
+		head = init_ptree( PT_AND, NULL, 0 );
+		head->right = node;
+		head->left = init_ptree( PT_NEG, NULL, 0 );
+		head->left->right = init_ptree( PT_EQUALS, NULL, 0 );
+		head->left->right->left = init_ptree( PT_VARIABLE, name, 0 );
+		head->left->right->right = init_ptree( PT_CONSTANT, NULL, i );
 	}
 
-	return expand_to_bool( head, name, upper );
+	/* return expand_to_bool( head, name, upper ); */
+	return head;
 }
 
 
