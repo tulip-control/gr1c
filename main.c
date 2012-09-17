@@ -711,6 +711,8 @@ int main( int argc, char **argv )
 					*(init_state+i) = 0;
 				/* *(init_state+0) = *(init_state+1) = *(init_state+5) = 1; */ /* (3,2) */
 				*(init_state+0) = *(init_state+5) = 1; /* (1,2) */
+				for (i = 7; i < 14; i++)
+					*(init_state+i) = 1;
 				
 				play = sim_rhc( manager, W, etrans, strans, sgoals, horizon, init_state, 30 );
 				if (play == NULL) {

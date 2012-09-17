@@ -599,4 +599,4 @@ SYSTRANS:
 & []!(x'=9 & y'=3 & obs_x=9 & obs_y=3 & x=9 & y=3 & obs_x'=9 & obs_y'=3)
 ;
 
-SYSGOAL: []<>(x=7 & y=1);
+SYSGOAL: []<>(x=1 & y=3);
