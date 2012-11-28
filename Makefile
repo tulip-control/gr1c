@@ -34,8 +34,8 @@ rg_main.o: rg_main.c common.h
 ptree.o: ptree.c
 logging.o: logging.c
 automaton.o: automaton.c
-automaton_io.o: automaton_io.c
-interactive.o: interactive.c
+automaton_io.o: automaton_io.c common.h
+interactive.o: interactive.c common.h
 solve_support.o: solve_support.c
 solve_operators.o: solve_operators.c
 solve.o: solve.c
