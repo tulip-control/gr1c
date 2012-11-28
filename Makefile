@@ -29,7 +29,8 @@ gr1c: main.o logging.o interactive.o solve_support.o solve_operators.o solve.o p
 rg: rg_main.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o gr1c_scan.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-main.o: main.c
+main.o: main.c common.h
+rg_main.o: rg_main.c common.h
 ptree.o: ptree.c
 logging.o: logging.c
 automaton.o: automaton.c
