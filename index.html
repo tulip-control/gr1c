@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>gr1c by slivingston</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>gr1c</h1>
+        <h2>a tool for GR(1) synthesis and related activities</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/slivingston/gr1c/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/slivingston/gr1c/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/slivingston/gr1c" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>Introduction</h1>
+
+<p>Please also consult the README and
+<a href="https://github.com/slivingston/gr1c/wiki">wiki</a>.</p>
+
+<p>Beware the code is still experimental. If you find a possible bug or have comments, suggestions, or feature requests, then please open an <a href="https://github.com/slivingston/gr1c/issues">issue on GitHub</a> or contact Scott Livingston at <a href="mailto:slivingston@caltech.edu">slivingston@caltech.edu</a></p>
+
+<h1>Basic usage</h1>
+
+<p>In the documentation below, we assume that gr1c is on the shell path. To see a summary of possible command-line arguments,</p>
+
+<pre><code>$ gr1c -h
+</code></pre>
+
+<h1>Examples</h1>
+
+<p>A very simple and easy to interpret specification is provided in <code>examples/trivial.spc</code>.  Stripping away comments, the spec is</p>
+
+<pre><code>ENV: x;
+SYS: y;
+
+ENVINIT: x;
+ENVTRANS:;
+ENVGOAL: []&lt;&gt;x;
+
+SYSINIT: y;
+SYSTRANS:;
+SYSGOAL: []&lt;&gt;y&amp;x &amp; []&lt;&gt;!y;
+</code></pre>
+
+<p>The only environment variable is <code>x</code>, and the only system variable is <code>y</code>; both are Boolean-valued. We initialize both of these to <code>True</code> and, given the assumption that the environment will infinitely often set <code>x</code> to <code>True</code>, we must ensure that there are infinitely many states visited such that both <code>y</code> and <code>x</code> are <code>True</code>, and such that <code>y</code> is <code>False</code>.  Obviously there must be at least two states in any play winning for the system because the two guaranteed formulas (<code>y&amp;x</code> and <code>!y</code>) cannot simultaneously be <code>True</code>.  Finally, there are no restrictions on transitions by the environment or the system. Equivalently, the safety components of the assumption and guarantee are <code>True</code>.  This is indicated in the specification by <code>ENVTRANS</code> and <code>SYSTRANS</code> being empty.  To check whether the spec is realizable,</p>
+
+<pre><code>$ gr1c -r  examples/trivial.spc
+</code></pre>
+
+<p>You should see a message indicating realizability, such as "Realizable." Now, to synthesize a strategy for it, output the result into a <a href="http://www.graphviz.org/">DOT</a> file, and create a PNG called <code>temp.dot.png</code> from that output, try</p>
+
+<pre><code>$ gr1c -t dot examples/trivial.spc &gt; temp.dot
+$ dot -Tpng -O temp.dot
+</code></pre>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
