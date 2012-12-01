@@ -683,8 +683,6 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 					Cudd_Ref( tmp );
 					Cudd_RecursiveDeref( manager, vertex2 );
 					vertex2 = tmp;
-				}
-				if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
 					tmp = Cudd_bddOr( manager, Cudd_Not( vertex1 ), vertex2 );
 				} else { /* "relax " */
 					tmp = Cudd_bddAnd( manager, vertex1, vertex2 );

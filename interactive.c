@@ -2,7 +2,7 @@
  *                  Also see solve.c and solve_operators.c
  *
  *
- * SCL; March, May 2012.
+ * SCL; 2012.
  */
 
 
@@ -838,17 +838,16 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			
 			vertex1 = state2BDD( manager, intcom_state, 0, num_env+num_sys );
 			vertex2 = state2BDD( manager, intcom_state+num_env+num_sys, num_env+num_sys, intcom_index-(num_env+num_sys) );
-			tmp = Cudd_Not( vertex1 );
-			Cudd_Ref( tmp );
-			Cudd_RecursiveDeref( manager, vertex1 );
-			vertex1 = tmp;
 			if (command == INTCOM_RESTRICT) {
 				tmp = Cudd_Not( vertex2 );
 				Cudd_Ref( tmp );
 				Cudd_RecursiveDeref( manager, vertex2 );
 				vertex2 = tmp;
+				tmp = Cudd_bddOr( manager, Cudd_Not( vertex1 ), vertex2 );
+			} else { /* INTCOM_RELAX */
+				tmp = Cudd_bddAnd( manager, vertex1, vertex2 );
 			}
-			tmp = Cudd_bddOr( manager, vertex1, vertex2 );
+
 			Cudd_Ref( tmp );
 			Cudd_RecursiveDeref( manager, vertex1 );
 			Cudd_RecursiveDeref( manager, vertex2 );
