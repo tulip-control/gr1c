@@ -10,7 +10,52 @@ should be given as space separated values.
 Example session
 ===============
 
+Initialized with the specification "trivial_partwin.spc",
 
+    # For example, regarding states as bitvectors, 1011 is not in winning
+    # set, while 1010 is. (Ordering is x ze y zs.)
+
+    ENV: x ze;
+    SYS: y zs;
+
+    ENVINIT: x & !ze;
+    ENVTRANS: [] (zs -> ze') & []((!ze & !zs) -> !ze');
+    ENVGOAL: []<>x;
+
+    SYSINIT: y;
+    SYSTRANS:;
+    SYSGOAL: []<>y&x & []<>!y & []<> !ze;
+
+below is example interaction.
+
+    >>> var
+    x (0), ze (1), y (2), zs (3)
+    >>> numgoals
+    3
+    >>> printgoal 0
+    (y&x)
+    >>> printgoal 1
+    (!y)
+    >>> printgoal 2
+    (!ze)
+    >>> printgoal 3
+    Invalid mode: 3
+    >>> winning 1 0 1 1
+    False
+    >>> winning 1 0 1 0
+    True
+    >>> winning 0 0 0 0
+    True
+    >>> sysnexta 0 0 0 0  0 0
+    0 0
+    0 1
+    1 0
+    1 1
+    ---
+    >>> sysnext 0 0 0 0  0 0  2
+    0 0
+    1 0
+    ---
 
 
 Recognized commands
