@@ -1,6 +1,6 @@
 # Unit and integration tests of gr1c
 #
-# SCL; 10 August 2012.
+# SCL; 2012.
 
 
 CUDD_LIB = ../$(CUDD_ROOT)/cudd/libcudd.a ../$(CUDD_ROOT)/mtr/libmtr.a ../$(CUDD_ROOT)/st/libst.a ../$(CUDD_ROOT)/util/libutil.a ../$(CUDD_ROOT)/epd/libepd.a
