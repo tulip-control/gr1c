@@ -127,23 +127,18 @@ True
 </pre><h2>Recognized commands</h2>
 <p>Use <b>help</b> to see the list of commands without descriptions.</p>
 <ul>
-<li><p class="startli"><b>realizable {existsys,allsys}</b></p>
-<p class="startli">is specification realizable? See documentation in <a class="el" href="solve_8h.html" title="Compute realizability and a strategy for a GR(1) game.">solve.h</a> for interpretation of init_flags "existsys" (EXIST_SYS_INIT) and "allsys" (ALL_SYS_INIT).</p>
-</li>
-</ul>
-<ul>
 <li><p class="startli"><b>winning STATE</b></p>
 <p class="startli">is STATE in winning set?</p>
 </li>
 </ul>
 <ul>
 <li><p class="startli"><b>envnext STATE</b></p>
-<p class="startli">list of possible next valuations of environment variables, given current STATE; each is on a separate line, with termination indicated by a final line of "&amp;mdash;".</p>
+<p class="startli">list of possible next valuations of environment variables, given current STATE; each is on a separate line, with termination indicated by a final line of <code>---</code>.</p>
 </li>
 </ul>
 <ul>
 <li><p class="startli"><b>sysnext STATE1 STATE2ENV GOALMODE</b></p>
-<p class="startli">list of possible next valuations of system variables that are consistent with progression of a winning strategy that currently has goal index GOALMODE, given current STATE1 and environment move STATE2ENV from that state; each is on a separate line, with termination indicated by a final line of "&amp;mdash;".</p>
+<p class="startli">list of possible next valuations of system variables that are consistent with progression of a winning strategy that currently has goal index GOALMODE, given current STATE1 and environment move STATE2ENV from that state; each is on a separate line, with termination indicated by a final line of <code>---</code>.</p>
 </li>
 </ul>
 <ul>
@@ -173,12 +168,7 @@ True
 </ul>
 <ul>
 <li><p class="startli"><b>getindex STATE GOALMODE</b></p>
-<p class="startli">get reachability index of STATE for goal index GOALMODE.</p>
-</li>
-</ul>
-<ul>
-<li><p class="startli"><b>setindex STATE GOALMODE</b></p>
-<p class="startli">set reachability index of STATE for goal index GOALMODE; internally this changes sublevel membership of STATE.</p>
+<p class="startli">get reachability index of STATE for goal index GOALMODE. If the STATE is not in the winning set, then the return value is <code>Inf</code>, which indicates "infinite" index.</p>
 </li>
 </ul>
 <ul>
@@ -222,19 +212,29 @@ True
 </li>
 </ul>
 <ul>
+<li><p class="startli"><b>printegoals</b></p>
+<p class="startli">print list of environment goals (liveness). Each is on a separate line, with termination indicated by a final line of <code>---</code>.</p>
+</li>
+</ul>
+<ul>
 <li><p class="startli"><b>enable (disable) autoreorder</b></p>
 <p class="startli">enable (resp. disable) automatic BDD reordering.</p>
 </li>
 </ul>
 <ul>
 <li><p class="startli"><b>quit</b></p>
-<p class="startli">terminate gr1c. </p>
+<p class="startli">terminate gr1c.</p>
+</li>
+</ul>
+<ul>
+<li><p class="startli"><b>realizable {existsys,allsys}</b> [NOT IMPLEMENTED]</p>
+<p class="startli">is specification realizable? See documentation in <a class="el" href="solve_8h.html" title="Compute realizability and a strategy for a GR(1) game.">solve.h</a> for interpretation of init_flags "existsys" (EXIST_SYS_INIT) and "allsys" (ALL_SYS_INIT). </p>
 </li>
 </ul>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 2 2012 23:08:07 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 3 2012 11:26:44 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.2
 </small></address>
