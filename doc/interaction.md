@@ -124,11 +124,6 @@ Use **help** to see the list of commands without descriptions.
 
   get reachability index of STATE for goal index GOALMODE.
 
-* **setindex STATE GOALMODE**
-
-  set reachability index of STATE for goal index GOALMODE; internally
-  this changes sublevel membership of STATE.
-
 * **refresh winning**
 
   compute winning set (presumably after transition (safety) rules have

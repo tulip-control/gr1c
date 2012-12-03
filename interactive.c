@@ -50,7 +50,6 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 #define INTCOM_BLKENV 7
 #define INTCOM_BLKSYS 8
 #define INTCOM_GETINDEX 9
-#define INTCOM_SETINDEX 10
 #define INTCOM_REWIN 11
 #define INTCOM_RELEVELS 12
 #define INTCOM_SYSNEXTA 13
@@ -67,7 +66,6 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 	"blocksys STATESYS\n" \
 	"blockenv STATEENV\n" \
 	"getindex STATE GOALMODE\n" \
-	"setindex STATE GOALMODE\n" \
 	"refresh winning\n" \
 	"refresh levels\n" \
 	"addvar env (sys) VARIABLE\n" \
@@ -368,32 +366,6 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 					return -1;
 				}
 				return INTCOM_GETINDEX;
-			}
-			
-		} else if (!strncmp( input, "setindex ", strlen( "setindex " ) )) {
-
-			*(input+strlen( "setindex" )) = '\0';
-			num_read = read_state_str( input+strlen( "setindex" )+1, &intcom_state,
-									   num_env+num_sys+1 );
-			if (num_read != num_env+num_sys+1) {
-				if (num_read > 0)
-					free( intcom_state );
-				free( input );
-				fprintf( outfp, "Invalid arguments.\n" );
-				continue;
-			}
-			if (*(intcom_state+num_env+num_sys) < 0 || *(intcom_state+num_env+num_sys) > num_sgoals-1) {
-				fprintf( outfp, "Invalid mode: %d", *(intcom_state+num_env+num_sys) );
-				free( intcom_state );
-			} else {
-				free( input );
-				intcom_index = *(intcom_state+num_env+num_sys);
-				intcom_state = realloc( intcom_state, (num_env+num_sys)*sizeof(bool) );
-				if (intcom_state == NULL) {
-					perror( "command_loop, realloc" );
-					return -1;
-				}
-				return INTCOM_SETINDEX;
 			}
 			
 		} else {
@@ -915,11 +887,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 			Cudd_RecursiveDeref( manager, vertex2 );
 			free( intcom_state );
-			break;
-
-		case INTCOM_SETINDEX:
-			free( intcom_state );
-			fprintf( outfp, "(not implemented yet.)\n" );
 			break;
 
 		case INTCOM_CLEAR:
