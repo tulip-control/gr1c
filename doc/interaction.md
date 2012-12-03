@@ -8,7 +8,7 @@ should be given as space separated values.
 
 
 Example session
-===============
+---------------
 
 Initialized with the specification "trivial_partwin.spc",
 
@@ -59,7 +59,7 @@ below is example interaction.
 
 
 Recognized commands
-===================
+-------------------
 
 Use **help** to see the list of commands without descriptions.
 
