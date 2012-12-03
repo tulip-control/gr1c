@@ -9,3 +9,5 @@ winning 1 0 1 0
 winning 0 0 0 0
 sysnexta 0 0 0 0  0 0
 sysnext 0 0 0 0  0 0  2
+printegoals
+quit

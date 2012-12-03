@@ -26,4 +26,7 @@ True
 0 0
 1 0
 ---
->>> 
+>>> printegoals
+x
+---
+>>> quit
