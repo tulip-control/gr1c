@@ -124,6 +124,10 @@ anode_t *aut_prune_deadends( anode_t *head );
    If fp = NULL, then write to stdout.  Return nonzero if error. */
 int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp );
 
+/** Dump using tulipcon version 0.
+   tulip0_aut_dump() is provided only for legacy code. */
+int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp );
+
 /** Dump DOT file describing the automaton (strategy).  See \ref
    DotDumpFlags.  Also see comments for tulip_aut_dump().   */
 int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
