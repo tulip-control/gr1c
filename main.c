@@ -390,6 +390,18 @@ int main( int argc, char **argv )
 		}
 		
 		T = NULL;  /* To avoid seg faults by the generic clean-up code. */
+	} else if (run_option == GR1C_MODE_INTERACTIVE) {
+
+		i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout, verbose );
+		if (i == 0) {
+			printf( "Not realizable.\n" );
+			return -1;
+		} else if (i < 0) {
+			printf( "Failure during interaction.\n" );
+			return -1;
+		}
+
+		T = NULL;  /* To avoid seg faults by the generic clean-up code. */
 	} else {
 
 		T = check_realizable( manager, EXIST_SYS_INIT, verbose );
@@ -415,20 +427,6 @@ int main( int argc, char **argv )
 				logprint( "Done." );
 			if (strategy == NULL) {
 				fprintf( stderr, "Error while attempting synthesis.\n" );
-				return -1;
-			}
-
-		} else if (run_option == GR1C_MODE_INTERACTIVE && T != NULL) {
-
-			Cudd_RecursiveDeref( manager, T );
-			T = NULL;
-
-			i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout, verbose );
-			if (i == 0) {
-				printf( "Not realizable.\n" );
-				return -1;
-			} else if (i < 0) {
-				printf( "Failure during interaction.\n" );
 				return -1;
 			}
 

@@ -77,7 +77,7 @@ Use **help** to see the list of commands without descriptions.
 
   list of possible next valuations of environment variables, given
   current STATE; each is on a separate line, with termination
-  indicated by a final line of "---".
+  indicated by a final line of ``---``.
 
 * **sysnext STATE1 STATE2ENV GOALMODE**
 
@@ -85,7 +85,7 @@ Use **help** to see the list of commands without descriptions.
   consistent with progression of a winning strategy that currently has
   goal index GOALMODE, given current STATE1 and environment move
   STATE2ENV from that state; each is on a separate line, with
-  termination indicated by a final line of "---".
+  termination indicated by a final line of ``---``.
 
 * **sysnexta STATE1 STATE2ENV**
 
@@ -160,6 +160,11 @@ Use **help** to see the list of commands without descriptions.
 * **printgoal GOALMODE**
 
   print formula for system goal index GOALMODE.
+
+* **printegoals**
+
+  print list of environment goals (liveness).  Each is on a separate
+  line, with termination indicated by a final line of ``---``.
 
 * **enable (disable) autoreorder**
 

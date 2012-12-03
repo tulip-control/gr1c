@@ -19,6 +19,7 @@
 #include "ptree.h"
 #include "solve.h"
 #include "solve_support.h"
+#include "logging.h"
 
 
 extern ptree_t *evar_list;
@@ -31,12 +32,6 @@ extern ptree_t **env_goals;
 extern ptree_t **sys_goals;
 extern int num_egoals;
 extern int num_sgoals;
-
-
-/* Functions not yet globally exported.  See solve.c for definitions
-   and documentation. */
-extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
-										  unsigned char init_flags, unsigned char verbose );
 
 
 /***************************
@@ -74,6 +69,7 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 	"var\n" \
 	"numgoals\n" \
 	"printgoal GOALMODE\n" \
+	"printegoals\n" \
 	"enable (disable) autoreorder\n" \
 	"quit"
 
@@ -213,6 +209,14 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 				free( intcom_state );
 			}
 			
+		} else if (!strncmp( input, "printegoals", strlen( "printegoals" ) )) {
+
+			for (var_index = 0; var_index < num_egoals; var_index++) {
+				print_formula( *(env_goals+var_index), stdout );
+				fprintf( outfp, "\n" );
+			}
+			fprintf( outfp, "---" );
+
 		} else if (!strncmp( input, "winning ", strlen( "winning " ) )) {
 
 			*(input+strlen( "winning" )) = '\0';
@@ -507,9 +511,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 		fprintf( stderr, "Error levelset_interactive: failed to construct winning set.\n" );
 		return -1;
 	}
-	W = check_realizable_internal( manager, W, init_flags, verbose );
-	if (W == NULL)
-		return 0;  /* not realizable */
 
 	command = INTCOM_RELEVELS;  /* Initialization, force sublevel computation */
 	do {
