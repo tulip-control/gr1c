@@ -37,9 +37,7 @@ REFSPECS="trivial_partwin gridworld"
 
 for k in `echo $REFSPECS`; do
     if ! $BUILD_ROOT/gr1c -i specs/${k}.spc < interaction_scripts/${k}_IN.txt | diff - interaction_scripts/${k}_OUT.txt > /dev/null; then
-	if ! $BUILD_ROOT/gr1c -i specs/${k}.spc < interaction_scripts/${k}_IN.txt | diff - interaction_scripts/${k}_OUT_GNUReadline.txt > /dev/null; then
-    	    echo $PREFACE "unexpected behavior in scripted interaction using specs/${k}\n"
-    	    exit -1
-	fi
+        echo $PREFACE "unexpected behavior in scripted interaction using specs/${k}\n"
+        exit -1
     fi
 done

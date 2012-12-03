@@ -60,7 +60,7 @@ Before deploying gr1c and especially if you are building it yourself, run the te
 
     $ make check
 
-Most test code is placed under the ``tests`` directory. If a test fails, despite you following the installation instructions, then please open an [issue on GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott Livingston at <slivingston@caltech.edu>
+Most test code is placed under the ``tests`` directory. **N.B.**, scripted interaction will only work if you build without GNU Readline.  If a test fails, despite you following the installation instructions, then please open an [issue on GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott Livingston at <slivingston@caltech.edu>
 
 Placing gr1c on your shell path
 -------------------------------

@@ -20,6 +20,9 @@ LDFLAGS = $(CUDD_LIB) -lm
 #CFLAGS += -DUSE_READLINE
 #LDFLAGS += -lreadline
 
+# N.B., scripted interaction tests, which are invoked if you run "make check",
+# will fail if you build gr1c with GNU Readline.
+
 
 all: gr1c rg
 
