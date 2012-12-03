@@ -1,7 +1,7 @@
 #!/bin/sh
 # Tests not targeted at particular units.
 #
-# SCL; May 2012.
+# SCL; 2012.
 
 set -e
 
@@ -33,7 +33,7 @@ done
 ################################################################
 # Test interaction;  N.B., quite fragile depending on interface
 
-REFSPECS="trivial_partwin"
+REFSPECS="trivial_partwin gridworld"
 
 for k in `echo $REFSPECS`; do
     if ! $BUILD_ROOT/gr1c -i specs/${k}.spc < interaction_scripts/${k}_IN.txt | diff - interaction_scripts/${k}_OUT.txt > /dev/null; then
