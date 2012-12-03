@@ -772,8 +772,17 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				for (i = 0; i < num_env+num_sys; i++)
 					logprint( " %d", *(intcom_state+i) );
 			}
+
+			/* Check whether state is in winning set. */
 			state2cube( intcom_state, cube, num_env+num_sys );
 			free( intcom_state );
+			ddval = Cudd_Eval( manager, W, cube );
+			if (ddval->type.value < .1) {
+				fprintf( outfp, "Inf\n" );
+				break;
+			}
+
+			/* Yes, so return a finite value. */
 			j = *(num_sublevels+intcom_index);
 			do {
 				j--;

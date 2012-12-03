@@ -116,7 +116,9 @@ Use **help** to see the list of commands without descriptions.
 
 * **getindex STATE GOALMODE**
 
-  get reachability index of STATE for goal index GOALMODE.
+  get reachability index of STATE for goal index GOALMODE.  If the
+  STATE is not in the winning set, then the return value is ``Inf``,
+  which indicates "infinite" index.
 
 * **refresh winning**
 
