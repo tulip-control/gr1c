@@ -22,11 +22,9 @@ The accepted input specifications are slightly different; the single
 system goal is preceded by "<>" (as the "eventually" operator).
 
 
-See the [installation page](md_installation.html) for instructions about
-installing gr1c from source code.  You might also try builds of recent
-versions for 32-bit GNU/Linux and 64-bit Mac, available at
-<https://github.com/slivingston/gr1c/downloads>. Beware the code is
-still experimental. If you find a possible bug or have comments,
+See the [installation page](md_installation.html) for instructions
+about installing gr1c from source code.  Beware the code is still
+experimental. If you find a possible bug or have comments,
 suggestions, or feature requests, then please open an [issue on
 GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott
 Livingston at <slivingston@caltech.edu>
