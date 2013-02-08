@@ -4,7 +4,7 @@
  * getopt, once sophistication of usage demands.
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -59,9 +59,6 @@ ptree_t *gen_tree_ptr = NULL;
 #define GR1C_MODE_SYNTHESIS 2
 #define GR1C_MODE_INTERACTIVE 3
 #define GR1C_MODE_PATCH 4
-
-
-extern int compute_minmax( DdManager *manager, unsigned char verbose );
 
 
 int main( int argc, char **argv )
