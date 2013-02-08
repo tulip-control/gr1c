@@ -27,7 +27,7 @@ about installing gr1c from source code.  Beware the code is still
 experimental. If you find a possible bug or have comments,
 suggestions, or feature requests, then please open an [issue on
 GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott
-Livingston at <slivingston@caltech.edu>
+Livingston at <slivingston@cds.caltech.edu>
 
 
 Basic usage

@@ -1,7 +1,7 @@
 Introduction
 ============
 
-Scott C. Livingston  <slivingston@caltech.edu>
+Scott C. Livingston  <slivingston@cds.caltech.edu>
 
 **gr1c** is a tool for GR(1) synthesis and related activities.
 Its core functionality is checking realizability of and synthesizing
