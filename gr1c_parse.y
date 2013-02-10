@@ -1,7 +1,7 @@
 /* gr1c -- Bison (and Yacc) grammar file
  *
  *
- * SCL; Jan-Feb, Sep 2012.
+ * SCL; Jan-Feb, Sep 2012, Feb 2013.
  */
 
 
@@ -102,23 +102,37 @@ exp: evar_list ';'
 ;
 
 evar_list: E_VARS
-        | evar_list VARIABLE  {
-              if (evar_list == NULL) {
-                  evar_list = init_ptree( PT_VARIABLE, $2, 0 );
-              } else {
-                  append_list_item( evar_list, PT_VARIABLE, $2, 0 );
-              }
-          }
+         | evar_list VARIABLE  {
+	       if (evar_list == NULL) {
+		   evar_list = init_ptree( PT_VARIABLE, $2, 0 );
+	       } else {
+		   append_list_item( evar_list, PT_VARIABLE, $2, 0 );
+	       }
+           }
+         | evar_list VARIABLE '[' NUMBER ',' NUMBER ']'  {
+	       if (evar_list == NULL) {
+		   evar_list = init_ptree( PT_VARIABLE, $2, $6 );
+	       } else {
+		   append_list_item( evar_list, PT_VARIABLE, $2, $6 );
+	       }
+           }
 ;
 
 svar_list: S_VARS
-        | svar_list VARIABLE  {
-              if (svar_list == NULL) {
-                  svar_list = init_ptree( PT_VARIABLE, $2, 0 );
-              } else {
-                  append_list_item( svar_list, PT_VARIABLE, $2, 0 );
-              }
-          }
+         | svar_list VARIABLE  {
+	       if (svar_list == NULL) {
+		   svar_list = init_ptree( PT_VARIABLE, $2, 0 );
+	       } else {
+		   append_list_item( svar_list, PT_VARIABLE, $2, 0 );
+	       }
+           }
+         | svar_list VARIABLE '[' NUMBER ',' NUMBER ']'  {
+               if (svar_list == NULL) {
+		   svar_list = init_ptree( PT_VARIABLE, $2, $6 );
+	       } else {
+		   append_list_item( svar_list, PT_VARIABLE, $2, $6 );
+	       }
+           }
 ;
 
 etransformula: SAFETY_OP tpropformula  {

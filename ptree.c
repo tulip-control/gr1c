@@ -33,6 +33,10 @@ ptree_t *init_ptree( int type, char *name, int value )
 				return NULL;
 			}
 		}
+		/* The "value" field is used to specify the domain of an
+		   integer variable, if it is nonzero.  Else (if value=0), the
+		   variable is boolean. */
+		head->value = value;
 	} else if (type == PT_CONSTANT) {
 		head->value = value;
 	}

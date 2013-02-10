@@ -1,6 +1,6 @@
 /* gr1c -- lexical analyzer (or "scanner")
  *
- * SCL; Jan-Feb, Aug-Sep 2012.
+ * SCL; Jan-Feb, Aug-Sep 2012, Feb 2013.
  */
 
 %{
@@ -26,7 +26,7 @@ number  (-)?[0-9]+([.][0-9]+)?
 "<>" { return EVENTUALLY_OP; }
 
 "->"  { return IMPLIES; }
-[()&|!=';]  { return yytext[0]; }
+[()&|!=';,]  { return yytext[0]; }
 
 \n  {
         yylloc->first_column = yylloc->last_column;
