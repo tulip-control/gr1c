@@ -1,8 +1,12 @@
-# Type and domain are inferred from the specification.  If a variable
-# is not used with an "=" (equality), then it is treated as Boolean.
-# Otherwise, the domain is assumed to be the subset of integers from
-# the minimum to the maximum number appearing in the specification,
-# inclusive.
+# The type and domain of a variable is specified in its declaration
+# (in the lists "ENV:" and "SYS:").  Currently two types are
+# supported, boolean and unsigned integer.  The former is the default,
+# and the latter is achieved by following a variable name with an
+# interval of the form [0,n] where n is a positive integer.  The only
+# currently supported domain for nonboolean variables is all integers
+# from 0 to n, inclusive.
+#
+# Thus, in the example below, the domain of y is {0,1,2,3,4}.
 
 # Internally variables of non-Boolean domains are mapped into a set of
 # Boolean variables that use the original variable name as a prefix
@@ -11,14 +15,9 @@
 # encode the bitvectors 00, 01, and 10. (11, i.e., y0 and y1 both set
 # is unreachable).
 
-# N.B., currently we require that the minimum value in the domain is 0
-# (despite the above).
-
-# Thus, in the present example, the domain of y is {0,1,2,3,4}.
-
 
 ENV:;
-SYS: y;
+SYS: y [0,4];
 
 ENVINIT:;
 ENVTRANS:;

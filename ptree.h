@@ -11,7 +11,7 @@
  * applicable to the given type are ignored.
  *
  *
- * SCL; Jan, Feb 2012.
+ * SCL; Jan, Feb 2012, Feb 2013.
  */
 
 
@@ -42,6 +42,12 @@
 #define PT_OR 6
 #define PT_IMPLIES 7
 #define PT_EQUALS 8
+#define PT_EQUIV 9
+#define PT_LT 10  /* less than, i.e., "<" */
+#define PT_GT 11  /* greater than, i.e., ">" */
+#define PT_LE 12  /* less than or equal to, i.e., "<=" */
+#define PT_GE 13  /* greater than or equal to, i.e., ">=" */
+#define PT_NOTEQ 14  /* not equals */
 /**@}*/
 
 /** \brief Parse tree nodes. */
@@ -145,7 +151,7 @@ ptree_t *unreach_expanded_bool( char *name, int min, int max );
    like reverse Polish notation.)  Return the new head. */
 ptree_t *pusht_terminal( ptree_t *head, int type, char *name, int value );
 
-/** Push unary binary operator into top of tree.  (Behavior is like reverse
+/** Push unary or binary operator into top of tree.  (Behavior is like reverse
    Polish notation.)  Return the new head. */
 ptree_t *pusht_operator( ptree_t *head, int type );
 

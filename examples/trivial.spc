@@ -1,17 +1,19 @@
 ENV: x;
 SYS: y;
 
-ENVINIT: x;
-ENVTRANS:;# [](x -> !x') & [](!x -> x');
+ENVINIT: !x;
+
+# The environment transition rule (a "safety" formula) forces x to
+# alternate at each time step.  Try removing the restriction by placing
+# ";#" immediately after the semicolon (thus "commenting it out").
+ENVTRANS: [](x <-> !x');
 ENVGOAL: []<>x;
 
 # Blank lines are optional and can placed between sections or parts of
-# formulas.
+# formulae.
 
 SYSINIT: y;
-
-SYSTRANS: # Notice the safety formula spans two lines.
-;#[](y -> !y')
-#& [](!y -> y');
-
-SYSGOAL: []<>y&x & []<>!y;
+SYSTRANS:;  # Empty mean "True"; hence any transition is possible.
+SYSGOAL:  # Notice the liveness formulae span two lines.
+  []<>(y&x)
+& []<>(!y);

@@ -29,14 +29,15 @@ gr1c: main.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o
 rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o gr1c_scan.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-main.o: main.c
+main.o: main.c common.h
+rg_main.o: rg_main.c common.h
 sim.o: sim.c
 util.o: util.c
 ptree.o: ptree.c
 logging.o: logging.c
 automaton.o: automaton.c
-automaton_io.o: automaton_io.c
-interactive.o: interactive.c
+automaton_io.o: automaton_io.c common.h
+interactive.o: interactive.c common.h
 solve_metric.o: solve_metric.c
 solve_support.o: solve_support.c
 solve_operators.o: solve_operators.c

@@ -1,7 +1,7 @@
 /* ptree.c -- Definitions for signatures appearing in ptree.h.
  *
  *
- * SCL; Jan-Mar 2012.
+ * SCL; Jan-Mar 2012, Feb 2013.
  */
 
 
@@ -33,6 +33,10 @@ ptree_t *init_ptree( int type, char *name, int value )
 				return NULL;
 			}
 		}
+		/* The "value" field is used to specify the domain of an
+		   integer variable, if it is nonzero.  Else (if value=0), the
+		   variable is boolean. */
+		head->value = value;
 	} else if (type == PT_CONSTANT) {
 		head->value = value;
 	}
@@ -231,6 +235,85 @@ ptree_t *var_to_bool( char *name, int maxval )
 }
 
 
+/* Expand a subformula like x < 3 to ((x = 0) | (x = 1) | (x = 2)),
+   assuming x has a domain of an interval of integers from 0 to some
+   value at least 2. */
+ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
+{
+	ptree_t **heads;
+	int var_tense, op_type, this_val;
+	int max, min;
+	int i;
+
+	/* Handle pointless calls */
+	if (head == NULL || !((head->type == PT_LT) || (head->type == PT_GT) || (head->type == PT_LE) || (head->type == PT_GE) || (head->type == PT_NOTEQ)) || !((!strcmp( head->left->name, name ) && (head->left->type == PT_VARIABLE || head->left->type == PT_NEXT_VARIABLE) && head->right->type == PT_CONSTANT) || (!strcmp( head->right->name, name ) && (head->right->type == PT_VARIABLE || head->right->type == PT_NEXT_VARIABLE) && head->left->type == PT_CONSTANT)))
+		return head;
+
+	op_type = head->type;
+	if (head->left->type == PT_CONSTANT) {
+		this_val = head->left->value;
+		var_tense = head->right->type;
+	} else {
+		this_val = head->right->value;
+		var_tense = head->left->type;
+	}
+	delete_tree( head );
+
+	/* Special cases */
+	if ((op_type == PT_LT && this_val <= 0)
+		|| (op_type == PT_GT && this_val >= maxval)
+		|| (op_type == PT_LE && this_val < 0)
+		|| (op_type == PT_GE && this_val > maxval))
+		return init_ptree( PT_CONSTANT, NULL, 0 );  /* constant False */
+
+	if (op_type == PT_NOTEQ && (this_val < 0 || this_val > maxval))
+		return init_ptree( PT_CONSTANT, NULL, 1 );  /* constant True */
+
+	if (op_type == PT_NOTEQ) {
+		heads = malloc( (maxval-1)*sizeof(ptree_t *) );
+		if (heads == NULL) {
+			perror( "expand_nonbool_varnum, malloc" );
+			return NULL;
+		}
+		for (i = 0; i <= maxval; i++) {
+			if (i == this_val)
+				continue;
+			*(heads+i-min) = init_ptree( PT_EQUALS, NULL, 0 );
+			(*(heads+i-min))->left = init_ptree( var_tense, name, 0 );
+			(*(heads+i-min))->right = init_ptree( PT_CONSTANT, NULL, i );
+		}
+	} else {
+		if (op_type == PT_LT) {
+			min = 0;
+			max = this_val-1;
+		} else if (op_type == PT_GT) {
+			max = maxval;
+			min = this_val+1;
+		} else if (op_type == PT_LE) {
+			min = 0;
+			max = this_val;
+		} else {  /* op_type == PT_GE */
+			max = maxval;
+			min = this_val;
+		}
+
+		heads = malloc( (max-min+1)*sizeof(ptree_t *) );
+		if (heads == NULL) {
+			perror( "expand_nonbool_varnum, malloc" );
+			return NULL;
+		}
+		for (i = min; i <= max; i++) {
+			*(heads+i-min) = init_ptree( PT_EQUALS, NULL, 0 );
+			(*(heads+i-min))->left = init_ptree( var_tense, name, 0 );
+			(*(heads+i-min))->right = init_ptree( PT_CONSTANT, NULL, i );
+		}
+	}
+	head = merge_ptrees( heads, max-min+1, PT_OR );
+	free( heads );
+	return head;
+}
+
+
 ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 {
 	ptree_t **heads;
@@ -246,9 +329,14 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 	if (expanded_varlist == NULL)
 		return NULL;
 
+	if (head->type == PT_LT || head->type == PT_GT
+		|| head->type == PT_LE || head->type == PT_GE
+		|| head->type == PT_NOTEQ)
+		head = expand_nonbool_varnum( head, name, maxval );
+
 	if (head->type == PT_EQUALS && ((head->left->type != PT_CONSTANT && !strcmp( head->left->name, name )) || (head->right->type != PT_CONSTANT && !strcmp( head->right->name, name )))) {
-		/* We assume that equality is only between a variable and a
-		   number; will be generalized soon. */
+		/* We assume that nonboolean comparison is only between a
+		   variable and a number; will be generalized soon. */
 		if (head->left->type == PT_CONSTANT) {
 			this_val = head->left->value;
 			if (head->right->type == PT_VARIABLE) {
@@ -375,9 +463,33 @@ void print_node( ptree_t *node, FILE *fp )
 	case PT_IMPLIES:
 		fprintf( fp, "->" );
 		break;
+
+	case PT_EQUIV:
+		fprintf( fp, "<->" );
+		break;
 		
 	case PT_EQUALS:
 		fprintf( fp, "=" );
+		break;
+
+	case PT_NOTEQ:
+		fprintf( fp, "!=" );
+		break;
+
+	case PT_LT:
+		fprintf( fp, "<" );
+		break;
+
+	case PT_GT:
+		fprintf( fp, ">" );
+		break;
+
+	case PT_LE:
+		fprintf( fp, "<=" );
+		break;
+
+	case PT_GE:
+		fprintf( fp, ">=" );
 		break;
 
 	default:
@@ -599,7 +711,13 @@ void print_formula( ptree_t *head, FILE *fp )
 	case PT_AND:
 	case PT_OR:
 	case PT_IMPLIES:
+	case PT_EQUIV:
 	case PT_EQUALS:
+	case PT_NOTEQ:
+	case PT_LT:  /* less than */
+	case PT_GT:  /* greater than */
+	case PT_GE:  /* ...or equal to*/
+	case PT_LE:
 		fprintf( fp, "(" );
 		print_formula( head->left, fp );
 		break;
@@ -646,6 +764,21 @@ void print_formula( ptree_t *head, FILE *fp )
 	case PT_EQUALS:
 		fprintf( fp, "=" );
 		break;
+	case PT_NOTEQ:
+		fprintf( fp, "!=" );
+		break;
+	case PT_LT:
+		fprintf( fp, "<" );
+		break;
+	case PT_GT:
+		fprintf( fp, ">" );
+		break;
+	case PT_GE:
+		fprintf( fp, ">=" );
+		break;
+	case PT_LE:
+		fprintf( fp, "<=" );
+		break;
 	}
 	print_formula( head->right, fp );
 	fprintf( fp, ")" );
@@ -655,13 +788,14 @@ void print_formula( ptree_t *head, FILE *fp )
 
 DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 {
-	DdNode *lsub, *rsub, *fn, *tmp;
+	DdNode *lsub, *rsub, *fn, *fn2, *tmp;
 	int index;
 
 	switch (head->type) {
 	case PT_AND:
 	case PT_OR:
 	case PT_IMPLIES:
+	case PT_EQUIV:
 		lsub = ptree_BDD( head->left, var_list, manager );
 		rsub = ptree_BDD( head->right, var_list, manager );
 		break;
@@ -729,6 +863,31 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 		Cudd_Ref( fn );
 		Cudd_RecursiveDeref( manager, tmp );
 		Cudd_RecursiveDeref( manager, rsub );
+		break;
+
+	case PT_EQUIV:
+		/* -> */
+		tmp = Cudd_Not( lsub );
+		Cudd_Ref( tmp );
+		fn = Cudd_bddOr( manager, tmp, rsub );
+		Cudd_Ref( fn );
+		Cudd_RecursiveDeref( manager, tmp );
+
+		/* <- */
+		tmp = Cudd_Not( rsub );
+		Cudd_Ref( tmp );
+		Cudd_RecursiveDeref( manager, rsub );
+		fn2 = Cudd_bddOr( manager, tmp, lsub );
+		Cudd_Ref( fn2 );
+		Cudd_RecursiveDeref( manager, tmp );
+		Cudd_RecursiveDeref( manager, lsub );
+
+		/* & */
+		tmp = fn;
+		fn = Cudd_bddAnd( manager, fn, fn2 );
+		Cudd_Ref( fn );
+		Cudd_RecursiveDeref( manager, tmp );
+		Cudd_RecursiveDeref( manager, fn2 );
 		break;
 
 	case PT_NEG:

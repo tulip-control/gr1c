@@ -4,7 +4,7 @@
  * getopt, once sophistication of usage demands.
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -82,7 +82,7 @@ int main( int argc, char **argv )
 	FILE *strategy_fp;
 	char dumpfilename[64];
 
-	int i, var_index, maxval, val;
+	int i, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
 	ptree_t *prevpt, *expt, *var_separator;
 	ptree_t *nonbool_var_list = NULL;
@@ -263,78 +263,6 @@ int main( int argc, char **argv )
 		} else {  /* No restrictions on transitions. */
 			sys_trans = init_ptree( PT_CONSTANT, NULL, 1 );
 		}
-	}
-
-
-	/* Compute domains of every variable, and encode the result in the
-	   "value" field.  The domain is of the form {0,1,...,n}, where n
-	   is a positive integer; for Boolean variables the domain is {0,1}. */
-	if (evar_list == NULL) {
-		var_separator = NULL;
-		evar_list = svar_list;  /* that this is the deterministic case
-								   is indicated by var_separator = NULL. */
-	} else {
-		var_separator = get_list_item( evar_list, -1 );
-		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
-			return NULL;
-		}
-		var_separator->left = svar_list;
-	}
-	tmppt = evar_list;
-	while (tmppt) {
-		maxval = rmax_tree_value( env_init, tmppt->name );
-		val = rmax_tree_value( sys_init, tmppt->name );
-		if (val != -9999 && maxval != -9999) {
-			maxval = (val > maxval) ? val : maxval;
-		} else if (val != -9999) {
-			maxval = val;
-		}
-
-		val = rmax_tree_value( env_trans, tmppt->name );
-		if (val != -9999 && maxval != -9999) {
-			maxval = (val > maxval) ? val : maxval;
-		} else if (val != -9999) {
-			maxval = val;
-		}
-
-		val = rmax_tree_value( sys_trans, tmppt->name );
-		if (val != -9999 && maxval != -9999) {
-			maxval = (val > maxval) ? val : maxval;
-		} else if (val != -9999) {
-			maxval = val;
-		}
-
-		for (i = 0; i < num_egoals; i++) {
-			val = rmax_tree_value( *(env_goals+i), tmppt->name );
-			if (val != -9999 && maxval != -9999) {
-				maxval = (val > maxval) ? val : maxval;
-			} else if (val != -9999) {
-				maxval = val;
-			}
-		}
-
-		for (i = 0; i < num_sgoals; i++) {
-			val = rmax_tree_value( *(sys_goals+i), tmppt->name );
-			if (val != -9999 && maxval != -9999) {
-				maxval = (val > maxval) ? val : maxval;
-			} else if (val != -9999) {
-				maxval = val;
-			}
-		}
-
-		if (maxval == -9999) {  /* ...must be Boolean */
-			tmppt->value = 0;
-		} else {
-			tmppt->value = maxval;
-		}
-
-		tmppt = tmppt->left;
-	}
-	if (var_separator == NULL) {
-		evar_list = NULL;
-	} else {
-		var_separator->left = NULL;
 	}
 
 
