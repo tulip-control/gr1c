@@ -235,6 +235,59 @@ ptree_t *var_to_bool( char *name, int maxval )
 }
 
 
+/* Expand a subformula like x < 3 to ((x = 0) | (x = 1) | (x = 2)),
+   assuming x has a domain of an interval of integers from 0 to some
+   value at least 2. */
+ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
+{
+	ptree_t **heads;
+	int var_tense, op_type, this_val;
+	int max, min;
+	int i;
+
+	/* Handle pointless calls */
+	if (head == NULL || !((head->type == PT_LT) || (head->type == PT_GT)) || !((!strcmp( head->left->name, name ) && (head->left->type == PT_VARIABLE || head->left->type == PT_NEXT_VARIABLE) && head->right->type == PT_CONSTANT) || (!strcmp( head->right->name, name ) && (head->right->type == PT_VARIABLE || head->right->type == PT_NEXT_VARIABLE) && head->left->type == PT_CONSTANT)))
+		return head;
+
+	op_type = head->type;
+	if (head->left->type == PT_CONSTANT) {
+		this_val = head->left->value;
+		var_tense = head->right->type;
+	} else {
+		this_val = head->right->value;
+		var_tense = head->left->type;
+	}
+	delete_tree( head );
+
+	/* Special cases */
+	if ((op_type == PT_LT && this_val <= 0)
+		|| (op_type == PT_GT && this_val >= maxval))
+		return init_ptree( PT_CONSTANT, NULL, 0 );  /* constant False */
+
+	if (op_type == PT_LT) {
+		min = 0;
+		max = this_val-1;
+	} else {  /* op_type == PT_GT */
+		max = maxval;
+		min = this_val+1;
+	}
+
+	heads = malloc( (max-min+1)*sizeof(ptree_t *) );
+	if (heads == NULL) {
+		perror( "expand_nonbool_varnum, malloc" );
+		return NULL;
+	}
+	for (i = min; i <= max; i++) {
+		*(heads+i-min) = init_ptree( PT_EQUALS, NULL, 0 );
+		(*(heads+i-min))->left = init_ptree( var_tense, name, 0 );
+		(*(heads+i-min))->right = init_ptree( PT_CONSTANT, NULL, i );
+	}
+	head = merge_ptrees( heads, max-min+1, PT_OR );
+	free( heads );
+	return head;
+}
+
+
 ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 {
 	ptree_t **heads;
@@ -250,9 +303,12 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 	if (expanded_varlist == NULL)
 		return NULL;
 
+	if (head->type == PT_LT || head->type == PT_GT)
+		head = expand_nonbool_varnum( head, name, maxval );
+
 	if (head->type == PT_EQUALS && ((head->left->type != PT_CONSTANT && !strcmp( head->left->name, name )) || (head->right->type != PT_CONSTANT && !strcmp( head->right->name, name )))) {
-		/* We assume that equality is only between a variable and a
-		   number; will be generalized soon. */
+		/* We assume that nonboolean comparison is only between a
+		   variable and a number; will be generalized soon. */
 		if (head->left->type == PT_CONSTANT) {
 			this_val = head->left->value;
 			if (head->right->type == PT_VARIABLE) {
@@ -377,6 +433,14 @@ void print_node( ptree_t *node, FILE *fp )
 		
 	case PT_EQUALS:
 		fprintf( fp, "=" );
+		break;
+
+	case PT_LT:
+		fprintf( fp, "<" );
+		break;
+
+	case PT_GT:
+		fprintf( fp, ">" );
 		break;
 
 	default:
@@ -600,6 +664,8 @@ void print_formula( ptree_t *head, FILE *fp )
 	case PT_IMPLIES:
 	case PT_EQUIV:
 	case PT_EQUALS:
+	case PT_LT:  /* less than */
+	case PT_GT:  /* greater than */
 		fprintf( fp, "(" );
 		print_formula( head->left, fp );
 		break;

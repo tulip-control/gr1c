@@ -27,7 +27,7 @@ number  (-)?[0-9]+([.][0-9]+)?
 
 "<->" { return EQUIV; }
 "->"  { return IMPLIES; }
-[()&|!=';,]  { return yytext[0]; }
+[()&|!=';,<>]  { return yytext[0]; }
 
 \n  {
         yylloc->first_column = yylloc->last_column;
