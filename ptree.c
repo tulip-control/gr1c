@@ -246,7 +246,7 @@ ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
 	int i;
 
 	/* Handle pointless calls */
-	if (head == NULL || !((head->type == PT_LT) || (head->type == PT_GT)) || !((!strcmp( head->left->name, name ) && (head->left->type == PT_VARIABLE || head->left->type == PT_NEXT_VARIABLE) && head->right->type == PT_CONSTANT) || (!strcmp( head->right->name, name ) && (head->right->type == PT_VARIABLE || head->right->type == PT_NEXT_VARIABLE) && head->left->type == PT_CONSTANT)))
+	if (head == NULL || !((head->type == PT_LT) || (head->type == PT_GT) || (head->type == PT_LE) || (head->type == PT_GE) || (head->type == PT_NOTEQ)) || !((!strcmp( head->left->name, name ) && (head->left->type == PT_VARIABLE || head->left->type == PT_NEXT_VARIABLE) && head->right->type == PT_CONSTANT) || (!strcmp( head->right->name, name ) && (head->right->type == PT_VARIABLE || head->right->type == PT_NEXT_VARIABLE) && head->left->type == PT_CONSTANT)))
 		return head;
 
 	op_type = head->type;
@@ -261,26 +261,52 @@ ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
 
 	/* Special cases */
 	if ((op_type == PT_LT && this_val <= 0)
-		|| (op_type == PT_GT && this_val >= maxval))
+		|| (op_type == PT_GT && this_val >= maxval)
+		|| (op_type == PT_LE && this_val < 0)
+		|| (op_type == PT_GE && this_val > maxval))
 		return init_ptree( PT_CONSTANT, NULL, 0 );  /* constant False */
 
-	if (op_type == PT_LT) {
-		min = 0;
-		max = this_val-1;
-	} else {  /* op_type == PT_GT */
-		max = maxval;
-		min = this_val+1;
-	}
+	if (op_type == PT_NOTEQ && (this_val < 0 || this_val > maxval))
+		return init_ptree( PT_CONSTANT, NULL, 1 );  /* constant True */
 
-	heads = malloc( (max-min+1)*sizeof(ptree_t *) );
-	if (heads == NULL) {
-		perror( "expand_nonbool_varnum, malloc" );
-		return NULL;
-	}
-	for (i = min; i <= max; i++) {
-		*(heads+i-min) = init_ptree( PT_EQUALS, NULL, 0 );
-		(*(heads+i-min))->left = init_ptree( var_tense, name, 0 );
-		(*(heads+i-min))->right = init_ptree( PT_CONSTANT, NULL, i );
+	if (op_type == PT_NOTEQ) {
+		heads = malloc( (maxval-1)*sizeof(ptree_t *) );
+		if (heads == NULL) {
+			perror( "expand_nonbool_varnum, malloc" );
+			return NULL;
+		}
+		for (i = 0; i <= maxval; i++) {
+			if (i == this_val)
+				continue;
+			*(heads+i-min) = init_ptree( PT_EQUALS, NULL, 0 );
+			(*(heads+i-min))->left = init_ptree( var_tense, name, 0 );
+			(*(heads+i-min))->right = init_ptree( PT_CONSTANT, NULL, i );
+		}
+	} else {
+		if (op_type == PT_LT) {
+			min = 0;
+			max = this_val-1;
+		} else if (op_type == PT_GT) {
+			max = maxval;
+			min = this_val+1;
+		} else if (op_type == PT_LE) {
+			min = 0;
+			max = this_val;
+		} else {  /* op_type == PT_GE */
+			max = maxval;
+			min = this_val;
+		}
+
+		heads = malloc( (max-min+1)*sizeof(ptree_t *) );
+		if (heads == NULL) {
+			perror( "expand_nonbool_varnum, malloc" );
+			return NULL;
+		}
+		for (i = min; i <= max; i++) {
+			*(heads+i-min) = init_ptree( PT_EQUALS, NULL, 0 );
+			(*(heads+i-min))->left = init_ptree( var_tense, name, 0 );
+			(*(heads+i-min))->right = init_ptree( PT_CONSTANT, NULL, i );
+		}
 	}
 	head = merge_ptrees( heads, max-min+1, PT_OR );
 	free( heads );
@@ -303,7 +329,9 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 	if (expanded_varlist == NULL)
 		return NULL;
 
-	if (head->type == PT_LT || head->type == PT_GT)
+	if (head->type == PT_LT || head->type == PT_GT
+		|| head->type == PT_LE || head->type == PT_GE
+		|| head->type == PT_NOTEQ)
 		head = expand_nonbool_varnum( head, name, maxval );
 
 	if (head->type == PT_EQUALS && ((head->left->type != PT_CONSTANT && !strcmp( head->left->name, name )) || (head->right->type != PT_CONSTANT && !strcmp( head->right->name, name )))) {
@@ -435,12 +463,24 @@ void print_node( ptree_t *node, FILE *fp )
 		fprintf( fp, "=" );
 		break;
 
+	case PT_NOTEQ:
+		fprintf( fp, "!=" );
+		break;
+
 	case PT_LT:
 		fprintf( fp, "<" );
 		break;
 
 	case PT_GT:
 		fprintf( fp, ">" );
+		break;
+
+	case PT_LE:
+		fprintf( fp, "<=" );
+		break;
+
+	case PT_GE:
+		fprintf( fp, ">=" );
 		break;
 
 	default:
@@ -664,8 +704,11 @@ void print_formula( ptree_t *head, FILE *fp )
 	case PT_IMPLIES:
 	case PT_EQUIV:
 	case PT_EQUALS:
+	case PT_NOTEQ:
 	case PT_LT:  /* less than */
 	case PT_GT:  /* greater than */
+	case PT_GE:  /* ...or equal to*/
+	case PT_LE:
 		fprintf( fp, "(" );
 		print_formula( head->left, fp );
 		break;
@@ -711,6 +754,21 @@ void print_formula( ptree_t *head, FILE *fp )
 		break;
 	case PT_EQUALS:
 		fprintf( fp, "=" );
+		break;
+	case PT_NOTEQ:
+		fprintf( fp, "!=" );
+		break;
+	case PT_LT:
+		fprintf( fp, "<" );
+		break;
+	case PT_GT:
+		fprintf( fp, ">" );
+		break;
+	case PT_GE:
+		fprintf( fp, ">=" );
+		break;
+	case PT_LE:
+		fprintf( fp, "<=" );
 		break;
 	}
 	print_formula( head->right, fp );

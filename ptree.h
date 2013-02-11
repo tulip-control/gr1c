@@ -45,6 +45,9 @@
 #define PT_EQUIV 9
 #define PT_LT 10  /* less than, i.e., "<" */
 #define PT_GT 11  /* greater than, i.e., ">" */
+#define PT_LE 12  /* less than or equal to, i.e., "<=" */
+#define PT_GE 13  /* greater than or equal to, i.e., ">=" */
+#define PT_NOTEQ 14  /* not equals */
 /**@}*/
 
 /** \brief Parse tree nodes. */

@@ -23,9 +23,13 @@ number  (-)?[0-9]+([.][0-9]+)?
 
 "[]<>"  { return LIVENESS_OP; }
 "[]"  { return SAFETY_OP; }
-"<>" { return EVENTUALLY_OP; }
+"<>"  { return EVENTUALLY_OP; }
 
-"<->" { return EQUIV; }
+"<="  { return LE_OP; }  /* less than or equal to */
+">="  { return GE_OP; }  /* greater than or equal to */
+"!="  { return NOT_EQUALS; }
+
+"<->"  { return EQUIV; }
 "->"  { return IMPLIES; }
 [()&|!=';,<>]  { return yytext[0]; }
 
