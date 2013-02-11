@@ -59,6 +59,7 @@
 %token TRUE_CONSTANT
 %token FALSE_CONSTANT
 
+%left EQUIV
 %left IMPLIES
 %left SAFETY_OP
 %left AND_SAFETY_OP
@@ -244,6 +245,9 @@ propformula: TRUE_CONSTANT  {
            | propformula IMPLIES propformula  {
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_IMPLIES );
              }
+           | propformula EQUIV propformula  {
+                 gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUIV );
+             }
            | VARIABLE '=' NUMBER  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
@@ -275,6 +279,9 @@ tpropformula: TRUE_CONSTANT  {
 	      }
 	    | tpropformula IMPLIES tpropformula  {
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_IMPLIES );
+	      }
+	    | tpropformula EQUIV tpropformula  {
+		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUIV );
 	      }
 	    | VARIABLE '=' NUMBER  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );

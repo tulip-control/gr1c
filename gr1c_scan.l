@@ -25,6 +25,7 @@ number  (-)?[0-9]+([.][0-9]+)?
 "[]"  { return SAFETY_OP; }
 "<>" { return EVENTUALLY_OP; }
 
+"<->" { return EQUIV; }
 "->"  { return IMPLIES; }
 [()&|!=';,]  { return yytext[0]; }
 

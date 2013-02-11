@@ -1,7 +1,7 @@
 /* ptree.c -- Definitions for signatures appearing in ptree.h.
  *
  *
- * SCL; Jan-Mar 2012.
+ * SCL; Jan-Mar 2012, Feb 2013.
  */
 
 
@@ -370,6 +370,10 @@ void print_node( ptree_t *node, FILE *fp )
 	case PT_IMPLIES:
 		fprintf( fp, "->" );
 		break;
+
+	case PT_EQUIV:
+		fprintf( fp, "<->" );
+		break;
 		
 	case PT_EQUALS:
 		fprintf( fp, "=" );
@@ -594,6 +598,7 @@ void print_formula( ptree_t *head, FILE *fp )
 	case PT_AND:
 	case PT_OR:
 	case PT_IMPLIES:
+	case PT_EQUIV:
 	case PT_EQUALS:
 		fprintf( fp, "(" );
 		print_formula( head->left, fp );
@@ -650,13 +655,14 @@ void print_formula( ptree_t *head, FILE *fp )
 
 DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 {
-	DdNode *lsub, *rsub, *fn, *tmp;
+	DdNode *lsub, *rsub, *fn, *fn2, *tmp;
 	int index;
 
 	switch (head->type) {
 	case PT_AND:
 	case PT_OR:
 	case PT_IMPLIES:
+	case PT_EQUIV:
 		lsub = ptree_BDD( head->left, var_list, manager );
 		rsub = ptree_BDD( head->right, var_list, manager );
 		break;
@@ -724,6 +730,31 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 		Cudd_Ref( fn );
 		Cudd_RecursiveDeref( manager, tmp );
 		Cudd_RecursiveDeref( manager, rsub );
+		break;
+
+	case PT_EQUIV:
+		/* -> */
+		tmp = Cudd_Not( lsub );
+		Cudd_Ref( tmp );
+		fn = Cudd_bddOr( manager, tmp, rsub );
+		Cudd_Ref( fn );
+		Cudd_RecursiveDeref( manager, tmp );
+
+		/* <- */
+		tmp = Cudd_Not( rsub );
+		Cudd_Ref( tmp );
+		Cudd_RecursiveDeref( manager, rsub );
+		fn2 = Cudd_bddOr( manager, tmp, lsub );
+		Cudd_Ref( fn2 );
+		Cudd_RecursiveDeref( manager, tmp );
+		Cudd_RecursiveDeref( manager, lsub );
+
+		/* & */
+		tmp = fn;
+		fn = Cudd_bddAnd( manager, fn, fn2 );
+		Cudd_Ref( fn );
+		Cudd_RecursiveDeref( manager, tmp );
+		Cudd_RecursiveDeref( manager, fn2 );
 		break;
 
 	case PT_NEG:

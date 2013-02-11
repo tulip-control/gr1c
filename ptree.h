@@ -42,6 +42,7 @@
 #define PT_OR 6
 #define PT_IMPLIES 7
 #define PT_EQUALS 8
+#define PT_EQUIV 9
 /**@}*/
 
 /** \brief Parse tree nodes. */
