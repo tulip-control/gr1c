@@ -31,18 +31,94 @@ extern int num_sgoals;
 
 extern int bitvec_to_int( bool *vec, int vec_len );  /* See util.c */
 
-int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
+
+/** Return an array of length 2n, where n is the number of entries in
+   metric_vars.  The values at indices 2i and 2i+1 are the offset and
+   width of the i-th variable's binary representation.  Return NULL if
+   error.  metric_vars is a space-separated list of variables to use
+   in computing distance. The caller is expected to free the array.
+
+   This function assumes that evar_list and svar_list have not been linked. */
+int *get_offsets( char *metric_vars, int *num_vars )
+{
+	char *var_str, *tok = NULL;
+	int *offw = NULL;
+	ptree_t *var, *var_tail;
+	int start_index, stop_index;
+
+	if (metric_vars == NULL)
+		return NULL;
+	var_str = strdup( metric_vars );
+	if (var_str == NULL) {
+		perror( "get_offsets, strdup" );
+		return NULL;
+	}
+
+	*num_vars = 0;
+	tok = strtok( var_str, " " );
+	if (tok == NULL) {
+		free( var_str );
+		return NULL;
+	}
+	do {
+		(*num_vars)++;
+		offw = realloc( offw, 2*(*num_vars)*sizeof(int) );
+		if (offw == NULL) {
+			perror( "get_offsets, realloc" );
+			return NULL;
+		}
+
+		var = evar_list;
+		start_index = 0;
+		while (var) {
+			if (strstr( var->name, tok ) == var->name)
+				break;
+			var = var->left;
+			start_index++;
+		}
+		if (var == NULL) {
+			var = svar_list;
+			while (var) {
+				if (strstr( var->name, tok ) == var->name)
+					break;
+				var = var->left;
+				start_index++;
+			}
+			if (var == NULL) {
+				fprintf( stderr, "Could not find match for \"%s\"", tok );
+				free( offw );
+				free( var_str );
+				return NULL;
+			}
+		}
+
+		var_tail = var;
+		stop_index = start_index;
+		while (var_tail->left) {
+			if (strstr( var_tail->left->name, tok ) != var_tail->left->name )
+				break;
+			var_tail = var_tail->left;
+			stop_index++;
+		}
+
+		*(offw+2*((*num_vars)-1)) = start_index;
+		*(offw+2*((*num_vars)-1)+1) = stop_index-start_index+1;
+	} while (tok = strtok( NULL, " " ));
+
+	free( var_str );
+	return offw;
+}
+
+
+int bounds_state( DdManager *manager, DdNode *T, bool *ref_state,
+				  int *offw, int num_metric_vars,
 				  double *Min, double *Max, unsigned char verbose )
 {
 	bool *state;
-	int ref_mapped_x, this_mapped_x, ref_mapped_y, this_mapped_y;
 	double dist;
 	int num_env, num_sys;
-	ptree_t *var = evar_list, *var_tail;
-	int start_index, stop_index;
 	int i;
-	int x_offset = 4, x_width = 4;
-	int y_offset = 8, y_width = 3;
+	int *ref_mapped, *this_mapped;
 
 	/* Variables used during CUDD generation (state enumeration). */
 	DdGen *gen;
@@ -59,37 +135,17 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 		return -1;
 	}
 
-	start_index = 0;
-	while (var) {
-		if (strstr( var->name, name ) == var->name)
-			break;
-		var = var->left;
-		start_index++;
-	}
-	if (var == NULL) {
-		var = svar_list;
-		while (var) {
-			if (strstr( var->name, name ) == var->name)
-				break;
-			var = var->left;
-			start_index++;
-		}
-		if (var == NULL)
-			return -1;  /* Could not find match. */
+	/* Reference and particular integral vectors */
+	ref_mapped = malloc( num_metric_vars*sizeof(int) );
+	this_mapped = malloc( num_metric_vars*sizeof(int) );
+	if (ref_mapped == NULL || this_mapped == NULL) {
+		perror( "bounds_state, malloc" );
+		return -1;
 	}
 
-	var_tail = var;
-	stop_index = start_index;
-	while (var_tail->left) {
-		if (strstr( var_tail->left->name, name ) != var_tail->left->name )
-			break;
-		var_tail = var_tail->left;
-		stop_index++;
-	}
-
-	/* ref_mapped = bitvec_to_int( ref_state+start_index, stop_index-start_index+1 ); */
-	ref_mapped_x = bitvec_to_int( ref_state+x_offset, x_width );
-	ref_mapped_y = bitvec_to_int( ref_state+y_offset, y_width );
+	for (i = 0; i < num_metric_vars; i++)
+		*(ref_mapped+i) = bitvec_to_int( ref_state+(*(offw+2*i)),
+										 *(offw+2*i+1) );
 	*Min = *Max = -1.;  /* Distance is non-negative; thus use -1 as "unset". */
 
 	Cudd_AutodynDisable( manager );
@@ -97,30 +153,32 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 		initialize_cube( state, gcube, num_env+num_sys );
 		while (!saturated_cube( state, gcube, num_env+num_sys )) {
 
-			/* this_mapped = bitvec_to_int( state+start_index, stop_index-start_index+1 ); */
-			this_mapped_x = bitvec_to_int( state+x_offset, x_width );
-			this_mapped_y = bitvec_to_int( state+y_offset, y_width );
-			dist = sqrt( pow((this_mapped_x-ref_mapped_x), 2) + pow((this_mapped_y-ref_mapped_y), 2) );
+			for (i = 0; i < num_metric_vars; i++)
+				*(this_mapped+i) = bitvec_to_int( state+(*(offw+2*i)),
+												  *(offw+2*i+1) );
+
+			/* 2-norm derived metric */
+			dist = 0.;
+			for (i = 0; i < num_metric_vars; i++)
+				dist += pow(*(this_mapped+i) - *(ref_mapped+i), 2);
+			dist = sqrt( dist );
 			if (*Min == -1. || dist < *Min)
 				*Min = dist;
 			if (*Max == -1. || dist > *Max)
 				*Max = dist;
 
-			/* logprint_startline(); */
-			/* for (i = 0; i < num_env; i++) */
-			/* 	logprint_raw( "%d", *(state+i) ); */
-			/* logprint_raw( " " ); */
-			/* for (i = num_env; i < num_env+num_sys; i++) */
-			/* 	logprint_raw( "%d", *(state+i) ); */
-			/* logprint_raw( "; %d -> %d", ref_mapped, this_mapped ); */
-			/* logprint_endline(); */
-
 			increment_cube( state, gcube, num_env+num_sys );
 		}
 
-		this_mapped_x = bitvec_to_int( state+x_offset, x_width );
-		this_mapped_y = bitvec_to_int( state+y_offset, y_width );
-		dist = sqrt( pow((this_mapped_x-ref_mapped_x), 2) + pow((this_mapped_y-ref_mapped_y), 2) );
+		for (i = 0; i < num_metric_vars; i++)
+			*(this_mapped+i) = bitvec_to_int( state+(*(offw+2*i)),
+											  *(offw+2*i+1) );
+
+		/* 2-norm derived metric */
+		dist = 0.;
+		for (i = 0; i < num_metric_vars; i++)
+			dist += pow(*(this_mapped+i) - *(ref_mapped+i), 2);
+		dist = sqrt( dist );
 		if (*Min == -1. || dist < *Min)
 			*Min = dist;
 		if (*Max == -1. || dist > *Max)
@@ -130,13 +188,16 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
    
 	free( state );
+	free( ref_mapped );
+	free( this_mapped );
 	return 0;
 }
 
 /* G is the goal set against which to measure distance.
    Result is written into given integer variables Min and Max;
    return 0 on success, -1 error. */
-int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
+int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
+				  int *offw, int num_metric_vars,
 				  double *Min, double *Max, unsigned char verbose )
 {
 	bool **states = NULL;
@@ -144,9 +205,8 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
 	bool *state;
 	double tMin, tMax;  /* Particular distance to goal set */
 	int num_env, num_sys;
-	ptree_t *var = evar_list, *var_tail;
-	int start_index, stop_index;
 	int i, k;
+	int *mapped_state;
 
 	/* Variables used during CUDD generation (state enumeration). */
 	DdGen *gen;
@@ -160,34 +220,6 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
 	if (state == NULL) {
 		perror( "bounds_DDset, malloc" );
 		return -1;
-	}
-
-	start_index = 0;
-	while (var) {
-		if (strstr( var->name, name ) == var->name)
-			break;
-		var = var->left;
-		start_index++;
-	}
-	if (var == NULL) {
-		var = svar_list;
-		while (var) {
-			if (strstr( var->name, name ) == var->name)
-				break;
-			var = var->left;
-			start_index++;
-		}
-		if (var == NULL)
-			return -1;  /* Could not find match. */
-	}
-
-	var_tail = var;
-	stop_index = start_index;
-	while (var_tail->left) {
-		if (strstr( var_tail->left->name, name ) != var_tail->left->name )
-			break;
-		var_tail = var_tail->left;
-		stop_index++;
 	}
 
 	*Min = *Max = -1.;  /* Distance is non-negative; thus use -1 as "unset". */
@@ -232,23 +264,31 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
 	}
 	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 
+	mapped_state = malloc( num_metric_vars*sizeof(int) );
+	if (mapped_state == NULL) {
+		perror( "bounds_DDset, malloc" );
+		return -1;
+	}
 	for (k = 0; k < num_states; k++) {
-		bounds_state( manager, G, *(states+k), name, &tMin, &tMax, verbose );
+		bounds_state( manager, G, *(states+k), offw, num_metric_vars, &tMin, &tMax, verbose );
 		if (*Min == -1. || tMin < *Min)
 			*Min = tMin;
 		if (*Max == -1. || tMin > *Max)
 			*Max = tMin;
 
-		logprint_startline();
-		for (i = 0; i < num_env; i++)
-			logprint_raw( "%d", *(*(states+k)+i) );
-		logprint_raw( " " );
-		for (i = num_env; i < num_env+num_sys; i++)
-			logprint_raw( "%d", *(*(states+k)+i) );
-		logprint_raw( "; mi = %f", tMin );
-		logprint_endline();
+		if (verbose) {
+			for (i = 0; i < num_metric_vars; i++)
+				*(mapped_state+i) = bitvec_to_int( *(states+k)+(*(offw+2*i)),
+												   *(offw+2*i+1) );
+			logprint_startline();
+			for (i = 0; i < num_metric_vars; i++)
+				logprint_raw( "%d, ", *(mapped_state+i) );
+			logprint_raw( "mi = %f", tMin );
+			logprint_endline();
+		}
 	}
-   
+
+	free( mapped_state );
 	for (i = 0; i < num_states; i++)
 		free( *(states+i) );
 	free( states );
@@ -259,6 +299,7 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
 
 int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals,
 					int **num_sublevels, double ***Min, double ***Max,
+					int *offw, int num_metric_vars,
 					unsigned char verbose )
 {
 	DdNode **egoals;
@@ -267,7 +308,7 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 	DdNode ****X_ijr = NULL;
 	bool env_nogoal_flag = False;
 	int i, j, r;
-	DdNode *tmp, *tmp2;
+	DdNode *tmp;
 
 	if (num_egoals == 0) {
 		env_nogoal_flag = True;
@@ -354,7 +395,7 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 			logprint( "goal %d, level %d...", i, j );
 			tmp = Cudd_bddAnd( manager, *(*(Y+i)+j), Cudd_Not( *(*(Y+i)+j-1) ) );
 			Cudd_Ref( tmp );
-			if (bounds_DDset( manager, tmp, **(Y+i), "x", *(*Min+i)+j-1, *(*Max+i)+j-1,
+			if (bounds_DDset( manager, tmp, **(Y+i), offw, num_metric_vars, *(*Min+i)+j-1, *(*Max+i)+j-1,
 							  verbose )) {
 				*(*(*Min+i)+j-1) = *(*(*Max+i)+j-1) = -1.;
 			}
@@ -395,14 +436,23 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 }
 
 
-int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals, unsigned char verbose )
+int compute_horizon( DdManager *manager, DdNode **W,
+					 DdNode **etrans, DdNode **strans, DdNode ***sgoals,
+					 char *metric_vars, unsigned char verbose )
 {
 	int horizon = -1, horiz_j;
 	int *num_sublevels;
 	double **Min, **Max;
 	int i, j, k;
+	int *offw, num_metric_vars;
 
-	if (compute_minmax( manager, W, etrans, strans, sgoals, &num_sublevels, &Min, &Max, verbose ))
+	offw = get_offsets( metric_vars, &num_metric_vars );
+	if (offw == NULL)
+		return -1;
+
+	if (compute_minmax( manager, W, etrans, strans, sgoals,
+						&num_sublevels, &Min, &Max, offw, num_metric_vars,
+						verbose ))
 		return -1;  /* Error in compute_minmax() */
 
 	for (i = 0; i < num_sgoals; i++) {
@@ -417,7 +467,7 @@ int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **s
 	for (i = 0; i < num_sgoals; i++) {
 		for (j = 3; j < *(num_sublevels+i); j++) {
 			horiz_j = 1;
-			for (k = j-2; k >= 1; k--) {
+			for (k = j-2; k >= 2; k--) {
 				if (*(*(Max+i)+k-1) >= *(*(Min+i)+j-1))
 					horiz_j = j-k;
 			}
@@ -435,5 +485,7 @@ int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **s
 		free( Min );
 		free( Max );
 	}
+
+	free( offw );
 	return horizon;
 }

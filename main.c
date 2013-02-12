@@ -63,8 +63,10 @@ ptree_t *gen_tree_ptr = NULL;
 #define GR1C_MODE_SIMULATION 5
 
 
-extern bool *int_to_bitvec( int k, int vec_len );
-extern int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals, unsigned char verbose );
+extern bool *int_to_bitvec( int k, int vec_len );  /* See util.c */
+extern int compute_horizon( DdManager *manager, DdNode **W,
+							DdNode **etrans, DdNode **strans, DdNode ***sgoals,
+							char *metric_vars, unsigned char verbose );  /* See solve_metric.c */
 
 
 void dump_simtrace( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp )
@@ -696,17 +698,20 @@ int main( int argc, char **argv )
 		}
 
 		if (run_option == GR1C_MODE_SIMULATION && T != NULL) { /* Print measure data and simulate. */
-			horizon = compute_horizon( manager, &W, &etrans, &strans, &sgoals, verbose );
+			horizon = compute_horizon( manager, &W, &etrans, &strans, &sgoals, "x y", verbose );
 			logprint( "horizon: %d", horizon );
+			/* return 0; */
 
 			if (horizon > -1) {
-				init_state = int_to_bitvec( (0 << 0) | (0 << 2)
-											| (7 << 4) | (2 << 8),
+				/* (0 << 0) | (0 << 2)
+				   | (7 << 4) | (2 << 8), */ /* gw2goals1obs.spc */
+				init_state = int_to_bitvec( (1 << 0) | (2 << 4)
+											| (15 << 6) | (7 << 10),  /* tunnel.spc */
 											num_env+num_sys );
 				if (init_state == NULL)
 					return -1;
 				
-				play = sim_rhc( manager, W, etrans, strans, sgoals,
+				play = sim_rhc( manager, W, etrans, strans, sgoals, "x y",
 								horizon, init_state, max_sim_it );
 				if (play == NULL) {
 					fprintf( stderr, "Error while attempting receding horizon simulation.\n" );

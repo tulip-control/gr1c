@@ -1,5 +1,5 @@
-ENV: obs_x obs_y;
-SYS: x y;
+ENV: obs_x [0,9] obs_y [0,3];
+SYS: x [0,15] y [0,7];
 
 ENVINIT: obs_x=1 & obs_y=2;
 ENVTRANS:
@@ -12,28 +12,15 @@ ENVTRANS:
 & []((obs_x=6) -> (obs_x'=5 | obs_x'=6 | obs_x'=7))
 & []((obs_x=7) -> (obs_x'=6 | obs_x'=7 | obs_x'=8))
 & []((obs_x=8) -> (obs_x'=7 | obs_x'=8 | obs_x'=9))
-& []((obs_x=9) -> (obs_x'=8 | obs_x'=9 | obs_x'=10))
-& []((obs_x=10) -> (obs_x'=9 | obs_x'=10 | obs_x'=11))
-& []((obs_x=11) -> (obs_x'=10 | obs_x'=11 | obs_x'=12))
-& []((obs_x=12) -> (obs_x'=11 | obs_x'=12 | obs_x'=13))
-& []((obs_x=13) -> (obs_x'=12 | obs_x'=13 | obs_x'=14))
-& []((obs_x=14) -> (obs_x'=13 | obs_x'=14 | obs_x'=15))
-& []((obs_x=15) -> (obs_x'=14 | obs_x'=15))
+& []((obs_x=9) -> (obs_x'=8 | obs_x'=9))
 
 & []((obs_y=0) -> (obs_y'=0 | obs_y'=1))
 & []((obs_y=1) -> (obs_y'=0 | obs_y'=1 | obs_y'=2))
 & []((obs_y=2) -> (obs_y'=1 | obs_y'=2 | obs_y'=3))
-& []((obs_y=3) -> (obs_y'=2 | obs_y'=3 | obs_y'=4))
-& []((obs_y=4) -> (obs_y'=3 | obs_y'=4 | obs_y'=5))
-& []((obs_y=5) -> (obs_y'=4 | obs_y'=5 | obs_y'=6))
-& []((obs_y=6) -> (obs_y'=5 | obs_y'=6 | obs_y'=7))
-& []((obs_y=7) -> (obs_y'=6 | obs_y'=7))
+& []((obs_y=3) -> (obs_y'=2 | obs_y'=3))
 
-& []((obs_x=0 & obs_x'=0) | (obs_x=1 & obs_x'=1) | (obs_x=2 & obs_x'=2) | (obs_x=3 & obs_x'=3) | (obs_x=4 & obs_x'=4) | (obs_x=5 & obs_x'=5) | (obs_x=6 & obs_x'=6) | (obs_x=7 & obs_x'=7) | (obs_x=8 & obs_x'=8) | (obs_x=9 & obs_x'=9) | (obs_x=10 & obs_x'=10) | (obs_x=11 & obs_x'=11) | (obs_x=12 & obs_x'=12) | (obs_x=13 & obs_x'=13) | (obs_x=14 & obs_x'=14) | (obs_x=15 & obs_x'=15) | (obs_y=0 & obs_y'=0) | (obs_y=1 & obs_y'=1) | (obs_y=2 & obs_y'=2) | (obs_y=3 & obs_y'=3) | (obs_y=4 & obs_y'=4) | (obs_y=5 & obs_y'=5) | (obs_y=6 & obs_y'=6) | (obs_y=7 & obs_y'=7))
+& []((obs_x=0 & obs_x'=0) | (obs_x=1 & obs_x'=1) | (obs_x=2 & obs_x'=2) | (obs_x=3 & obs_x'=3) | (obs_x=4 & obs_x'=4) | (obs_x=5 & obs_x'=5) | (obs_x=6 & obs_x'=6) | (obs_x=7 & obs_x'=7) | (obs_x=8 & obs_x'=8) | (obs_x=9 & obs_x'=9) | (obs_y=0 & obs_y'=0) | (obs_y=1 & obs_y'=1) | (obs_y=2 & obs_y'=2) | (obs_y=3 & obs_y'=3))
 
-& []((obs_x'=1 & obs_y'=2) | (obs_x'=2 & obs_y'=2) | (obs_x'=3 & obs_y'=2) | (obs_x'=4 & obs_y'=2) | (obs_x'=5 & obs_y'=2) | (obs_x'=6 & obs_y'=2) | (obs_x'=7 & obs_y'=2) | (obs_x'=8 & obs_y'=2) | (obs_x'=9 & obs_y'=2) | (obs_x'=3 & obs_y'=0) | (obs_x'=3 & obs_y'=1) | (obs_x'=3 & obs_y'=2) | (obs_x'=3 & obs_y'=3) | (obs_x'=6 & obs_y'=0) | (obs_x'=6 & obs_y'=1) | (obs_x'=6 & obs_y'=2) | (obs_x'=6 & obs_y'=3) | (obs_x'=9 & obs_y'=0) | (obs_x'=9 & obs_y'=1) | (obs_x'=9 & obs_y'=2) | (obs_x'=9 & obs_y'=3))
-
-& []((obs_x=1 & obs_y=2) | (obs_x=2 & obs_y=2) | (obs_x=3 & obs_y=2) | (obs_x=4 & obs_y=2) | (obs_x=5 & obs_y=2) | (obs_x=6 & obs_y=2) | (obs_x=7 & obs_y=2) | (obs_x=8 & obs_y=2) | (obs_x=9 & obs_y=2) | (obs_x=3 & obs_y=0) | (obs_x=3 & obs_y=1) | (obs_x=3 & obs_y=2) | (obs_x=3 & obs_y=3) | (obs_x=6 & obs_y=0) | (obs_x=6 & obs_y=1) | (obs_x=6 & obs_y=2) | (obs_x=6 & obs_y=3) | (obs_x=9 & obs_y=0) | (obs_x=9 & obs_y=1) | (obs_x=9 & obs_y=2) | (obs_x=9 & obs_y=3))
 & []!(obs_x=1 & x=1 & obs_y=2 & y=2)
 & []!(obs_x=2 & x=2 & obs_y=2 & y=2)
 & []!(obs_x=3 & x=3 & obs_y=2 & y=2)
@@ -59,7 +46,7 @@ ENVTRANS:
 #ENVGOAL: []<>((obs_x=3 & obs_y=0) | (obs_x=3 & obs_y=1) | (obs_x=3 & obs_y=3) | (obs_x=6 & obs_y=0) | (obs_x=6 & obs_y=1) | (obs_x=6 & obs_y=3) | (obs_x=9 & obs_y=0) | (obs_x=9 & obs_y=1) | (obs_x=9 & obs_y=3) | (obs_x=1 & obs_y=2) | (obs_x=3 & obs_y=2) | (obs_x=4 & obs_y=2) | (obs_x=6 & obs_y=2) | (obs_x=7 & obs_y=2) | (obs_x=9 & obs_y=2));
 ENVGOAL: []<>((obs_x=3 & obs_y=0) | (obs_x=3 & obs_y=1) | (obs_x=3 & obs_y=3) | (obs_x=6 & obs_y=0) | (obs_x=6 & obs_y=1) | (obs_x=6 & obs_y=3) | (obs_x=9 & obs_y=0) | (obs_x=9 & obs_y=1) | (obs_x=9 & obs_y=3));
 
-SYSINIT: x=7 & y=2;
+SYSINIT: x=15 & y=7;
 
 SYSTRANS:
   []((x=0) -> (x'=0 | x'=1))
@@ -134,29 +121,7 @@ SYSTRANS:
 & []!(x'=8 & y'=6)
 & []!(x'=8 & y'=7)
 
-& []!(x=2 & y=0)
-& []!(x=2 & y=1)
-& []!(x=2 & y=3)
-& []!(x=2 & y=4)
-& []!(x=2 & y=5)
-& []!(x=2 & y=6)
-& []!(x=2 & y=7)
-& []!(x=5 & y=0)
-& []!(x=5 & y=1)
-& []!(x=5 & y=3)
-& []!(x=5 & y=4)
-& []!(x=5 & y=5)
-& []!(x=5 & y=6)
-& []!(x=5 & y=7)
-& []!(x=8 & y=0)
-& []!(x=8 & y=1)
-& []!(x=8 & y=3)
-& []!(x=8 & y=4)
-& []!(x=8 & y=5)
-& []!(x=8 & y=6)
-& []!(x=8 & y=7)
-
-& []!(x'=1 & y'=2 & obs_x=1 & obs_y=2 & x=1 & y=2 & obs_x'=1 & obs_y'=2)
+& []!(x'=1 & y'=2 & obs_x'=1 & obs_y'=2)
 & []!(x'=1 & y'=2 & obs_x=1 & obs_y=2 & x=2 & y=2 & obs_x'=2 & obs_y'=2)
 & []!(x'=1 & y'=2 & obs_x=1 & obs_y=2 & x=3 & y=2 & obs_x'=3 & obs_y'=2)
 & []!(x'=1 & y'=2 & obs_x=1 & obs_y=2 & x=4 & y=2 & obs_x'=4 & obs_y'=2)

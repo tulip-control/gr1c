@@ -1,7 +1,7 @@
 /* sim.c -- Definitions for signatures appearing in sim.h.
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -25,13 +25,16 @@ extern int num_egoals;
 extern int num_sgoals;
 
 
-extern int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
-						 double *Min, double *Max, unsigned char verbose );
+extern int *get_offsets( char *metric_vars, int *num_vars );  /* See solve_metric.c */
+extern int bounds_state( DdManager *manager, DdNode *T, bool *ref_state,
+						 int *offw, int num_metric_vars,
+						 double *Min, double *Max, unsigned char verbose );  /* See solve_metric.c */
 extern int bitvec_to_int( bool *vec, int vec_len );  /* See util.c */
 
 
-anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, int horizon, bool *init_state, int num_it )
+anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, char *metric_vars, int horizon, bool *init_state, int num_it )
 {
+	int *offw, num_metric_vars;
 	anode_t *play;
 	int num_env, num_sys;
 	bool *candidate_state, *next_state;
@@ -60,6 +63,10 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 	DdNode **vars, **pvars;
 
 	if (init_state == NULL || horizon < 1)
+		return NULL;
+
+	offw = get_offsets( metric_vars, &num_metric_vars );
+	if (offw == NULL)
 		return NULL;
 
 	srand( time(NULL) );
@@ -167,7 +174,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 						node = node->next;
 					}
 					if (node == NULL) {
-						bounds_state( manager, tmp, candidate_state, "x", &Min, &Max, 0 );
+						bounds_state( manager, tmp, candidate_state, offw, num_metric_vars, &Min, &Max, 0 );
 						if (next_min == -1. || Min < next_min) {
 							next_min = Min;
 							for (i = 0; i < num_env+num_sys; i++)
@@ -190,7 +197,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 					node = node->next;
 				}
 				if (node == NULL) {
-					bounds_state( manager, tmp, candidate_state, "x", &Min, &Max, 0 );
+					bounds_state( manager, tmp, candidate_state, offw, num_metric_vars, &Min, &Max, 0 );
 					if (next_min == -1. || Min < next_min) {
 						next_min = Min;
 						for (i = 0; i < num_env+num_sys; i++)
@@ -251,7 +258,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 									prev_node = prev_node->next;
 								}
 								if (prev_node == NULL) {
-									bounds_state( manager, tmp, fnext_state, "x", &Min, &Max, 0 );
+									bounds_state( manager, tmp, fnext_state, offw, num_metric_vars, &Min, &Max, 0 );
 									if (next_min == -1. || Min < next_min) {
 										next_min = Min;
 										for (i = 0; i < num_env+num_sys; i++)
@@ -278,7 +285,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 								prev_node = prev_node->next;
 							}
 							if (prev_node == NULL) {
-								bounds_state( manager, tmp, fnext_state, "x", &Min, &Max, 0 );
+								bounds_state( manager, tmp, fnext_state, offw, num_metric_vars, &Min, &Max, 0 );
 								if (next_min == -1. || Min < next_min) {
 									next_min = Min;
 									for (i = 0; i < num_env+num_sys; i++)
@@ -363,5 +370,6 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 	free( fnext_state );
 	free( hstacks );
 	free( cube );
+	free( offw );
 	return play;
 }
