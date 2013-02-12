@@ -60,9 +60,63 @@ ptree_t *gen_tree_ptr = NULL;
 #define GR1C_MODE_SYNTHESIS 2
 #define GR1C_MODE_INTERACTIVE 3
 #define GR1C_MODE_PATCH 4
+#define GR1C_MODE_SIMULATION 5
 
 
+extern bool *int_to_bitvec( int k, int vec_len );
 extern int compute_horizon( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals, unsigned char verbose );
+
+
+void dump_simtrace( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp )
+{
+	int j, last_nonzero_env, last_nonzero_sys;
+	anode_t *node;
+	int node_counter = 0;
+	ptree_t *var;
+	int num_env, num_sys;
+
+	if (fp == NULL)
+		fp = stdout;
+
+	num_env = tree_size( evar_list );
+	num_sys = tree_size( svar_list );
+
+	node = head;
+	while (node->mode != 0)  /* Find starting state */
+		node = node->next;
+	while (node->trans_len >= 0) {
+		fprintf( fp, "%d: ", node_counter );
+		last_nonzero_env = num_env-1;
+		last_nonzero_sys = num_sys-1;
+		if (last_nonzero_env < 0 && last_nonzero_sys < 0) {
+			fprintf( fp, "{}" );
+		} else {
+			for (j = 0; j < num_env; j++) {
+				var = get_list_item( evar_list, j );
+				if (j == last_nonzero_env) {
+					fprintf( fp, "%s=%d", var->name, *(node->state+j) );
+					fprintf( fp, ", " );
+				} else {
+					fprintf( fp, "%s=%d, ", var->name, *(node->state+j) );
+				}
+			}
+			for (j = 0; j < num_sys; j++) {
+				var = get_list_item( svar_list, j );
+				if (j == last_nonzero_sys) {
+					fprintf( fp, "%s=%d", var->name, *(node->state+num_env+j) );
+				} else {
+					fprintf( fp, "%s=%d, ", var->name, *(node->state+num_env+j) );
+				}
+			}
+		}
+		fprintf( fp, "\n" );
+		if (node->trans_len == 0)
+			break;
+
+		node_counter++;
+		node = *(node->trans);
+	}
+}
 
 
 int main( int argc, char **argv )
@@ -88,6 +142,7 @@ int main( int argc, char **argv )
 	ptree_t *nonbool_var_list = NULL;
 	int maxbitval;
 	int horizon;
+	int max_sim_it;  /* Number of simulation iterations */
 	DdNode *W, *etrans, *strans, **sgoals;
 	anode_t *play;
 	bool *init_state;
@@ -113,6 +168,18 @@ int main( int argc, char **argv )
 				run_option = GR1C_MODE_SYNTAX;
 			} else if (argv[i][1] == 'p') {
 				ptdump_flag = True;
+			} else if (argv[i][1] == 'm') {
+				run_option = GR1C_MODE_SIMULATION;
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				max_sim_it = strtol( argv[i+1], NULL, 10 );
+				if (max_sim_it < 0) {
+					fprintf( stderr, "Invalid number of iterations %d.  It must be nonnegative.\n", max_sim_it );
+					return 1;
+				}
+				i++;
 			} else if (argv[i][1] == 'r') {
 				run_option = GR1C_MODE_REALIZABLE;
 			} else if (argv[i][1] == 'i') {
@@ -174,7 +241,7 @@ int main( int argc, char **argv )
 	}
 
 	if (help_flag) {
-		printf( "Usage: %s [-hVvlspri] [-t TYPE] [-aeo FILE] [FILE]\n\n"
+		printf( "Usage: %s [-hVvlspri] [-m ARG1,ARG2,...] [-t TYPE] [-aeo FILE] [FILE]\n\n"
 				"  -h        this help message\n"
 				"  -V        print version and exit\n"
 				"  -v        be verbose\n"
@@ -183,6 +250,7 @@ int main( int argc, char **argv )
 				"            supported formats: txt, tulip, dot, aut\n"
 				"  -s        only check specification syntax (return -1 on error)\n"
 				"  -p        dump parse trees to DOT files, and echo formulas to screen\n"
+				"  -m ARGS   run simulation using comma-separated list of arguments\n"
 				"  -r        only check realizability; do not synthesize strategy\n"
 				"            (return 0 if realizable, -1 if not)\n"
 				"  -i        interactive mode\n"
@@ -271,7 +339,8 @@ int main( int argc, char **argv )
 	while (tmppt) {
 		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
 		if (maxbitval-1 > tmppt->value) {
-			logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
+			if (verbose)
+				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
 			prevpt = env_trans;
 			env_trans = init_ptree( PT_AND, NULL, 0 );
 			env_trans->right = prevpt;
@@ -284,7 +353,8 @@ int main( int argc, char **argv )
 	while (tmppt) {
 		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
 		if (maxbitval-1 > tmppt->value) {
-			logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
+			if (verbose)
+				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
 			prevpt = sys_trans;
 			sys_trans = init_ptree( PT_AND, NULL, 0 );
 			sys_trans->right = prevpt;
@@ -625,24 +695,19 @@ int main( int argc, char **argv )
 			}
 		}
 
-		if (T != NULL) { /* Print measure data and simulate. */
+		if (run_option == GR1C_MODE_SIMULATION && T != NULL) { /* Print measure data and simulate. */
 			horizon = compute_horizon( manager, &W, &etrans, &strans, &sgoals, verbose );
 			logprint( "horizon: %d", horizon );
 
 			if (horizon > -1) {
-				init_state = malloc( (num_env+num_sys)*sizeof(bool) );
-				if (init_state == NULL) {
-					perror( "gr1c, malloc" );
+				init_state = int_to_bitvec( (0 << 0) | (0 << 2)
+											| (7 << 4) | (2 << 8),
+											num_env+num_sys );
+				if (init_state == NULL)
 					return -1;
-				}
-				for (i = 0; i < num_env+num_sys; i++)
-					*(init_state+i) = 0;
-				/* *(init_state+0) = *(init_state+1) = *(init_state+5) = 1; */ /* (3,2) */
-				/* *(init_state+0) = *(init_state+5) = 1; */ /* (1,2) */
-				for (i = 4; i < 11; i++)
-					*(init_state+i) = 1;
 				
-				play = sim_rhc( manager, W, etrans, strans, sgoals, horizon, init_state, 30 );
+				play = sim_rhc( manager, W, etrans, strans, sgoals,
+								horizon, init_state, max_sim_it );
 				if (play == NULL) {
 					fprintf( stderr, "Error while attempting receding horizon simulation.\n" );
 					return -1;
@@ -668,28 +733,9 @@ int main( int argc, char **argv )
 				} else {
 					fp = stdout;
 				}
-				
-				if (format_option == OUTPUT_FORMAT_TEXT) {
-					list_aut_dump( play, num_env+num_sys, fp );
-				} else if (format_option == OUTPUT_FORMAT_DOT) {
-					dot_aut_dump( play, evar_list, svar_list,
-								  DOT_AUT_ATTRIB, fp );
-				} else if (format_option == OUTPUT_FORMAT_AUT) {
-					while (play->mode != 0)
-						play = play->next;
-					while (play->trans_len > 0) {
-						printf( "%d %d %d %d\n",
-								*(play->state), *(play->state+1),
-								*(play->state+2), *(play->state+3) );
-						play = *(play->trans);
-					}
-					printf( "%d %d %d %d\n",
-							*(play->state), *(play->state+1),
-							*(play->state+2), *(play->state+3) );
-				} else { /* OUTPUT_FORMAT_TULIP */
-					tulip_aut_dump( play, evar_list, svar_list, fp );
-				}
-				
+
+				/* Print simulation trace */
+				dump_simtrace( play, evar_list, svar_list, fp );
 				if (fp != stdout)
 					fclose( fp );
 			}

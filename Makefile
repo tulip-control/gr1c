@@ -1,6 +1,6 @@
 # Build gr1c and rg executables, build documentation, run tests.
 #
-# SCL; 2012.
+# SCL; 2012, 2013.
 
 
 INSTALLDIR = /usr/local/bin

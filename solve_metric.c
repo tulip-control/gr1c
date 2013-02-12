@@ -1,7 +1,7 @@
 /* solve_metric.c -- synthesis routines that use a distance between states.
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -41,6 +41,8 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 	ptree_t *var = evar_list, *var_tail;
 	int start_index, stop_index;
 	int i;
+	int x_offset = 4, x_width = 4;
+	int y_offset = 8, y_width = 3;
 
 	/* Variables used during CUDD generation (state enumeration). */
 	DdGen *gen;
@@ -86,10 +88,8 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 	}
 
 	/* ref_mapped = bitvec_to_int( ref_state+start_index, stop_index-start_index+1 ); */
-	ref_mapped_y = bitvec_to_int( ref_state+8, 3 );
-	ref_mapped_x = bitvec_to_int( ref_state+4, 4 );
-	/* ref_mapped_x = bitvec_to_int( ref_state+7, 4 ); */
-	/* ref_mapped_y = bitvec_to_int( ref_state+11, 3 ); */
+	ref_mapped_x = bitvec_to_int( ref_state+x_offset, x_width );
+	ref_mapped_y = bitvec_to_int( ref_state+y_offset, y_width );
 	*Min = *Max = -1.;  /* Distance is non-negative; thus use -1 as "unset". */
 
 	Cudd_AutodynDisable( manager );
@@ -98,10 +98,8 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 		while (!saturated_cube( state, gcube, num_env+num_sys )) {
 
 			/* this_mapped = bitvec_to_int( state+start_index, stop_index-start_index+1 ); */
-			this_mapped_x = bitvec_to_int( state+4, 4 );
-			this_mapped_y = bitvec_to_int( state+8, 3 );
-			/* this_mapped_x = bitvec_to_int( state+7, 4 ); */
-			/* this_mapped_y = bitvec_to_int( state+11, 3 ); */
+			this_mapped_x = bitvec_to_int( state+x_offset, x_width );
+			this_mapped_y = bitvec_to_int( state+y_offset, y_width );
 			dist = sqrt( pow((this_mapped_x-ref_mapped_x), 2) + pow((this_mapped_y-ref_mapped_y), 2) );
 			if (*Min == -1. || dist < *Min)
 				*Min = dist;
@@ -120,10 +118,8 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state, char *name,
 			increment_cube( state, gcube, num_env+num_sys );
 		}
 
-		this_mapped_x = bitvec_to_int( state+4, 4 );
-		this_mapped_y = bitvec_to_int( state+8, 3 );
-		/* this_mapped_x = bitvec_to_int( state+7, 4 ); */
-		/* this_mapped_y = bitvec_to_int( state+11, 3 ); */
+		this_mapped_x = bitvec_to_int( state+x_offset, x_width );
+		this_mapped_y = bitvec_to_int( state+y_offset, y_width );
 		dist = sqrt( pow((this_mapped_x-ref_mapped_x), 2) + pow((this_mapped_y-ref_mapped_y), 2) );
 		if (*Min == -1. || dist < *Min)
 			*Min = dist;
@@ -243,25 +239,14 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G, char *name,
 		if (*Max == -1. || tMin > *Max)
 			*Max = tMin;
 
-		/* logprint_startline(); */
-		/* for (i = 0; i < num_env; i++) */
-		/* 	logprint_raw( "%d", *(*(states+k)+i) ); */
-		/* logprint_raw( " " ); */
-		/* for (i = num_env; i < num_env+num_sys; i++) */
-		/* 	logprint_raw( "%d", *(*(states+k)+i) ); */
-		/* logprint_raw( "; mi = %f", tMin ); */
-		/* logprint_endline(); */
-
-		logprint( "%d,%d; %d,%d; mi = %f",
-				  bitvec_to_int( *(states+k), 2 ),
-				  bitvec_to_int( *(states+k)+2, 2 ),
-				  bitvec_to_int( *(states+k)+4, 4 ),
-				  bitvec_to_int( *(states+k)+8, 3 ),
-				  /* bitvec_to_int( *(states+k), 4 ), */
-				  /* bitvec_to_int( *(states+k)+4, 3 ), */
-				  /* bitvec_to_int( *(states+k)+7, 4 ), */
-				  /* bitvec_to_int( *(states+k)+11, 3 ), */
-				  tMin );
+		logprint_startline();
+		for (i = 0; i < num_env; i++)
+			logprint_raw( "%d", *(*(states+k)+i) );
+		logprint_raw( " " );
+		for (i = num_env; i < num_env+num_sys; i++)
+			logprint_raw( "%d", *(*(states+k)+i) );
+		logprint_raw( "; mi = %f", tMin );
+		logprint_endline();
 	}
    
 	for (i = 0; i < num_states; i++)
@@ -369,12 +354,6 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 			logprint( "goal %d, level %d...", i, j );
 			tmp = Cudd_bddAnd( manager, *(*(Y+i)+j), Cudd_Not( *(*(Y+i)+j-1) ) );
 			Cudd_Ref( tmp );
-			tmp2 = Cudd_bddAnd( manager, tmp, *etrans );
-			Cudd_Ref( tmp2 );
-			Cudd_RecursiveDeref( manager, tmp );
-			tmp = Cudd_bddAnd( manager, tmp2, *strans );
-			Cudd_Ref( tmp );
-			Cudd_RecursiveDeref( manager, tmp2 );
 			if (bounds_DDset( manager, tmp, **(Y+i), "x", *(*Min+i)+j-1, *(*Max+i)+j-1,
 							  verbose )) {
 				*(*(*Min+i)+j-1) = *(*(*Max+i)+j-1) = -1.;

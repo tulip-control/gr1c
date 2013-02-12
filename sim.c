@@ -222,28 +222,55 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 										   finit_state, etrans,
 										   num_env, num_sys,
 										   &emoves_len );
-				emove_index = rand() % emoves_len;
+				for (emove_index = 0; emove_index < emoves_len; emove_index++) {
 				
-				tmp = state2cof( manager, cube, 2*(num_env+num_sys), finit_state, strans_into_W, 0, num_env+num_sys );
-				tmp2 = state2cof( manager, cube, 2*(num_env+num_sys), *(env_moves+emove_index), tmp, num_env+num_sys, num_env );
-				Cudd_RecursiveDeref( manager, tmp );
+					tmp = state2cof( manager, cube, 2*(num_env+num_sys), finit_state, strans_into_W, 0, num_env+num_sys );
+					tmp2 = state2cof( manager, cube, 2*(num_env+num_sys), *(env_moves+emove_index), tmp, num_env+num_sys, num_env );
+					Cudd_RecursiveDeref( manager, tmp );
 				
-				tmp = Cudd_bddAnd( manager, *(sgoals+current_goal), W );
-				Cudd_Ref( tmp );
+					tmp = Cudd_bddAnd( manager, *(sgoals+current_goal), W );
+					Cudd_Ref( tmp );
 				
-				Cudd_AutodynDisable( manager );
-				Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
-					for (i = 0; i < num_env; i++)
-						*(fnext_state+i) = *(*(env_moves+emove_index)+i);
-					initialize_cube( fnext_state+num_env, gcube+num_sys+2*num_env, num_sys );
-					while (!saturated_cube( fnext_state+num_env, gcube+num_sys+2*num_env, num_sys )) {
+					Cudd_AutodynDisable( manager );
+					Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
+						for (i = 0; i < num_env; i++)
+							*(fnext_state+i) = *(*(env_moves+emove_index)+i);
+						initialize_cube( fnext_state+num_env, gcube+num_sys+2*num_env, num_sys );
+						while (!saturated_cube( fnext_state+num_env, gcube+num_sys+2*num_env, num_sys )) {
+							for (j = 0; j <= hdepth; j++) {
+								if (find_anode( *(hstacks+j), 0, fnext_state, num_env+num_sys ) != NULL)
+									break;
+							}
+							if (j > hdepth) {  /* First time to find this state? */
+								*(hstacks+hdepth) = insert_anode( *(hstacks+hdepth), 0, -1, fnext_state, num_env+num_sys );
+
+								prev_node = (*(MEM+MEM_index))->next;
+								while (prev_node) {
+									if (statecmp( prev_node->state, fnext_state, num_env+num_sys ))
+										break;
+									prev_node = prev_node->next;
+								}
+								if (prev_node == NULL) {
+									bounds_state( manager, tmp, fnext_state, "x", &Min, &Max, 0 );
+									if (next_min == -1. || Min < next_min) {
+										next_min = Min;
+										for (i = 0; i < num_env+num_sys; i++)
+											*(next_state+i) = *(fnext_state+i);
+										logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
+												  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
+									}
+								}
+							}
+
+							increment_cube( fnext_state+num_env, gcube+num_sys+2*num_env, num_sys );
+						}
 						for (j = 0; j <= hdepth; j++) {
 							if (find_anode( *(hstacks+j), 0, fnext_state, num_env+num_sys ) != NULL)
 								break;
 						}
-						if (j > hdepth) {  /* First time to find this state? */
+						if (j > hdepth) {
 							*(hstacks+hdepth) = insert_anode( *(hstacks+hdepth), 0, -1, fnext_state, num_env+num_sys );
-							
+
 							prev_node = (*(MEM+MEM_index))->next;
 							while (prev_node) {
 								if (statecmp( prev_node->state, fnext_state, num_env+num_sys ))
@@ -261,37 +288,11 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 								}
 							}
 						}
-						
-						increment_cube( fnext_state+num_env, gcube+num_sys+2*num_env, num_sys );
 					}
-					for (j = 0; j <= hdepth; j++) {
-						if (find_anode( *(hstacks+j), 0, fnext_state, num_env+num_sys ) != NULL)
-							break;
-					}
-					if (j > hdepth) {
-						*(hstacks+hdepth) = insert_anode( *(hstacks+hdepth), 0, -1, fnext_state, num_env+num_sys );
-
-						prev_node = (*(MEM+MEM_index))->next;
-						while (prev_node) {
-							if (statecmp( prev_node->state, fnext_state, num_env+num_sys ))
-								break;
-							prev_node = prev_node->next;
-						}
-						if (prev_node == NULL) {
-							bounds_state( manager, tmp, fnext_state, "x", &Min, &Max, 0 );
-							if (next_min == -1. || Min < next_min) {
-								next_min = Min;
-								for (i = 0; i < num_env+num_sys; i++)
-									*(next_state+i) = *(fnext_state+i);
-								logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
-										  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
-							}
-						}
-					}
+					Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+					Cudd_RecursiveDeref( manager, tmp2 );
+					Cudd_RecursiveDeref( manager, tmp );
 				}
-				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
-				Cudd_RecursiveDeref( manager, tmp2 );
-				Cudd_RecursiveDeref( manager, tmp );
 
 				for (i = 0; i < emoves_len; i++)
 					free( *(env_moves+i) );
