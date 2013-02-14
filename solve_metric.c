@@ -158,10 +158,15 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state,
 												  *(offw+2*i+1) );
 
 			/* 2-norm derived metric */
+			/* dist = 0.; */
+			/* for (i = 0; i < num_metric_vars; i++) */
+			/* 	dist += pow(*(this_mapped+i) - *(ref_mapped+i), 2); */
+			/* dist = sqrt( dist ); */
+
+			/* 1-norm derived metric */
 			dist = 0.;
 			for (i = 0; i < num_metric_vars; i++)
-				dist += pow(*(this_mapped+i) - *(ref_mapped+i), 2);
-			dist = sqrt( dist );
+				dist += fabs(*(this_mapped+i) - *(ref_mapped+i));
 			if (*Min == -1. || dist < *Min)
 				*Min = dist;
 			if (*Max == -1. || dist > *Max)
@@ -175,10 +180,15 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state,
 											  *(offw+2*i+1) );
 
 		/* 2-norm derived metric */
+		/* dist = 0.; */
+		/* for (i = 0; i < num_metric_vars; i++) */
+		/* 	dist += pow(*(this_mapped+i) - *(ref_mapped+i), 2); */
+		/* dist = sqrt( dist ); */
+
+		/* 1-norm derived metric */
 		dist = 0.;
 		for (i = 0; i < num_metric_vars; i++)
-			dist += pow(*(this_mapped+i) - *(ref_mapped+i), 2);
-		dist = sqrt( dist );
+			dist += fabs(*(this_mapped+i) - *(ref_mapped+i));
 		if (*Min == -1. || dist < *Min)
 			*Min = dist;
 		if (*Max == -1. || dist > *Max)
@@ -308,7 +318,7 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 	DdNode ****X_ijr = NULL;
 	bool env_nogoal_flag = False;
 	int i, j, r;
-	DdNode *tmp;
+	DdNode *tmp, *tmp2;
 
 	if (num_egoals == 0) {
 		env_nogoal_flag = True;
@@ -391,15 +401,20 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 			perror( "compute_minmax, malloc" );
 			return -1;
 		}
-		for (j = 1; j < *(*num_sublevels+i); j++) {
+
+		*(*(*Min+i)) = *(*(*Max+i)) = 0;
+		for (j = 1; j < *(*num_sublevels+i)-1; j++) {
 			logprint( "goal %d, level %d...", i, j );
-			tmp = Cudd_bddAnd( manager, *(*(Y+i)+j), Cudd_Not( *(*(Y+i)+j-1) ) );
+			tmp = Cudd_bddAnd( manager, *(*(Y+i)+j+1), Cudd_Not( *(*(Y+i)+j) ) );
 			Cudd_Ref( tmp );
-			if (bounds_DDset( manager, tmp, **(Y+i), offw, num_metric_vars, *(*Min+i)+j-1, *(*Max+i)+j-1,
+			tmp2 = Cudd_bddAnd( manager, *((*sgoals)+i), *W );
+			Cudd_Ref( tmp2 );
+			if (bounds_DDset( manager, tmp, tmp2, offw, num_metric_vars, *(*Min+i)+j, *(*Max+i)+j,
 							  verbose )) {
-				*(*(*Min+i)+j-1) = *(*(*Max+i)+j-1) = -1.;
+				*(*(*Min+i)+j) = *(*(*Max+i)+j) = -1.;
 			}
 			Cudd_RecursiveDeref( manager, tmp );
+			Cudd_RecursiveDeref( manager, tmp2 );
 		}
 	}
 
@@ -456,10 +471,10 @@ int compute_horizon( DdManager *manager, DdNode **W,
 		return -1;  /* Error in compute_minmax() */
 
 	for (i = 0; i < num_sgoals; i++) {
-		for (j = 1; j < *(num_sublevels+i); j++) {
+		for (j = 0; j < *(num_sublevels+i)-1; j++) {
 			logprint_startline();
 			logprint_raw( "goal %d, level %d: ", i, j );
-			logprint_raw( "%f, %f", *(*(Min+i)+j-1), *(*(Max+i)+j-1) );
+			logprint_raw( "%f, %f", *(*(Min+i)+j), *(*(Max+i)+j) );
 			logprint_endline();
 		}
 	}
@@ -467,7 +482,7 @@ int compute_horizon( DdManager *manager, DdNode **W,
 	for (i = 0; i < num_sgoals; i++) {
 		for (j = 3; j < *(num_sublevels+i); j++) {
 			horiz_j = 1;
-			for (k = j-2; k >= 2; k--) {
+			for (k = j-2; k >= 1; k--) {
 				if (*(*(Max+i)+k-1) >= *(*(Min+i)+j-1))
 					horiz_j = j-k;
 			}

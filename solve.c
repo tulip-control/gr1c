@@ -2,7 +2,7 @@
  *            Also see solve_operators.c
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -159,6 +159,40 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	if (Y == NULL) {
 		fprintf( stderr, "Error synthesize: failed to construct sublevel sets.\n" );
 		return NULL;
+	}
+
+	/* The sublevel sets are exactly as resulting from the vanilla
+	   fixed point formula.  Thus for each system goal i, Y_0 = \emptyset,
+	   and Y_1 is a union of i-goal states and environment-blocking states.
+
+	   For the purpose of synthesis, it is enough to delete Y_0 and
+	   replace Y_1 with the intersection of i-goal states and the
+	   winning set, and then shift the indices down (so that Y_1 is
+	   now called Y_0, Y_2 is now called Y_1, etc.) */
+	for (i = 0; i < num_sgoals; i++) {
+		Cudd_RecursiveDeref( manager, *(*(Y+i)) );
+		Cudd_RecursiveDeref( manager, *(*(Y+i)+1) );
+		for (r = 0; r < num_egoals; r++) {
+			Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i))+r) );
+			Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i)+1)+r) );
+			*(*(*(X_ijr+i)+1)+r) = Cudd_Not( Cudd_ReadOne( manager ) );
+		}
+		free( *(*(X_ijr+i)) );
+
+		*(*(Y+i)+1) = Cudd_bddAnd( manager, *(sgoals+i), W );
+		Cudd_Ref( *(*(Y+i)+1) );
+
+		(*(num_sublevels+i))--;
+		for (j = 0; j < *(num_sublevels+i); j++) {
+			*(*(Y+i)+j) = *(*(Y+i)+j+1);
+			*(*(X_ijr+i)+j) = *(*(X_ijr+i)+j+1);
+		}
+		*(Y+i) = realloc( *(Y+i), (*(num_sublevels+i))*sizeof(DdNode *) );
+		*(X_ijr+i) = realloc( *(X_ijr+i), (*(num_sublevels+i))*sizeof(DdNode *) );
+		if (*(Y+i) == NULL || *(X_ijr+i) == NULL) {
+			perror( "synthesize, realloc" );
+			return NULL;
+		}
 	}
 
 	/* Make primed form of W and take conjunction with system

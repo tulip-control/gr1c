@@ -395,7 +395,8 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 				perror( "compute_sublevel_sets, malloc" );
 				return NULL;
 			}
-			**(Y+i) = Cudd_bddAnd( manager, *(sgoals+i), W );
+			**(Y+i) = Cudd_Not( Cudd_ReadOne( manager ) );
+			/* **(Y+i) = Cudd_bddAnd( manager, *(sgoals+i), W ); */
 			Cudd_Ref( **(Y+i) );
 
 			*(*X_ijr+i) = malloc( *(*num_sublevels+i)*sizeof(DdNode **) );
