@@ -352,6 +352,11 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 				is_next = True;
 			}
 		}
+		if (this_val > maxval) {
+			fprintf( stderr, "Error expand_to_bool: %d is outside range of variable %s [0,%d].\n", this_val, name, maxval );
+			exit( -1 );  /* Fatal error */
+		}
+
 		delete_tree( head );
 		heads = malloc( num_bits*sizeof(ptree_t *) );
 		if (heads == NULL) {

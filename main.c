@@ -592,27 +592,51 @@ int main( int argc, char **argv )
 				append_list_item( nonbool_var_list, PT_VARIABLE, tmppt->name, tmppt->value );
 			}
 
+			if (verbose > 1)
+				logprint( "Expanding nonbool variables in SYSINIT..." );
 			sys_init = expand_to_bool( sys_init, tmppt->name, tmppt->value );
+			if (verbose > 1) {
+				logprint( "Done." );
+				logprint( "Expanding nonbool variables in ENVINIT..." );
+			}
 			env_init = expand_to_bool( env_init, tmppt->name, tmppt->value );
+			if (verbose > 1) {
+				logprint( "Done." );
+				logprint( "Expanding nonbool variables in SYSTRANS..." );
+			}
 			sys_trans = expand_to_bool( sys_trans, tmppt->name, tmppt->value );
+			if (verbose > 1) {
+				logprint( "Done." );
+				logprint( "Expanding nonbool variables in ENVTRANS..." );
+			}
 			env_trans = expand_to_bool( env_trans, tmppt->name, tmppt->value );
+			if (verbose > 1)
+				logprint( "Done." );
 			if (sys_init == NULL || env_init == NULL || sys_trans == NULL || env_trans == NULL) {
 				fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
 				return -1;
 			}
 			for (i = 0; i < num_egoals; i++) {
+				if (verbose > 1)
+					logprint( "Expanding nonbool variables in ENVGOAL %d...", i );
 				*(env_goals+i) = expand_to_bool( *(env_goals+i), tmppt->name, tmppt->value );
 				if (*(env_goals+i) == NULL) {
 					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
 					return -1;
 				}
+				if (verbose > 1)
+					logprint( "Done." );
 			}
 			for (i = 0; i < num_sgoals; i++) {
+				if (verbose > 1)
+					logprint( "Expanding nonbool variables in SYSGOAL %d...", i );
 				*(sys_goals+i) = expand_to_bool( *(sys_goals+i), tmppt->name, tmppt->value );
 				if (*(sys_goals+i) == NULL) {
 					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
 					return -1;
 				}
+				if (verbose > 1)
+					logprint( "Done." );
 			}
 		}
 		tmppt = tmppt->left;
