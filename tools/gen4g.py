@@ -18,7 +18,7 @@ y_vname = sys.argv[2]
 height = int(sys.argv[3])
 width = int(sys.argv[4])
 
-print "VAR: "+x_vname+" [0,"+str(width)+"] "+y_vname+" [0,"+str(height)+"]\n"
+print "VAR: "+x_vname+" [0,"+str(width-1)+"] "+y_vname+" [0,"+str(height-1)+"]\n"
 
 # Transitions
 print "TRANS:"
