@@ -935,6 +935,9 @@ int main( int argc, char **argv )
 			fp = stdout;
 		}
 
+		if (verbose)
+			logprint( "Dumping automaton of size %d...", aut_size( strategy ) );
+
 		if (format_option == OUTPUT_FORMAT_TEXT) {
 			list_aut_dump( strategy, num_env+num_sys, fp );
 		} else if (format_option == OUTPUT_FORMAT_DOT) {
