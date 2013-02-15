@@ -308,21 +308,19 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 }
 
 
-int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals,
-					int **num_sublevels, double ***Min, double ***Max,
-					int *offw, int num_metric_vars,
-					unsigned char verbose )
+/* Construct BDDs (characteristic functions of) etrans, strans,
+   egoals, and sgoals as required by compute_winning_set_BDD() but
+   save the result.  The motivating use-case is to compute these once
+   and then provide them to later functions as needed. */
+DdNode *compute_winning_set_saveBDDs( DdManager *manager, DdNode **etrans, DdNode **strans,
+									  DdNode ***egoals, DdNode ***sgoals,
+									  unsigned char verbose )
 {
-	DdNode **egoals;
+	int i;
 	ptree_t *var_separator;
-	DdNode ***Y = NULL;
-	DdNode ****X_ijr = NULL;
-	bool env_nogoal_flag = False;
-	int i, j, r;
-	DdNode *tmp, *tmp2;
+	DdNode *W;
 
 	if (num_egoals == 0) {
-		env_nogoal_flag = True;
 		num_egoals = 1;
 		env_goals = malloc( sizeof(ptree_t *) );
 		*env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
@@ -354,11 +352,11 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 
 	/* Build goal BDDs, if present. */
 	if (num_egoals > 0) {
-		egoals = malloc( num_egoals*sizeof(DdNode *) );
+		(*egoals) = malloc( num_egoals*sizeof(DdNode *) );
 		for (i = 0; i < num_egoals; i++)
-			*(egoals+i) = ptree_BDD( *(env_goals+i), evar_list, manager );
+			*((*egoals)+i) = ptree_BDD( *(env_goals+i), evar_list, manager );
 	} else {
-		egoals = NULL;
+		(*egoals) = NULL;
 	}
 	if (num_sgoals > 0) {
 		(*sgoals) = malloc( num_sgoals*sizeof(DdNode *) );
@@ -374,11 +372,33 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 		var_separator->left = NULL;
 	}
 
-	*W = compute_winning_set_BDD( manager, (*etrans), (*strans), egoals, (*sgoals), verbose );
-	if (*W == NULL) {
-		fprintf( stderr, "Error compute_minmax: failed to construct winning set.\n" );
-		return -1;
+	W = compute_winning_set_BDD( manager, (*etrans), (*strans), (*egoals), (*sgoals), verbose );
+	if (W == NULL) {
+		fprintf( stderr, "Error compute_winning_set_saveBDDs: failed to construct winning set.\n" );
+		return NULL;
 	}
+
+	return W;
+}
+
+
+int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals,
+					int **num_sublevels, double ***Min, double ***Max,
+					int *offw, int num_metric_vars,
+					unsigned char verbose )
+{
+	DdNode **egoals;
+	ptree_t *var_separator;
+	DdNode ***Y = NULL;
+	DdNode ****X_ijr = NULL;
+	bool env_nogoal_flag = False;
+	int i, j, r;
+	DdNode *tmp, *tmp2;
+
+	if (num_egoals == 0)
+		env_nogoal_flag = True;
+
+	*W = compute_winning_set_saveBDDs( manager, etrans, strans, &egoals, sgoals, verbose );
 	Y = compute_sublevel_sets( manager, *W, (*etrans), (*strans),
 							   egoals, num_egoals,
 							   (*sgoals), num_sgoals,
@@ -431,6 +451,7 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 		delete_tree( *env_goals );
 		free( env_goals );
 	}
+
 	for (i = 0; i < num_sgoals; i++) {
 		for (j = 0; j < *(*num_sublevels+i); j++) {
 			Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );

@@ -66,10 +66,15 @@ ptree_t *gen_tree_ptr = NULL;
 
 extern int read_nonbool_state_str( char *input, int **state, int max_len );  /* See solve_support.c */
 extern bool *int_to_bitvec( int k, int vec_len );  /* See util.c */
+
+/* See solve_metric.c */
 extern int compute_horizon( DdManager *manager, DdNode **W,
 							DdNode **etrans, DdNode **strans, DdNode ***sgoals,
-							char *metric_vars, unsigned char verbose );  /* See solve_metric.c */
-extern int *get_offsets( char *metric_vars, int *num_vars );  /* See solve_metric.c */
+							char *metric_vars, unsigned char verbose );
+extern int *get_offsets( char *metric_vars, int *num_vars );
+extern DdNode *compute_winning_set_saveBDDs( DdManager *manager, DdNode **etrans, DdNode **strans,
+											 DdNode ***egoals, DdNode ***sgoals,
+											 unsigned char verbose );
 
 
 void dump_simtrace( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp )
@@ -146,9 +151,9 @@ int main( int argc, char **argv )
 	ptree_t *prevpt, *expt, *var_separator;
 	ptree_t *nonbool_var_list = NULL;
 	int maxbitval;
-	int horizon;
-	int max_sim_it;  /* Number of simulation iterations */
-	DdNode *W, *etrans, *strans, **sgoals;
+	int horizon = -1;
+
+	DdNode *W, *etrans, *strans, **sgoals, **egoals;
 
 	DdManager *manager;
 	DdNode *T = NULL;
@@ -156,6 +161,7 @@ int main( int argc, char **argv )
 	int num_env, num_sys;
 	int original_num_env, original_num_sys;
 
+	int max_sim_it;  /* Number of simulation iterations */
 	anode_t *play;
 	bool *init_state;
 	int *init_state_ints = NULL;
@@ -207,6 +213,16 @@ int main( int argc, char **argv )
 						return 1;
 					}
 					init_state_acc = read_nonbool_state_str( all_vars, &init_state_ints, -1 );
+					all_vars = strtok( NULL, "," );
+					if (all_vars == NULL) {
+						horizon = -1;  /* The horizon was not given. */
+					} else {
+						horizon = strtol( all_vars, NULL, 10 );
+						if (horizon < 1) {
+							fprintf( stderr, "Invalid use of -m flag.  Horizon must be positive.\n" );
+							return 1;
+						}
+					}
 				}
 				all_vars = NULL;
 				i++;
@@ -284,8 +300,9 @@ int main( int argc, char **argv )
 		printf( "  -m ARG1,... run simulation using comma-separated list of arguments:\n"
 				"                ARG1 is the max simulation duration; -1 to only compute horizon;\n"
 				"                ARG2 is a space-separated list of metric variables;\n"
-				"                ARG3 is a space-separated list of initial values.\n"
-				"                    ARG3 is ignored and may be omitted if ARG1 equals -1.\n" );
+				"                ARG3 is a space-separated list of initial values;\n"
+				"                    ARG3 is ignored and may be omitted if ARG1 equals -1.\n"
+				"                ARG4 is the horizon, if provided; otherwise compute it.\n" );
 		printf( "  -r          only check realizability; do not synthesize strategy\n"
 				"              (return 0 if realizable, -1 if not)\n"
 				"  -i          interactive mode\n"
@@ -785,10 +802,18 @@ int main( int argc, char **argv )
 		}
 
 		if (run_option == GR1C_MODE_SIMULATION && T != NULL) { /* Print measure data and simulate. */
-			if (verbose)
-				logprint( "Computing horizon with metric variables: %s", metric_vars );
-			horizon = compute_horizon( manager, &W, &etrans, &strans, &sgoals, metric_vars, verbose );
-			logprint( "horizon: %d", horizon );
+			if (horizon < 0) {
+				if (verbose)
+					logprint( "Computing horizon with metric variables: %s", metric_vars );
+				horizon = compute_horizon( manager, &W, &etrans, &strans, &sgoals, metric_vars, verbose );
+				logprint( "horizon: %d", horizon );
+				if (getlogstream() != stdout)
+					printf( "horizon: %d\n", horizon );
+			} else {
+				W = compute_winning_set_saveBDDs( manager, &etrans, &strans, &egoals, &sgoals, verbose );
+				if (verbose)
+					logprint( "Using given horizon: %d", horizon );
+			}
 
 			if (max_sim_it >= 0 && horizon > -1) {
 				/* Compute variable offsets and use it to get the
