@@ -1,5 +1,10 @@
 #!/usr/bin/env python
+"""
 
+Assumes that width and height are at least 3.
+
+SCL; 15 Feb 2013.
+"""
 
 import sys
 
@@ -13,10 +18,10 @@ y_vname = sys.argv[2]
 height = int(sys.argv[3])
 width = int(sys.argv[4])
 
-# Assume that width and height are at least 3.
-
+print "VAR: "+x_vname+" [0,"+str(width)+"] "+y_vname+" [0,"+str(height)+"]\n"
 
 # Transitions
+print "TRANS:"
 print "& [](("+x_vname+"=0) -> ("+x_vname+"'=0 | "+x_vname+"'=1))"
 print "\n".join(["& [](("+x_vname+"="+str(k)+") -> ("+x_vname+"'="+str(k-1)+" | "+x_vname+"'="+str(k)+" | "+x_vname+"'="+str(k+1)+"))" for k in range(1,width-1)])
 print "& [](("+x_vname+"="+str(width-1)+") -> ("+x_vname+"'="+str(width-2)+" | "+x_vname+"'="+str(width-1)+"))"

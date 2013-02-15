@@ -76,6 +76,11 @@ clean:
 	rm -fr doc/build/*
 	$(MAKE) -C tests clean
 
+# Delete built documentation
+.PHONY: dclean
+dclean:
+	rm -fr doc/build/*
+
 # Delete only executables and corresponding object code
 .PHONY: eclean
 eclean:
