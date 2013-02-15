@@ -807,16 +807,21 @@ int main( int argc, char **argv )
 			fprintf( stderr, "Failed to patch strategy.\n" );
 			return -1;
 		}
-		
+
 		T = NULL;  /* To avoid seg faults by the generic clean-up code. */
 	} else {
 
 		T = check_realizable( manager, EXIST_SYS_INIT, verbose );
-		if (T != NULL && (run_option == GR1C_MODE_REALIZABLE)) {
-			printf( "Realizable.\n" );
-		} else if (run_option == GR1C_MODE_REALIZABLE) {
-			printf( "Not realizable.\n" );
+		if (run_option == GR1C_MODE_REALIZABLE) {
+			if ((verbose == 0) || (getlogstream() != stdout)) {
+				if (T != NULL) {
+					printf( "Realizable.\n" );
+				} else {
+					printf( "Not realizable.\n" );
+				}
+			}
 		}
+
 		if (verbose) {
 			if (T != NULL) {
 				logprint( "Realizable." );
