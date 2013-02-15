@@ -32,7 +32,7 @@ extern int bounds_state( DdManager *manager, DdNode *T, bool *ref_state,
 extern int bitvec_to_int( bool *vec, int vec_len );  /* See util.c */
 
 
-anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, char *metric_vars, int horizon, bool *init_state, int num_it )
+anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, char *metric_vars, int horizon, bool *init_state, int num_it, unsigned char verbose )
 {
 	int *offw, num_metric_vars;
 	anode_t *play;
@@ -121,6 +121,8 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 
 	play = insert_anode( NULL, current_it, -1, init_state, num_env+num_sys );
 	while (current_it < num_it) {
+		if (verbose)
+			logprint( "Beginning simulation iteration %d...", current_it );
 		current_it++;
 
 		/* See if time to switch attention to next goal. */
@@ -179,8 +181,6 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 							next_min = Min;
 							for (i = 0; i < num_env+num_sys; i++)
 								*(next_state+i) = *(candidate_state+i);
-							logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
-									  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
 						}
 					}
 				}
@@ -202,8 +202,6 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 						next_min = Min;
 						for (i = 0; i < num_env+num_sys; i++)
 							*(next_state+i) = *(candidate_state+i);
-						logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
-								  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
 					}
 				}
 			}
@@ -212,7 +210,8 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 		Cudd_RecursiveDeref( manager, tmp2 );
 		Cudd_RecursiveDeref( manager, tmp );
 
-		logprint( "%d possible states at horizon 1.", aut_size( *hstacks ) );
+		if (verbose)
+			logprint( "\t%d possible states at horizon 1.", aut_size( *hstacks ) );
 
 		for (i = 0; i < emoves_len; i++)
 			free( *(env_moves+i) );
@@ -263,8 +262,6 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 										next_min = Min;
 										for (i = 0; i < num_env+num_sys; i++)
 											*(next_state+i) = *(fnext_state+i);
-										logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
-												  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
 									}
 								}
 							}
@@ -290,8 +287,6 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 									next_min = Min;
 									for (i = 0; i < num_env+num_sys; i++)
 										*(next_state+i) = *(fnext_state+i);
-									logprint( "    %d, %d; %f", bitvec_to_int( next_state+num_env, 4 ),
-											  bitvec_to_int( next_state+num_env+4, 3 ), next_min );
 								}
 							}
 						}
@@ -307,7 +302,8 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 				node = node->next;
 			}
 
-			logprint( "%d possible states at horizon %d.", aut_size( *(hstacks+hdepth) ), hdepth+1 );
+			if (verbose)
+				logprint( "\t%d possible states at horizon %d.", aut_size( *(hstacks+hdepth) ), hdepth+1 );
 		}
 
 		node = *(MEM+MEM_index);

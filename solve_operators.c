@@ -182,7 +182,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 	num_it_Z = 0;
 	do {
 		num_it_Z++;
-		if (verbose)
+		if (verbose > 1)
 			logprint( "Z iteration %d", num_it_Z );
 
 		for (i = 0; i < num_sgoals; i++) {
@@ -213,7 +213,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 			num_it_Y = 0;
 			do {
 				num_it_Y++;
-				if (verbose)
+				if (verbose > 1)
 					logprint( "\tY iteration %d", num_it_Y );
 
 				if (Y_prev != NULL)
@@ -242,7 +242,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 					num_it_X = 0;
 					do {
 						num_it_X++;
-						if (verbose)
+						if (verbose > 1)
 							logprint( "\t\tX iteration %d", num_it_X );
 						
 						if (X_prev != NULL)

@@ -11,6 +11,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "common.h"
 #include "logging.h"
@@ -63,10 +64,12 @@ ptree_t *gen_tree_ptr = NULL;
 #define GR1C_MODE_SIMULATION 5
 
 
+extern int read_nonbool_state_str( char *input, int **state, int max_len );  /* See solve_support.c */
 extern bool *int_to_bitvec( int k, int vec_len );  /* See util.c */
 extern int compute_horizon( DdManager *manager, DdNode **W,
 							DdNode **etrans, DdNode **strans, DdNode ***sgoals,
 							char *metric_vars, unsigned char verbose );  /* See solve_metric.c */
+extern int *get_offsets( char *metric_vars, int *num_vars );  /* See solve_metric.c */
 
 
 void dump_simtrace( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp )
@@ -138,7 +141,7 @@ int main( int argc, char **argv )
 	FILE *strategy_fp;
 	char dumpfilename[64];
 
-	int i, var_index;
+	int i, j, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
 	ptree_t *prevpt, *expt, *var_separator;
 	ptree_t *nonbool_var_list = NULL;
@@ -146,13 +149,20 @@ int main( int argc, char **argv )
 	int horizon;
 	int max_sim_it;  /* Number of simulation iterations */
 	DdNode *W, *etrans, *strans, **sgoals;
-	anode_t *play;
-	bool *init_state;
 
 	DdManager *manager;
 	DdNode *T = NULL;
 	anode_t *strategy = NULL;
 	int num_env, num_sys;
+	int original_num_env, original_num_sys;
+
+	anode_t *play;
+	bool *init_state;
+	int *init_state_ints = NULL;
+	char *all_vars = NULL, *metric_vars = NULL;
+	int *offw, num_vars;
+	int init_state_acc;  /* Accumulate components of initial state
+						    before expanding into a (bool) bitvector. */
 
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
@@ -164,6 +174,12 @@ int main( int argc, char **argv )
 				return 0;
 			} else if (argv[i][1] == 'v') {
 				verbose = 1;
+				j = 2;
+				/* Only support up to "level 2" of verbosity */
+				while (argv[i][j] == 'v' && j <= 2) {
+					verbose++;
+					j++;
+				}
 			} else if (argv[i][1] == 'l') {
 				logging_flag = True;
 			} else if (argv[i][1] == 's') {
@@ -176,11 +192,23 @@ int main( int argc, char **argv )
 					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 					return 1;
 				}
-				max_sim_it = strtol( argv[i+1], NULL, 10 );
-				if (max_sim_it < 0) {
-					fprintf( stderr, "Invalid number of iterations %d.  It must be nonnegative.\n", max_sim_it );
+				all_vars = strtok( argv[i+1], "," );
+				max_sim_it = strtol( all_vars, NULL, 10 );
+				all_vars = strtok( NULL, "," );
+				if (all_vars == NULL) {
+					fprintf( stderr, "Invalid use of -m flag.\n" );
 					return 1;
 				}
+				metric_vars = strdup( all_vars );
+				if (max_sim_it >= 0) {
+					all_vars = strtok( NULL, "," );
+					if (all_vars == NULL) {
+						fprintf( stderr, "Invalid use of -m flag.\n" );
+						return 1;
+					}
+					init_state_acc = read_nonbool_state_str( all_vars, &init_state_ints, -1 );
+				}
+				all_vars = NULL;
 				i++;
 			} else if (argv[i][1] == 'r') {
 				run_option = GR1C_MODE_REALIZABLE;
@@ -243,23 +271,28 @@ int main( int argc, char **argv )
 	}
 
 	if (help_flag) {
+		/* Split among printf() calls to conform with ISO C90 string length */
 		printf( "Usage: %s [-hVvlspri] [-m ARG1,ARG2,...] [-t TYPE] [-aeo FILE] [FILE]\n\n"
-				"  -h        this help message\n"
-				"  -V        print version and exit\n"
-				"  -v        be verbose\n"
-				"  -l        enable logging\n"
-				"  -t TYPE   strategy output format; default is \"tulip\";\n"
-				"            supported formats: txt, tulip, dot, aut\n"
-				"  -s        only check specification syntax (return -1 on error)\n"
-				"  -p        dump parse trees to DOT files, and echo formulas to screen\n"
-				"  -m ARGS   run simulation using comma-separated list of arguments\n"
-				"  -r        only check realizability; do not synthesize strategy\n"
-				"            (return 0 if realizable, -1 if not)\n"
-				"  -i        interactive mode\n"
-				"  -a FILE   automaton file in \"gr1c\" format;\n"
-				"            if FILE is -, then read from stdin\n"
-				"  -e FILE   patch, given game edge set change file; requires -a flag\n"
-				"  -o FILE   output strategy to FILE, rather than stdout (default)\n", argv[0] );
+				"  -h          this help message\n"
+				"  -V          print version and exit\n"
+				"  -v          be verbose; use -vv to be more verbose\n"
+				"  -l          enable logging\n"
+				"  -t TYPE     strategy output format; default is \"tulip\";\n"
+				"              supported formats: txt, tulip, dot, aut\n"
+				"  -s          only check specification syntax (return -1 on error)\n"
+				"  -p          dump parse trees to DOT files, and echo formulas to screen\n", argv[0] );
+		printf( "  -m ARG1,... run simulation using comma-separated list of arguments:\n"
+				"                ARG1 is the max simulation duration; -1 to only compute horizon;\n"
+				"                ARG2 is a space-separated list of metric variables;\n"
+				"                ARG3 is a space-separated list of initial values.\n"
+				"                    ARG3 is ignored and may be omitted if ARG1 equals -1.\n" );
+		printf( "  -r          only check realizability; do not synthesize strategy\n"
+				"              (return 0 if realizable, -1 if not)\n"
+				"  -i          interactive mode\n"
+				"  -a FILE     automaton file in \"gr1c\" format;\n"
+				"              if FILE is -, then read from stdin\n"
+				"  -e FILE     patch, given game edge set change file; requires -a flag\n"
+				"  -o FILE     output strategy to FILE, rather than stdout (default)\n" );
 		return 1;
 	}
 
@@ -270,11 +303,15 @@ int main( int argc, char **argv )
 
 	if (logging_flag) {
 		openlogfile( NULL );  /* Use default filename prefix */
-		verbose = 1;
+		/* Only change verbosity level if user did not specify it */
+		if (verbose == 0)
+			verbose = 1;
 	} else {
 		setlogstream( stdout );
 		setlogopt( LOGOPT_NOTIME );
 	}
+	if (verbose > 0)
+		logprint( "Running with verbosity level %d.", verbose );
 
 	/* If filename for specification given at command-line, then use
 	   it.  Else, read from stdin. */
@@ -335,13 +372,63 @@ int main( int argc, char **argv )
 		}
 	}
 
+	/* Number of variables, before expansion of those that are nonboolean */
+	original_num_env = tree_size( evar_list );
+	original_num_sys = tree_size( svar_list );
+
+	/* Build list of variable names if needed for simulation, storing
+	   the result as a string in all_vars */
+	if (run_option == GR1C_MODE_SIMULATION && max_sim_it >= 0) {
+		/* At this point, init_state_acc should contain the number of
+		   integers read by read_nonbool_state_str() during
+		   command-line argument parsing. */
+		if (init_state_acc != original_num_env+original_num_sys) {
+			fprintf( stderr, "Number of initial values given does not match number of problem variables.\n" );
+			return 1;
+		}
+
+		num_vars = 0;
+		tmppt = evar_list;
+		while (tmppt) {
+			num_vars += strlen( tmppt->name )+1;
+			tmppt = tmppt->left;
+		}
+		tmppt = svar_list;
+		while (tmppt) {
+			num_vars += strlen( tmppt->name )+1;
+			tmppt = tmppt->left;
+		}
+		all_vars = malloc( num_vars*sizeof(char) );
+		if (all_vars == NULL) {
+			perror( "main, malloc" );
+			return -1;
+		}
+		i = 0;
+		tmppt = evar_list;
+		while (tmppt) {
+			strncpy( all_vars+i, tmppt->name, num_vars-i );
+			i += strlen( tmppt->name )+1;
+			*(all_vars+i-1) = ' ';
+			tmppt = tmppt->left;
+		}
+		tmppt = svar_list;
+		while (tmppt) {
+			strncpy( all_vars+i, tmppt->name, num_vars-i );
+			i += strlen( tmppt->name )+1;
+			*(all_vars+i-1) = ' ';
+			tmppt = tmppt->left;
+		}
+		*(all_vars+i-1) = '\0';
+		if (verbose)
+			logprint( "String of all variables found to be \"%s\"", all_vars );
+	}
 
 	/* Handle "don't care" bits */
 	tmppt = evar_list;
 	while (tmppt) {
 		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
 		if (maxbitval-1 > tmppt->value) {
-			if (verbose)
+			if (verbose > 1)
 				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
 			prevpt = env_trans;
 			env_trans = init_ptree( PT_AND, NULL, 0 );
@@ -355,7 +442,7 @@ int main( int argc, char **argv )
 	while (tmppt) {
 		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
 		if (maxbitval-1 > tmppt->value) {
-			if (verbose)
+			if (verbose > 1)
 				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
 			prevpt = sys_trans;
 			sys_trans = init_ptree( PT_AND, NULL, 0 );
@@ -565,7 +652,7 @@ int main( int argc, char **argv )
 	}
 
 
-	if (verbose) {
+	if (verbose > 1) {
 		/* Dump the spec to show results of conversion (if any). */
 		logprint_startline();
 		logprint_raw( "ENV:" );
@@ -698,21 +785,39 @@ int main( int argc, char **argv )
 		}
 
 		if (run_option == GR1C_MODE_SIMULATION && T != NULL) { /* Print measure data and simulate. */
-			horizon = compute_horizon( manager, &W, &etrans, &strans, &sgoals, "x y", verbose );
+			if (verbose)
+				logprint( "Computing horizon with metric variables: %s", metric_vars );
+			horizon = compute_horizon( manager, &W, &etrans, &strans, &sgoals, metric_vars, verbose );
 			logprint( "horizon: %d", horizon );
-			/* return 0; */
 
-			if (horizon > -1) {
-				/* (0 << 0) | (0 << 2)
-				   | (7 << 4) | (2 << 8), */ /* gw2goals1obs.spc */
-				init_state = int_to_bitvec( (1 << 0) | (2 << 4)
-											| (15 << 6) | (7 << 10),  /* tunnel.spc */
-											num_env+num_sys );
+			if (max_sim_it >= 0 && horizon > -1) {
+				/* Compute variable offsets and use it to get the
+				   initial state as a bitvector */
+				offw = get_offsets( all_vars, &num_vars );
+				if (num_vars != original_num_env+original_num_sys) {
+					fprintf( stderr, "Error while computing bitwise variable offsets.\n" );
+					return -1;
+				}
+				free( all_vars );
+				init_state_acc = 0;
+				if (verbose) {
+					logprint_startline();
+					logprint_raw( "initial state for simulation:" );
+				}
+				for (i = 0; i < original_num_env+original_num_sys; i++) {
+					if (verbose)
+						logprint_raw( " %d", *(init_state_ints+i) );
+					init_state_acc += *(init_state_ints+i) << *(offw + 2*i);
+				}
+				if (verbose)
+					logprint_endline();
+				free( offw );
+				init_state = int_to_bitvec( init_state_acc, num_env+num_sys );
 				if (init_state == NULL)
 					return -1;
-				
-				play = sim_rhc( manager, W, etrans, strans, sgoals, "x y",
-								horizon, init_state, max_sim_it );
+
+				play = sim_rhc( manager, W, etrans, strans, sgoals, metric_vars,
+								horizon, init_state, max_sim_it, verbose );
 				if (play == NULL) {
 					fprintf( stderr, "Error while attempting receding horizon simulation.\n" );
 					return -1;
@@ -745,6 +850,7 @@ int main( int argc, char **argv )
 					fclose( fp );
 			}
 
+			free( metric_vars );
 			Cudd_RecursiveDeref( manager, W );
 			Cudd_RecursiveDeref( manager, etrans );
 			Cudd_RecursiveDeref( manager, strans );

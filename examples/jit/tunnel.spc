@@ -21,6 +21,8 @@ ENVTRANS:
 
 & []((obs_x=0 & obs_x'=0) | (obs_x=1 & obs_x'=1) | (obs_x=2 & obs_x'=2) | (obs_x=3 & obs_x'=3) | (obs_x=4 & obs_x'=4) | (obs_x=5 & obs_x'=5) | (obs_x=6 & obs_x'=6) | (obs_x=7 & obs_x'=7) | (obs_x=8 & obs_x'=8) | (obs_x=9 & obs_x'=9) | (obs_y=0 & obs_y'=0) | (obs_y=1 & obs_y'=1) | (obs_y=2 & obs_y'=2) | (obs_y=3 & obs_y'=3))
 
+& []((obs_x'=1 & obs_y'=2) | (obs_x'=2 & obs_y'=2) | (obs_x'=3 & obs_y'=2) | (obs_x'=4 & obs_y'=2) | (obs_x'=5 & obs_y'=2) | (obs_x'=6 & obs_y'=2) | (obs_x'=7 & obs_y'=2) | (obs_x'=8 & obs_y'=2) | (obs_x'=9 & obs_y'=2) | (obs_x'=3 & obs_y'=0) | (obs_x'=3 & obs_y'=1) | (obs_x'=3 & obs_y'=2) | (obs_x'=3 & obs_y'=3) | (obs_x'=6 & obs_y'=0) | (obs_x'=6 & obs_y'=1) | (obs_x'=6 & obs_y'=2) | (obs_x'=6 & obs_y'=3) | (obs_x'=9 & obs_y'=0) | (obs_x'=9 & obs_y'=1) | (obs_x'=9 & obs_y'=2) | (obs_x'=9 & obs_y'=3))
+
 & []!(obs_x=1 & x=1 & obs_y=2 & y=2)
 & []!(obs_x=2 & x=2 & obs_y=2 & y=2)
 & []!(obs_x=3 & x=3 & obs_y=2 & y=2)

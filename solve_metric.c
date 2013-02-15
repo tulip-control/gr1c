@@ -85,7 +85,7 @@ int *get_offsets( char *metric_vars, int *num_vars )
 				start_index++;
 			}
 			if (var == NULL) {
-				fprintf( stderr, "Could not find match for \"%s\"", tok );
+				fprintf( stderr, "Could not find match for \"%s\"\n", tok );
 				free( offw );
 				free( var_str );
 				return NULL;
@@ -286,11 +286,12 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 		if (*Max == -1. || tMin > *Max)
 			*Max = tMin;
 
-		if (verbose) {
+		if (verbose > 1) {
 			for (i = 0; i < num_metric_vars; i++)
 				*(mapped_state+i) = bitvec_to_int( *(states+k)+(*(offw+2*i)),
 												   *(offw+2*i+1) );
 			logprint_startline();
+			logprint_raw( "\t" );
 			for (i = 0; i < num_metric_vars; i++)
 				logprint_raw( "%d, ", *(mapped_state+i) );
 			logprint_raw( "mi = %f", tMin );
@@ -404,7 +405,8 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 
 		*(*(*Min+i)) = *(*(*Max+i)) = 0;
 		for (j = 1; j < *(*num_sublevels+i)-1; j++) {
-			logprint( "goal %d, level %d...", i, j );
+			if (verbose > 1)
+				logprint( "goal %d, level %d...", i, j );
 			tmp = Cudd_bddAnd( manager, *(*(Y+i)+j+1), Cudd_Not( *(*(Y+i)+j) ) );
 			Cudd_Ref( tmp );
 			tmp2 = Cudd_bddAnd( manager, *((*sgoals)+i), *W );
@@ -470,12 +472,14 @@ int compute_horizon( DdManager *manager, DdNode **W,
 						verbose ))
 		return -1;  /* Error in compute_minmax() */
 
-	for (i = 0; i < num_sgoals; i++) {
-		for (j = 0; j < *(num_sublevels+i)-1; j++) {
-			logprint_startline();
-			logprint_raw( "goal %d, level %d: ", i, j );
-			logprint_raw( "%f, %f", *(*(Min+i)+j), *(*(Max+i)+j) );
-			logprint_endline();
+	if (verbose) {
+		for (i = 0; i < num_sgoals; i++) {
+			for (j = 0; j < *(num_sublevels+i)-1; j++) {
+				logprint_startline();
+				logprint_raw( "goal %d, level %d: ", i, j );
+				logprint_raw( "%f, %f", *(*(Min+i)+j), *(*(Max+i)+j) );
+				logprint_endline();
+			}
 		}
 	}
 
