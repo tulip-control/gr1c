@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-
-Assumes that width and height are at least 3.
+Dump specification fragment appropriate for movement on a 4-connected
+grid.  Width (W) and height (H) must be at least 3.
 
 SCL; 15 Feb 2013.
 """
