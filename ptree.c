@@ -321,6 +321,7 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 	bool is_next;
 	int num_bits = (int)(ceil(log2( maxval+1 )));
 	ptree_t *expanded_varlist;
+	int maxval_padded = (1 << num_bits) - 1;
 
 	if (head == NULL)
 		return NULL;
@@ -352,8 +353,8 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 				is_next = True;
 			}
 		}
-		if (this_val > maxval) {
-			fprintf( stderr, "Error expand_to_bool: %d is outside range of variable %s [0,%d].\n", this_val, name, maxval );
+		if (this_val > maxval_padded) {
+			fprintf( stderr, "Error expand_to_bool: %d is outside range of variable %s [0,%d]\n(expands to [0,%d] after including unused values).\n", this_val, name, maxval, maxval_padded );
 			exit( -1 );  /* Fatal error */
 		}
 
