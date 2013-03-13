@@ -28,7 +28,7 @@ The output will give the number of bytes for each type.  For example, in the cas
 Building
 --------
 
-For the latest development snapshot, either [clone the repo](https://github.com/slivingston/gr1c/tree/master) (at https://github.com/slivingston/gr1c.git) or [download a tarball](https://github.com/slivingston/gr1c/tarball/master).  For the latter, untar the file (name may vary) and change into the source directory.
+For the latest development snapshot, either [clone the repo](https://github.com/slivingston/gr1c) (at https://github.com/slivingston/gr1c.git) or [download a tarball](https://github.com/slivingston/gr1c/tarball/master).  For the latter, untar the file (name may vary) and change into the source directory.
 
     $ tar -xzf slivingston-gr1c-658f32b.tar.gz
     $ cd slivingston-gr1c-658f32b
@@ -41,7 +41,7 @@ We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/). Let's make a 
     $ tar -xzf cudd-2.5.0.tar.gz
     $ cd cudd-2.5.0
 
-Now you should be in the root of the CUDD source tree. Open the ``Makefile`` in your favorite editor (i.e., [Emacs](http://www.gnu.org/software/emacs/)) and make sure the settings look reasonable for your setup. On GNU/Linux, it should suffice to append ``-DSIZEOF_VOID_P=N -DSIZEOF_LONG=M`` to the default XCFLAGS. On Mac OS X, it should suffice to replace the default XCFLAGS with
+Now you should be in the root of the CUDD source tree. Open the ``Makefile`` in your favorite editor (e.g., [Emacs](http://www.gnu.org/software/emacs/)) and make sure the settings look reasonable for your setup. On GNU/Linux, it should suffice to append ``-DSIZEOF_VOID_P=N -DSIZEOF_LONG=M`` to the default XCFLAGS. On Mac OS X, it should suffice to replace the default XCFLAGS with
 
     XCFLAGS = -DHAVE_IEEE_754 -DSIZEOF_VOID_P=N -DSIZEOF_LONG=M
 
