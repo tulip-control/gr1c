@@ -1,8 +1,15 @@
 /* interactive.c -- Functions to interact with gr1c (sub)level sets.
  *                  Also see solve.c and solve_operators.c
  *
+ * N.B., interaction gives access to the "sublevel" sets from the
+ * vanilla fixed point formula, as returned by compute_sublevel_sets().
+ * By contrast, synthesize() changes Y_0 and Y_1 for each system goal
+ * so as to make the result more easily amenable to constructing a
+ * strategy automaton.  This difference may later be changed so that
+ * levelset_interactive() behaves more like synthesize().
  *
- * SCL; 2012.
+ *
+ * SCL; 2012, 2013.
  */
 
 

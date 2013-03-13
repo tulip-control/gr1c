@@ -16,7 +16,7 @@
    the resulting array and store a pointer to it in argument
    "state". Read at most max_len values, and return the number of
    values read (thus, the length of the array pointed to by state at
-   exit). */
+   exit).  If max_len is negative, then read values until no more are found. */
 int read_state_str( char *input, bool **state, int max_len );
 
 

@@ -1,6 +1,6 @@
 # Build gr1c and rg executables, build documentation, run tests.
 #
-# SCL; 2012.
+# SCL; 2012, 2013.
 
 
 INSTALLDIR = /usr/local/bin
@@ -26,7 +26,7 @@ LDFLAGS = $(CUDD_LIB) -lm
 
 all: gr1c rg
 
-gr1c: main.o util.o logging.o interactive.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
+gr1c: main.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o gr1c_scan.o
@@ -34,12 +34,14 @@ rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operator
 
 main.o: main.c common.h
 rg_main.o: rg_main.c common.h
+sim.o: sim.c
 util.o: util.c
 ptree.o: ptree.c
 logging.o: logging.c
 automaton.o: automaton.c
 automaton_io.o: automaton_io.c common.h
 interactive.o: interactive.c common.h
+solve_metric.o: solve_metric.c
 solve_support.o: solve_support.c
 solve_operators.o: solve_operators.c
 solve.o: solve.c
@@ -76,6 +78,11 @@ clean:
 	rm -fv *~ *.o y.tab.h gr1c_parse.c rg_parse.c gr1c rg
 	rm -fr doc/build/*
 	$(MAKE) -C tests clean
+
+# Delete built documentation
+.PHONY: dclean
+dclean:
+	rm -fr doc/build/*
 
 # Delete only executables and corresponding object code
 .PHONY: eclean
