@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 #include "ptree.h"
-#include "tests/common.h"
+#include "tests_common.h"
 
 
 #define REF_FORMULA1_SMALL "felix & !(the' | cat)"

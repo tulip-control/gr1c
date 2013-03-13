@@ -10,7 +10,7 @@
 #include "ptree.h"
 #include "automaton.h"
 #include "solve_support.h"
-#include "tests/common.h"
+#include "tests_common.h"
 
 
 /**************************

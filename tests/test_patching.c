@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #include "common.h"
-#include "tests/common.h"
+#include "tests_common.h"
 #include "solve_support.h"
 #include "ptree.h"
 #include "automaton.h"

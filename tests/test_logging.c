@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 #include "common.h"
-#include "tests/common.h"
+#include "tests_common.h"
 #include "logging.h"
 
 
