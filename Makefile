@@ -1,10 +1,11 @@
-# Build gr1c and rg executables, build documentation, run tests.
+# Build executables and documentation; run tests.
 #
 # SCL; 2012, 2013.
 
 
 INSTALLDIR = /usr/local/bin
 SRCDIR = src
+EXPDIR = exp
 export CUDD_ROOT = extern/cudd-2.5.0
 CUDD_LIB = $(CUDD_ROOT)/cudd/libcudd.a $(CUDD_ROOT)/mtr/libmtr.a $(CUDD_ROOT)/st/libst.a $(CUDD_ROOT)/util/libutil.a $(CUDD_ROOT)/epd/libepd.a
 
@@ -27,11 +28,19 @@ LDFLAGS = $(CUDD_LIB) -lm
 
 all: gr1c rg
 
+exp: grjit
+
 gr1c: main.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o gr1c_scan.o
 	$(CC) -o $@ $^ $(LDFLAGS)
+
+grjit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+grjit.o: $(EXPDIR)/grjit.c
+	$(CC) $(CFLAGS) -c $^
 
 main.o: $(SRCDIR)/main.c $(SRCDIR)/common.h
 	$(CC) $(CFLAGS) -c $<
@@ -96,7 +105,7 @@ doc:
 
 # Clean everything
 clean:
-	rm -fv *~ *.o y.tab.h y.tab.c lex.yy.c gr1c rg
+	rm -fv *~ *.o y.tab.h y.tab.c lex.yy.c gr1c rg grjit
 	rm -fr doc/build/*
 	$(MAKE) -C tests clean
 
@@ -108,7 +117,7 @@ dclean:
 # Delete only executables and corresponding object code
 .PHONY: eclean
 eclean:
-	rm -fv *~ *.o y.tab.h y.tab.c lex.yy.c gr1c rg
+	rm -fv *~ *.o y.tab.h y.tab.c lex.yy.c gr1c rg gr1jit
 
 # Delete testing-related things
 .PHONY: tclean
