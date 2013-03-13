@@ -52,6 +52,7 @@ ptree_t *gen_tree_ptr = NULL;
 #define OUTPUT_FORMAT_TULIP 1
 #define OUTPUT_FORMAT_DOT 2
 #define OUTPUT_FORMAT_AUT 3
+#define OUTPUT_FORMAT_TULIP0 4
 
 /* Runtime modes */
 #define GR1C_MODE_SYNTAX 0
@@ -116,6 +117,8 @@ int main( int argc, char **argv )
 				}
 				if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
 					format_option = OUTPUT_FORMAT_TEXT;
+				} else if (!strncmp( argv[i+1], "tulip0", strlen( "tulip0" ) )) {
+					format_option = OUTPUT_FORMAT_TULIP0;
 				} else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
 					format_option = OUTPUT_FORMAT_TULIP;
 				} else if (!strncmp( argv[i+1], "dot", strlen( "dot" ) )) {
@@ -172,7 +175,7 @@ int main( int argc, char **argv )
 				"  -v        be verbose\n"
 				"  -l        enable logging\n"
 				"  -t TYPE   strategy output format; default is \"tulip\";\n"
-				"            supported formats: txt, tulip, dot, aut\n"
+				"            supported formats: txt, dot, aut, tulip, tulip0\n"
 				"  -s        only check specification syntax (return -1 on error)\n"
 				"  -p        dump parse trees to DOT files, and echo formulas to screen\n"
 				"  -r        only check realizability; do not synthesize strategy\n"
@@ -599,6 +602,18 @@ int main( int argc, char **argv )
 		}
 		
 		T = NULL;  /* To avoid seg faults by the generic clean-up code. */
+	} else if (run_option == GR1C_MODE_INTERACTIVE) {
+
+		i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout, verbose );
+		if (i == 0) {
+			printf( "Not realizable.\n" );
+			return -1;
+		} else if (i < 0) {
+			printf( "Failure during interaction.\n" );
+			return -1;
+		}
+
+		T = NULL;  /* To avoid seg faults by the generic clean-up code. */
 	} else {
 
 		T = check_realizable( manager, EXIST_SYS_INIT, verbose );
@@ -624,20 +639,6 @@ int main( int argc, char **argv )
 				logprint( "Done." );
 			if (strategy == NULL) {
 				fprintf( stderr, "Error while attempting synthesis.\n" );
-				return -1;
-			}
-
-		} else if (run_option == GR1C_MODE_INTERACTIVE && T != NULL) {
-
-			Cudd_RecursiveDeref( manager, T );
-			T = NULL;
-
-			i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout, verbose );
-			if (i == 0) {
-				printf( "Not realizable.\n" );
-				return -1;
-			} else if (i < 0) {
-				printf( "Failure during interaction.\n" );
 				return -1;
 			}
 
@@ -674,6 +675,8 @@ int main( int argc, char **argv )
 						  DOT_AUT_ATTRIB, fp );
 		} else if (format_option == OUTPUT_FORMAT_AUT) {
 			aut_aut_dump( strategy, num_env+num_sys, fp );
+		} else if (format_option == OUTPUT_FORMAT_TULIP0) {
+			tulip0_aut_dump( strategy, evar_list, svar_list, fp );
 		} else { /* OUTPUT_FORMAT_TULIP */
 			tulip_aut_dump( strategy, evar_list, svar_list, fp );
 		}

@@ -2,7 +2,7 @@
  *                  Also see solve.c and solve_operators.c
  *
  *
- * SCL; March, May 2012.
+ * SCL; 2012.
  */
 
 
@@ -19,6 +19,7 @@
 #include "ptree.h"
 #include "solve.h"
 #include "solve_support.h"
+#include "logging.h"
 
 
 extern ptree_t *evar_list;
@@ -33,12 +34,6 @@ extern int num_egoals;
 extern int num_sgoals;
 
 
-/* Functions not yet globally exported.  See solve.c for definitions
-   and documentation. */
-extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
-										  unsigned char init_flags, unsigned char verbose );
-
-
 /***************************
  ** Commands (incomplete) **/
 #define INTCOM_WINNING 1
@@ -50,7 +45,6 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 #define INTCOM_BLKENV 7
 #define INTCOM_BLKSYS 8
 #define INTCOM_GETINDEX 9
-#define INTCOM_SETINDEX 10
 #define INTCOM_REWIN 11
 #define INTCOM_RELEVELS 12
 #define INTCOM_SYSNEXTA 13
@@ -67,7 +61,6 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 	"blocksys STATESYS\n" \
 	"blockenv STATEENV\n" \
 	"getindex STATE GOALMODE\n" \
-	"setindex STATE GOALMODE\n" \
 	"refresh winning\n" \
 	"refresh levels\n" \
 	"addvar env (sys) VARIABLE\n" \
@@ -76,6 +69,7 @@ extern DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 	"var\n" \
 	"numgoals\n" \
 	"printgoal GOALMODE\n" \
+	"printegoals\n" \
 	"enable (disable) autoreorder\n" \
 	"quit"
 
@@ -126,7 +120,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 #ifdef USE_READLINE
 	while (input = readline( GR1C_INTERACTIVE_PROMPT )) {
 #else
-	while (input = fgets_wrap( GR1C_INTERACTIVE_PROMPT, 60, infp, outfp)) {
+	while (input = fgets_wrap( GR1C_INTERACTIVE_PROMPT, 256, infp, outfp)) {
 #endif
 		if (*input == '\0') {
 			free( input );
@@ -215,6 +209,14 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 				free( intcom_state );
 			}
 			
+		} else if (!strncmp( input, "printegoals", strlen( "printegoals" ) )) {
+
+			for (var_index = 0; var_index < num_egoals; var_index++) {
+				print_formula( *(env_goals+var_index), stdout );
+				fprintf( outfp, "\n" );
+			}
+			fprintf( outfp, "---" );
+
 		} else if (!strncmp( input, "winning ", strlen( "winning " ) )) {
 
 			*(input+strlen( "winning" )) = '\0';
@@ -370,32 +372,6 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 				return INTCOM_GETINDEX;
 			}
 			
-		} else if (!strncmp( input, "setindex ", strlen( "setindex " ) )) {
-
-			*(input+strlen( "setindex" )) = '\0';
-			num_read = read_state_str( input+strlen( "setindex" )+1, &intcom_state,
-									   num_env+num_sys+1 );
-			if (num_read != num_env+num_sys+1) {
-				if (num_read > 0)
-					free( intcom_state );
-				free( input );
-				fprintf( outfp, "Invalid arguments.\n" );
-				continue;
-			}
-			if (*(intcom_state+num_env+num_sys) < 0 || *(intcom_state+num_env+num_sys) > num_sgoals-1) {
-				fprintf( outfp, "Invalid mode: %d", *(intcom_state+num_env+num_sys) );
-				free( intcom_state );
-			} else {
-				free( input );
-				intcom_index = *(intcom_state+num_env+num_sys);
-				intcom_state = realloc( intcom_state, (num_env+num_sys)*sizeof(bool) );
-				if (intcom_state == NULL) {
-					perror( "command_loop, realloc" );
-					return -1;
-				}
-				return INTCOM_SETINDEX;
-			}
-			
 		} else {
 			fprintf( outfp, "Unrecognized command: %s", input );
 		}
@@ -535,9 +511,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 		fprintf( stderr, "Error levelset_interactive: failed to construct winning set.\n" );
 		return -1;
 	}
-	W = check_realizable_internal( manager, W, init_flags, verbose );
-	if (W == NULL)
-		return 0;  /* not realizable */
 
 	command = INTCOM_RELEVELS;  /* Initialization, force sublevel computation */
 	do {
@@ -799,8 +772,17 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				for (i = 0; i < num_env+num_sys; i++)
 					logprint( " %d", *(intcom_state+i) );
 			}
+
+			/* Check whether state is in winning set. */
 			state2cube( intcom_state, cube, num_env+num_sys );
 			free( intcom_state );
+			ddval = Cudd_Eval( manager, W, cube );
+			if (ddval->type.value < .1) {
+				fprintf( outfp, "Inf\n" );
+				break;
+			}
+
+			/* Yes, so return a finite value. */
 			j = *(num_sublevels+intcom_index);
 			do {
 				j--;
@@ -838,17 +820,16 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			
 			vertex1 = state2BDD( manager, intcom_state, 0, num_env+num_sys );
 			vertex2 = state2BDD( manager, intcom_state+num_env+num_sys, num_env+num_sys, intcom_index-(num_env+num_sys) );
-			tmp = Cudd_Not( vertex1 );
-			Cudd_Ref( tmp );
-			Cudd_RecursiveDeref( manager, vertex1 );
-			vertex1 = tmp;
 			if (command == INTCOM_RESTRICT) {
 				tmp = Cudd_Not( vertex2 );
 				Cudd_Ref( tmp );
 				Cudd_RecursiveDeref( manager, vertex2 );
 				vertex2 = tmp;
+				tmp = Cudd_bddOr( manager, Cudd_Not( vertex1 ), vertex2 );
+			} else { /* INTCOM_RELAX */
+				tmp = Cudd_bddAnd( manager, vertex1, vertex2 );
 			}
-			tmp = Cudd_bddOr( manager, vertex1, vertex2 );
+
 			Cudd_Ref( tmp );
 			Cudd_RecursiveDeref( manager, vertex1 );
 			Cudd_RecursiveDeref( manager, vertex2 );
@@ -916,11 +897,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 			Cudd_RecursiveDeref( manager, vertex2 );
 			free( intcom_state );
-			break;
-
-		case INTCOM_SETINDEX:
-			free( intcom_state );
-			fprintf( outfp, "(not implemented yet.)\n" );
 			break;
 
 		case INTCOM_CLEAR:

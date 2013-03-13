@@ -1,9 +1,10 @@
 Introduction
 ============
 
-Scott C. Livingston  <slivingston@caltech.edu>
+Scott C. Livingston  <slivingston@cds.caltech.edu>
 
-**gr1c** is a tool for checking realizability of and synthesizing
+**gr1c** is a tool for GR(1) synthesis and related activities.
+Its core functionality is checking realizability of and synthesizing
 strategies for GR(1) specifications.  The fixpoint formula defining
 the winning set is given (and its correctness proven) in
 
@@ -11,21 +12,19 @@ the winning set is given (and its correctness proven) in
     fair simulation and trace inclusion. *Information and Computation*,
     200: 35--61. DOI:`10.1016/j.ic.2005.01.006 <http://dx.doi.org/10.1016/j.ic.2005.01.006>`_.
 
-**gr1c** depends on CUDD, the CU Decision Diagram package by Fabio Somenzi
-and others.  See http://vlsi.colorado.edu/~fabio/CUDD/
-
-Documentation is available under the ``doc`` directory and on the
-project `wiki <https://github.com/slivingston/gr1c/wiki>`_ at
-GitHub. The wiki is considered temporary---eventually everything will
-be placed under ``doc``. API-related documents are built with `Doxygen
-<http://www.doxygen.org>`_; version 1.8.0 or later required for
-Markdown support.
+Documentation is available under the ``doc`` directory. API-related
+documents are built with `Doxygen <http://www.doxygen.org>`_; version
+1.8.0 or later required for Markdown support.  Snapshots are
+occasionally posted at http://slivingston.github.com/gr1c
 
 **rg** is a tool for solving "reachability games," which are similar
 to GR(1) formulae except with at most one system goal and where that
 system goal must be reached once (not necessarily infinitely often).
 The accepted input specifications are slightly different; the single
 system goal is preceded by "<>" (as the "eventually" operator).
+
+**gr1c** depends on CUDD, the CU Decision Diagram package by Fabio Somenzi
+and others.  See http://vlsi.colorado.edu/~fabio/CUDD/
 
 
 Installation

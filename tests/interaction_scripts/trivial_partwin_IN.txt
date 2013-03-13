@@ -9,3 +9,15 @@ winning 1 0 1 0
 winning 0 0 0 0
 sysnexta 0 0 0 0  0 0
 sysnext 0 0 0 0  0 0  2
+printegoals
+blocksys 1 0
+winning 0 0 0 0
+refresh winning
+winning 0 0 0 0
+clear
+refresh winning
+winning 0 0 0 0
+getindex 0 0 1 0  0
+getindex 0 0 0 0  1
+getindex 1 0 1 1  0
+quit

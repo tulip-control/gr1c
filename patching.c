@@ -28,6 +28,50 @@ extern int et_array_len;
 extern int st_array_len;
 
 
+/* Pretty print state vector, default is to list nonzero variables.
+   Output written to fp if not NULL, otherwise to stdout.  If num_env
+   (respectively, num_sys) is -1, then only the system variables
+   (resp. environment variables) are printed.  */
+void pprint_state( bool *state, int num_env, int num_sys, FILE *fp )
+{
+	int i, nnz = 0;
+	ptree_t *node;
+
+	if (fp == NULL)
+		fp = stdout;
+
+	node = evar_list;
+	for (i = 0; i < num_env; i++) {
+		if (*(state+i)) {
+			fprintf( fp, " %s", node->name );
+			nnz++;
+		}
+		node = node->left;
+	}
+
+	if (num_sys == -1) {
+		if (nnz == 0)
+			fprintf( fp, " (nil)" );
+		return;
+	}
+
+	if (num_env == -1)
+		num_env = tree_size( evar_list );
+
+	node = svar_list;
+	for (i = num_env; i < num_sys+num_env; i++) {
+		if (*(state+i)) {
+			fprintf( fp, " %s", node->name );
+			nnz++;
+		}
+		node = node->left;
+	}
+
+	if (nnz == 0)
+		fprintf( fp, " (nil)" );
+}
+
+
 /* Returns strategy with patched goal mode, or NULL if error. */
 anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 								 anode_t *strategy, int goal_mode,
@@ -140,15 +184,13 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 		logprint( "Entry set:" );
 		for (i = 0; i < Entry_len; i++) {
 			logprint_startline();
-			for (j = 0; j < num_env+num_sys; j++)
-				logprint_raw( " %d", *((*(Entry+i))->state+j) );
+			pprint_state( (*(Entry+i))->state, num_env, num_sys, getlogstream() );
 			logprint_endline();
 		}
 		logprint( "Exit set:" );
 		for (i = 0; i < Exit_len; i++) {
 			logprint_startline();
-			for (j = 0; j < num_env+num_sys; j++)
-				logprint_raw( " %d", *((*(Exit+i))->state+j) );
+			pprint_state( (*(Exit+i))->state, num_env, num_sys, getlogstream() );
 			logprint_endline();
 		}
 	}
@@ -385,8 +427,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		logprint( "States in N (%d total):", N_len );
 		for (i = 0; i < N_len; i++) {
 			logprint_startline();
-			for (j = 0; j < num_env+num_sys; j++)
-				logprint_raw( " %d", *(*(N+i)+j) );
+			pprint_state( *(N+i), num_env, num_sys, getlogstream() );
 			logprint_endline();
 		}
 	}
@@ -558,25 +599,23 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 					return NULL;
 				}
 				if (verbose) {
+					logprint_startline();
 					if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
 						if (num_read == 2*(num_env+num_sys)) {
-							logprint( "Removing controlled edge from" );
+							logprint_raw( "Removing controlled edge from" );
 						} else {
-							logprint( "Removing uncontrolled edge from" );
+							logprint_raw( "Removing uncontrolled edge from" );
 						}
 					} else { /* "relax " */
 						if (num_read == 2*(num_env+num_sys)) {
-							logprint( "Adding controlled edge from" );
+							logprint_raw( "Adding controlled edge from" );
 						} else {
-							logprint( "Adding uncontrolled edge from" );
+							logprint_raw( "Adding uncontrolled edge from" );
 						}
 					}
-					logprint_startline();
-					for (i = 0; i < num_env+num_sys; i++)
-						logprint_raw( " %d", *(state+i) );
-					logprint( " to" );
-					for (i = num_env+num_sys; i < num_read; i++)
-						logprint_raw( " %d", *(state+i) );
+					pprint_state( state, num_env, num_sys, getlogstream() );
+					logprint_raw( " to" );
+					pprint_state( state+num_env+num_sys, num_env, num_read-(2*num_env+num_sys), getlogstream() );
 					logprint_endline();
 				}
 				
@@ -639,17 +678,15 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				
 				vertex1 = state2BDD( manager, state, 0, num_env+num_sys );
 				vertex2 = state2BDD( manager, state+num_env+num_sys, num_env+num_sys, num_read-(num_env+num_sys) );
-				tmp = Cudd_Not( vertex1 );
-				Cudd_Ref( tmp );
-				Cudd_RecursiveDeref( manager, vertex1 );
-				vertex1 = tmp;
 				if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
 					tmp = Cudd_Not( vertex2 );
 					Cudd_Ref( tmp );
 					Cudd_RecursiveDeref( manager, vertex2 );
 					vertex2 = tmp;
+					tmp = Cudd_bddOr( manager, Cudd_Not( vertex1 ), vertex2 );
+				} else { /* "relax " */
+					tmp = Cudd_bddAnd( manager, vertex1, vertex2 );
 				}
-				tmp = Cudd_bddOr( manager, vertex1, vertex2 );
 				Cudd_Ref( tmp );
 				Cudd_RecursiveDeref( manager, vertex1 );
 				Cudd_RecursiveDeref( manager, vertex2 );
@@ -686,8 +723,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				if (verbose) {
 					logprint_startline();
 					logprint_raw( "Removing system moves into" );
-					for (i = 0; i < num_sys; i++)
-						logprint_raw( " %d", *(state+i) );
+					pprint_state( state, -1, num_sys, getlogstream() );
 					logprint_endline();
 				}
 				

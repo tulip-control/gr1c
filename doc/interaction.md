@@ -8,21 +8,60 @@ should be given as space separated values.
 
 
 Example session
-===============
+---------------
 
+Initialized with the specification "trivial_partwin.spc",
 
+    # For example, regarding states as bitvectors, 1011 is not in winning
+    # set, while 1010 is. (Ordering is x ze y zs.)
+
+    ENV: x ze;
+    SYS: y zs;
+
+    ENVINIT: x & !ze;
+    ENVTRANS: [] (zs -> ze') & []((!ze & !zs) -> !ze');
+    ENVGOAL: []<>x;
+
+    SYSINIT: y;
+    SYSTRANS:;
+    SYSGOAL: []<>y&x & []<>!y & []<> !ze;
+
+below is example interaction.
+
+    >>> var
+    x (0), ze (1), y (2), zs (3)
+    >>> numgoals
+    3
+    >>> printgoal 0
+    (y&x)
+    >>> printgoal 1
+    (!y)
+    >>> printgoal 2
+    (!ze)
+    >>> printgoal 3
+    Invalid mode: 3
+    >>> winning 1 0 1 1
+    False
+    >>> winning 1 0 1 0
+    True
+    >>> winning 0 0 0 0
+    True
+    >>> sysnexta 0 0 0 0  0 0
+    0 0
+    0 1
+    1 0
+    1 1
+    ---
+    >>> sysnext 0 0 0 0  0 0  2
+    0 0
+    1 0
+    ---
 
 
 Recognized commands
-===================
+-------------------
 
 Use **help** to see the list of commands without descriptions.
-
-* **realizable {existsys,allsys}**
-
-  is specification realizable?  See documentation in solve.h for
-  interpretation of init_flags "existsys" (EXIST_SYS_INIT) and
-  "allsys" (ALL_SYS_INIT).
 
 * **winning STATE**
 
@@ -32,7 +71,7 @@ Use **help** to see the list of commands without descriptions.
 
   list of possible next valuations of environment variables, given
   current STATE; each is on a separate line, with termination
-  indicated by a final line of "---".
+  indicated by a final line of ``---``.
 
 * **sysnext STATE1 STATE2ENV GOALMODE**
 
@@ -40,7 +79,7 @@ Use **help** to see the list of commands without descriptions.
   consistent with progression of a winning strategy that currently has
   goal index GOALMODE, given current STATE1 and environment move
   STATE2ENV from that state; each is on a separate line, with
-  termination indicated by a final line of "---".
+  termination indicated by a final line of ``---``.
 
 * **sysnexta STATE1 STATE2ENV**
 
@@ -77,12 +116,9 @@ Use **help** to see the list of commands without descriptions.
 
 * **getindex STATE GOALMODE**
 
-  get reachability index of STATE for goal index GOALMODE.
-
-* **setindex STATE GOALMODE**
-
-  set reachability index of STATE for goal index GOALMODE; internally
-  this changes sublevel membership of STATE.
+  get reachability index of STATE for goal index GOALMODE.  If the
+  STATE is not in the winning set, then the return value is ``Inf``,
+  which indicates "infinite" index.
 
 * **refresh winning**
 
@@ -121,6 +157,11 @@ Use **help** to see the list of commands without descriptions.
 
   print formula for system goal index GOALMODE.
 
+* **printegoals**
+
+  print list of environment goals (liveness).  Each is on a separate
+  line, with termination indicated by a final line of ``---``.
+
 * **enable (disable) autoreorder**
 
   enable (resp. disable) automatic BDD reordering.
@@ -128,3 +169,10 @@ Use **help** to see the list of commands without descriptions.
 * **quit**
 
   terminate gr1c.
+
+
+* **realizable {existsys,allsys}** [NOT IMPLEMENTED]
+
+  is specification realizable?  See documentation in solve.h for
+  interpretation of init_flags "existsys" (EXIST_SYS_INIT) and
+  "allsys" (ALL_SYS_INIT).

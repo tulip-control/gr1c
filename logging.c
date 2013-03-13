@@ -51,14 +51,14 @@ FILE *openlogfile( char *prefix )
 	if (prefix != NULL) {
 		strncpy( logfilename, prefix, FILENAME_LEN );
 	} else {
-		strncpy( logfilename, "gr1clog", FILENAME_LEN );
+		strncpy( logfilename, "gr1c", FILENAME_LEN );
 	}
 	logfilename[FILENAME_LEN-1] = '\0';
 
 	clock = time( NULL );
 	timeptr = gmtime( &clock );  /* UTC */
 	if (strftime( logfilename+strlen(logfilename), FILENAME_LEN-strlen(logfilename),
-				  "-%Y%m%d.txt", timeptr ) == 0) {
+				  "-%Y%m%d.log", timeptr ) == 0) {
 		fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
 		return NULL;
 	}

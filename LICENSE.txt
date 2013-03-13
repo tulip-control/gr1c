@@ -1,4 +1,4 @@
-gr1c is Copyright 2012, Scott C. Livingston, California Institute of Technology.
+gr1c is Copyright 2012, 2013 by Scott C. Livingston, California Institute of Technology.
 It is released under the terms of the GNU General Public License,
 version 3, as reproduced below.
 
