@@ -790,7 +790,7 @@ int main( int argc, char **argv )
 			list_aut_dump( strategy, num_env+num_sys, fp );
 		} else if (format_option == OUTPUT_FORMAT_DOT) {
 			dot_aut_dump( strategy, evar_list, svar_list,
-						  DOT_AUT_ATTRIB, fp );
+						  DOT_AUT_BINARY | DOT_AUT_ATTRIB, fp );
 		} else if (format_option == OUTPUT_FORMAT_AUT) {
 			aut_aut_dump( strategy, num_env+num_sys, fp );
 		} else if (format_option == OUTPUT_FORMAT_TULIP0) {
