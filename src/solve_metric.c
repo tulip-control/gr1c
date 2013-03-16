@@ -1,4 +1,4 @@
-/* solve_metric.c -- synthesis routines that use a distance between states.
+/* solve_metric.c -- Mostly definitions for signatures appearing in solve_metric.h.
  *
  *
  * SCL; 2012, 2013.
@@ -12,9 +12,11 @@
 
 #include "common.h"
 #include "logging.h"
+#include "gr1c_util.h"
 #include "ptree.h"
 #include "solve.h"
 #include "solve_support.h"
+#include "solve_metric.h"
 
 
 extern ptree_t *evar_list;
@@ -29,16 +31,6 @@ extern int num_egoals;
 extern int num_sgoals;
 
 
-extern int bitvec_to_int( bool *vec, int vec_len );  /* See util.c */
-
-
-/** Return an array of length 2n, where n is the number of entries in
-   metric_vars.  The values at indices 2i and 2i+1 are the offset and
-   width of the i-th variable's binary representation.  Return NULL if
-   error.  metric_vars is a space-separated list of variables to use
-   in computing distance. The caller is expected to free the array.
-
-   This function assumes that evar_list and svar_list have not been linked. */
 int *get_offsets( char *metric_vars, int *num_vars )
 {
 	char *var_str, *tok = NULL;
@@ -203,9 +195,7 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state,
 	return 0;
 }
 
-/* G is the goal set against which to measure distance.
-   Result is written into given integer variables Min and Max;
-   return 0 on success, -1 error. */
+
 int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 				  int *offw, int num_metric_vars,
 				  double *Min, double *Max, unsigned char verbose )

@@ -16,6 +16,9 @@
 #include "solve.h"
 #include "patching.h"
 #include "automaton.h"
+#include "util.h"
+#include "solve_metric.h"
+#include "solve_support.h"
 #include "sim.h"
 extern int yyparse( void );
 
@@ -46,14 +49,7 @@ ptree_t *gen_tree_ptr = NULL;
 /**************************/
 
 
-extern int read_nonbool_state_str( char *input, int **state, int max_len );  /* See solve_support.c */
-extern bool *int_to_bitvec( int k, int vec_len );  /* See util.c */
-
 /* See solve_metric.c */
-extern int compute_horizon( DdManager *manager, DdNode **W,
-							DdNode **etrans, DdNode **strans, DdNode ***sgoals,
-							char *metric_vars, unsigned char verbose );
-extern int *get_offsets( char *metric_vars, int *num_vars );
 extern DdNode *compute_winning_set_saveBDDs( DdManager *manager, DdNode **etrans, DdNode **strans,
 											 DdNode ***egoals, DdNode ***sgoals,
 											 unsigned char verbose );

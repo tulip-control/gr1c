@@ -19,7 +19,7 @@
 #include "solve.h"
 #include "patching.h"
 #include "automaton.h"
-#include "sim.h"
+#include "solve_metric.h"
 extern int yyparse( void );
 
 
@@ -62,10 +62,6 @@ ptree_t *gen_tree_ptr = NULL;
 #define GR1C_MODE_SYNTHESIS 2
 #define GR1C_MODE_INTERACTIVE 3
 #define GR1C_MODE_PATCH 4
-
-
-/* See solve_metric.c */
-extern int *get_offsets( char *metric_vars, int *num_vars );
 
 
 int main( int argc, char **argv )
@@ -789,8 +785,13 @@ int main( int argc, char **argv )
 		if (format_option == OUTPUT_FORMAT_TEXT) {
 			list_aut_dump( strategy, num_env+num_sys, fp );
 		} else if (format_option == OUTPUT_FORMAT_DOT) {
-			dot_aut_dump( strategy, evar_list, svar_list,
-						  DOT_AUT_BINARY | DOT_AUT_ATTRIB, fp );
+			if (nonbool_var_list != NULL) {
+				dot_aut_dump( strategy, evar_list, svar_list,
+							  DOT_AUT_ATTRIB, fp );
+			} else {
+				dot_aut_dump( strategy, evar_list, svar_list,
+							  DOT_AUT_BINARY | DOT_AUT_ATTRIB, fp );
+			}
 		} else if (format_option == OUTPUT_FORMAT_AUT) {
 			aut_aut_dump( strategy, num_env+num_sys, fp );
 		} else if (format_option == OUTPUT_FORMAT_TULIP0) {

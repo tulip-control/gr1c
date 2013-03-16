@@ -10,9 +10,11 @@
 
 #include "sim.h"
 #include "common.h"
+#include "gr1c_util.h"
 #include "automaton.h"
 #include "logging.h"
 #include "solve_support.h"
+#include "solve_metric.h"
 
 
 extern ptree_t *evar_list;
@@ -23,13 +25,6 @@ extern ptree_t **env_goals;
 extern ptree_t **sys_goals;
 extern int num_egoals;
 extern int num_sgoals;
-
-
-extern int *get_offsets( char *metric_vars, int *num_vars );  /* See solve_metric.c */
-extern int bounds_state( DdManager *manager, DdNode *T, bool *ref_state,
-						 int *offw, int num_metric_vars,
-						 double *Min, double *Max, unsigned char verbose );  /* See solve_metric.c */
-extern int bitvec_to_int( bool *vec, int vec_len );  /* See util.c */
 
 
 anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, char *metric_vars, int horizon, bool *init_state, int num_it, unsigned char verbose )

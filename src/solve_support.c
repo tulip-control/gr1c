@@ -11,7 +11,6 @@
 #include "solve_support.h"
 
 
-/* ...because C does not natively support templating */
 int read_nonbool_state_str( char *input, int **state, int max_len )
 {
 	int i;

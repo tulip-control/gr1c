@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "gr1c_util.h"
 #include "automaton.h"
 #include "solve_support.h"
 
@@ -318,8 +319,6 @@ int forward_modereach( anode_t *head, anode_t *node, int mode, bool **N, int N_l
 	return 0;
 }
 
-
-extern int bitvec_to_int( bool *vec, int vec_len );  /* See util.c */
 
 int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, char *name )
 {

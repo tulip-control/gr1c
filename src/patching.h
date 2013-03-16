@@ -2,7 +2,7 @@
  * \brief Implementation of patching and incremental synthesis algorithms.
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -39,6 +39,9 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 							   anode_t **Exit, int Exit_len,
 							   DdNode *etrans, DdNode *strans, DdNode **egoals,
 							   DdNode *N_BDD, unsigned char verbose );
+
+/* new_sysgoal is assumed to have already  */
+anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, ptree_t *new_sysgoal, unsigned char verbose );
 
 
 #endif
