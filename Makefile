@@ -17,6 +17,7 @@ YFLAGS = -d
 CC = gcc
 CFLAGS = -g -Wall -pedantic -ansi -I$(CUDD_ROOT)/include -Isrc -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8
 LDFLAGS = $(CUDD_LIB) -lm
+LD = ld -r
 
 # To use and statically link with GNU Readline
 #CFLAGS += -DUSE_READLINE
@@ -30,13 +31,13 @@ all: gr1c rg
 
 exp: grjit
 
-gr1c: main.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
+gr1c: main.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o gr1c_scan.o
+rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-grjit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o gr1c_scan.o
+grjit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 grjit.o: $(EXPDIR)/grjit.c
@@ -73,15 +74,16 @@ patching.o: $(SRCDIR)/patching.c
 patching_support.o: $(SRCDIR)/patching_support.c
 	$(CC) $(CFLAGS) -c $^
 
-gr1c_scan.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/gr1c_parse.y $(SRCDIR)/rg_parse.y
+gr1c_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/gr1c_parse.y
+	$(YACC) $(YFLAGS) $(SRCDIR)/gr1c_parse.y
 	$(LEX) $<
-	$(CC) -o $@ $(CFLAGS) -c lex.yy.c
-gr1c_parse.o: $(SRCDIR)/gr1c_parse.y
-	$(YACC) $(YFLAGS) $^
-	$(CC) -o $@ $(CFLAGS) -c y.tab.c
-rg_parse.o: $(SRCDIR)/rg_parse.y
-	$(YACC) $(YFLAGS) $^
-	$(CC) -o $@ $(CFLAGS) -c y.tab.c
+	$(CC) $(CFLAGS) -c lex.yy.c y.tab.c
+	$(LD) lex.yy.o y.tab.o -o $@
+rg_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/rg_parse.y
+	$(YACC) $(YFLAGS) $(SRCDIR)/rg_parse.y
+	$(LEX) $<
+	$(CC) $(CFLAGS) -c lex.yy.c y.tab.c
+	$(LD) lex.yy.o y.tab.o -o $@
 
 install:
 	cp gr1c rg $(INSTALLDIR)/

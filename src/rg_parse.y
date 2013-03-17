@@ -1,7 +1,7 @@
 /* rg -- Bison (and Yacc) grammar file for reach game formulae
  *
  *
- * SCL; Aug 2012.
+ * SCL; Aug 2012, Mar 2013.
  */
 
 
@@ -59,6 +59,10 @@
 %token TRUE_CONSTANT
 %token FALSE_CONSTANT
 
+%token LE_OP
+%token GE_OP
+%token NOT_EQUALS
+%left EQUIV
 %left IMPLIES
 %left SAFETY_OP
 %left AND_SAFETY_OP
