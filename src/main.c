@@ -21,6 +21,7 @@
 #include "automaton.h"
 #include "solve_metric.h"
 extern int yyparse( void );
+extern void yyrestart( FILE *new_file );
 
 
 /**************************
@@ -67,7 +68,6 @@ ptree_t *gen_tree_ptr = NULL;
 int main( int argc, char **argv )
 {
 	FILE *fp;
-	FILE *stdin_backup = NULL;
 	byte run_option = GR1C_MODE_SYNTHESIS;
 	bool help_flag = False;
 	bool ptdump_flag = False;
@@ -80,6 +80,10 @@ int main( int argc, char **argv )
 	int output_file_index = -1;  /* For command-line flag "-o". */
 	FILE *strategy_fp;
 	char dumpfilename[64];
+
+	FILE *clf_file = NULL;
+	int clformula_index = -1;  /* For command-line flag "-f". */
+	ptree_t *clformula = NULL;
 
 	int i, j, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
@@ -171,6 +175,13 @@ int main( int argc, char **argv )
 				}
 				output_file_index = i+1;
 				i++;
+			} else if (argv[i][1] == 'f') {
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				clformula_index = i+1;
+				i++;
 			} else {
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 				return 1;
@@ -185,11 +196,14 @@ int main( int argc, char **argv )
 	if (edges_input_index >= 0 && aut_input_index < 0) {
 		fprintf( stderr, "\"-e\" flag can only be used with \"-a\"\n" );
 		return 1;
+	} else if (clformula_index >= 0 && aut_input_index < 0) {
+		fprintf( stderr, "\"-f\" flag can only be used with \"-a\"\n" );
+		return 1;
 	}
 
 	if (help_flag) {
 		/* Split among printf() calls to conform with ISO C90 string length */
-		printf( "Usage: %s [-hVvlspri] [-m VARS] [-t TYPE] [-aeo FILE] [FILE]\n\n"
+		printf( "Usage: %s [-hVvlspri] [-m VARS] [-t TYPE] [-aeo FILE] [-f FORM] [FILE]\n\n"
 				"  -h          this help message\n"
 				"  -V          print version and exit\n"
 				"  -v          be verbose; use -vv to be more verbose\n"
@@ -205,7 +219,8 @@ int main( int argc, char **argv )
 				"  -a FILE     automaton file in \"gr1c\" format;\n"
 				"              if FILE is -, then read from stdin\n"
 				"  -e FILE     patch, given game edge set change file; requires -a flag\n"
-				"  -o FILE     output strategy to FILE, rather than stdout (default)\n" );
+				"  -o FILE     output strategy to FILE, rather than stdout (default)\n"
+				"  -f FORM     FORM is a Boolean (state) formula\n" );
 		return 1;
 	}
 
@@ -226,6 +241,38 @@ int main( int argc, char **argv )
 	if (verbose > 0)
 		logprint( "Running with verbosity level %d.", verbose );
 
+	if (clformula_index >= 0) {
+		if (verbose > 1) {
+			logprint( "Parsing command-line formula \"%s\"...", argv[clformula_index] );
+		}
+
+		clf_file = tmpfile();
+		if (clf_file == NULL) {
+			perror( "gr1c, tmpfile" );
+			return -1;
+		}
+		fprintf( clf_file, "%s\n", argv[clformula_index] );
+		if (fseek( clf_file, 0, SEEK_SET )) {
+			perror( "gr1c, fseek" );
+			return -1;
+		}
+		yyrestart( clf_file );
+		yyparse();
+		fclose( clf_file );
+
+		clformula = gen_tree_ptr;
+		gen_tree_ptr = NULL;
+
+		if (ptdump_flag)
+			tree_dot_dump( clformula, "clformula_ptree.dot" );
+		if (verbose > 1) {
+			logprint_startline();
+			logprint_raw( "Command-line formula, printed from ptree: " );
+			print_formula( clformula, getlogstream() );
+			logprint_endline();
+		}
+	}
+
 	/* If filename for specification given at command-line, then use
 	   it.  Else, read from stdin. */
 	if (input_index > 0) {
@@ -234,8 +281,9 @@ int main( int argc, char **argv )
 			perror( "gr1c, fopen" );
 			return -1;
 		}
-		stdin_backup = stdin;
-		stdin = fp;
+		yyrestart( fp );
+	} else {
+		yyrestart( stdin );
 	}
 
 	/* Parse the specification. */
@@ -248,9 +296,6 @@ int main( int argc, char **argv )
 		return -1;
 	if (verbose)
 		logprint( "Done." );
-	if (stdin_backup != NULL) {
-		stdin = stdin_backup;
-	}
 
 	if (run_option == GR1C_MODE_SYNTAX)
 		return 0;
@@ -305,7 +350,7 @@ int main( int argc, char **argv )
 		}
 		all_vars = malloc( num_vars*sizeof(char) );
 		if (all_vars == NULL) {
-			perror( "main, malloc" );
+			perror( "gr1c, malloc" );
 			return -1;
 		}
 		i = 0;
@@ -807,6 +852,7 @@ int main( int argc, char **argv )
 	/* Clean-up */
 	if (metric_vars != NULL)
 		free( metric_vars );
+	delete_tree( clformula );
 	delete_tree( evar_list );
 	delete_tree( svar_list );
 	delete_tree( env_init );

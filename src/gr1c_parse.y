@@ -1,7 +1,7 @@
 /* gr1c -- Bison (and Yacc) grammar file
  *
  *
- * SCL; Jan-Feb, Sep 2012, Feb 2013.
+ * SCL; 2012, 2013.
  */
 
 
@@ -76,6 +76,7 @@
 
 input: /* empty */
      | input exp
+     | propformula
 ;
 
 exp: evar_list ';'
