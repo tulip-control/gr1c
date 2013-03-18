@@ -180,6 +180,7 @@ int main( int argc, char **argv )
 					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 					return 1;
 				}
+				run_option = GR1C_MODE_PATCH;
 				clformula_index = i+1;
 				i++;
 			} else {
@@ -193,7 +194,10 @@ int main( int argc, char **argv )
 		}
 	}
 
-	if (edges_input_index >= 0 && aut_input_index < 0) {
+	if (edges_input_index >= 0 && clformula_index >= 0) {
+		fprintf( stderr, "\"-e\" and \"-a\" flags cannot be used simultaneously.\n" );
+		return 1;
+	} else if (edges_input_index >= 0 && aut_input_index < 0) {
 		fprintf( stderr, "\"-e\" flag can only be used with \"-a\"\n" );
 		return 1;
 	} else if (clformula_index >= 0 && aut_input_index < 0) {
@@ -220,7 +224,8 @@ int main( int argc, char **argv )
 				"              if FILE is -, then read from stdin\n"
 				"  -e FILE     patch, given game edge set change file; requires -a flag\n"
 				"  -o FILE     output strategy to FILE, rather than stdout (default)\n"
-				"  -f FORM     FORM is a Boolean (state) formula\n" );
+				"  -f FORM     FORM is a Boolean (state) formula, currently only\n"
+				"              used for appending a system goal; requires -a flag.\n" );
 		return 1;
 	}
 
@@ -431,10 +436,18 @@ int main( int argc, char **argv )
 		} else {
 			tmppt = evar_list;
 			while (tmppt) {
-				if (tmppt->left == NULL) {
-					printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+				if (tmppt->value == 0) {  /* Boolean */
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; bool)", tmppt->name, var_index );
+					} else {
+						printf( "%s (%d; bool), ", tmppt->name, var_index);
+					}
 				} else {
-					printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+					} else {
+						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+					}
 				}
 				tmppt = tmppt->left;
 				var_index++;
@@ -448,10 +461,18 @@ int main( int argc, char **argv )
 		} else {
 			tmppt = svar_list;
 			while (tmppt) {
-				if (tmppt->left == NULL) {
-					printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+				if (tmppt->value == 0) {  /* Boolean */
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; bool)", tmppt->name, var_index );
+					} else {
+						printf( "%s (%d; bool), ", tmppt->name, var_index );
+					}
 				} else {
-					printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+					} else {
+						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+					}
 				}
 				tmppt = tmppt->left;
 				var_index++;
@@ -512,7 +533,7 @@ int main( int argc, char **argv )
 		var_separator = get_list_item( evar_list, -1 );
 		if (var_separator == NULL) {
 			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
-			return NULL;
+			return -1;
 		}
 		var_separator->left = svar_list;
 	}

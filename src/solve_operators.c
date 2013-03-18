@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "logging.h"
 #include "solve.h"
 #include "solve_support.h"
 

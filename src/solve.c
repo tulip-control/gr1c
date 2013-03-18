@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "logging.h"
 #include "solve.h"
 #include "solve_support.h"
 #include "automaton.h"
@@ -342,20 +343,6 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		this_node_stack = pop_anode( this_node_stack );
 		node->rgrad = j;
 
-		/* Note that we assume the variable map has been appropriately
-		   defined in the CUDD manager, after the call to
-		   compute_winning_set above. */
-		if (j == 0) {
-			Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+node->mode)) );
-		} else {
-			Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+node->mode)+j-1) );
-		}
-		if (Y_i_primed == NULL) {
-			fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
-			return NULL;
-		}
-		Cudd_Ref( Y_i_primed );
-
 		if (num_env > 0) {
 			env_moves = get_env_moves( manager, cube,
 									   node->state, etrans,
@@ -365,6 +352,20 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			emoves_len = 1;  /* This allows one iteration of the for-loop */
 		}
 		for (k = 0; k < emoves_len; k++) {
+			/* Note that we assume the variable map has been
+			   appropriately defined in the CUDD manager, after the
+			   call to compute_winning_set above. */
+			if (j == 0) {
+				Y_i_primed = Cudd_bddVarMap( manager, **(Y+node->mode) );
+			} else {
+				Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+node->mode)+j-1) );
+			}
+			if (Y_i_primed == NULL) {
+				fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
+				return NULL;
+			}
+			Cudd_Ref( Y_i_primed );
+
 			tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
 			Cudd_Ref( tmp );
 			tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
@@ -508,6 +509,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				fprintf( stderr, "Error synthesize: inserting new transition into strategy.\n" );
 				return NULL;
 			}
+
+			Cudd_RecursiveDeref( manager, Y_i_primed );
 		}
 		if (num_env > 0) {
 			for (k = 0; k < emoves_len; k++)
@@ -516,7 +519,6 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		} else {
 			emoves_len = 0;
 		}
-		Cudd_RecursiveDeref( manager, Y_i_primed );
 	}
 
 	/* Pre-exit clean-up */
