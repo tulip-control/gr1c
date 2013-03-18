@@ -767,6 +767,9 @@ void print_formula( ptree_t *head, FILE *fp )
 	case PT_IMPLIES:
 		fprintf( fp, "->" );
 		break;
+	case PT_EQUIV:
+		fprintf( fp, "<->" );
+		break;
 	case PT_EQUALS:
 		fprintf( fp, "=" );
 		break;
