@@ -40,8 +40,12 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 							   DdNode *etrans, DdNode *strans, DdNode **egoals,
 							   DdNode *N_BDD, unsigned char verbose );
 
-/* new_sysgoal is assumed to have already  */
-anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, ptree_t *new_sysgoal, unsigned char verbose );
+/* new_sysgoal is assumed to have had nonboolean variables expanded.
+   If no metric variables are given (i.e., num_metric_vars = 0 or offw
+   is NULL), then the new system goal is appended at the end of the
+   existing goal visitation sequence.
 
+   Return the head pointer of the augmented strategy, or NULL if error. */
+anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, int num_metric_vars, ptree_t *new_sysgoal, unsigned char verbose );
 
 #endif

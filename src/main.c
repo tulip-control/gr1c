@@ -98,7 +98,7 @@ int main( int argc, char **argv )
 	int original_num_env, original_num_sys;
 
 	char *all_vars = NULL, *metric_vars = NULL;
-	int *offw, num_vars;
+	int *offw = NULL, num_vars;
 
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
@@ -316,9 +316,9 @@ int main( int argc, char **argv )
 		sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
 
 	/* Merge component safety (transition) formulas if not in patching
-	   (or incremental) mode, or if DOT dumps of the parse trees were
-	   requested. */
-	if ((run_option != GR1C_MODE_PATCH) || ptdump_flag) {
+	   (or incremental) mode, except in certain situations, or if DOT
+	   dumps of the parse trees were requested. */
+	if ((run_option != GR1C_MODE_PATCH) || ptdump_flag || (run_option == GR1C_MODE_PATCH && clformula_index >= 0)) {
 		if (et_array_len > 1) {
 			env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
 		} else if (et_array_len == 1) {
@@ -547,21 +547,21 @@ int main( int argc, char **argv )
 			}
 
 			if (verbose > 1)
-				logprint( "Expanding nonbool variables in SYSINIT..." );
+				logprint( "Expanding nonbool variable %s in SYSINIT...", tmppt->name );
 			sys_init = expand_to_bool( sys_init, tmppt->name, tmppt->value );
 			if (verbose > 1) {
 				logprint( "Done." );
-				logprint( "Expanding nonbool variables in ENVINIT..." );
+				logprint( "Expanding nonbool variable %s in ENVINIT...", tmppt->name );
 			}
 			env_init = expand_to_bool( env_init, tmppt->name, tmppt->value );
 			if (verbose > 1) {
 				logprint( "Done." );
-				logprint( "Expanding nonbool variables in SYSTRANS..." );
+				logprint( "Expanding nonbool variable %s in SYSTRANS...", tmppt->name );
 			}
 			sys_trans = expand_to_bool( sys_trans, tmppt->name, tmppt->value );
 			if (verbose > 1) {
 				logprint( "Done." );
-				logprint( "Expanding nonbool variables in ENVTRANS..." );
+				logprint( "Expanding nonbool variable %s in ENVTRANS...", tmppt->name );
 			}
 			env_trans = expand_to_bool( env_trans, tmppt->name, tmppt->value );
 			if (verbose > 1)
@@ -572,7 +572,7 @@ int main( int argc, char **argv )
 			}
 			for (i = 0; i < num_egoals; i++) {
 				if (verbose > 1)
-					logprint( "Expanding nonbool variables in ENVGOAL %d...", i );
+					logprint( "Expanding nonbool variable %s in ENVGOAL %d...", tmppt->name, i );
 				*(env_goals+i) = expand_to_bool( *(env_goals+i), tmppt->name, tmppt->value );
 				if (*(env_goals+i) == NULL) {
 					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
@@ -583,12 +583,20 @@ int main( int argc, char **argv )
 			}
 			for (i = 0; i < num_sgoals; i++) {
 				if (verbose > 1)
-					logprint( "Expanding nonbool variables in SYSGOAL %d...", i );
+					logprint( "Expanding nonbool variable %s in SYSGOAL %d...", tmppt->name, i );
 				*(sys_goals+i) = expand_to_bool( *(sys_goals+i), tmppt->name, tmppt->value );
 				if (*(sys_goals+i) == NULL) {
 					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
 					return -1;
 				}
+				if (verbose > 1)
+					logprint( "Done." );
+			}
+
+			if (clformula != NULL) {
+				if (verbose > 1)
+					logprint( "Expanding nonbool variable %s in command-line formula...", tmppt->name );
+				clformula = expand_to_bool( clformula, tmppt->name, tmppt->value );
 				if (verbose > 1)
 					logprint( "Done." );
 			}
@@ -728,19 +736,25 @@ int main( int argc, char **argv )
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
 
+	/* Compute bitwise offsets for metric variables, if requested. */
+	if (metric_vars != NULL) {
+		offw = get_offsets( all_vars, &num_vars );
+		if (num_vars != original_num_env+original_num_sys) {
+			fprintf( stderr, "Error while computing bitwise variable offsets.\n" );
+			return -1;
+		}
+		free( all_vars );
+		all_vars = NULL;
+	}
+
 	manager = Cudd_Init( 2*(num_env+num_sys),
 						 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
 	Cudd_SetMaxCacheHard( manager, (unsigned int)-1 );
 	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 
 	if (run_option == GR1C_MODE_PATCH) {
-		fp = fopen( argv[edges_input_index], "r" );
-		if (fp == NULL) {
-			perror( "gr1c, fopen" );
-			return -1;
-		}
 		if (!strncmp( argv[aut_input_index], "-", 1 )) {
-				strategy_fp = stdin;
+			strategy_fp = stdin;
 		} else {
 			strategy_fp = fopen( argv[aut_input_index], "r" );
 			if (strategy_fp == NULL) {
@@ -749,14 +763,35 @@ int main( int argc, char **argv )
 			}
 		}
 
-		if (verbose)
-			logprint( "Patching given strategy..." );
-		strategy = patch_localfixpoint( manager, strategy_fp, fp, verbose );
-		fclose( fp );
+		if (edges_input_index >= 0) {  /* patch_localfixpoint() */
+			fp = fopen( argv[edges_input_index], "r" );
+			if (fp == NULL) {
+				perror( "gr1c, fopen" );
+				return -1;
+			}
+
+			if (verbose)
+				logprint( "Patching given strategy..." );
+			strategy = patch_localfixpoint( manager, strategy_fp, fp, verbose );
+			if (verbose)
+				logprint( "Done." );
+
+			fclose( fp );
+		} else if (clformula_index >= 0) {  /* add_metric_sysgoal() */
+
+			if (verbose)
+				logprint( "Patching given strategy..." );
+			strategy = add_metric_sysgoal( manager, strategy_fp, NULL, 0, clformula, verbose );
+			/* strategy = add_metric_sysgoal( manager, strategy_fp, offw, num_vars, clformula, verbose ); */
+			if (verbose)
+				logprint( "Done." );
+
+		} else {
+			fprintf( stderr, "Unrecognized patching request.  Try \"-h\".\n" );
+			return 1;
+		}
 		if (strategy_fp != stdin)
 			fclose( strategy_fp );
-		if (verbose)
-			logprint( "Done." );
 		if (strategy == NULL) {
 			fprintf( stderr, "Failed to patch strategy.\n" );
 			return -1;
@@ -794,17 +829,6 @@ int main( int argc, char **argv )
 			} else {
 				logprint( "Not realizable." );
 			}
-		}
-
-		/* Compute bitwise offsets for metric variables, if requested. */
-		if (metric_vars != NULL && T != NULL) {
-			offw = get_offsets( all_vars, &num_vars );
-			if (num_vars != original_num_env+original_num_sys) {
-				fprintf( stderr, "Error while computing bitwise variable offsets.\n" );
-				return -1;
-			}
-			free( all_vars );
-			all_vars = NULL;
 		}
 
 		if (run_option == GR1C_MODE_SYNTHESIS && T != NULL) {
@@ -873,6 +897,8 @@ int main( int argc, char **argv )
 	/* Clean-up */
 	if (metric_vars != NULL)
 		free( metric_vars );
+	if (offw != NULL)
+		free( offw );
 	delete_tree( clformula );
 	delete_tree( evar_list );
 	delete_tree( svar_list );

@@ -31,7 +31,7 @@ all: gr1c rg
 
 exp: grjit
 
-gr1c: main.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o
+gr1c: main.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o patching_hotswap.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o
@@ -72,6 +72,8 @@ solve.o: $(SRCDIR)/solve.c
 patching.o: $(SRCDIR)/patching.c
 	$(CC) $(CFLAGS) -c $^
 patching_support.o: $(SRCDIR)/patching_support.c
+	$(CC) $(CFLAGS) -c $^
+patching_hotswap.o: $(SRCDIR)/patching_hotswap.c
 	$(CC) $(CFLAGS) -c $^
 
 gr1c_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/gr1c_parse.y
