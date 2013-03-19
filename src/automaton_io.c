@@ -1,7 +1,7 @@
 /* automaton_io.c -- Definitions for input/output routines on automata.
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -222,6 +222,72 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	fprintf( fp, "digraph A {\n" );
 	node = head;
 	while (node) {
+		/* First print the node, alone */
+		fprintf( fp, "    \"%d;\\n", node_counter );
+		if (format_flags & DOT_AUT_ATTRIB) {
+			fprintf( fp, "(%d, %d)\\n", node->mode, node->rgrad );
+		}
+		if ((format_flags & 0x1) == DOT_AUT_ALL) {
+			last_nonzero_env = num_env-1;
+			last_nonzero_sys = num_sys-1;
+		} else {
+			for (last_nonzero_env = num_env-1; last_nonzero_env >= 0
+					 && *(node->state+last_nonzero_env) == 0; last_nonzero_env--) ;
+			for (last_nonzero_sys = num_sys-1; last_nonzero_sys >= 0
+					 && *(node->state+num_env+last_nonzero_sys) == 0; last_nonzero_sys--) ;
+		}
+		if (last_nonzero_env < 0 && last_nonzero_sys < 0) {
+			fprintf( fp, "{}" );
+		} else {
+			if (!(format_flags & DOT_AUT_EDGEINPUT)) {
+				for (j = 0; j < num_env; j++) {
+					if ((format_flags & DOT_AUT_BINARY) && *(node->state+j) == 0)
+						continue;
+					var = get_list_item( evar_list, j );
+					if (j == last_nonzero_env) {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s", var->name );
+						} else {
+							fprintf( fp, "%s=%d", var->name, *(node->state+j) );
+						}
+						if ((last_nonzero_sys >= 0 || (format_flags & DOT_AUT_ALL))
+							&& !(format_flags & DOT_AUT_EDGEINPUT))
+							fprintf( fp, ", " );
+					} else {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s, ", var->name );
+						} else {
+							fprintf( fp, "%s=%d, ", var->name, *(node->state+j) );
+						}
+					}
+				}
+			}
+			if (last_nonzero_sys < 0 && (format_flags & DOT_AUT_EDGEINPUT)) {
+				fprintf( fp, "{}" );
+			} else {
+				for (j = 0; j < num_sys; j++) {
+					if ((format_flags & DOT_AUT_BINARY) && *(node->state+num_env+j) == 0)
+						continue;
+					var = get_list_item( svar_list, j );
+					if (j == last_nonzero_sys) {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s", var->name );
+						} else {
+							fprintf( fp, "%s=%d", var->name, *(node->state+num_env+j) );
+						}
+					} else {
+						if (format_flags & DOT_AUT_BINARY) {
+							fprintf( fp, "%s, ", var->name );
+						} else {
+							fprintf( fp, "%s=%d, ", var->name, *(node->state+num_env+j) );
+						}
+					}
+				}
+			}
+		}
+		fprintf( fp, "\"\n" );
+
+		/* Next print all outgoing edges from the current node */
 		for (i = 0; i < node->trans_len; i++) {
 			fprintf( fp, "    \"%d;\\n", node_counter );
 			if (format_flags & DOT_AUT_ATTRIB) {
