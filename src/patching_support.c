@@ -48,19 +48,19 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 
 	state = malloc( sizeof(bool)*(num_env+num_sys) );
 	if (state == NULL) {
-		perror( "synthesize_reachgame, malloc" );
+		perror( "synthesize_reachgame_BDD, malloc" );
 		return NULL;
 	}
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
-		perror( "synthesize_reachgame, malloc" );
+		perror( "synthesize_reachgame_BDD, malloc" );
 		return NULL;
 	}
 
 	num_sublevels = 1;
 	Y = malloc( num_sublevels*sizeof(DdNode *) );
 	if (Y == NULL) {
-		perror( "synthesize_reachgame, malloc" );
+		perror( "synthesize_reachgame_BDD, malloc" );
 		return NULL;
 	}
 	*Y = Exit;
@@ -68,13 +68,13 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 
 	X_jr = malloc( num_sublevels*sizeof(DdNode **) );
 	if (X_jr == NULL) {
-		perror( "synthesize_reachgame, malloc" );
+		perror( "synthesize_reachgame_BDD, malloc" );
 		return NULL;
 	}
 	
 	*X_jr = malloc( num_egoals*sizeof(DdNode *) );
 	if (*X_jr == NULL) {
-		perror( "synthesize_reachgame, malloc" );
+		perror( "synthesize_reachgame_BDD, malloc" );
 		return NULL;
 	}
 	for (r = 0; r < num_egoals; r++) {
@@ -87,13 +87,13 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 		Y = realloc( Y, num_sublevels*sizeof(DdNode *) );
 		X_jr = realloc( X_jr, num_sublevels*sizeof(DdNode **) );
 		if (Y == NULL || X_jr == NULL) {
-			perror( "synthesize_reachgame, realloc" );
+			perror( "synthesize_reachgame_BDD, realloc" );
 			return NULL;
 		}
 		
 		*(X_jr + num_sublevels-1) = malloc( num_egoals*sizeof(DdNode *) );
 		if (*(X_jr + num_sublevels-1) == NULL) {
-			perror( "synthesize_reachgame, malloc" );
+			perror( "synthesize_reachgame_BDD, malloc" );
 			return NULL;
 		}
 
@@ -184,7 +184,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 				Y = realloc( Y, num_sublevels*sizeof(DdNode *) );
 				X_jr = realloc( X_jr, num_sublevels*sizeof(DdNode **) );
 				if (Y == NULL || X_jr == NULL) {
-					perror( "synthesize_reachgame, realloc" );
+					perror( "synthesize_reachgame_BDD, realloc" );
 					return NULL;
 				}
 			}
@@ -199,7 +199,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 
 
 	/* Note that we assume the variable map has been appropriately
-	   defined in the CUDD manager before invocation of synthesize_reachgame. */
+	   defined in the CUDD manager before invocation of synthesize_reachgame_BDD. */
 	tmp = Cudd_bddVarMap( manager, N_BDD );
 	if (tmp == NULL) {
 		fprintf( stderr, "Error synthesize_reachgame_BDD: Error in swapping variables with primed forms.\n" );
