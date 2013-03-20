@@ -22,7 +22,7 @@
 int *get_offsets( char *metric_vars, int *num_vars );
 
 /** G is the goal set against which to measure distance.
-   Result is written into given integer variables Min and Max;
+   Result is written into given variables Min and Max;
    return 0 on success, -1 error. */
 int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 				  int *offw, int num_metric_vars,
