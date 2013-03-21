@@ -1,7 +1,7 @@
 /* automaton.c -- Definitions for core routines on automaton objects.
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "ptree.h"
 #include "gr1c_util.h"
 #include "automaton.h"
 #include "solve_support.h"
@@ -391,4 +392,111 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, 
 	}
 
 	return num_env+num_sys - (stop_index-start_index);
+}
+
+
+/* N.B., we assume that noonbool_var_list is sorted with respect to
+   the expanded variable list (evar_list followed by svar_list). */
+int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+					 ptree_t *nonbool_var_list )
+{
+	ptree_t *var, *var_tail;
+	int start_index, stop_index;
+	int i, j, k;
+	int num_env, num_sys, num_nonbool;
+	bool *new_state, *state_frag;
+	int *vec_starts;  /* Index in the expanded state vector at which it begins. */
+	int *vec_lens;
+	ptree_t *tmppt;
+
+	if (head == NULL)  /* Empty automaton */
+		return -1;
+
+	num_env = tree_size( evar_list );
+	num_sys = tree_size( svar_list );
+
+	num_nonbool = tree_size( nonbool_var_list );
+	if (num_nonbool == 0)
+		return 0;  /* Empty call */
+
+	vec_starts = malloc( num_nonbool*sizeof(int) );
+	vec_lens = malloc( num_nonbool*sizeof(int) );
+	if (vec_starts == NULL || vec_lens == NULL) {
+		perror( "aut_expand_bool, malloc" );
+		return -1;
+	}
+
+	i = 0;
+	tmppt = nonbool_var_list;
+	while (tmppt) {
+
+		var = evar_list;
+		start_index = 0;
+		while (var) {
+			if (strstr( var->name, tmppt->name ) == var->name)
+				break;
+			var = var->left;
+			start_index++;
+		}
+		if (var == NULL) {
+			var = svar_list;
+			while (var) {
+				if (strstr( var->name, tmppt->name ) == var->name)
+					break;
+				var = var->left;
+				start_index++;
+			}
+			if (var == NULL)
+				return -1;  /* Could not find match. */
+		}
+
+		var_tail = var;
+		stop_index = start_index;
+		while (var_tail->left) {
+			if (strstr( var_tail->left->name, tmppt->name ) != var_tail->left->name )
+				break;
+			var_tail = var_tail->left;
+			stop_index++;
+		}
+
+		*(vec_starts+i) = start_index;
+		*(vec_lens+i) = stop_index-start_index+1;
+
+		tmppt = tmppt->left;
+		i++;
+	}
+
+	while (head) {
+		new_state = malloc( (num_env+num_sys)*sizeof(bool) );
+		if (new_state == NULL) {
+			perror( "aut_expand_bool, malloc" );
+			return -1;
+		}
+
+		i = j = k = 0;
+		while (j < num_sys+num_env) {
+			if (i >= num_nonbool || j < *(vec_starts+i)) {
+				*(new_state+j) = *(head->state+k);
+
+				j++;
+			} else {
+				state_frag = int_to_bitvec( *(head->state+k), *(vec_lens+i) );
+				for (j = *(vec_starts+i); j < *(vec_starts+i)+*(vec_lens+i); j++)
+					*(new_state+j) = *(state_frag+j-*(vec_starts+i));
+				free( state_frag );
+
+				i++;
+			}
+			k++;
+		}
+
+		free( head->state );
+		head->state = new_state;
+
+		head = head->next;
+	}
+
+	free( vec_starts );
+	free( vec_lens );
+	return 0;
 }

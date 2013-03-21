@@ -14,9 +14,12 @@
 #include "automaton.h"
 #include "ptree.h"
 #include "patching.h"
+#include "solve.h"
 #include "solve_support.h"
+#include "solve_metric.h"
 
 
+extern ptree_t *nonbool_var_list;
 extern ptree_t *evar_list;
 extern ptree_t *svar_list;
 extern ptree_t **env_goals;
@@ -36,7 +39,7 @@ extern anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int n
 										  unsigned char verbose );  /* Defined in patching_support.c */
 
 
-anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, int num_metric_vars, ptree_t *new_sysgoal, unsigned char verbose )
+anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original_num_env, int original_num_sys, int *offw, int num_metric_vars, ptree_t *new_sysgoal, unsigned char verbose )
 {
 	ptree_t *var_separator;
 	DdNode *etrans, *strans, **egoals, **sgoals;
@@ -46,6 +49,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, i
 	int num_env, num_sys;
 	anode_t *node1, *node2;
 
+	double *Min, *Max;  /* One (Min, Max) pair per original system goal */
 
 	int Gi_len[2];
 	anode_t **Gi[2];  /* Array of two pointers to arrays of nodes in
@@ -62,8 +66,6 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, i
 	int node_counter;
 	DdNode *tmp, *tmp2;
 	DdNode **vars, **pvars;
-	int *cube;
-	DdNode *ddval;
 
 	if (strategy_fp == NULL)
 		strategy_fp = stdin;
@@ -71,19 +73,27 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, i
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
 
-	strategy = aut_aut_load( num_env+num_sys, strategy_fp );
+	strategy = aut_aut_load( original_num_env+original_num_sys, strategy_fp );
 	if (strategy == NULL) {
 		return NULL;
 	}
 	if (verbose)
 		logprint( "Read in strategy of size %d", aut_size( strategy ) );
 
-	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
-	if (cube == NULL) {
-		perror( "patch_localfixpoint, malloc" );
+	if (verbose > 1)
+		logprint( "Expanding nonbool variables in the given strategy automaton..." );
+	if (aut_expand_bool( strategy, evar_list, svar_list, nonbool_var_list )) {
+		fprintf( stderr, "Error add_metric_sysgoal: Failed to expand nonboolean variables in given automaton." );
 		return NULL;
 	}
-	
+	if (verbose > 1) {
+		logprint( "Given strategy after variable expansion:" );
+		logprint_startline();
+		/* list_aut_dump( strategy, num_env+num_sys, getlogstream() ); */
+		dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_ATTRIB, getlogstream() );
+		logprint_endline();
+	}
+
 	/* Set environment goal to True (i.e., any state) if none was
 	   given. This simplifies the implementation below. */
 	if (num_egoals == 0) {
@@ -145,8 +155,37 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, i
 	}
 
 
-	istar[0] = num_sgoals-1;
-	istar[1] = 0;
+	/* Find which original system goal is closest to the new one */
+	if (offw != NULL && num_metric_vars > 0) {
+		Min = malloc( num_sgoals*sizeof(double) );
+		Max = malloc( num_sgoals*sizeof(double) );
+		if (Min == NULL || Max == NULL) {
+			perror( "add_metric_sysgoal, malloc" );
+			return NULL;
+		}
+		for (i = 0; i < num_sgoals; i++) {
+			if (bounds_DDset( manager, *(sgoals+i), new_sgoal, offw, num_metric_vars, Min+i, Max+i, verbose )) {
+				fprintf( stderr, "Error add_metric_sysgoal: bounds_DDset() failed to compute distance from original goal %d", i );
+				return NULL;
+			}
+		}
+		istar[0] = 0;
+		for (i = 1; i < num_sgoals; i++) {
+			if (*(Min+i) < *(Min+istar[0]))
+				istar[0] = i;
+		}
+		if (verbose)
+			logprint( "add_metric_sysgoal: The original system goal with index %d has minimum distance", istar[0] );
+	} else {
+		Min = Max = NULL;
+		istar[0] = num_sgoals-1;
+	}
+
+	if (istar[0] == num_sgoals-1) {
+		istar[1] = 0;
+	} else {
+		istar[1] = istar[0]+1;
+	}
 	Gi[0] = Gi[1] = NULL;
 	Gi_len[0] = Gi_len[1] = 0;
 
@@ -224,9 +263,12 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, i
 	}
 	tmp2 = NULL;
 
+	tmp = Cudd_ReadOne( manager );
+	Cudd_Ref( tmp );
 	component_strategy = synthesize_reachgame_BDD( manager, num_env, num_sys,
 												   Gi_BDD, new_sgoal,
-												   etrans, strans, egoals, Cudd_ReadOne( manager ), verbose );
+												   etrans, strans, egoals, tmp, verbose );
+	Cudd_RecursiveDeref( manager, tmp );
 	if (component_strategy == NULL) {
 		delete_aut( strategy );
 		return NULL;  /* Failure */
@@ -266,6 +308,12 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, i
 		node1 = node1->next;
 	node1->next = component_strategy;
 
+	node1 = component_strategy;
+	while (node1) {
+		node1->mode = num_sgoals;
+		node1 = node1->next;
+	}
+
 	/* From original to first component... */
 	for (i = 0; i < Gi_len[0]; i++) {
 		(*(Gi[0]+i))->trans_len = 0;
@@ -294,11 +342,22 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, i
 		}
 	}
 
-	
+	if (verbose > 1) {
+		logprint( "Partially patched strategy before de-expanding variables:" );
+		logprint_startline();
+		/* list_aut_dump( strategy, num_env+num_sys, getlogstream() ); */
+		dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
+		logprint_endline();
+	}
+
+
+	tmp = Cudd_ReadOne( manager );
+	Cudd_Ref( tmp );
 	component_strategy = synthesize_reachgame( manager, num_env, num_sys,
 											   new_reached, new_reached_len,
 											   Gi[1], Gi_len[1],
-											   etrans, strans, egoals, Cudd_ReadOne( manager ), verbose );
+											   etrans, strans, egoals, tmp, verbose );
+	Cudd_RecursiveDeref( manager, tmp );
 	if (component_strategy == NULL) {
 		delete_aut( strategy );
 		return NULL;  /* Failure */
@@ -371,7 +430,18 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, i
 	}
 
 
+	if (verbose > 1) {
+		logprint( "Patched strategy before de-expanding variables:" );
+		logprint_startline();
+		/* list_aut_dump( strategy, num_env+num_sys, getlogstream() ); */
+		dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
+		logprint_endline();
+	}
+
+
 	/* Pre-exit clean-up */
+	free( Min );
+	free( Max );
 	free( Gi[0] );
 	free( Gi[1] );
 	free( new_reached );
@@ -385,7 +455,6 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, i
 		free( egoals );
 	if (num_sgoals > 0)
 		free( sgoals );
-	free( cube );
 	if (env_nogoal_flag) {
 		num_egoals = 0;
 		delete_tree( *env_goals );

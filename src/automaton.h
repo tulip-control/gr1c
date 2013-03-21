@@ -9,7 +9,7 @@
  * particular automaton (strategy).
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -179,5 +179,9 @@ int forward_modereach( anode_t *head, anode_t *node,
    Returns the new state vector length, or -1 on error. */
 int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, char *name );
 
+/** Inverse operation of aut_compact_nonbool().
+	Return zero on success, nonzero on error. */
+int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+					 ptree_t *nonbool_var_list );
 
 #endif

@@ -378,7 +378,6 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 					unsigned char verbose )
 {
 	DdNode **egoals;
-	ptree_t *var_separator;
 	DdNode ***Y = NULL;
 	DdNode ****X_ijr = NULL;
 	bool env_nogoal_flag = False;

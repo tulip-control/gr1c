@@ -46,6 +46,6 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
    existing goal visitation sequence.
 
    Return the head pointer of the augmented strategy, or NULL if error. */
-anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int *offw, int num_metric_vars, ptree_t *new_sysgoal, unsigned char verbose );
+anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original_num_env, int original_num_sys, int *offw, int num_metric_vars, ptree_t *new_sysgoal, unsigned char verbose );
 
 #endif

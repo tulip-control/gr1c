@@ -27,6 +27,8 @@ extern void yyrestart( FILE *new_file );
 /**************************
  **** Global variables ****/
 
+ptree_t *nonbool_var_list = NULL;
+
 ptree_t *evar_list = NULL;
 ptree_t *svar_list = NULL;
 ptree_t *env_init = NULL;
@@ -88,7 +90,6 @@ int main( int argc, char **argv )
 	int i, j, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
 	ptree_t *prevpt, *expt, *var_separator;
-	ptree_t *nonbool_var_list = NULL;
 	int maxbitval;
 
 	DdManager *manager;
@@ -97,8 +98,8 @@ int main( int argc, char **argv )
 	int num_env, num_sys;
 	int original_num_env, original_num_sys;
 
-	char *all_vars = NULL, *metric_vars = NULL;
-	int *offw = NULL, num_vars;
+	char *metric_vars = NULL;
+	int *offw = NULL, num_metric_vars;
 
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
@@ -246,6 +247,13 @@ int main( int argc, char **argv )
 	if (verbose > 0)
 		logprint( "Running with verbosity level %d.", verbose );
 
+	if (metric_vars != NULL && strlen(metric_vars) == 0) {
+		free( metric_vars );
+		metric_vars = NULL;
+		if (verbose > 1)
+			logprint( "Empty metric variable list given at command-line." );
+	}
+
 	if (clformula_index >= 0) {
 		if (verbose > 1) {
 			logprint( "Parsing command-line formula \"%s\"...", argv[clformula_index] );
@@ -339,44 +347,6 @@ int main( int argc, char **argv )
 	original_num_env = tree_size( evar_list );
 	original_num_sys = tree_size( svar_list );
 
-	/* Build list of variable names if needed for simulation, storing
-	   the result as a string in all_vars */
-	if (metric_vars != NULL) {
-		num_vars = 0;
-		tmppt = evar_list;
-		while (tmppt) {
-			num_vars += strlen( tmppt->name )+1;
-			tmppt = tmppt->left;
-		}
-		tmppt = svar_list;
-		while (tmppt) {
-			num_vars += strlen( tmppt->name )+1;
-			tmppt = tmppt->left;
-		}
-		all_vars = malloc( num_vars*sizeof(char) );
-		if (all_vars == NULL) {
-			perror( "gr1c, malloc" );
-			return -1;
-		}
-		i = 0;
-		tmppt = evar_list;
-		while (tmppt) {
-			strncpy( all_vars+i, tmppt->name, num_vars-i );
-			i += strlen( tmppt->name )+1;
-			*(all_vars+i-1) = ' ';
-			tmppt = tmppt->left;
-		}
-		tmppt = svar_list;
-		while (tmppt) {
-			strncpy( all_vars+i, tmppt->name, num_vars-i );
-			i += strlen( tmppt->name )+1;
-			*(all_vars+i-1) = ' ';
-			tmppt = tmppt->left;
-		}
-		*(all_vars+i-1) = '\0';
-		if (verbose)
-			logprint( "String of all variables found to be \"%s\"", all_vars );
-	}
 
 	/* Handle "don't care" bits */
 	tmppt = evar_list;
@@ -737,15 +707,8 @@ int main( int argc, char **argv )
 	num_sys = tree_size( svar_list );
 
 	/* Compute bitwise offsets for metric variables, if requested. */
-	if (metric_vars != NULL) {
-		offw = get_offsets( all_vars, &num_vars );
-		if (num_vars != original_num_env+original_num_sys) {
-			fprintf( stderr, "Error while computing bitwise variable offsets.\n" );
-			return -1;
-		}
-		free( all_vars );
-		all_vars = NULL;
-	}
+	if (metric_vars != NULL)
+		offw = get_offsets( metric_vars, &num_metric_vars );
 
 	manager = Cudd_Init( 2*(num_env+num_sys),
 						 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
@@ -781,8 +744,7 @@ int main( int argc, char **argv )
 
 			if (verbose)
 				logprint( "Patching given strategy..." );
-			strategy = add_metric_sysgoal( manager, strategy_fp, NULL, 0, clformula, verbose );
-			/* strategy = add_metric_sysgoal( manager, strategy_fp, offw, num_vars, clformula, verbose ); */
+			strategy = add_metric_sysgoal( manager, strategy_fp, original_num_env, original_num_sys, offw, num_metric_vars, clformula, verbose );
 			if (verbose)
 				logprint( "Done." );
 
