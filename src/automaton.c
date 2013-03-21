@@ -321,7 +321,7 @@ int forward_modereach( anode_t *head, anode_t *node, int mode, bool **N, int N_l
 }
 
 
-int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, char *name )
+int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, char *name, int maxval )
 {
 	int num_env, num_sys;
 	ptree_t *var = evar_list, *var_tail, *var_next;
@@ -364,6 +364,7 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, 
 		perror( "aut_compact_nonbool, strdup" );
 		return -1;
 	}
+	var->value = maxval;
 	if (var != var_tail) {  /* More than one bit? */
 		var_next = var->left;
 		var->left = var_tail->left;

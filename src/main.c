@@ -811,7 +811,7 @@ int main( int argc, char **argv )
 	if (strategy != NULL) {  /* De-expand nonboolean variables */
 		tmppt = nonbool_var_list;
 		while (tmppt) {
-			aut_compact_nonbool( strategy, evar_list, svar_list, tmppt->name );
+			aut_compact_nonbool( strategy, evar_list, svar_list, tmppt->name, tmppt->value );
 			tmppt = tmppt->left;
 		}
 

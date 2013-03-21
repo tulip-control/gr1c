@@ -176,8 +176,11 @@ int forward_modereach( anode_t *head, anode_t *node,
 
 
 /** Convert binary-expanded form of a variable back into nonboolean.
+   The domain of the variable is [0,maxval], and to indicate this the
+   value field is set to maxval in the resulting (merged) variable
+   entry (in evar_list or svar_list).
    Returns the new state vector length, or -1 on error. */
-int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, char *name );
+int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, char *name, int maxval );
 
 /** Inverse operation of aut_compact_nonbool().
 	Return zero on success, nonzero on error. */

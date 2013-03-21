@@ -743,7 +743,7 @@ int main( int argc, char **argv )
 			logprint( "play length: %d", aut_size( play ) );
 			tmppt = nonbool_var_list;
 			while (tmppt) {
-				aut_compact_nonbool( play, evar_list, svar_list, tmppt->name );
+				aut_compact_nonbool( play, evar_list, svar_list, tmppt->name, tmppt->value );
 				tmppt = tmppt->left;
 			}
 

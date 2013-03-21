@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "ptree.h"
 #include "automaton.h"
 
 
@@ -473,13 +474,21 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 	fprintf( fp, "  <env_vars>\n" );
 	for (i = 0; i < num_env; i++) {
 		var = get_list_item( evar_list, i );
-		fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
+		if (var->value > 0) {
+			fprintf( fp, "    <item key=\"%s\" value=\"[0,%d]\" />\n", var->name, var->value );
+		} else {
+			fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
+		}
 	}
 	fprintf( fp, "  </env_vars>\n" );
 	fprintf( fp, "  <sys_vars>\n" );
 	for (i = 0; i < num_sys; i++) {
 		var = get_list_item( svar_list, i );
-		fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
+		if (var->value > 0) {
+			fprintf( fp, "    <item key=\"%s\" value=\"[0,%d]\" />\n", var->name, var->value );
+		} else {
+			fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
+		}
 	}
 	fprintf( fp, "  </sys_vars>\n" );
 	fprintf( fp, "  <spec>\n    <env_init></env_init><env_safety></env_safety><env_prog></env_prog><sys_init></sys_init><sys_safety></sys_safety><sys_prog></sys_prog>\n  </spec>\n" );
