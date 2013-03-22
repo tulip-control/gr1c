@@ -105,6 +105,18 @@ int find_anode_index( anode_t *head, int mode, bool *state, int state_len );
    altered by this function. */
 anode_t *delete_anode( anode_t *head, anode_t *target );
 
+/* Delete nodes in U that are not reachable in the graph from outside
+   U, and then repeat.  Note that initial conditions (i.e., nodes at
+   which execution is allowed to begin and hence do not need ingoing
+   edges) are ignored.
+
+   The given array U is altered and freed during execution of
+   forward_prune(), so the caller should not attempt to use it
+   afterward.
+
+   Return (possibly new) head pointer, or NULL on error. */
+anode_t *forward_prune( anode_t *head, anode_t **U, int U_len );
+
 /** Replace all occurrences of "old" with "new" in transition arrays.
    If "new" is NULL, then the transitions into "old" are deleted and
    all dependent transition array lengths are decremented. */

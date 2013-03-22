@@ -61,6 +61,9 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 	anode_t **new_reached = NULL;
 	int new_reached_len = 0;
 
+	anode_t **Gi_succ = NULL;
+	int Gi_succ_len = 0;
+
 	int i, j;  /* Generic counters */
 	bool found_flag;
 	int node_counter;
@@ -316,6 +319,17 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 
 	/* From original to first component... */
 	for (i = 0; i < Gi_len[0]; i++) {
+		if ((*(Gi[0]+i))->trans_len > 0) {
+			Gi_succ = realloc( Gi_succ, (Gi_succ_len + (*(Gi[0]+i))->trans_len)*sizeof(anode_t *) );
+			if (Gi_succ == NULL) {
+				perror( "add_metric_sysgoal, realloc" );
+				return NULL;
+			}
+			for (j = 0; j < (*(Gi[0]+i))->trans_len; j++)
+				*(Gi_succ+Gi_succ_len+j) = *((*(Gi[0]+i))->trans+j);
+			Gi_succ_len += (*(Gi[0]+i))->trans_len;
+		}
+
 		(*(Gi[0]+i))->trans_len = 0;
 		free( (*(Gi[0]+i))->trans );
 		(*(Gi[0]+i))->trans = NULL;
@@ -340,6 +354,9 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 			delete_aut( strategy );
 			return NULL;
 		}
+
+		/* Delete the obviated node */
+		strategy = delete_anode( strategy, node1 );
 	}
 
 	if (verbose > 1) {
@@ -398,6 +415,8 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 			delete_aut( strategy );
 			return NULL;
 		}
+
+		strategy = delete_anode( strategy, node1 );
 	}
 
 	/* From second component into original... */
@@ -428,6 +447,13 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 		}
 		node1 = node1->next;
 	}
+
+	strategy = forward_prune( strategy, Gi_succ, Gi_succ_len );
+	if (strategy == NULL) {
+		fprintf( stderr, "Error add_metric_sysgoal: pruning failed." );
+		return NULL;
+	}
+	Gi_succ = NULL; Gi_succ_len = 0;
 
 
 	if (verbose > 1) {

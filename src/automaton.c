@@ -501,3 +501,61 @@ int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	free( vec_lens );
 	return 0;
 }
+
+
+anode_t *forward_prune( anode_t *head, anode_t **U, int U_len )
+{
+	bool touched;
+	int i, j;
+	anode_t *node;
+
+	if (head == NULL || U_len < 0)  /* Empty automata are not permitted. */
+		return NULL;
+	if (U == NULL || U_len == 0)
+		return head;
+
+	/* Loop and prune */
+	do {
+		touched = False;
+		for (i = 0; i < U_len; i++) {
+			if (*(U+i) == NULL)
+				continue;
+
+			/* Look for a predecessor */
+			node = head;
+			while (node) {
+				for (j = 0; j < node->trans_len; j++) {
+					if (*(node->trans+j) == *(U+i))
+						break;
+				}
+				if (j < node->trans_len)
+					break;
+				node = node->next;
+			}
+			if (node == NULL) {  /* No Pred found */
+				touched = True;
+				U = realloc( U, (U_len + (*(U+i))->trans_len)*sizeof(anode_t *) );
+				if (U == NULL) {
+					perror( "forward_prune, realloc" );
+					return NULL;
+				}
+				for (j = 0; j < (*(U+i))->trans_len; j++)
+					*(U+U_len+j) = *((*(U+i))->trans+j);
+				U_len += (*(U+i))->trans_len;
+				head = delete_anode( head, *(U+i) );
+				for (j = 0; j < U_len; j++) {  /* Delete duplicate pointers in U */
+					if (j == i)
+						continue;
+					if (*(U+i) == *(U+j))
+						*(U+j) = NULL;
+				}
+				*(U+i) = NULL;  /* Mark entry as deleted */
+				break;
+			}
+
+		}
+	} while (touched);
+
+	free( U );
+	return head;
+}
