@@ -358,6 +358,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 		}
 
 		/* Delete the obviated node */
+		replace_anode_trans( strategy, node1, *(Gi[0]+i) );
 		strategy = delete_anode( strategy, node1 );
 	}
 
@@ -420,6 +421,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 			return NULL;
 		}
 
+		replace_anode_trans( strategy, node1, *(new_reached+i) );
 		strategy = delete_anode( strategy, node1 );
 	}
 
@@ -489,14 +491,6 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 			}
 			node1 = node1->next;
 		}
-	}
-
-	if (verbose > 1) {
-		logprint( "Patched strategy before de-expanding variables:" );
-		logprint_startline();
-		/* list_aut_dump( strategy, num_env+num_sys, getlogstream() ); */
-		dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
-		logprint_endline();
 	}
 
 
