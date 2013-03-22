@@ -313,7 +313,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 
 	node1 = component_strategy;
 	while (node1) {
-		node1->mode = num_sgoals;
+		node1->mode = num_sgoals+1;  /* Temporary mode label for this component. */
 		node1 = node1->next;
 	}
 
@@ -333,6 +333,8 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 		(*(Gi[0]+i))->trans_len = 0;
 		free( (*(Gi[0]+i))->trans );
 		(*(Gi[0]+i))->trans = NULL;
+
+		(*(Gi[0]+i))->mode = num_sgoals+1;  /* Temporary mode label for this component. */
 
 		node1 = component_strategy;
 		while (node1) {
@@ -395,6 +397,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 
 	/* From first component to second component... */
 	for (i = 0; i < new_reached_len; i++) {
+		(*(new_reached+i))->mode = -1;  /* Temporary mode label for this component. */
 		node1 = component_strategy;
 		while (node1) {
 			if (statecmp( node1->state, (*(new_reached+i))->state, num_env+num_sys )) {
@@ -406,6 +409,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 				}
 				for (j = 0; j < node1->trans_len; j++)
 					*((*(new_reached+i))->trans+j) = *(node1->trans+j);
+				(*(new_reached+i))->rgrad = node1->rgrad;
 				break;
 			}
 			node1 = node1->next;
@@ -434,7 +438,8 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 					}
 					for (j = 0; j < node1->trans_len; j++)
 						*(node1->trans+j) = *((*(Gi[1]+i))->trans+j);
-
+					node1->rgrad = (*(Gi[1]+i))->rgrad;
+					node1->mode = (*(Gi[1]+i))->mode;
 					break;
 				}
 			}
@@ -455,6 +460,36 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 	}
 	Gi_succ = NULL; Gi_succ_len = 0;
 
+	/* Update labels, thus completing the insertion process */
+	if (istar[0] == num_sgoals-1) {
+		node1 = strategy;
+		while (node1) {
+			if (node1->mode == num_sgoals+1) {
+				node1->mode = num_sgoals;
+			} else if (node1->mode == -1) {
+				node1->mode = 0;
+			}
+			node1 = node1->next;
+		}
+	} else {  /* istar[0] < istar[1] */
+		for (i = num_sgoals-1; i >= istar[1]; i--) {
+			node1 = strategy;
+			while (node1) {
+				if (node1->mode == i)
+					(node1->mode)++;
+				node1 = node1->next;
+			}
+		}
+		node1 = strategy;
+		while (node1) {
+			if (node1->mode == num_sgoals+1) {
+				node1->mode = istar[1];
+			} else if (node1->mode == -1) {
+				node1->mode = istar[1]+1;
+			}
+			node1 = node1->next;
+		}
+	}
 
 	if (verbose > 1) {
 		logprint( "Patched strategy before de-expanding variables:" );
