@@ -84,7 +84,7 @@ specifications. Also look under ``examples`` directory.
 License
 =======
 
-This is free software released under the terms of the GNU General
-Public License, version 3.  There is no warranty; not even for
-merchantability or fitness for a particular purpose.  See LICENSE.txt
-for copying conditions.
+This is free software released under the terms of `the BSD 3-Clause License
+<http://opensource.org/licenses/BSD-3-Clause>`_.  There is no warranty; not even
+for merchantability or fitness for a particular purpose.  See LICENSE.txt for
+copying conditions.
