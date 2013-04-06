@@ -8,6 +8,7 @@
  */
 
 
+#define _ISOC99_SOURCE
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
