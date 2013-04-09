@@ -14,11 +14,11 @@ PitPnuSaa2006
   controller" specification.
 
 patching
-  Examples for patching using the "local mu" method, as implemented
-  through the function patch_localfixpoint (see patching.h).  Files
-  with the same base name go together, where *.spc (name ending in
-  "spc") gives the nominal specification and *.edc is the game edge
-  change set.  See comments in these files for example descriptions.
+  Examples for patching using the method implemented through the function
+  patch_localfixpoint() (see patching.h).  Files with the same base name go
+  together, where *.spc (name ending in "spc") gives the nominal specification
+  and *.edc is the game edge change set.  See comments in these files for
+  example descriptions.
 
   To run the example ``determ_2x10`` (no environment, 2 by 10 gridworld),
   try ::
@@ -34,3 +34,10 @@ patching
   the result in DOT format.  The final line invokes the dot program,
   which must be installed, to create a PNG image from the DOT output;
   the image file name is patched-image.dot.png or similar.
+
+jit
+  Examples for "just-in-time synthesis."  E.g., compare the horizon lengths of
+  2trolls.spc and 1trolls.spc by ::
+
+    $ ./gr1c -l -m -1,"x y" examples/jit/2trolls.spc
+    $ ./gr1c -l -m -1,"x y" examples/jit/1troll.spc

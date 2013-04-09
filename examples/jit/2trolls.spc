@@ -6,7 +6,7 @@
 ENV: obs1_x [0,2] obs1_y [0,7] obs2_x [0,15] obs2_y [0,7];
 SYS: x [0,31] y [0,7];
 
-ENVINIT: obs1_x=2 & obs1_y=0 & obs2_x=14 & obs2_y=0;
+ENVINIT: obs1_x=1 & obs1_y=0 & obs2_x=14 & obs2_y=0;
 ENVTRANS:
   []((obs1_x=1) -> (obs1_x'=2 | obs1_x'=1))
 & []((obs1_x=2) -> (obs1_x'=2 | obs1_x'=1))
@@ -54,7 +54,7 @@ ENVTRANS:
 & []!(obs2_x'=12)
 & []!(obs2_x'=13)
 ;
-ENVGOAL: []<>(obs1_x=1 & obs1_y=7) & []<>(obs2_x=15 & obs2_y=7);
+ENVGOAL: []<>(obs1_x=1 & obs1_y=0) & []<>(obs2_x=14 & obs2_y=0);
 
 SYSINIT: x=31 & y=7;
 
