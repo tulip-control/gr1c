@@ -1,5 +1,5 @@
 /** \file gr1c_util.h
- * \brief Small generic routines not otherwise sorted.
+ * \brief Small handy routines not otherwise sorted.
  *
  *
  * SCL; 2013.
@@ -10,6 +10,7 @@
 #define GR1C_UTIL_H
 
 #include "common.h"
+#include "ptree.h"
 
 
 /** least significant bit first; unsigned. */
@@ -21,5 +22,27 @@ int bitvec_to_int( bool *vec, int vec_len );
    integer.  The caller is assumed to free the bitvector. */
 bool *int_to_bitvec( int x, int vec_len );
 
+
+/* Expand any variables with integral domains in given lists of
+   environment and system variables (evar_list and svar_list, respectively). */
+ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
+								   unsigned char verbose );
+
+/* Expand any variables with integral domains in parse trees of the
+   GR(1) specification components */
+int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
+						ptree_t **env_init, ptree_t **sys_init,
+						ptree_t **env_trans, ptree_t **sys_trans,
+						ptree_t ***env_goals, int num_env_goals,
+						ptree_t ***sys_goals, int num_sys_goals,
+						unsigned char verbose );
+
+/* Print to outf if it is not NULL.  Otherwise, dump to the log. */
+void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
+					 ptree_t *env_init, ptree_t *sys_init,
+					 ptree_t *env_trans, ptree_t *sys_trans,
+					 ptree_t **env_goals, int num_env_goals,
+					 ptree_t **sys_goals, int num_sys_goals,
+					 FILE *outf );
 
 #endif

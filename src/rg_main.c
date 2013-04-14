@@ -161,7 +161,7 @@ int main( int argc, char **argv )
 	}
 
 	if (logging_flag) {
-		openlogfile( "rglog" );
+		openlogfile( "rg" );
 		verbose = 1;
 	} else {
 		setlogstream( stdout );

@@ -1,7 +1,7 @@
 /* logging.c -- Definitions for signatures appearing in logging.h.
  *
  *
- * SCL; August 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -21,8 +21,6 @@ int logopt = 0;
 
 void setlogstream( FILE *fp )
 {
-	if (closelogfile())
-		return;
 	*logfilename = '\0';
 	if (fp == NULL) {
 		logfp = stdout;
@@ -40,6 +38,11 @@ FILE *getlogstream()
 void setlogopt( int options )
 {
 	logopt = options;
+}
+
+int getlogopt()
+{
+	return logopt;
 }
 
 

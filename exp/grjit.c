@@ -14,12 +14,12 @@
 #include "logging.h"
 #include "ptree.h"
 #include "solve.h"
-#include "patching.h"
 #include "automaton.h"
 #include "util.h"
 #include "solve_metric.h"
 #include "solve_support.h"
 #include "sim.h"
+#include "gr1c_util.h"
 extern int yyparse( void );
 
 
@@ -121,9 +121,7 @@ int main( int argc, char **argv )
 
 	int i, j, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
-	ptree_t *prevpt, *expt, *var_separator;
 	ptree_t *nonbool_var_list = NULL;
-	int maxbitval;
 	int horizon = -1;
 
 	DdNode *W, *etrans, *strans, **sgoals, **egoals;
@@ -345,35 +343,6 @@ int main( int argc, char **argv )
 			logprint( "String of all variables found to be \"%s\"", all_vars );
 	}
 
-	/* Handle "don't care" bits */
-	tmppt = evar_list;
-	while (tmppt) {
-		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
-		if (maxbitval-1 > tmppt->value) {
-			if (verbose > 1)
-				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
-			prevpt = env_trans;
-			env_trans = init_ptree( PT_AND, NULL, 0 );
-			env_trans->right = prevpt;
-			env_trans->left = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1 );
-		}
-		tmppt = tmppt->left;
-	}
-
-	tmppt = svar_list;
-	while (tmppt) {
-		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
-		if (maxbitval-1 > tmppt->value) {
-			if (verbose > 1)
-				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
-			prevpt = sys_trans;
-			sys_trans = init_ptree( PT_AND, NULL, 0 );
-			sys_trans->right = prevpt;
-			sys_trans->left = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1 );
-		}
-		tmppt = tmppt->left;
-	}
-
 
 	if (ptdump_flag) {
 		tree_dot_dump( env_init, "env_init_ptree.dot" );
@@ -403,10 +372,18 @@ int main( int argc, char **argv )
 		} else {
 			tmppt = evar_list;
 			while (tmppt) {
-				if (tmppt->left == NULL) {
-					printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+				if (tmppt->value == 0) {  /* Boolean */
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; bool)", tmppt->name, var_index );
+					} else {
+						printf( "%s (%d; bool), ", tmppt->name, var_index);
+					}
 				} else {
-					printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+					} else {
+						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+					}
 				}
 				tmppt = tmppt->left;
 				var_index++;
@@ -420,10 +397,18 @@ int main( int argc, char **argv )
 		} else {
 			tmppt = svar_list;
 			while (tmppt) {
-				if (tmppt->left == NULL) {
-					printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+				if (tmppt->value == 0) {  /* Boolean */
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; bool)", tmppt->name, var_index );
+					} else {
+						printf( "%s (%d; bool), ", tmppt->name, var_index );
+					}
 				} else {
-					printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+					} else {
+						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+					}
 				}
 				tmppt = tmppt->left;
 				var_index++;
@@ -431,249 +416,21 @@ int main( int argc, char **argv )
 		}
 		printf( "\n\n" );
 
-		printf( "ENV INIT:  " );
-		print_formula( env_init, stdout );
-		printf( "\n" );
-
-		printf( "SYS INIT:  " );
-		print_formula( sys_init, stdout );
-		printf( "\n" );
-
-		printf( "ENV TRANS:  [] " );
-		print_formula( env_trans, stdout );
-		printf( "\n" );
-
-		printf( "SYS TRANS:  [] " );
-		print_formula( sys_trans, stdout );
-		printf( "\n" );
-
-		printf( "ENV GOALS:  " );
-		if (num_egoals == 0) {
-			printf( "(none)" );
-		} else {
-			printf( "[]<> " );
-			print_formula( *env_goals, stdout );
-			for (i = 1; i < num_egoals; i++) {
-				printf( " & []<> " );
-				print_formula( *(env_goals+i), stdout );
-			}
-		}
-		printf( "\n" );
-
-		printf( "SYS GOALS:  " );
-		if (num_sgoals == 0) {
-			printf( "(none)" );
-		} else {
-			printf( "[]<> " );
-			print_formula( *sys_goals, stdout );
-			for (i = 1; i < num_sgoals; i++) {
-				printf( " & []<> " );
-				print_formula( *(sys_goals+i), stdout );
-			}
-		}
-		printf( "\n" );
+		print_GR1_spec( evar_list, svar_list, env_init, sys_init, env_trans, sys_trans,
+						env_goals, num_egoals, sys_goals, num_sgoals, stdout );
 	}
 
+	if (expand_nonbool_GR1( evar_list, svar_list, &env_init, &sys_init,
+							&env_trans, &sys_trans,
+							&env_goals, num_egoals, &sys_goals, num_sgoals,
+							verbose ) < 0)
+		return -1;
+	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list, verbose );
 
-	/* Make all variables Boolean. */
-	if (evar_list == NULL) {
-		var_separator = NULL;
-		evar_list = svar_list;  /* that this is the deterministic case
-								   is indicated by var_separator = NULL. */
-	} else {
-		var_separator = get_list_item( evar_list, -1 );
-		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
-			return -1;
-		}
-		var_separator->left = svar_list;
-	}
-	tmppt = evar_list;
-	while (tmppt) {
-		if (tmppt->value > 0) {
-			if (nonbool_var_list == NULL) {
-				nonbool_var_list = init_ptree( PT_VARIABLE, tmppt->name, tmppt->value );
-			} else {
-				append_list_item( nonbool_var_list, PT_VARIABLE, tmppt->name, tmppt->value );
-			}
-
-			if (verbose > 1)
-				logprint( "Expanding nonbool variables in SYSINIT..." );
-			sys_init = expand_to_bool( sys_init, tmppt->name, tmppt->value );
-			if (verbose > 1) {
-				logprint( "Done." );
-				logprint( "Expanding nonbool variables in ENVINIT..." );
-			}
-			env_init = expand_to_bool( env_init, tmppt->name, tmppt->value );
-			if (verbose > 1) {
-				logprint( "Done." );
-				logprint( "Expanding nonbool variables in SYSTRANS..." );
-			}
-			sys_trans = expand_to_bool( sys_trans, tmppt->name, tmppt->value );
-			if (verbose > 1) {
-				logprint( "Done." );
-				logprint( "Expanding nonbool variables in ENVTRANS..." );
-			}
-			env_trans = expand_to_bool( env_trans, tmppt->name, tmppt->value );
-			if (verbose > 1)
-				logprint( "Done." );
-			if (sys_init == NULL || env_init == NULL || sys_trans == NULL || env_trans == NULL) {
-				fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
-				return -1;
-			}
-			for (i = 0; i < num_egoals; i++) {
-				if (verbose > 1)
-					logprint( "Expanding nonbool variables in ENVGOAL %d...", i );
-				*(env_goals+i) = expand_to_bool( *(env_goals+i), tmppt->name, tmppt->value );
-				if (*(env_goals+i) == NULL) {
-					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
-					return -1;
-				}
-				if (verbose > 1)
-					logprint( "Done." );
-			}
-			for (i = 0; i < num_sgoals; i++) {
-				if (verbose > 1)
-					logprint( "Expanding nonbool variables in SYSGOAL %d...", i );
-				*(sys_goals+i) = expand_to_bool( *(sys_goals+i), tmppt->name, tmppt->value );
-				if (*(sys_goals+i) == NULL) {
-					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
-					return -1;
-				}
-				if (verbose > 1)
-					logprint( "Done." );
-			}
-		}
-		tmppt = tmppt->left;
-	}
-	if (var_separator == NULL) {
-		evar_list = NULL;
-	} else {
-		var_separator->left = NULL;
-	}
-
-	/* Finally, expand the variable list. */
-	if (evar_list != NULL) {
-		tmppt = evar_list;
-		if (tmppt->value > 0) {  /* Handle special case of head node */
-			expt = var_to_bool( tmppt->name, tmppt->value );
-			evar_list = expt;
-			prevpt = get_list_item( expt, -1 );
-			prevpt->left = tmppt->left;
-		}
-		tmppt = tmppt->left;
-		while (tmppt) {
-			if (tmppt->value > 0) {
-				expt = var_to_bool( tmppt->name, tmppt->value );
-				prevpt->left = expt;
-				prevpt = get_list_item( expt, -1 );
-				prevpt->left = tmppt->left;
-			} else {
-				prevpt = tmppt;
-			}
-			tmppt = tmppt->left;
-		}
-	}
-
-	if (svar_list != NULL) {
-		tmppt = svar_list;
-		if (tmppt->value > 0) {  /* Handle special case of head node */
-			expt = var_to_bool( tmppt->name, tmppt->value );
-			svar_list = expt;
-			prevpt = get_list_item( expt, -1 );
-			prevpt->left = tmppt->left;
-		}
-		tmppt = tmppt->left;
-		while (tmppt) {
-			if (tmppt->value > 0) {
-				expt = var_to_bool( tmppt->name, tmppt->value );
-				prevpt->left = expt;
-				prevpt = get_list_item( expt, -1 );
-				prevpt->left = tmppt->left;
-			} else {
-				prevpt = tmppt;
-			}
-			tmppt = tmppt->left;
-		}
-	}
-
-
-	if (verbose > 1) {
+	if (verbose > 1)
 		/* Dump the spec to show results of conversion (if any). */
-		logprint_startline();
-		logprint_raw( "ENV:" );
-		tmppt = evar_list;
-		while (tmppt) {
-			logprint_raw( " %s", tmppt->name );
-			tmppt = tmppt->left;
-		}
-		logprint_raw( ";" );
-		logprint_endline();
-
-		logprint_startline();
-		logprint_raw( "SYS:" );
-		tmppt = svar_list;
-		while (tmppt) {
-			logprint_raw( " %s", tmppt->name );
-			tmppt = tmppt->left;
-		}
-		logprint_raw( ";" );
-		logprint_endline();
-
-		logprint_startline();
-		logprint_raw( "ENV INIT:  " );
-		print_formula( env_init, getlogstream() );
-		logprint_raw( ";" );
-		logprint_endline();
-
-		logprint_startline();
-		logprint_raw( "SYS INIT:  " );
-		print_formula( sys_init, getlogstream() );
-		logprint_raw( ";" );
-		logprint_endline();
-
-		logprint_startline();
-		logprint_raw( "ENV TRANS:  [] " );
-		print_formula( env_trans, getlogstream() );
-		logprint_raw( ";" );
-		logprint_endline();
-
-		logprint_startline();
-		logprint_raw( "SYS TRANS:  [] " );
-		print_formula( sys_trans, getlogstream() );
-		logprint_raw( ";" );
-		logprint_endline();
-
-		logprint_startline();
-		logprint_raw( "ENV GOALS:  " );
-		if (num_egoals == 0) {
-			logprint_raw( "(none)" );
-		} else {
-			logprint_raw( "[]<> " );
-			print_formula( *env_goals, getlogstream() );
-			for (i = 1; i < num_egoals; i++) {
-				logprint_raw( " & []<> " );
-				print_formula( *(env_goals+i), getlogstream() );
-			}
-		}
-		logprint_raw( ";" );
-		logprint_endline();
-
-		logprint_startline();
-		logprint_raw( "SYS GOALS:  " );
-		if (num_sgoals == 0) {
-			logprint_raw( "(none)" );
-		} else {
-			logprint_raw( "[]<> " );
-			print_formula( *sys_goals, getlogstream() );
-			for (i = 1; i < num_sgoals; i++) {
-				logprint_raw( " & []<> " );
-				print_formula( *(sys_goals+i), getlogstream() );
-			}
-		}
-		logprint_raw( ";" );
-		logprint_endline();
-	}
+		print_GR1_spec( evar_list, svar_list, env_init, sys_init, env_trans, sys_trans,
+					   env_goals, num_egoals, sys_goals, num_sgoals, NULL );
 
 
 	num_env = tree_size( evar_list );

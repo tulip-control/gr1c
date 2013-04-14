@@ -2,6 +2,9 @@
 #
 # SCL; 2012, 2013.
 
+CORE_PROGRAMS = gr1c rg
+EXP_PROGRAMS = grjit grpatch
+
 
 INSTALLDIR = /usr/local/bin
 SRCDIR = src
@@ -27,19 +30,24 @@ LD = ld -r
 # will fail if you build gr1c with GNU Readline.
 
 
-all: gr1c rg
+all: $(CORE_PROGRAMS)
+exp: $(EXP_PROGRAMS)
 
-exp: grjit
-
-gr1c: main.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o patching_hotswap.o ptree.o automaton.o automaton_io.o gr1c_parse.o
+gr1c: main.o util.o logging.o interactive.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-grjit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o ptree.o automaton.o automaton_io.o gr1c_parse.o
+grpatch: grpatch.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o patching_hotswap.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
+grjit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+
+grpatch.o: $(EXPDIR)/grpatch.c
+	$(CC) $(CFLAGS) -c $^
 grjit.o: $(EXPDIR)/grjit.c
 	$(CC) $(CFLAGS) -c $^
 
@@ -88,7 +96,7 @@ rg_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/rg_parse.y
 	$(LD) lex.yy.o y.tab.o -o $@
 
 install:
-	cp gr1c rg $(INSTALLDIR)/
+	cp $(CORE_PROGRAMS) $(INSTALLDIR)/
 
 uninstall:
 	rm $(INSTALLDIR)/gr1c $(INSTALLDIR)/rg
@@ -109,7 +117,7 @@ doc:
 
 # Clean everything
 clean:
-	rm -fv *~ *.o y.tab.h y.tab.c lex.yy.c gr1c rg grjit
+	rm -fv *~ *.o y.tab.h y.tab.c lex.yy.c $(CORE_PROGRAMS) $(EXP_PROGRAMS)
 	rm -fr doc/build/*
 	$(MAKE) -C tests clean
 
@@ -121,7 +129,7 @@ dclean:
 # Delete only executables and corresponding object code
 .PHONY: eclean
 eclean:
-	rm -fv *~ *.o y.tab.h y.tab.c lex.yy.c gr1c rg gr1jit
+	rm -fv *~ *.o y.tab.h y.tab.c lex.yy.c $(CORE_PROGRAMS) $(EXP_PROGRAMS)
 
 # Delete testing-related things
 .PHONY: tclean

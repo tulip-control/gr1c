@@ -1,7 +1,4 @@
-/* main.c -- main entry point for execution.
- *
- * Command-line arguments are processed by hand.  Eventually switch to
- * getopt, once sophistication of usage demands.
+/* grpatch.c -- main entry point for execution of patching routines.
  *
  *
  * SCL; 2012, 2013.
@@ -16,7 +13,9 @@
 #include "logging.h"
 #include "ptree.h"
 #include "solve.h"
+#include "patching.h"
 #include "automaton.h"
+#include "solve_metric.h"
 #include "gr1c_util.h"
 extern int yyparse( void );
 extern void yyrestart( FILE *new_file );
@@ -58,24 +57,29 @@ ptree_t *gen_tree_ptr = NULL;
 #define OUTPUT_FORMAT_TULIP0 4
 
 /* Runtime modes */
-#define GR1C_MODE_SYNTAX 0
-#define GR1C_MODE_REALIZABLE 1
-#define GR1C_MODE_SYNTHESIS 2
-#define GR1C_MODE_INTERACTIVE 3
+#define GR1C_MODE_UNSET 0
+#define GR1C_MODE_PATCH 4
 
 
 int main( int argc, char **argv )
 {
 	FILE *fp;
-	byte run_option = GR1C_MODE_SYNTHESIS;
+	byte run_option = GR1C_MODE_UNSET;
 	bool help_flag = False;
 	bool ptdump_flag = False;
 	bool logging_flag = False;
 	byte format_option = OUTPUT_FORMAT_TULIP;
 	unsigned char verbose = 0;
 	int input_index = -1;
+	int edges_input_index = -1;  /* If patching, command-line flag "-e". */
+	int aut_input_index = -1;  /* For command-line flag "-a". */
 	int output_file_index = -1;  /* For command-line flag "-o". */
+	FILE *strategy_fp;
 	char dumpfilename[64];
+
+	FILE *clf_file = NULL;
+	int clformula_index = -1;  /* For command-line flag "-f". */
+	ptree_t *clformula = NULL;
 
 	int i, j, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
@@ -86,13 +90,16 @@ int main( int argc, char **argv )
 	int num_env, num_sys;
 	int original_num_env, original_num_sys;
 
+	char *metric_vars = NULL;
+	int *offw = NULL, num_metric_vars;
+
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 'h') {
 				help_flag = True;
 			} else if (argv[i][1] == 'V') {
-				printf( "gr1c " GR1C_VERSION "\n\n" GR1C_COPYRIGHT "\n" );
+				printf( "grpatch (experiment-related program, distributed with gr1c v" GR1C_VERSION ")\n\n" GR1C_COPYRIGHT "\n" );
 				return 0;
 			} else if (argv[i][1] == 'v') {
 				verbose = 1;
@@ -104,14 +111,15 @@ int main( int argc, char **argv )
 				}
 			} else if (argv[i][1] == 'l') {
 				logging_flag = True;
-			} else if (argv[i][1] == 's') {
-				run_option = GR1C_MODE_SYNTAX;
 			} else if (argv[i][1] == 'p') {
 				ptdump_flag = True;
-			} else if (argv[i][1] == 'r') {
-				run_option = GR1C_MODE_REALIZABLE;
-			} else if (argv[i][1] == 'i') {
-				run_option = GR1C_MODE_INTERACTIVE;
+			} else if (argv[i][1] == 'm') {
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				metric_vars = strdup( argv[i+1] );
+				i++;
 			} else if (argv[i][1] == 't') {
 				if (i == argc-1) {
 					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
@@ -132,12 +140,35 @@ int main( int argc, char **argv )
 					return 1;
 				}
 				i++;
+			} else if (argv[i][1] == 'e') {
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				run_option = GR1C_MODE_PATCH;
+				edges_input_index = i+1;
+				i++;
+			} else if (argv[i][1] == 'a') {
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				aut_input_index = i+1;
+				i++;
 			} else if (argv[i][1] == 'o') {
 				if (i == argc-1) {
 					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 					return 1;
 				}
 				output_file_index = i+1;
+				i++;
+			} else if (argv[i][1] == 'f') {
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				run_option = GR1C_MODE_PATCH;
+				clformula_index = i+1;
 				i++;
 			} else {
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
@@ -150,26 +181,43 @@ int main( int argc, char **argv )
 		}
 	}
 
+	if (edges_input_index >= 0 && clformula_index >= 0) {
+		fprintf( stderr, "\"-e\" and \"-a\" flags cannot be used simultaneously.\n" );
+		return 1;
+	} else if (edges_input_index >= 0 && aut_input_index < 0) {
+		fprintf( stderr, "\"-e\" flag can only be used with \"-a\"\n" );
+		return 1;
+	} else if (clformula_index >= 0 && aut_input_index < 0) {
+		fprintf( stderr, "\"-f\" flag can only be used with \"-a\"\n" );
+		return 1;
+	}
+
 	if (help_flag) {
 		/* Split among printf() calls to conform with ISO C90 string length */
-		printf( "Usage: %s [-hVvlspri] [-t TYPE] [-o FILE] [FILE]\n\n"
+		printf( "Usage: %s [-hVvlp] [-m VARS] [-t TYPE] [-aeo FILE] [-f FORM] [FILE]\n\n"
 				"  -h          this help message\n"
 				"  -V          print version and exit\n"
 				"  -v          be verbose; use -vv to be more verbose\n"
 				"  -l          enable logging\n"
 				"  -t TYPE     strategy output format; default is \"tulip\";\n"
 				"              supported formats: txt, dot, aut, tulip, tulip0\n"
-				"  -s          only check specification syntax (return -1 on error)\n"
 				"  -p          dump parse trees to DOT files, and echo formulas to screen\n", argv[0] );
-		printf( "  -r          only check realizability; do not synthesize strategy\n"
-				"              (return 0 if realizable, -1 if not)\n"
-				"  -i          interactive mode\n"
-				"  -o FILE     output strategy to FILE, rather than stdout (default)\n" );
+		printf( "  -m VARS     VARS is a space-separated list of metric variables\n"
+				"  -a FILE     automaton file in \"gr1c\" format;\n"
+				"              if FILE is -, then read from stdin\n"
+				"  -e FILE     patch, given game edge set change file; requires -a flag\n"
+				"  -o FILE     output strategy to FILE, rather than stdout (default)\n"
+				"  -f FORM     FORM is a Boolean (state) formula, currently only\n"
+				"              used for appending a system goal; requires -a flag.\n" );
 		return 1;
 	}
 
-	if (input_index < 0 && (run_option == GR1C_MODE_INTERACTIVE)) {
-		printf( "Reading spec from stdin in interactive mode is not yet implemented.\n" );
+	if (input_index < 0 && (run_option == GR1C_MODE_PATCH && !strncmp( argv[aut_input_index], "-", 1 ))) {
+		printf( "Reading spec from stdin in some cases while patching is not yet implemented.\n" );
+		return 1;
+	}
+	if (run_option == GR1C_MODE_UNSET) {
+		fprintf( stderr, "%s requires a patching request. Try \"-h\".\n", argv[0] );
 		return 1;
 	}
 
@@ -184,6 +232,45 @@ int main( int argc, char **argv )
 	}
 	if (verbose > 0)
 		logprint( "Running with verbosity level %d.", verbose );
+
+	if (metric_vars != NULL && strlen(metric_vars) == 0) {
+		free( metric_vars );
+		metric_vars = NULL;
+		if (verbose > 1)
+			logprint( "Empty metric variable list given at command-line." );
+	}
+
+	if (clformula_index >= 0) {
+		if (verbose > 1) {
+			logprint( "Parsing command-line formula \"%s\"...", argv[clformula_index] );
+		}
+
+		clf_file = tmpfile();
+		if (clf_file == NULL) {
+			perror( "gr1c, tmpfile" );
+			return -1;
+		}
+		fprintf( clf_file, "%s\n", argv[clformula_index] );
+		if (fseek( clf_file, 0, SEEK_SET )) {
+			perror( "gr1c, fseek" );
+			return -1;
+		}
+		yyrestart( clf_file );
+		yyparse();
+		fclose( clf_file );
+
+		clformula = gen_tree_ptr;
+		gen_tree_ptr = NULL;
+
+		if (ptdump_flag)
+			tree_dot_dump( clformula, "clformula_ptree.dot" );
+		if (verbose > 1) {
+			logprint_startline();
+			logprint_raw( "Command-line formula, printed from ptree: " );
+			print_formula( clformula, getlogstream() );
+			logprint_endline();
+		}
+	}
 
 	/* If filename for specification given at command-line, then use
 	   it.  Else, read from stdin. */
@@ -209,9 +296,6 @@ int main( int argc, char **argv )
 	if (verbose)
 		logprint( "Done." );
 
-	if (run_option == GR1C_MODE_SYNTAX)
-		return 0;
-
 	/* Close input file, if opened. */
 	if (input_index > 0)
 		fclose( fp );
@@ -222,20 +306,23 @@ int main( int argc, char **argv )
 	if (sys_init == NULL)
 		sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
 
-	/* Merge component safety (transition) formulas */
-	if (et_array_len > 1) {
-		env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
-	} else if (et_array_len == 1) {
-		env_trans = *env_trans_array;
-	} else {  /* No restrictions on transitions. */
-		env_trans = init_ptree( PT_CONSTANT, NULL, 1 );
-	}
-	if (st_array_len > 1) {
-		sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
-	} else if (st_array_len == 1) {
-		sys_trans = *sys_trans_array;
-	} else {  /* No restrictions on transitions. */
-		sys_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+	/* Merge component safety (transition) formulas in certain
+	   situations, or if DOT dumps of the parse trees were requested. */
+	if (ptdump_flag || (clformula_index >= 0)) {
+		if (et_array_len > 1) {
+			env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
+		} else if (et_array_len == 1) {
+			env_trans = *env_trans_array;
+		} else {  /* No restrictions on transitions. */
+			env_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+		}
+		if (st_array_len > 1) {
+			sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
+		} else if (st_array_len == 1) {
+			sys_trans = *sys_trans_array;
+		} else {  /* No restrictions on transitions. */
+			sys_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+		}
 	}
 
 	/* Number of variables, before expansion of those that are nonboolean */
@@ -326,6 +413,18 @@ int main( int argc, char **argv )
 		return -1;
 	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list, verbose );
 
+	tmppt = nonbool_var_list;
+	while (tmppt) {
+		if (clformula != NULL) {
+			if (verbose > 1)
+				logprint( "Expanding nonbool variable %s in command-line formula...", tmppt->name );
+			clformula = expand_to_bool( clformula, tmppt->name, tmppt->value );
+			if (verbose > 1)
+				logprint( "Done." );
+		}
+		tmppt = tmppt->left;
+	}
+
 	if (verbose > 1)
 		/* Dump the spec to show results of conversion (if any). */
 		print_GR1_spec( evar_list, svar_list, env_init, sys_init, env_trans, sys_trans,
@@ -335,58 +434,59 @@ int main( int argc, char **argv )
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
 
+	/* Compute bitwise offsets for metric variables, if requested. */
+	if (metric_vars != NULL)
+		offw = get_offsets( metric_vars, &num_metric_vars );
+
 	manager = Cudd_Init( 2*(num_env+num_sys),
 						 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
 	Cudd_SetMaxCacheHard( manager, (unsigned int)-1 );
 	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 
-	if (run_option == GR1C_MODE_INTERACTIVE) {
-
-		i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout, verbose );
-		if (i == 0) {
-			printf( "Not realizable.\n" );
-			return -1;
-		} else if (i < 0) {
-			printf( "Failure during interaction.\n" );
-			return -1;
-		}
-
-		T = NULL;  /* To avoid seg faults by the generic clean-up code. */
+	if (!strncmp( argv[aut_input_index], "-", 1 )) {
+		strategy_fp = stdin;
 	} else {
-
-		T = check_realizable( manager, EXIST_SYS_INIT, verbose );
-		if (run_option == GR1C_MODE_REALIZABLE) {
-			if ((verbose == 0) || (getlogstream() != stdout)) {
-				if (T != NULL) {
-					printf( "Realizable.\n" );
-				} else {
-					printf( "Not realizable.\n" );
-				}
-			}
-		}
-
-		if (verbose) {
-			if (T != NULL) {
-				logprint( "Realizable." );
-			} else {
-				logprint( "Not realizable." );
-			}
-		}
-
-		if (run_option == GR1C_MODE_SYNTHESIS && T != NULL) {
-
-			if (verbose)
-				logprint( "Synthesizing a strategy..." );
-			strategy = synthesize( manager, EXIST_SYS_INIT, verbose );
-			if (verbose)
-				logprint( "Done." );
-			if (strategy == NULL) {
-				fprintf( stderr, "Error while attempting synthesis.\n" );
-				return -1;
-			}
-
+		strategy_fp = fopen( argv[aut_input_index], "r" );
+		if (strategy_fp == NULL) {
+			perror( "gr1c, fopen" );
+			return -1;
 		}
 	}
+
+	if (edges_input_index >= 0) {  /* patch_localfixpoint() */
+		fp = fopen( argv[edges_input_index], "r" );
+		if (fp == NULL) {
+			perror( "gr1c, fopen" );
+			return -1;
+		}
+
+		if (verbose)
+			logprint( "Patching given strategy..." );
+		strategy = patch_localfixpoint( manager, strategy_fp, fp, verbose );
+		if (verbose)
+			logprint( "Done." );
+
+		fclose( fp );
+	} else if (clformula_index >= 0) {  /* add_metric_sysgoal() */
+
+		if (verbose)
+			logprint( "Patching given strategy..." );
+		strategy = add_metric_sysgoal( manager, strategy_fp, original_num_env, original_num_sys, offw, num_metric_vars, clformula, verbose );
+		if (verbose)
+			logprint( "Done." );
+
+	} else {
+		fprintf( stderr, "Unrecognized patching request.  Try \"-h\".\n" );
+		return 1;
+	}
+	if (strategy_fp != stdin)
+		fclose( strategy_fp );
+	if (strategy == NULL) {
+		fprintf( stderr, "Failed to patch strategy.\n" );
+		return -1;
+	}
+
+	T = NULL;  /* To avoid seg faults by the generic clean-up code. */
 
 	if (strategy != NULL) {  /* De-expand nonboolean variables */
 		tmppt = nonbool_var_list;
@@ -437,6 +537,11 @@ int main( int argc, char **argv )
 	}
 
 	/* Clean-up */
+	if (metric_vars != NULL)
+		free( metric_vars );
+	if (offw != NULL)
+		free( offw );
+	delete_tree( clformula );
 	delete_tree( evar_list );
 	delete_tree( svar_list );
 	delete_tree( env_init );
@@ -460,13 +565,6 @@ int main( int argc, char **argv )
 	Cudd_Quit(manager);
 	if (logging_flag)
 		closelogfile();
-
-    /* Return 0 if realizable, -1 if not realizable. */
-	if (run_option == GR1C_MODE_INTERACTIVE || T != NULL) {
-		return 0;
-	} else {
-		return -1;
-	}
 
 	return 0;
 }

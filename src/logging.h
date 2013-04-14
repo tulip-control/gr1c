@@ -2,7 +2,7 @@
  * \brief A simple logging mechanism for gr1c.
  *
  * 
- * SCL; August 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -30,6 +30,9 @@ FILE *getlogstream();
 void setlogopt( int options );
 #define LOGOPT_TIME 0
 #define LOGOPT_NOTIME 1
+
+/** Get current log output configuration */
+int getlogopt();
 
 
 /** Open a new log file, automatically name it with the current date
