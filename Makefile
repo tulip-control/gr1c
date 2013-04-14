@@ -101,7 +101,7 @@ install:
 uninstall:
 	rm $(INSTALLDIR)/gr1c $(INSTALLDIR)/rg
 
-check: gr1c
+check: $(CORE_PROGRAMS) $(EXP_PROGRAMS)
 	$(MAKE) -C tests
 
 # Generate PNG images from DOT files in local directory

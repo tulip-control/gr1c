@@ -27,12 +27,15 @@ system goal is preceded by "<>" (as the "eventually" operator).
 and others.  See http://vlsi.colorado.edu/~fabio/CUDD/
 
 
-Installation
-============
+Build and Installation
+======================
 
-A test suite is available. To run it, after building gr1c, ::
+A test suite is available.  To run it, after building gr1c, ::
 
   $ make check
+
+Each testing step is reported if the environment variable VERBOSE is set to 1.
+E.g., try ``VERBOSE=1 make check``
 
 For installation, CUDD (see above) should be placed in a directory
 called "extern".  Be sure that similar flags are used for compiling
