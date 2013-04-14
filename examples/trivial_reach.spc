@@ -1,5 +1,7 @@
 # Change which SYSGOAL is commented-out below in order to see a
 # strategy winning with finite play vs. only with infinite plays.
+# Note that SYSGOAL may be entirely omitted, instead of writing
+# "SYSGOAL:;"
 #
 # SCL; 26 Aug 2012.
 
