@@ -25,9 +25,9 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 	anode_t *strategy = NULL;
 	anode_t *this_node_stack = NULL;
 	anode_t *node, *new_node;
-	bool *state;
+	vartype *state;
 	int *cube;
-	bool **env_moves;
+	vartype **env_moves;
 	int emoves_len;
 
 	DdNode *strans_into_N;
@@ -46,7 +46,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 	CUDD_VALUE_TYPE gvalue;
 	int *gcube;
 
-	state = malloc( sizeof(bool)*(num_env+num_sys) );
+	state = malloc( sizeof(vartype)*(num_env+num_sys) );
 	if (state == NULL) {
 		perror( "synthesize_reachgame_BDD, malloc" );
 		return NULL;

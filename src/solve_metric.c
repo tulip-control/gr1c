@@ -102,11 +102,11 @@ int *get_offsets( char *metric_vars, int *num_vars )
 }
 
 
-int bounds_state( DdManager *manager, DdNode *T, bool *ref_state,
+int bounds_state( DdManager *manager, DdNode *T, vartype *ref_state,
 				  int *offw, int num_metric_vars,
 				  double *Min, double *Max, unsigned char verbose )
 {
-	bool *state;
+	vartype *state;
 	double dist;
 	int num_env, num_sys;
 	int i;
@@ -121,7 +121,7 @@ int bounds_state( DdManager *manager, DdNode *T, bool *ref_state,
 	num_sys = tree_size( svar_list );
 
 	/* State vector (i.e., valuation of the variables) */
-	state = malloc( sizeof(bool)*(num_env+num_sys) );
+	state = malloc( sizeof(vartype)*(num_env+num_sys) );
 	if (state == NULL) {
 		perror( "bounds_state, malloc" );
 		return -1;
@@ -200,9 +200,9 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 				  int *offw, int num_metric_vars,
 				  double *Min, double *Max, unsigned char verbose )
 {
-	bool **states = NULL;
+	vartype **states = NULL;
 	int num_states = 0;
-	bool *state;
+	vartype *state;
 	double tMin, tMax;  /* Particular distance to goal set */
 	int num_env, num_sys;
 	int i, k;
@@ -216,7 +216,7 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
 
-	state = malloc( (num_env+num_sys)*sizeof(bool) );
+	state = malloc( (num_env+num_sys)*sizeof(vartype) );
 	if (state == NULL) {
 		perror( "bounds_DDset, malloc" );
 		return -1;
@@ -230,12 +230,12 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 		while (!saturated_cube( state, gcube, num_env+num_sys )) {
 
 			num_states++;
-			states = realloc( states, num_states*sizeof(bool *) );
+			states = realloc( states, num_states*sizeof(vartype *) );
 			if (states == NULL) {
 				perror( "bounds_DDset, realloc" );
 				return -1;
 			}
-			*(states+num_states-1) = malloc( (num_env+num_sys)*sizeof(bool) );
+			*(states+num_states-1) = malloc( (num_env+num_sys)*sizeof(vartype) );
 			if (*(states+num_states-1) == NULL) {
 				perror( "bounds_DDset, malloc" );
 				return -1;
@@ -247,13 +247,13 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 		}
 
 		num_states++;
-		states = realloc( states, num_states*sizeof(bool *) );
+		states = realloc( states, num_states*sizeof(vartype *) );
 		if (states == NULL) {
 			perror( "bounds_DDset, realloc" );
 			return -1;
 		}
 
-		*(states+num_states-1) = malloc( (num_env+num_sys)*sizeof(bool) );
+		*(states+num_states-1) = malloc( (num_env+num_sys)*sizeof(vartype) );
 		if (*(states+num_states-1) == NULL) {
 			perror( "bounds_DDset, malloc" );
 			return -1;

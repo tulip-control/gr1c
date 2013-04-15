@@ -40,8 +40,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	anode_t *strategy = NULL;
 	anode_t *this_node_stack = NULL;
 	anode_t *node, *new_node;
-	bool *state;
-	bool **env_moves;
+	vartype *state;
+	vartype **env_moves;
 	int emoves_len;
 
 	ptree_t *var_separator;
@@ -84,7 +84,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	num_sys = tree_size( svar_list );
 
 	/* State vector (i.e., valuation of the variables) */
-	state = malloc( sizeof(bool)*(num_env+num_sys) );
+	state = malloc( sizeof(vartype)*(num_env+num_sys) );
 	if (state == NULL) {
 		perror( "synthesize, malloc" );
 		return NULL;

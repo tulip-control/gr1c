@@ -32,7 +32,7 @@ extern int st_array_len;
    Output written to fp if not NULL, otherwise to stdout.  If num_env
    (respectively, num_sys) is -1, then only the system variables
    (resp. environment variables) are printed.  */
-void pprint_state( bool *state, int num_env, int num_sys, FILE *fp )
+void pprint_state( vartype *state, int num_env, int num_sys, FILE *fp )
 {
 	int i, nnz = 0;
 	ptree_t *node;
@@ -77,7 +77,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 								 anode_t *strategy, int goal_mode,
 								 anode_t ***affected, int *affected_len,
 								 DdNode *etrans, DdNode *strans, DdNode **egoals,
-								 DdNode *N_BDD, bool **N, int N_len,
+								 DdNode *N_BDD, vartype **N, int N_len,
 								 unsigned char verbose )
 {
 	int i, j, k;  /* Generic counters */
@@ -324,7 +324,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 
 	DdNode *vertex1, *vertex2; /* ...regarding vertices of the game graph. */
 	char line[INPUT_STRING_LEN];
-	bool *state;
+	vartype *state;
 
 	bool env_nogoal_flag = False;  /* Indicate environment has no goals */
 
@@ -334,7 +334,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	anode_t *strategy, *result_strategy;
 	anode_t *node, *head;
 	int node_counter;
-	bool **N = NULL;  /* "neighborhood" of states */
+	vartype **N = NULL;  /* "neighborhood" of states */
 	int N_len = 0;
 	int goal_mode;
 	DdNode *N_BDD = NULL;  /* Characteristic function for set of states N. */
@@ -415,7 +415,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		}
 
 		N_len++;
-		N = realloc( N, sizeof(bool *)*N_len );
+		N = realloc( N, sizeof(vartype *)*N_len );
 		if (N == NULL) {
 			perror( "patch_localfixpoint, realloc" );
 			return NULL;

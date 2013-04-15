@@ -16,7 +16,7 @@
 #include "logging.h"
 
 
-int bitvec_to_int( bool *vec, int vec_len )
+int bitvec_to_int( vartype *vec, int vec_len )
 {
 	int i;
 	int result = 0;
@@ -28,13 +28,13 @@ int bitvec_to_int( bool *vec, int vec_len )
 }
 
 
-bool *int_to_bitvec( int x, int vec_len )
+vartype *int_to_bitvec( int x, int vec_len )
 {
 	int i;
-	bool *vec;
+	vartype *vec;
 	if (vec_len < 1)
 		return NULL;
-	vec = malloc( vec_len*sizeof(bool) );
+	vec = malloc( vec_len*sizeof(vartype) );
 	if (vec == NULL) {
 		perror( "int_to_bitvec, malloc" );
 		return NULL;

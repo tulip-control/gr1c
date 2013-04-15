@@ -28,7 +28,7 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 				  int *offw, int num_metric_vars,
 				  double *Min, double *Max, unsigned char verbose );
 
-int bounds_state( DdManager *manager, DdNode *T, bool *ref_state,
+int bounds_state( DdManager *manager, DdNode *T, vartype *ref_state,
 				  int *offw, int num_metric_vars,
 				  double *Min, double *Max, unsigned char verbose );
 

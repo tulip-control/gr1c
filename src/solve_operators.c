@@ -2,7 +2,7 @@
  *                      Also see solve.c
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 

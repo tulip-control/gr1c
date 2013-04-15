@@ -20,7 +20,7 @@ int read_nonbool_state_str( char *input, int **state, int max_len )
 	if (max_len == 0 || strlen( input ) < 1)
 		return 0;
 	if (max_len > 0) {
-		*state = malloc( sizeof(bool)*max_len );
+		*state = malloc( sizeof(vartype)*max_len );
 		if (*state == NULL) {
 			perror( "read_state_str, malloc" );
 			return 0;
@@ -59,7 +59,7 @@ int read_nonbool_state_str( char *input, int **state, int max_len )
 	return i;
 }
 
-int read_state_str( char *input, bool **state, int max_len )
+int read_state_str( char *input, vartype **state, int max_len )
 {
 	int i;
 	char *start;
@@ -68,7 +68,7 @@ int read_state_str( char *input, bool **state, int max_len )
 	if (max_len == 0 || strlen( input ) < 1)
 		return 0;
 	if (max_len > 0) {
-		*state = malloc( sizeof(bool)*max_len );
+		*state = malloc( sizeof(vartype)*max_len );
 		if (*state == NULL) {
 			perror( "read_state_str, malloc" );
 			return 0;
@@ -79,7 +79,7 @@ int read_state_str( char *input, bool **state, int max_len )
 	end = input;
 	for (i = 0; (max_len < 0 || i < max_len) && *end != '\0'; i++) {
 		if (max_len < 0) {
-			*state = realloc( *state, sizeof(bool)*(i+1) );
+			*state = realloc( *state, sizeof(vartype)*(i+1) );
 			if (*state == NULL) {
 				perror( "read_state_str, realloc" );
 				return 0;
@@ -98,7 +98,7 @@ int read_state_str( char *input, bool **state, int max_len )
 	}
 
 	if (max_len > 0) {
-		*state = realloc( *state, sizeof(bool)*i );
+		*state = realloc( *state, sizeof(vartype)*i );
 		if (*state == NULL) {
 			perror( "read_state_str, realloc" );
 			return 0;
@@ -108,7 +108,7 @@ int read_state_str( char *input, bool **state, int max_len )
 }
 
 
-void initialize_cube( bool *cube, int *gcube, int len )
+void initialize_cube( vartype *cube, int *gcube, int len )
 {
 	int i;
 	for (i = 0; i < len; i++) {
@@ -120,7 +120,7 @@ void initialize_cube( bool *cube, int *gcube, int len )
 	}
 }
 
-void increment_cube( bool *cube, int *gcube, int len )
+void increment_cube( vartype *cube, int *gcube, int len )
 {
 	int i;
 	for (i = len-1; i >= 0; i--) {
@@ -135,7 +135,7 @@ void increment_cube( bool *cube, int *gcube, int len )
 	}
 }
 
-bool saturated_cube( bool *cube, int *gcube, int len )
+bool saturated_cube( vartype *cube, int *gcube, int len )
 {
 	int i;
 	for (i = 0; i < len; i++) {
@@ -145,7 +145,7 @@ bool saturated_cube( bool *cube, int *gcube, int len )
 	return True;
 }
 
-void state2cube( bool *state, int *cube, int len )
+void state2cube( vartype *state, int *cube, int len )
 {
 	int i;
 	for (i = 0; i < len; i++)
@@ -196,7 +196,7 @@ void cube_prime_sys( int *cube, int num_env, int num_sys )
 }
 
 
-bool statecmp( bool *state1, bool *state2, int state_len )
+bool statecmp( vartype *state1, vartype *state2, int state_len )
 {
 	int i;
 	for (i = 0; i < state_len; i++) {
@@ -208,7 +208,7 @@ bool statecmp( bool *state1, bool *state2, int state_len )
 
 
 DdNode *state2cof( DdManager *manager, int *cube, int cube_len,
-				   bool *state, DdNode *trans, int offset, int len )
+				   vartype *state, DdNode *trans, int offset, int len )
 {
 	int i;
 	DdNode *tmp;
@@ -237,7 +237,7 @@ DdNode *state2cof( DdManager *manager, int *cube, int cube_len,
 }
 
 
-DdNode *state2BDD( DdManager *manager, bool *state, int offset, int len )
+DdNode *state2BDD( DdManager *manager, vartype *state, int offset, int len )
 {
 	DdNode *v, *tmp;
 	int i;
@@ -257,12 +257,12 @@ DdNode *state2BDD( DdManager *manager, bool *state, int offset, int len )
 }
 
 
-bool **get_env_moves( DdManager *manager, int *cube,
-					  bool *state, DdNode *etrans,
-					  int num_env, int num_sys, int *emoves_len )
+vartype **get_env_moves( DdManager *manager, int *cube,
+						 vartype *state, DdNode *etrans,
+						 int num_env, int num_sys, int *emoves_len )
 {
 	DdNode *tmp, *tmp2, *ddcube;
-	bool **env_moves = NULL;
+	vartype **env_moves = NULL;
 	DdGen *gen;
 	CUDD_VALUE_TYPE gvalue;
 	int *gcube;
@@ -286,7 +286,7 @@ bool **get_env_moves( DdManager *manager, int *cube,
 	Cudd_RecursiveDeref( manager, tmp );
 	Cudd_RecursiveDeref( manager, ddcube );
 
-	state = malloc( num_env*sizeof(bool) );
+	state = malloc( num_env*sizeof(vartype) );
 	if (state == NULL) {
 		fprintf( stderr, "Error in building next environment moves list." );
 		return NULL;
@@ -298,12 +298,12 @@ bool **get_env_moves( DdManager *manager, int *cube,
 		initialize_cube( state, gcube+num_env+num_sys, num_env );
 		while (!saturated_cube( state, gcube+num_env+num_sys, num_env )) {
 			(*emoves_len)++;
-			env_moves = realloc( env_moves, (*emoves_len)*sizeof(bool *) );
+			env_moves = realloc( env_moves, (*emoves_len)*sizeof(vartype *) );
 			if (env_moves == NULL) {
 				fprintf( stderr, "Error in building next environment moves list." );
 				return NULL;
 			}
-			*(env_moves+*emoves_len-1) = malloc( num_env*sizeof(bool) );
+			*(env_moves+*emoves_len-1) = malloc( num_env*sizeof(vartype) );
 			if (*(env_moves+*emoves_len-1) == NULL) {
 				fprintf( stderr, "Error in building next environment moves list." );
 				return NULL;
@@ -315,12 +315,12 @@ bool **get_env_moves( DdManager *manager, int *cube,
 			increment_cube( state, gcube+num_env+num_sys, num_env );
 		}
 		(*emoves_len)++;
-		env_moves = realloc( env_moves, (*emoves_len)*sizeof(bool *) );
+		env_moves = realloc( env_moves, (*emoves_len)*sizeof(vartype *) );
 		if (env_moves == NULL) {
 			fprintf( stderr, "Error in building next environment moves list." );
 			return NULL;
 		}
-		*(env_moves+*emoves_len-1) = malloc( num_env*sizeof(bool) );
+		*(env_moves+*emoves_len-1) = malloc( num_env*sizeof(vartype) );
 		if (*(env_moves+*emoves_len-1) == NULL) {
 			fprintf( stderr, "Error in building next environment moves list." );
 			return NULL;

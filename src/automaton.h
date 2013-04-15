@@ -25,7 +25,7 @@
 /** \brief Strategy automaton nodes. */
 typedef struct anode_t
 {
-	bool *state;
+	vartype *state;
 	int mode;  /**<\brief Goal mode; indicates which system goal is
 				  currently being pursued. */
 	int rgrad;  /**<\brief reach annotation value; unset value is
@@ -68,7 +68,7 @@ typedef struct anode_t
    NULL, a new list will be created.
 
    Return new head on success, NULL on error. */
-anode_t *insert_anode( anode_t *head, int mode, int rgrad, bool *state, int state_len );
+anode_t *insert_anode( anode_t *head, int mode, int rgrad, vartype *state, int state_len );
 
 /** Delete topmost (head) node from list.  Return pointer to new head. */
 anode_t *pop_anode( anode_t *head );
@@ -85,21 +85,21 @@ anode_t *pop_anode( anode_t *head );
 
    Return given head on success, NULL if one of the needed nodes is
    not found. */
-anode_t *build_anode_trans( anode_t *head, int mode, bool *state, int state_len,
-							int next_mode, bool **next_states, int next_len );
+anode_t *build_anode_trans( anode_t *head, int mode, vartype *state, int state_len,
+							int next_mode, vartype **next_states, int next_len );
 
 /** Append transition to array for the node with given state and mode.
    Return new head on success, NULL on error. */
 anode_t *append_anode_trans( anode_t *head,
-							 int mode, bool *state, int state_len,
-							 int next_mode, bool *next_state );
+							 int mode, vartype *state, int state_len,
+							 int next_mode, vartype *next_state );
 
 /** Return pointer to node with given state and mode, or NULL if not found. */
-anode_t *find_anode( anode_t *head, int mode, bool *state, int state_len );
+anode_t *find_anode( anode_t *head, int mode, vartype *state, int state_len );
 
 /** Return the position of the node with given state and mode, or -1 if
    not found.  0-based indexing. */
-int find_anode_index( anode_t *head, int mode, bool *state, int state_len );
+int find_anode_index( anode_t *head, int mode, vartype *state, int state_len );
 
 /** Return (possibly new) head pointer.  Transition arrays are not
    altered by this function. */
@@ -183,7 +183,7 @@ void delete_aut( anode_t *head );
    of mode, and setting the mode field of each reached node to
    magic_mode.  Return zero on success, nonzero on error. */
 int forward_modereach( anode_t *head, anode_t *node,
-					   int mode, bool **N, int N_len, int magic_mode,
+					   int mode, vartype **N, int N_len, int magic_mode,
 					   int state_len );
 
 

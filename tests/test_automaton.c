@@ -1,6 +1,6 @@
 /* Unit tests for automaton (strategy) objects.
  *
- * SCL; April 2012.
+ * SCL; April 2012, 2013.
  */
 
 #include <stdlib.h>
@@ -15,7 +15,7 @@ int main( int argc, char **argv )
 {
 	int i, j;  /* Generic counters */
 	anode_t *head, *backup_head;
-	bool **nodes_states = NULL;
+	vartype **nodes_states = NULL;
 	int state_len = 10;
 	int *modes = NULL;
 	int mode_counter;
@@ -25,7 +25,7 @@ int main( int argc, char **argv )
 	srand( 0 );
 
 	/* Construct test fixture */
-	nodes_states = malloc( num_nodes*sizeof(bool *) );
+	nodes_states = malloc( num_nodes*sizeof(vartype *) );
 	if (nodes_states == NULL) {
 		perror( "test_automaton, malloc" );
 		return -1;
@@ -37,7 +37,7 @@ int main( int argc, char **argv )
 	}
 	mode_counter = -1;
 	for (i = 0; i < num_nodes; i++) {
-		*(nodes_states+i) = malloc( state_len*sizeof(bool) );
+		*(nodes_states+i) = malloc( state_len*sizeof(vartype) );
 		if (*(nodes_states+i) == NULL) {
 			perror( "test_automaton, malloc" );
 			return -1;

@@ -1,6 +1,6 @@
 /* Unit tests for synthesis support routines.
  *
- * SCL; May 2012.
+ * SCL; May 2012, April 2013.
  */
 
 #include <stdlib.h>
@@ -31,7 +31,7 @@ int num_sgoals = 0;
 
 
 /* Abort on discrepancy. */
-void compare_bcubes( bool *cube1, bool *cube2, int len )
+void compare_bcubes( vartype *cube1, vartype *cube2, int len )
 {
 	int i;
 	for (i = 0; i < len; i++) {
@@ -45,7 +45,7 @@ void compare_bcubes( bool *cube1, bool *cube2, int len )
 
 int main( int argc, char **argv )
 {
-	bool *ref_cube, *state;
+	vartype *ref_cube, *state;
 	int *gcube;
 	int len;
 	ptree_t *head;
@@ -57,7 +57,7 @@ int main( int argc, char **argv )
 	int *cube;
 	int i, j;  /* Generic counters */
 	int move_counter;
-	bool **env_moves;
+	vartype **env_moves;
 	int emoves_len;
 
 	/* Repeatable random seed */
@@ -68,12 +68,12 @@ int main( int argc, char **argv )
 	 * Small, not otherwise specified
 	 ************************************************/
 	len = 1024;
-	state = malloc( len*sizeof(bool) );
+	state = malloc( len*sizeof(vartype) );
 	if (state == NULL) {
 		perror( "test_solve_support, malloc" );
 		abort();
 	}
-	ref_cube = malloc( len*sizeof(bool) );
+	ref_cube = malloc( len*sizeof(vartype) );
 	if (ref_cube == NULL) {
 		perror( "test_solve_support, malloc" );
 		abort();
@@ -112,12 +112,12 @@ int main( int argc, char **argv )
 	 * Cube walking
 	 ************************************************/
 	len = 4;
-	state = malloc( len*sizeof(bool) );
+	state = malloc( len*sizeof(vartype) );
 	if (state == NULL) {
 		perror( "test_solve_support, malloc" );
 		abort();
 	}
-	ref_cube = malloc( len*sizeof(bool) );
+	ref_cube = malloc( len*sizeof(vartype) );
 	if (ref_cube == NULL) {
 		perror( "test_solve_support, malloc" );
 		abort();
@@ -194,7 +194,7 @@ int main( int argc, char **argv )
 		abort();
 	}
 
-	state = malloc( sizeof(bool)*(num_env+num_sys) );
+	state = malloc( sizeof(vartype)*(num_env+num_sys) );
 	if (state == NULL) {
 		perror( "test_solve_support, malloc" );
 		abort();

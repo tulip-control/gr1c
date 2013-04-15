@@ -30,7 +30,7 @@ extern ptree_t *env_trans;
 extern ptree_t *sys_trans;
 
 
-extern void pprint_state( bool *state, int num_env, int num_sys, FILE *fp );  /* Defined in patching.c */
+extern void pprint_state( vartype *state, int num_env, int num_sys, FILE *fp );  /* Defined in patching.c */
 
 extern anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 										  DdNode *Entry, DdNode *Exit,

@@ -20,7 +20,7 @@
 anode_t *aut_aut_load( int state_len, FILE *fp )
 {
 	anode_t *head = NULL, *node;
-	bool *state;
+	vartype *state;
 	int this_trans;
 	int i, j, k;  /* Generic counters */
 	int ia_len;  /* length of ID_array, trans_array, and node_array */
@@ -36,7 +36,7 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 
 	if (state_len < 1)
 		return NULL;
-	state = malloc( sizeof(bool)*state_len );
+	state = malloc( sizeof(vartype)*state_len );
 	if (state == NULL) {
 		perror( "aut_aut_load, malloc" );
 		return NULL;
@@ -114,7 +114,7 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 			this_trans = strtol( start, &end, 10 );
 		}
 
-		state = malloc( sizeof(bool)*state_len );
+		state = malloc( sizeof(vartype)*state_len );
 		if (state == NULL) {
 			perror( "aut_aut_load, malloc" );
 			return NULL;

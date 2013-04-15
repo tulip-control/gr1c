@@ -84,7 +84,7 @@ extern int num_sgoals;
 /* In the case of pointers, it is expected that command_loop will
    allocate the memory, and levelset_interactive (or otherwise the
    function that invoked command_loop) will free it. */
-bool *intcom_state;
+vartype *intcom_state;
 int intcom_index;  /* May be used to pass strategy goal mode or length
 					  of intcom_state. */
 
@@ -270,7 +270,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 			} else {
 				free( input );
 				intcom_index  = *(intcom_state+2*num_env+num_sys);
-				intcom_state = realloc( intcom_state, (2*num_env+num_sys)*sizeof(bool) );
+				intcom_state = realloc( intcom_state, (2*num_env+num_sys)*sizeof(vartype) );
 				if (intcom_state == NULL) {
 					perror( "command_loop, realloc" );
 					return -1;
@@ -371,7 +371,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 			} else {
 				free( input );
 				intcom_index = *(intcom_state+num_env+num_sys);
-				intcom_state = realloc( intcom_state, (num_env+num_sys)*sizeof(bool) );
+				intcom_state = realloc( intcom_state, (num_env+num_sys)*sizeof(vartype) );
 				if (intcom_state == NULL) {
 					perror( "command_loop, realloc" );
 					return -1;
@@ -399,8 +399,8 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 						  unsigned char verbose )
 {
 	int command;
-	bool *state;
-	bool **env_moves;
+	vartype *state;
+	vartype **env_moves;
 	int emoves_len;
 
 	ptree_t *var_separator;
@@ -444,7 +444,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	num_sys = tree_size( svar_list );
 
 	/* State vector (i.e., valuation of the variables) */
-	state = malloc( sizeof(bool)*(num_env+num_sys) );
+	state = malloc( sizeof(vartype)*(num_env+num_sys) );
 	if (state == NULL) {
 		perror( "levelset_interactive, malloc" );
 		return -1;

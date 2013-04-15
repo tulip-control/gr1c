@@ -17,7 +17,7 @@
    "state". Read at most max_len values, and return the number of
    values read (thus, the length of the array pointed to by state at
    exit).  If max_len is negative, then read values until no more are found. */
-int read_state_str( char *input, bool **state, int max_len );
+int read_state_str( char *input, vartype **state, int max_len );
 
 /** ...because C does not natively support templating.  Entirely similar to read_state_str() */
 int read_nonbool_state_str( char *input, int **state, int max_len );
@@ -41,33 +41,33 @@ void cube_prime_sys( int *cube, int num_env, int num_sys );
 
        PRECONDITION: len = 4, gcube = [0,2,0,2], and cube = [0,0,0,1];
        POSTCONDITION: cube = [0,1,0,0]. */
-void increment_cube( bool *cube, int *gcube, int len );
+void increment_cube( vartype *cube, int *gcube, int len );
 
 /** Will cube overflow upon next increment? (See documentation for
    increment_cube().) */
-bool saturated_cube( bool *cube, int *gcube, int len );
+bool saturated_cube( vartype *cube, int *gcube, int len );
 
-void initialize_cube( bool *cube, int *gcube, int len );
+void initialize_cube( vartype *cube, int *gcube, int len );
 
 /* Assume that full cube would include primed variables, thus all
    values in cube array at index len onward are set to 2. */
-void state2cube( bool *state, int *cube, int len );
+void state2cube( vartype *state, int *cube, int len );
 
 /* Compare state vectors; return True if equal. */
-bool statecmp( bool *state1, bool *state2, int state_len );
+bool statecmp( vartype *state1, vartype *state2, int state_len );
 
 /** Construct cofactor of trans BDD from state vector to get possible
    next states (via cube generation). */
 DdNode *state2cof( DdManager *manager, int *cube, int cube_len,
-				   bool *state, DdNode *trans, int offset, int len );
+				   vartype *state, DdNode *trans, int offset, int len );
 
 /** Compute characteristic function for a single state. */
-DdNode *state2BDD( DdManager *manager, bool *state, int offset, int len );
+DdNode *state2BDD( DdManager *manager, vartype *state, int offset, int len );
 
 
-bool **get_env_moves( DdManager *manager, int *cube,
-					  bool *state, DdNode *etrans,
-					  int num_env, int num_sys, int *emoves_len );
+vartype **get_env_moves( DdManager *manager, int *cube,
+						 vartype *state, DdNode *etrans,
+						 int num_env, int num_sys, int *emoves_len );
 
 /** Compute exists modal operator applied to set C, i.e., the set of
    states such that for each environment move, there exists a system

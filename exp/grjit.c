@@ -130,7 +130,7 @@ int main( int argc, char **argv )
 
 	int max_sim_it;  /* Number of simulation iterations */
 	anode_t *play;
-	bool *init_state;
+	vartype *init_state;
 	int *init_state_ints = NULL;
 	char *all_vars = NULL, *metric_vars = NULL;
 	int *offw, num_vars;

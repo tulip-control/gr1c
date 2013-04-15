@@ -1,6 +1,6 @@
 /* Unit tests for input and output routines of automaton (strategy) objects.
  *
- * SCL; July 2012.
+ * SCL; July 2012, April 2013.
  */
 
 #include <string.h>
@@ -36,7 +36,7 @@ int main( int argc, char **argv )
 	char filename[STRING_MAXLEN];
 	char instr[STRING_MAXLEN];
 	anode_t *head, *node, *out_node;
-	bool state[2], next_state[2];
+	vartype state[2], next_state[2];
 
 	strcpy( filename, "temp_automaton_io_dumpXXXXXX" );
 	result = mktemp( filename );

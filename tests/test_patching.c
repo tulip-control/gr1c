@@ -1,6 +1,6 @@
 /* Unit tests for patching algorithm implementations.
  *
- * SCL; July 2012.
+ * SCL; July 2012, Apr 2013.
  */
 
 #include <stdlib.h>
@@ -46,7 +46,7 @@ int main( int argc, char **argv )
 	int Exit_len, Entry_len;
 	DdNode *N_BDD = NULL;
 	anode_t *strategy = NULL;
-	bool state[2];
+	vartype state[2];
 
 	int i;
 	DdNode *tmp, *tmp2;  /* Temporary BDDs */

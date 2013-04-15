@@ -15,7 +15,7 @@
 #include "solve_support.h"
 
 
-anode_t *insert_anode( anode_t *head, int mode, int rgrad, bool *state, int state_len )
+anode_t *insert_anode( anode_t *head, int mode, int rgrad, vartype *state, int state_len )
 {
 	int i;
 	anode_t *new_head = malloc( sizeof(anode_t) );
@@ -24,7 +24,7 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad, bool *state, int stat
 		return NULL;
 	}
 
-	new_head->state = malloc( state_len*sizeof(bool) );
+	new_head->state = malloc( state_len*sizeof(vartype) );
 	if (new_head->state == NULL) {
 		perror( "insert_anode, malloc" );
 		free( new_head );
@@ -51,8 +51,8 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad, bool *state, int stat
 }
 
 
-anode_t *build_anode_trans( anode_t *head, int mode, bool *state, int state_len,
-							int next_mode, bool **next_states, int next_len )
+anode_t *build_anode_trans( anode_t *head, int mode, vartype *state, int state_len,
+							int next_mode, vartype **next_states, int next_len )
 {
 	int i;
 	anode_t **trans;
@@ -88,8 +88,8 @@ anode_t *build_anode_trans( anode_t *head, int mode, bool *state, int state_len,
 
 
 anode_t *append_anode_trans( anode_t *head,
-							 int mode, bool *state, int state_len,
-							 int next_mode, bool *next_state )
+							 int mode, vartype *state, int state_len,
+							 int next_mode, vartype *next_state )
 {
 	anode_t **trans;
 	anode_t *base = find_anode( head, mode, state, state_len );
@@ -112,7 +112,7 @@ anode_t *append_anode_trans( anode_t *head,
 }
 
 
-anode_t *find_anode( anode_t *head, int mode, bool *state, int state_len )
+anode_t *find_anode( anode_t *head, int mode, vartype *state, int state_len )
 {
 	int i;
 	bool match_flag = False;
@@ -140,7 +140,7 @@ anode_t *find_anode( anode_t *head, int mode, bool *state, int state_len )
 }
 
 
-int find_anode_index( anode_t *head, int mode, bool *state, int state_len )
+int find_anode_index( anode_t *head, int mode, vartype *state, int state_len )
 {
 	int node_counter = 0;
 	int i;
@@ -301,7 +301,7 @@ int aut_size( anode_t *head )
 }
 
 
-int forward_modereach( anode_t *head, anode_t *node, int mode, bool **N, int N_len, int magic_mode, int state_len )
+int forward_modereach( anode_t *head, anode_t *node, int mode, vartype **N, int N_len, int magic_mode, int state_len )
 {
 	int i, j;
 	for (i = 0; i < node->trans_len; i++) {
@@ -326,7 +326,7 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, 
 	int num_env, num_sys;
 	ptree_t *var = evar_list, *var_tail, *var_next;
 	int start_index, stop_index, i;
-	bool *new_state;
+	vartype *new_state;
 
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
@@ -373,7 +373,7 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, 
 	}
 
 	while (head) {
-		new_state = malloc( (num_env+num_sys - (stop_index-start_index))*sizeof(bool) );
+		new_state = malloc( (num_env+num_sys - (stop_index-start_index))*sizeof(vartype) );
 		if (new_state == NULL) {
 			perror( "aut_compact_nonbool, malloc" );
 			return -1;
@@ -405,7 +405,7 @@ int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	int start_index, stop_index;
 	int i, j, k;
 	int num_env, num_sys, num_nonbool;
-	bool *new_state, *state_frag;
+	vartype *new_state, *state_frag;
 	int *vec_starts;  /* Index in the expanded state vector at which it begins. */
 	int *vec_lens;
 	ptree_t *tmppt;
@@ -468,7 +468,7 @@ int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	}
 
 	while (head) {
-		new_state = malloc( (num_env+num_sys)*sizeof(bool) );
+		new_state = malloc( (num_env+num_sys)*sizeof(vartype) );
 		if (new_state == NULL) {
 			perror( "aut_expand_bool, malloc" );
 			return -1;
