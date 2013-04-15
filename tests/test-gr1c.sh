@@ -128,3 +128,20 @@ for k in `ls flawed_specs/*.spc`; do
 	exit -1
     fi
 done
+
+
+################################################################
+# rg specification file syntax
+
+if [[ $VERBOSE -eq 1 ]]; then
+    echo "\nChecking detection of flawed reachability game (rg) specification files..."
+fi
+for k in `ls flawed_reach_specs/*.spc`; do
+    if [[ $VERBOSE -eq 1 ]]; then
+	echo "\t gr1c -s $k"
+    fi
+    if $BUILD_ROOT/rg -s $k > /dev/null 2>&1; then
+	echo $PREFACE "Flawed reachability game spec ${k} detected as OK\n"
+	exit -1
+    fi
+done

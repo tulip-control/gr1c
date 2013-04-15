@@ -187,6 +187,17 @@ int main( int argc, char **argv )
 		stdin = stdin_backup;
 	}
 
+	if (num_sgoals > 1) {
+		fprintf( stderr, "Syntax error: reachability game specification has more than 1 system goal.\n" );
+		return -1;
+	}
+
+	if (check_gr1c_form( evar_list, svar_list, env_init, sys_init,
+						 env_trans_array, et_array_len,
+						 sys_trans_array, st_array_len,
+						 env_goals, num_egoals, sys_goals, num_sgoals ) < 0)
+		return -1;
+
 	if (run_option == RG_MODE_SYNTAX)
 		return 0;
 
@@ -194,26 +205,22 @@ int main( int argc, char **argv )
 	if (input_index > 0)
 		fclose( fp );
 
-	/* Handle empty initial conditions, i.e., no restrictions. */
-	if (env_init == NULL)
-		env_init = init_ptree( PT_CONSTANT, NULL, 1 );
-	if (sys_init == NULL)
-		sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
-
 	/* Merge component safety (transition) formulas */
 	if (et_array_len > 1) {
 		env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
 	} else if (et_array_len == 1) {
 		env_trans = *env_trans_array;
 	} else {  /* No restrictions on transitions. */
-		env_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+		fprintf( stderr, "Syntax error: GR(1) specification is missing environment transition rules.\n" );
+		return -1;
 	}
 	if (st_array_len > 1) {
 		sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
 	} else if (st_array_len == 1) {
 		sys_trans = *sys_trans_array;
 	} else {  /* No restrictions on transitions. */
-		sys_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+		fprintf( stderr, "Syntax error: GR(1) specification is missing system transition rules.\n" );
+		return -1;
 	}
 
 	if (ptdump_flag) {
