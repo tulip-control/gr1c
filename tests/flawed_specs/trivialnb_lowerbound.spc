@@ -1,0 +1,5 @@
+SYS: y [2,10];
+
+SYSINIT:y=2;
+SYSTRANS:;
+SYSGOAL:[]<>(y=3);
