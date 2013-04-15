@@ -41,8 +41,9 @@ path. To see a summary of possible command-line arguments,
 Examples
 --------
 
-A very simple and easy to interpret specification is provided in
-`examples/trivial.spc`.  Stripping away comments, the spec is
+Many specification files are provided under the `examples` directory.
+Begin by reading `examples/README.txt`.  As a simple first step,
+consider the following specification.
 
     ENV: x;
     SYS: y;
