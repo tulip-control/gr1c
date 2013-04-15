@@ -5,8 +5,8 @@ Scott C. Livingston  <slivingston@cds.caltech.edu>
 
 **gr1c** is a tool for GR(1) synthesis and related activities.  Its core
 functionality is checking realizability of and synthesizing strategies for GR(1)
-specifications.  The fixpoint formula defining the winning set is given (and its
-correctness proven) in
+specifications, though it does much more.  The fixpoint formula defining the
+winning set is given (and its correctness proven) in
 
     Y. Kesten, N. Piterman, and A. Pnueli (2005). Bridging the gap between
     fair simulation and trace inclusion. *Information and Computation*,
