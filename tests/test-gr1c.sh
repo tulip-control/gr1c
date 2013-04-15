@@ -13,7 +13,7 @@ PREFACE="============================================================\nERROR:"
 ################################################################
 # Test realizability
 
-REFSPECS="gridworld.spc gridworld_env.spc arbiter4.spc trivial_2var.spc"
+REFSPECS="gridworld.spc gridworld_env.spc arbiter4.spc trivial_2var.spc free_counter.spc"
 UNREALIZABLE_REFSPECS="trivial_un.spc"
 
 if [[ $VERBOSE -eq 1 ]]; then
@@ -46,7 +46,7 @@ done
 ################################################################
 # Synthesis regression tests
 
-REFSPECS="trivial_2var.spc"
+REFSPECS="trivial_2var.spc free_counter.spc"
 
 if [[ $VERBOSE -eq 1 ]]; then
     echo "\nPerforming regression tests for vanilla GR(1) synthesis..."
