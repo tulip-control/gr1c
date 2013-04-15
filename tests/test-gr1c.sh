@@ -101,19 +101,6 @@ done
 
 
 ################################################################
-# Incremental (exp/grpatch) regression tests
-
-# REFSPECS="trivial_2var.spc"
-
-# for k in `echo $REFSPECS`; do
-#     if ! ($BUILD_ROOT/grpatch -t txt specs/$k | cmp -s expected_outputs/${k}.listdump.out -); then
-# 	echo $PREFACE "Incremental (patching) synthesis regression test failed for specs/${k}\n"
-# 	exit -1
-#     fi
-# done
-
-
-################################################################
 # gr1c specification file syntax
 
 if [[ $VERBOSE -eq 1 ]]; then
