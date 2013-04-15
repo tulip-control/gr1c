@@ -45,4 +45,12 @@ void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
 					 ptree_t **sys_goals, int num_sys_goals,
 					 FILE *outf );
 
+/* Verify well-formedness (as much as gr1c demands) of GR(1) specification. */
+int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
+					 ptree_t *env_init, ptree_t *sys_init,
+					 ptree_t **env_trans_array, int et_array_len,
+					 ptree_t **sys_trans_array, int st_array_len,
+					 ptree_t **env_goals, int num_env_goals,
+					 ptree_t **sys_goals, int num_sys_goals );
+
 #endif

@@ -98,3 +98,33 @@ for k in `echo $REFSPECS`; do
         exit -1
     fi
 done
+
+
+################################################################
+# Incremental (exp/grpatch) regression tests
+
+# REFSPECS="trivial_2var.spc"
+
+# for k in `echo $REFSPECS`; do
+#     if ! ($BUILD_ROOT/grpatch -t txt specs/$k | cmp -s expected_outputs/${k}.listdump.out -); then
+# 	echo $PREFACE "Incremental (patching) synthesis regression test failed for specs/${k}\n"
+# 	exit -1
+#     fi
+# done
+
+
+################################################################
+# gr1c specification file syntax
+
+if [[ $VERBOSE -eq 1 ]]; then
+    echo "\nChecking detection of flawed specification files..."
+fi
+for k in `ls flawed_specs/*.spc`; do
+    if [[ $VERBOSE -eq 1 ]]; then
+	echo "\t gr1c -s $k"
+    fi
+    if $BUILD_ROOT/gr1c -s $k > /dev/null 2>&1; then
+	echo $PREFACE "Flawed ${k} detected as OK\n"
+	exit -1
+    fi
+done

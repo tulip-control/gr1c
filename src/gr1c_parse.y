@@ -11,23 +11,24 @@
   #include "ptree.h"
   void yyerror( char const * );
 
-  extern ptree_t *evar_list;
-  extern ptree_t *svar_list;
+  ptree_t *evar_list = NULL;
+  ptree_t *svar_list = NULL;
   
-  extern ptree_t *sys_init;
-  extern ptree_t *env_init;
+  ptree_t *sys_init = NULL;
+  ptree_t *env_init = NULL;
 
-  extern ptree_t **env_goals;
-  extern ptree_t **sys_goals;
-  extern int num_egoals;
-  extern int num_sgoals;
+  ptree_t **env_goals = NULL;
+  ptree_t **sys_goals = NULL;
+  int num_egoals = 0;
+  int num_sgoals = 0;
 
-  extern ptree_t **env_trans_array;
-  extern ptree_t **sys_trans_array;
-  extern int et_array_len;
-  extern int st_array_len;
+  ptree_t **env_trans_array = NULL;
+  ptree_t **sys_trans_array = NULL;
+  int et_array_len = 0;
+  int st_array_len = 0;
 
-  extern ptree_t *gen_tree_ptr;
+  /* General purpose tree pointer, which facilitates cleaner Yacc parsing code. */
+  ptree_t *gen_tree_ptr = NULL;
 %}
 
 %error-verbose
@@ -81,25 +82,63 @@ input: /* empty */
 
 exp: evar_list ';'
    | svar_list ';'
-   | E_INIT ';'
+   | E_INIT ';' {
+         if (env_init != NULL) {
+             printf( "Error detected on line %d.  Duplicate ENVINIT.\n", @1.last_line );
+             YYABORT;
+         }
+         /* Handle empty initial conditions, i.e., no restrictions. */
+         env_init = init_ptree( PT_CONSTANT, NULL, 1 );
+     }
    | E_INIT propformula ';' {
-         if (env_init != NULL)
-             delete_tree( env_init );
+         if (env_init != NULL) {
+             printf( "Error detected on line %d.  Duplicate ENVINIT\n", @1.last_line );
+             YYABORT;
+         }
          env_init = gen_tree_ptr;
          gen_tree_ptr = NULL;
      }
-   | E_TRANS ';'
+   | E_TRANS ';' {
+         if (et_array_len == 0) {
+             et_array_len = 1;
+             env_trans_array = malloc( sizeof(ptree_t *) );
+             if (env_trans_array == NULL) {
+                 perror( "gr1c_parse.y, etransformula, malloc" );
+                 YYABORT;
+             }
+             *env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+         }
+     }
    | E_TRANS etransformula ';'
    | E_GOAL ';'
    | E_GOAL egoalformula ';'
-   | S_INIT ';'
+   | S_INIT ';' {
+         if (sys_init != NULL) {
+             printf( "Error detected on line %d.  Duplicate SYSINIT.\n", @1.last_line );
+             YYABORT;
+         }
+         /* Handle empty initial conditions, i.e., no restrictions. */
+         sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
+     }
    | S_INIT propformula ';' {
-         if (sys_init != NULL)
-             delete_tree( sys_init );
+         if (sys_init != NULL) {
+             printf( "Error detected on line %d.  Duplicate SYSINIT.\n", @1.last_line );
+             YYABORT;
+         }
          sys_init = gen_tree_ptr;
          gen_tree_ptr = NULL;
      }
-   | S_TRANS ';'
+   | S_TRANS ';' {
+         if (st_array_len == 0) {
+             st_array_len = 1;
+             sys_trans_array = malloc( sizeof(ptree_t *) );
+             if (sys_trans_array == NULL) {
+                 perror( "gr1c_parse.y, stransformula, malloc" );
+                 YYABORT;
+             }
+             *sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+         }
+     }
    | S_TRANS stransformula ';'
    | S_GOAL ';'
    | S_GOAL sgoalformula ';'

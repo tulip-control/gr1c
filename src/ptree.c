@@ -1,7 +1,7 @@
 /* ptree.c -- Definitions for signatures appearing in ptree.h.
  *
  *
- * SCL; Jan-Mar 2012, Feb 2013.
+ * SCL; 2012, 2013.
  */
 
 
@@ -209,6 +209,46 @@ int rmax_tree_value( ptree_t *head, char *name )
 	}
 
 	return maxval;
+}
+
+
+char *check_vars( ptree_t *head, ptree_t *var_list, ptree_t *nextvar_list )
+{
+	char *name;
+	ptree_t *node;
+	if (head == NULL)
+		return NULL;
+
+	if (head->type == PT_VARIABLE || head->type == PT_NEXT_VARIABLE) {
+		if (head->type == PT_VARIABLE) {
+			node = var_list;
+		} else {
+			node = nextvar_list;
+		}
+		while (node) {
+			if (!strcmp( head->name, node->name ))
+				break;
+			node = node->left;
+		}
+		if (node == NULL) {
+			name = malloc( (strlen( head->name )+2)*sizeof(char) );
+			if (name == NULL) {
+				perror( "check_vars, malloc" );
+				return NULL;
+			}
+			strcpy( name, head->name );
+			if (head->type == PT_NEXT_VARIABLE) {
+				*(name+strlen( head->name )) = '\'';
+				*(name+strlen( head->name )+1) = '\0';
+			}
+			return name;
+		}
+	}
+
+	if ((name = check_vars( head->left, var_list, nextvar_list )) != NULL
+		|| (name = check_vars( head->right, var_list, nextvar_list )) != NULL)
+		return name;
+	return NULL;
 }
 
 

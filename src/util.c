@@ -333,3 +333,84 @@ void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
 		setlogopt( prev_logoptions );
 	}
 }
+
+
+int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
+					 ptree_t *env_init, ptree_t *sys_init,
+					 ptree_t **env_trans_array, int et_array_len,
+					 ptree_t **sys_trans_array, int st_array_len,
+					 ptree_t **env_goals, int num_env_goals,
+					 ptree_t **sys_goals, int num_sys_goals )
+{
+	ptree_t *tmppt;
+	char *tmpstr;
+	int i;
+
+	if (evar_list != NULL) {
+		if (env_init == NULL) {
+			fprintf( stderr, "Syntax error: GR(1) specification is missing ENVINIT.\n" );
+			return -1;
+		} else if (et_array_len == 0) {
+			fprintf( stderr, "Syntax error: GR(1) specification is missing ENVTRANS.\n" );
+			return -1;
+		}
+	}
+	if (sys_init == NULL) {
+		fprintf( stderr, "Syntax error: GR(1) specification is missing SYSINIT.\n" );
+		return -1;
+	} else if (st_array_len == 0) {
+		fprintf( stderr, "Syntax error: GR(1) specification is missing SYSTRANS.\n" );
+		return -1;
+	}
+
+	tmppt = NULL;
+	if (svar_list == NULL) {
+		svar_list = evar_list;
+	} else {
+		tmppt = get_list_item( svar_list, -1 );
+		tmppt->left = evar_list;
+	}
+	if ((tmpstr = check_vars( env_init, svar_list, NULL )) != NULL) {
+		fprintf( stderr, "Error: ENVINIT in GR(1) spec contains unexpected variable: %s\n", tmpstr );
+		free( tmpstr );
+		return -1;
+	} else if ((tmpstr = check_vars( sys_init, svar_list, NULL )) != NULL) {
+		fprintf( stderr, "Error: SYSINIT in GR(1) spec contains unexpected variable: %s\n", tmpstr );
+		free( tmpstr );
+		return -1;
+	}
+	for (i = 0; i < et_array_len; i++) {
+		if ((tmpstr = check_vars( *(env_trans_array+i), svar_list, evar_list )) != NULL) {
+			fprintf( stderr, "Error: part %d of ENVTRANS in GR(1) spec contains unexpected variable: %s\n", i+1, tmpstr );
+			free( tmpstr );
+			return -1;
+		}
+	}
+	for (i = 0; i < st_array_len; i++) {
+		if ((tmpstr = check_vars( *(sys_trans_array+i), svar_list, svar_list )) != NULL) {
+			fprintf( stderr, "Error: part %d of SYSTRANS in GR(1) spec contains unexpected variable: %s\n", i+1, tmpstr );
+			free( tmpstr );
+			return -1;
+		}
+	}
+	for (i = 0; i < num_env_goals; i++) {
+		if ((tmpstr = check_vars( *(env_goals+i), svar_list, NULL )) != NULL) {
+			fprintf( stderr, "Error: part %d of ENVGOAL in GR(1) spec contains unexpected variable: %s\n", i+1, tmpstr );
+			free( tmpstr );
+			return -1;
+		}
+	}
+	for (i = 0; i < num_sys_goals; i++) {
+		if ((tmpstr = check_vars( *(sys_goals+i), svar_list, NULL )) != NULL) {
+			fprintf( stderr, "Error: part %d of SYSGOAL in GR(1) spec contains unexpected variable: %s\n", i+1, tmpstr );
+			free( tmpstr );
+			return -1;
+		}
+	}
+	if (tmppt != NULL) {
+		tmppt->left = NULL;
+		tmppt = NULL;
+	} else {
+		svar_list = NULL;
+	}
+}

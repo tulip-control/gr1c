@@ -11,7 +11,7 @@
  * applicable to the given type are ignored.
  *
  *
- * SCL; Jan, Feb 2012, Feb 2013.
+ * SCL; 2012, 2013.
  */
 
 
@@ -125,6 +125,12 @@ int rmin_tree_value( ptree_t *head, char *name );
 
 /** Same as max_tree_value() but restrict attention to specified variable. */
 int rmax_tree_value( ptree_t *head, char *name );
+
+/** Verify that every variable (resp., next variable) in given parse
+   tree is contained in var_list (resp., nextvar_list).  Return NULL
+   if successfully verified; else, return a pointer to a string of a
+   violating variable, which the caller is expected to free. */
+char *check_vars( ptree_t *head, ptree_t *var_list, ptree_t *nextvar_list );
 
 /** name is a variable with domain {0,...,maxval}, where we assume
    that maxval is at least 2.  Return a list of variables in order of

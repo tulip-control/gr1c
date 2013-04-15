@@ -27,25 +27,21 @@ extern void yyrestart( FILE *new_file );
 
 ptree_t *nonbool_var_list = NULL;
 
-ptree_t *evar_list = NULL;
-ptree_t *svar_list = NULL;
-ptree_t *env_init = NULL;
-ptree_t *sys_init = NULL;
+extern ptree_t *evar_list;
+extern ptree_t *svar_list;
+extern ptree_t *env_init;
+extern ptree_t *sys_init;
 ptree_t *env_trans = NULL;  /* Built from component parse trees in env_trans_array. */
 ptree_t *sys_trans = NULL;
-ptree_t **env_goals = NULL;
-ptree_t **sys_goals = NULL;
-int num_egoals = 0;
-int num_sgoals = 0;
+extern ptree_t **env_goals;
+extern ptree_t **sys_goals;
+extern int num_egoals;
+extern int num_sgoals;
 
-ptree_t **env_trans_array = NULL;
-ptree_t **sys_trans_array = NULL;
-int et_array_len = 0;
-int st_array_len = 0;
-
-/* General purpose tree pointer, which facilitates cleaner Yacc
-   parsing code. */
-ptree_t *gen_tree_ptr = NULL;
+extern ptree_t **env_trans_array;
+extern ptree_t **sys_trans_array;
+extern int et_array_len;
+extern int st_array_len;
 
 /**************************/
 
@@ -199,15 +195,18 @@ int main( int argc, char **argv )
 	}
 
 	/* Parse the specification. */
-	evar_list = NULL;
-	svar_list = NULL;
-	gen_tree_ptr = NULL;
 	if (verbose)
 		logprint( "Parsing input..." );
 	if (yyparse())
 		return -1;
 	if (verbose)
 		logprint( "Done." );
+
+	if (check_gr1c_form( evar_list, svar_list, env_init, sys_init,
+						 env_trans_array, et_array_len,
+						 sys_trans_array, st_array_len,
+						 env_goals, num_egoals, sys_goals, num_sgoals ) < 0)
+		return -1;
 
 	if (run_option == GR1C_MODE_SYNTAX)
 		return 0;
@@ -216,26 +215,22 @@ int main( int argc, char **argv )
 	if (input_index > 0)
 		fclose( fp );
 
-	/* Handle empty initial conditions, i.e., no restrictions. */
-	if (env_init == NULL)
-		env_init = init_ptree( PT_CONSTANT, NULL, 1 );
-	if (sys_init == NULL)
-		sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
-
 	/* Merge component safety (transition) formulas */
 	if (et_array_len > 1) {
 		env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
 	} else if (et_array_len == 1) {
 		env_trans = *env_trans_array;
-	} else {  /* No restrictions on transitions. */
-		env_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+	} else {
+		fprintf( stderr, "Syntax error: GR(1) specification is missing environment transition rules.\n" );
+		return -1;
 	}
 	if (st_array_len > 1) {
 		sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
 	} else if (st_array_len == 1) {
 		sys_trans = *sys_trans_array;
-	} else {  /* No restrictions on transitions. */
-		sys_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+	} else {
+		fprintf( stderr, "Syntax error: GR(1) specification is missing system transition rules.\n" );
+		return -1;
 	}
 
 	/* Number of variables, before expansion of those that are nonboolean */

@@ -26,25 +26,21 @@ extern int yyparse( void );
 /**************************
  **** Global variables ****/
 
-ptree_t *evar_list = NULL;
-ptree_t *svar_list = NULL;
-ptree_t *env_init = NULL;
-ptree_t *sys_init = NULL;
+extern ptree_t *evar_list;
+extern ptree_t *svar_list;
+extern ptree_t *env_init;
+extern ptree_t *sys_init;
 ptree_t *env_trans = NULL;  /* Built from component parse trees in env_trans_array. */
 ptree_t *sys_trans = NULL;
-ptree_t **env_goals = NULL;
-ptree_t **sys_goals = NULL;
-int num_egoals = 0;
-int num_sgoals = 0;
+extern ptree_t **env_goals;
+extern ptree_t **sys_goals;
+extern int num_egoals;
+extern int num_sgoals;
 
-ptree_t **env_trans_array = NULL;
-ptree_t **sys_trans_array = NULL;
-int et_array_len = 0;
-int st_array_len = 0;
-
-/* General purpose tree pointer, which facilitates cleaner Yacc
-   parsing code. */
-ptree_t *gen_tree_ptr = NULL;
+extern ptree_t **env_trans_array;
+extern ptree_t **sys_trans_array;
+extern int et_array_len;
+extern int st_array_len;
 
 /**************************/
 
@@ -255,9 +251,6 @@ int main( int argc, char **argv )
 	}
 
 	/* Parse the specification. */
-	evar_list = NULL;
-	svar_list = NULL;
-	gen_tree_ptr = NULL;
 	if (verbose)
 		logprint( "Parsing input..." );
 	if (yyparse())
