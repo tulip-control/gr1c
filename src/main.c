@@ -339,7 +339,7 @@ int main( int argc, char **argv )
 	if (verbose > 1)
 		/* Dump the spec to show results of conversion (if any). */
 		print_GR1_spec( evar_list, svar_list, env_init, sys_init, env_trans, sys_trans,
-					   env_goals, num_egoals, sys_goals, num_sgoals, NULL );
+						env_goals, num_egoals, sys_goals, num_sgoals, NULL );
 
 
 	num_env = tree_size( evar_list );
