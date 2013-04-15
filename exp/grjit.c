@@ -265,24 +265,36 @@ int main( int argc, char **argv )
 	if (input_index > 0)
 		fclose( fp );
 
-	if (env_init == NULL)
-		env_init = init_ptree( PT_CONSTANT, NULL, 1 );
-	if (sys_init == NULL)
-		sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
+	/* Treat deterministic problem in which ETRANS or EINIT is omitted. */
+	if (evar_list == NULL) {
+		if (et_array_len == 0) {
+			et_array_len = 1;
+			env_trans_array = malloc( sizeof(ptree_t *) );
+			if (env_trans_array == NULL) {
+				perror( "gr1c, malloc" );
+				return -1;
+			}
+			*env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+		}
+		if (env_init == NULL)
+			env_init = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
 
 	if (et_array_len > 1) {
 		env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
 	} else if (et_array_len == 1) {
 		env_trans = *env_trans_array;
-	} else {  /* No restrictions on transitions. */
-		env_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+	} else {
+		fprintf( stderr, "Syntax error: GR(1) specification is missing environment transition rules.\n" );
+		return -1;
 	}
 	if (st_array_len > 1) {
 		sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
 	} else if (st_array_len == 1) {
 		sys_trans = *sys_trans_array;
-	} else {  /* No restrictions on transitions. */
-		sys_trans = init_ptree( PT_CONSTANT, NULL, 1 );
+	} else {
+		fprintf( stderr, "Syntax error: GR(1) specification is missing system transition rules.\n" );
+		return -1;
 	}
 
 	/* Number of variables, before expansion of those that are nonboolean */

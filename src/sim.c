@@ -27,22 +27,22 @@ extern int num_egoals;
 extern int num_sgoals;
 
 
-anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, char *metric_vars, int horizon, bool *init_state, int num_it, unsigned char verbose )
+anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, char *metric_vars, int horizon, vartype *init_state, int num_it, unsigned char verbose )
 {
 	int *offw, num_metric_vars;
 	anode_t *play;
 	int num_env, num_sys;
-	bool *candidate_state, *next_state;
+	vartype *candidate_state, *next_state;
 	int current_goal = 0;
 	int current_it = 0, i, j;
-	bool **env_moves;
+	vartype **env_moves;
 	int emoves_len, emove_index;
 	DdNode *strans_into_W;
 	double Max, Min, next_min;
 
 	anode_t *node, *prev_node, **hstacks = NULL;  /* Number of stacks is equal to the horizon. */
 	int hdepth;
-	bool *fnext_state, *finit_state;
+	vartype *fnext_state, *finit_state;
 
 	anode_t **MEM = NULL;
 	int MEM_len = 0, MEM_index;
@@ -89,10 +89,10 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans,
 	for (i = 0; i < horizon; i++)
 		*(hstacks+i) = NULL;
 
-	next_state = malloc( (num_env+num_sys)*sizeof(bool) );
-	candidate_state = malloc( (num_env+num_sys)*sizeof(bool) );
-	finit_state = malloc( (num_env+num_sys)*sizeof(bool) );
-	fnext_state = malloc( (num_env+num_sys)*sizeof(bool) );
+	next_state = malloc( (num_env+num_sys)*sizeof(vartype) );
+	candidate_state = malloc( (num_env+num_sys)*sizeof(vartype) );
+	finit_state = malloc( (num_env+num_sys)*sizeof(vartype) );
+	fnext_state = malloc( (num_env+num_sys)*sizeof(vartype) );
 	if (next_state == NULL || candidate_state == NULL || finit_state == NULL || fnext_state == NULL) {
 		perror( "sim_rhc, malloc" );
 		return NULL;

@@ -205,6 +205,21 @@ int main( int argc, char **argv )
 	if (input_index > 0)
 		fclose( fp );
 
+	/* Treat deterministic problem in which ETRANS or EINIT is omitted. */
+	if (evar_list == NULL) {
+		if (et_array_len == 0) {
+			et_array_len = 1;
+			env_trans_array = malloc( sizeof(ptree_t *) );
+			if (env_trans_array == NULL) {
+				perror( "gr1c, malloc" );
+				return -1;
+			}
+			*env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+		}
+		if (env_init == NULL)
+			env_init = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
+
 	/* Merge component safety (transition) formulas */
 	if (et_array_len > 1) {
 		env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );

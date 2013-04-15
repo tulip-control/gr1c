@@ -212,7 +212,7 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 			if (verbose > 1)
 				logprint( "Done." );
 			if ((*sys_init) == NULL || (*env_init) == NULL || (*sys_trans) == NULL || (*env_trans) == NULL) {
-				fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
+				fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent.\n" );
 				return -1;
 			}
 			for (i = 0; i < num_env_goals; i++) {
@@ -220,7 +220,7 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 					logprint( "Expanding nonbool variable %s in ENVGOAL %d...", tmppt->name, i );
 				*((*env_goals)+i) = expand_to_bool( *((*env_goals)+i), tmppt->name, tmppt->value );
 				if (*((*env_goals)+i) == NULL) {
-					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
+					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent.\n" );
 					return -1;
 				}
 				if (verbose > 1)
@@ -231,7 +231,7 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 					logprint( "Expanding nonbool variable %s in SYSGOAL %d...", tmppt->name, i );
 				*((*sys_goals)+i) = expand_to_bool( *((*sys_goals)+i), tmppt->name, tmppt->value );
 				if (*((*sys_goals)+i) == NULL) {
-					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent." );
+					fprintf( stderr, "Failed to convert non-Boolean variable to its Boolean equivalent.\n" );
 					return -1;
 				}
 				if (verbose > 1)
@@ -413,4 +413,6 @@ int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
 	} else {
 		svar_list = NULL;
 	}
+
+	return 0;
 }
