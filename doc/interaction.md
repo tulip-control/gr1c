@@ -10,7 +10,7 @@ should be given as space separated values.
 Example session
 ---------------
 
-Initialized with the specification "trivial_partwin.spc",
+Initialized with the specification `examples/trivial_partwin.spc`,
 
     # For example, regarding states as bitvectors, 1011 is not in winning
     # set, while 1010 is. (Ordering is x ze y zs.)
