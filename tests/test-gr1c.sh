@@ -65,7 +65,7 @@ done
 ################################################################
 # Reachability game synthesis regression tests
 
-REFSPECS="reach_2var.spc reach_2var_mustblock.spc"
+REFSPECS="reach_2var.spc reach_2var_mustblock.spc reach_free_counter.spc reach_free_counter_mustblock.spc"
 
 if [[ $VERBOSE -eq 1 ]]; then
     echo "\nPerforming regression tests for reachability games..."

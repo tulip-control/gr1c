@@ -286,7 +286,7 @@ ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
 	int i;
 
 	/* Handle pointless calls */
-	if (head == NULL || !((head->type == PT_LT) || (head->type == PT_GT) || (head->type == PT_LE) || (head->type == PT_GE) || (head->type == PT_NOTEQ)) || !((!strcmp( head->left->name, name ) && (head->left->type == PT_VARIABLE || head->left->type == PT_NEXT_VARIABLE) && head->right->type == PT_CONSTANT) || (!strcmp( head->right->name, name ) && (head->right->type == PT_VARIABLE || head->right->type == PT_NEXT_VARIABLE) && head->left->type == PT_CONSTANT)))
+	if (head == NULL || !((head->type == PT_LT) || (head->type == PT_GT) || (head->type == PT_LE) || (head->type == PT_GE) || (head->type == PT_NOTEQ)) || !(((head->left->type == PT_VARIABLE || head->left->type == PT_NEXT_VARIABLE) && head->right->type == PT_CONSTANT && !strcmp( head->left->name, name )) || ((head->right->type == PT_VARIABLE || head->right->type == PT_NEXT_VARIABLE) && head->left->type == PT_CONSTANT && !strcmp( head->right->name, name ))))
 		return head;
 
 	op_type = head->type;

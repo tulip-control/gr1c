@@ -13,6 +13,7 @@
 #include "ptree.h"
 #include "automaton.h"
 #include "patching.h"
+#include "gr1c_util.h"
 extern int yyparse( void );
 
 
@@ -81,6 +82,9 @@ int main( int argc, char **argv )
 	DdManager *manager;
 	anode_t *strategy = NULL;
 	int num_env, num_sys;
+	int original_num_env, original_num_sys;
+	ptree_t *nonbool_var_list = NULL;
+
 	DdNode *Entry, *Exit;
 	DdNode *sinit, *einit, *etrans, *strans, **egoals;
 
@@ -238,6 +242,11 @@ int main( int argc, char **argv )
 		return -1;
 	}
 
+	/* Number of variables, before expansion of those that are nonboolean */
+	original_num_env = tree_size( evar_list );
+	original_num_sys = tree_size( svar_list );
+
+
 	if (ptdump_flag) {
 		tree_dot_dump( env_init, "env_init_ptree.dot" );
 		tree_dot_dump( sys_init, "sys_init_ptree.dot" );
@@ -255,16 +264,24 @@ int main( int argc, char **argv )
 			tree_dot_dump( *sys_goals, "sys_goal_ptree.dot" );
 
 		var_index = 0;
-		printf( "Environment variables (indices): " );
+		printf( "Environment variables (indices; domains): " );
 		if (evar_list == NULL) {
 			printf( "(none)" );
 		} else {
 			tmppt = evar_list;
 			while (tmppt) {
-				if (tmppt->left == NULL) {
-					printf( "%s (%d)", tmppt->name, var_index );
+				if (tmppt->value == 0) {  /* Boolean */
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; bool)", tmppt->name, var_index );
+					} else {
+						printf( "%s (%d; bool), ", tmppt->name, var_index);
+					}
 				} else {
-					printf( "%s (%d), ", tmppt->name, var_index );
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+					} else {
+						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+					}
 				}
 				tmppt = tmppt->left;
 				var_index++;
@@ -272,16 +289,24 @@ int main( int argc, char **argv )
 		}
 		printf( "\n\n" );
 
-		printf( "System variables (indices): " );
+		printf( "System variables (indices; domains): " );
 		if (svar_list == NULL) {
 			printf( "(none)" );
 		} else {
 			tmppt = svar_list;
 			while (tmppt) {
-				if (tmppt->left == NULL) {
-					printf( "%s (%d)", tmppt->name, var_index );
+				if (tmppt->value == 0) {  /* Boolean */
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; bool)", tmppt->name, var_index );
+					} else {
+						printf( "%s (%d; bool), ", tmppt->name, var_index );
+					}
 				} else {
-					printf( "%s (%d), ", tmppt->name, var_index );
+					if (tmppt->left == NULL) {
+						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+					} else {
+						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+					}
 				}
 				tmppt = tmppt->left;
 				var_index++;
@@ -327,6 +352,19 @@ int main( int argc, char **argv )
 		}
 		printf( "\n" );
 	}
+
+	if (expand_nonbool_GR1( evar_list, svar_list, &env_init, &sys_init,
+							&env_trans, &sys_trans,
+							&env_goals, num_egoals, &sys_goals, num_sgoals,
+							verbose ) < 0)
+		return -1;
+	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list, verbose );
+
+	if (verbose > 1)
+		/* Dump the spec to show results of conversion (if any). */
+		print_GR1_spec( evar_list, svar_list, env_init, sys_init, env_trans, sys_trans,
+						env_goals, num_egoals, sys_goals, num_sgoals, NULL );
+
 
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
@@ -424,6 +462,16 @@ int main( int argc, char **argv )
 		return -1;
 	} else {
 
+		/* De-expand nonboolean variables */
+		tmppt = nonbool_var_list;
+		while (tmppt) {
+			aut_compact_nonbool( strategy, evar_list, svar_list, tmppt->name, tmppt->value );
+			tmppt = tmppt->left;
+		}
+
+		num_env = tree_size( evar_list );
+		num_sys = tree_size( svar_list );
+
 		/* Open output file if specified; else point to stdout. */
 		if (output_file_index >= 0) {
 			fp = fopen( argv[output_file_index], "w" );
@@ -438,8 +486,13 @@ int main( int argc, char **argv )
 		if (format_option == OUTPUT_FORMAT_TEXT) {
 			list_aut_dump( strategy, num_env+num_sys, fp );
 		} else if (format_option == OUTPUT_FORMAT_DOT) {
-			dot_aut_dump( strategy, evar_list, svar_list,
-						  DOT_AUT_BINARY | DOT_AUT_ATTRIB, fp );
+			if (nonbool_var_list != NULL) {
+				dot_aut_dump( strategy, evar_list, svar_list,
+							  DOT_AUT_ATTRIB, fp );
+			} else {
+				dot_aut_dump( strategy, evar_list, svar_list,
+							  DOT_AUT_BINARY | DOT_AUT_ATTRIB, fp );
+			}
 		} else if (format_option == OUTPUT_FORMAT_AUT) {
 			aut_aut_dump( strategy, num_env+num_sys, fp );
 		} else if (format_option == OUTPUT_FORMAT_TULIP0) {
