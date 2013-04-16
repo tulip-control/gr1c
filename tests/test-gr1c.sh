@@ -13,7 +13,7 @@ PREFACE="============================================================\nERROR:"
 ################################################################
 # Test realizability
 
-REFSPECS="gridworld.spc gridworld_env.spc arbiter4.spc trivial_2var.spc free_counter.spc"
+REFSPECS="gridworld_bool.spc gridworld_env.spc arbiter4.spc trivial_2var.spc free_counter.spc"
 UNREALIZABLE_REFSPECS="trivial_un.spc"
 
 if [[ $VERBOSE -eq 1 ]]; then
@@ -84,7 +84,7 @@ done
 ################################################################
 # Test interaction;  N.B., quite fragile depending on interface
 
-REFSPECS="trivial_partwin gridworld"
+REFSPECS="trivial_partwin gridworld_bool"
 
 if [[ $VERBOSE -eq 1 ]]; then
     echo "\nPerforming regression tests for interaction..."
