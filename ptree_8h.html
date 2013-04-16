@@ -80,6 +80,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li>  </ul>
+</div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
@@ -132,6 +136,24 @@ Macros</h2></td></tr>
 <tr class="memitem:gac33d88561c7a1bea76d5e370d78c3992"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gac33d88561c7a1bea76d5e370d78c3992"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>PT_EQUALS</b>&#160;&#160;&#160;8</td></tr>
 <tr class="separator:gac33d88561c7a1bea76d5e370d78c3992"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga03faab32bb7f386c5fbf4c3d1653c945"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga03faab32bb7f386c5fbf4c3d1653c945"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>PT_EQUIV</b>&#160;&#160;&#160;9</td></tr>
+<tr class="separator:ga03faab32bb7f386c5fbf4c3d1653c945"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gace6718bd23170139c7ace1b4615a963c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gace6718bd23170139c7ace1b4615a963c"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>PT_LT</b>&#160;&#160;&#160;10  /* less than, i.e., &quot;&lt;&quot; */</td></tr>
+<tr class="separator:gace6718bd23170139c7ace1b4615a963c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga758711b493bd603eec78bfbd794cf2a0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga758711b493bd603eec78bfbd794cf2a0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>PT_GT</b>&#160;&#160;&#160;11  /* greater than, i.e., &quot;&gt;&quot; */</td></tr>
+<tr class="separator:ga758711b493bd603eec78bfbd794cf2a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7e7b21e52b2a45990fcc517928c28bfb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga7e7b21e52b2a45990fcc517928c28bfb"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>PT_LE</b>&#160;&#160;&#160;12  /* less than or equal to, i.e., &quot;&lt;=&quot; */</td></tr>
+<tr class="separator:ga7e7b21e52b2a45990fcc517928c28bfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga58c3985c32dd5efc187e060950959f54"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga58c3985c32dd5efc187e060950959f54"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>PT_GE</b>&#160;&#160;&#160;13  /* greater than or equal to, i.e., &quot;&gt;=&quot; */</td></tr>
+<tr class="separator:ga58c3985c32dd5efc187e060950959f54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga54f83ea7d9bd4fa6956eba2516005291"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga54f83ea7d9bd4fa6956eba2516005291"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>PT_NOTEQ</b>&#160;&#160;&#160;14  /* not equals */</td></tr>
+<tr class="separator:ga54f83ea7d9bd4fa6956eba2516005291"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -160,6 +182,22 @@ Functions</h2></td></tr>
 <tr class="separator:a8632c58da19ad428dabd36e8c5325c1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a09e85d3f26e47440f53bf401b2625a83"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#a09e85d3f26e47440f53bf401b2625a83">delete_tree</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head)</td></tr>
 <tr class="separator:a09e85d3f26e47440f53bf401b2625a83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed4b88da22f7aa227961eb8052b0b358"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#aed4b88da22f7aa227961eb8052b0b358">min_tree_value</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head)</td></tr>
+<tr class="separator:aed4b88da22f7aa227961eb8052b0b358"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1cc2f16adc9a33681af5e4c879482c4c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#a1cc2f16adc9a33681af5e4c879482c4c">max_tree_value</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head)</td></tr>
+<tr class="separator:a1cc2f16adc9a33681af5e4c879482c4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa18e9cef7171d4560c86bfbdeb7aa38f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#aa18e9cef7171d4560c86bfbdeb7aa38f">rmin_tree_value</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head, char *name)</td></tr>
+<tr class="separator:aa18e9cef7171d4560c86bfbdeb7aa38f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91cc0b8b8aa96dcf8b31e9dbf62fb95c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#a91cc0b8b8aa96dcf8b31e9dbf62fb95c">rmax_tree_value</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head, char *name)</td></tr>
+<tr class="separator:a91cc0b8b8aa96dcf8b31e9dbf62fb95c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accaba06e25428c972a57bca6785b1922"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#accaba06e25428c972a57bca6785b1922">check_vars</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head, <a class="el" href="structptree__t.html">ptree_t</a> *var_list, <a class="el" href="structptree__t.html">ptree_t</a> *nextvar_list)</td></tr>
+<tr class="separator:accaba06e25428c972a57bca6785b1922"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7f0cbc31bd000f3cc7d54f9025d308f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#ae7f0cbc31bd000f3cc7d54f9025d308f">var_to_bool</a> (char *name, int maxval)</td></tr>
+<tr class="separator:ae7f0cbc31bd000f3cc7d54f9025d308f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7b9a8f9772d6d48a5fb69c7418f6906"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#af7b9a8f9772d6d48a5fb69c7418f6906">expand_to_bool</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head, char *name, int maxval)</td></tr>
+<tr class="separator:af7b9a8f9772d6d48a5fb69c7418f6906"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53bfea2d2ef5f7ffbfd99c9ba1e6dbf3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#a53bfea2d2ef5f7ffbfd99c9ba1e6dbf3">unreach_expanded_bool</a> (char *name, int min, int max)</td></tr>
+<tr class="separator:a53bfea2d2ef5f7ffbfd99c9ba1e6dbf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91871715a40802631f35fcc755240e49"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#a91871715a40802631f35fcc755240e49">pusht_terminal</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head, int type, char *name, int value)</td></tr>
 <tr class="separator:a91871715a40802631f35fcc755240e49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43ee9c6d601fdfcb42181e24f1a59505"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#a43ee9c6d601fdfcb42181e24f1a59505">pusht_operator</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head, int type)</td></tr>
@@ -177,7 +215,7 @@ Functions</h2></td></tr>
 <div class="textblock"><p>Routines for working with a GR(1) formula parse tree. </p>
 <p>To avoid defining another basic data structure, we may effectively obtain a linked list by making a binary tree with no right children (or more generally, a tree in which each node has at most one child). Functions intended specifically to support this use case include "list" in their names.</p>
 <p>For functions concerning tree nodes, any arguments that are not applicable to the given type are ignored.</p>
-<p>SCL; Jan, Feb 2012. </p>
+<p>SCL; 2012, 2013. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="afec3ab9b5f6928970bf419384d05a7da"></a>
 <div class="memitem">
@@ -218,6 +256,39 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="accaba06e25428c972a57bca6785b1922"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* check_vars </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td>
+          <td class="paramname"><em>head</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td>
+          <td class="paramname"><em>var_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td>
+          <td class="paramname"><em>nextvar_list</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Verify that every variable (resp., next variable) in given parse tree is contained in var_list (resp., nextvar_list). Return NULL if successfully verified; else, return a pointer to a string of a violating variable, which the caller is expected to free. </p>
+
+</div>
+</div>
 <a class="anchor" id="a09e85d3f26e47440f53bf401b2625a83"></a>
 <div class="memitem">
 <div class="memproto">
@@ -232,6 +303,40 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Delete tree with given root node. </p>
+
+</div>
+</div>
+<a class="anchor" id="af7b9a8f9772d6d48a5fb69c7418f6906"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structptree__t.html">ptree_t</a>* expand_to_bool </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td>
+          <td class="paramname"><em>head</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>maxval</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Expand all occurrences of name (a variable) in formula described by the tree head, replacing by Boolean variables as would be found by <a class="el" href="ptree_8h.html#ae7f0cbc31bd000f3cc7d54f9025d308f">var_to_bool()</a>. Changes are made in-place.</p>
+<p>Return the (possibly new) head pointer, or NULL if error. </p>
 
 </div>
 </div>
@@ -367,6 +472,24 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a1cc2f16adc9a33681af5e4c879482c4c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int max_tree_value </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td>
+          <td class="paramname"><em>head</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Return the maximum value among PT_CONSTANT nodes in given tree.</p>
+<p>Also see documentation for <a class="el" href="ptree_8h.html#aed4b88da22f7aa227961eb8052b0b358">min_tree_value()</a>. </p>
+
+</div>
+</div>
 <a class="anchor" id="a13bfe48b3b350e90785d382a7ea2918d"></a>
 <div class="memitem">
 <div class="memproto">
@@ -397,6 +520,25 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Create a new tree in which all of the given trees are included by the specified binary operator. len is the length of heads. Return pointer to the new tree root, or NULL on error. N.B., the given trees are <em>pointed to</em> by the new tree, i.e, their roots become nodes in the new tree, and therefore you generally should <em>not</em> try to free the originals (but can discard the old heads pointers). </p>
+
+</div>
+</div>
+<a class="anchor" id="aed4b88da22f7aa227961eb8052b0b358"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int min_tree_value </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td>
+          <td class="paramname"><em>head</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Return the minimum value among PT_CONSTANT nodes in given tree.</p>
+<p>N.B., -9999 is used as a special indicator value to allow <a class="el" href="ptree_8h.html#aed4b88da22f7aa227961eb8052b0b358">min_tree_value()</a> to work on the tree recursively.</p>
+<p>If head is NULL or there are not any PT_CONSTANT nodes, then the output is undefined. </p>
 
 </div>
 </div>
@@ -511,7 +653,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Push unary binary operator into top of tree. (Behavior is like reverse Polish notation.) Return the new head. </p>
+<p>Push unary or binary operator into top of tree. (Behavior is like reverse Polish notation.) Return the new head. </p>
 
 </div>
 </div>
@@ -582,6 +724,60 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a91cc0b8b8aa96dcf8b31e9dbf62fb95c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int rmax_tree_value </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td>
+          <td class="paramname"><em>head</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Same as <a class="el" href="ptree_8h.html#a1cc2f16adc9a33681af5e4c879482c4c">max_tree_value()</a> but restrict attention to specified variable. </p>
+
+</div>
+</div>
+<a class="anchor" id="aa18e9cef7171d4560c86bfbdeb7aa38f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int rmin_tree_value </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td>
+          <td class="paramname"><em>head</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Same as <a class="el" href="ptree_8h.html#aed4b88da22f7aa227961eb8052b0b358">min_tree_value()</a> but restrict attention to specified variable. </p>
+
+</div>
+</div>
 <a class="anchor" id="a8632c58da19ad428dabd36e8c5325c1e"></a>
 <div class="memitem">
 <div class="memproto">
@@ -626,10 +822,71 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a53bfea2d2ef5f7ffbfd99c9ba1e6dbf3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structptree__t.html">ptree_t</a>* unreach_expanded_bool </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>min</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>max</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Create tree describing unreachable values of the primed form of a nonboolean-expanded-to-boolean variable. E.g., this can be used to handle "don't care" values that appear as a side-effect of conversion to a bitvector. </p>
+
+</div>
+</div>
+<a class="anchor" id="ae7f0cbc31bd000f3cc7d54f9025d308f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structptree__t.html">ptree_t</a>* var_to_bool </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>maxval</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>name is a variable with domain {0,...,maxval}, where we assume that maxval is at least 2. Return a list of variables in order of increasing bit index, e.g., invoking with a variable named "foo" and maxval=2 causes a list to be returned of the form foo0,foo1.</p>
+<p>Return NULL on error. </p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jan 29 2013 06:34:25 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 03:18:15 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

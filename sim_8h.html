@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.3.1"/>
-<title>gr1c: common.h File Reference</title>
+<title>gr1c: sim.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -87,50 +87,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
-<a href="#typedef-members">Typedefs</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">common.h File Reference</div>  </div>
+<div class="title">sim.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Project-wide definitions and macros.  
+<p>Simulation support.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;util.h&quot;</code><br/>
-<code>#include &quot;cudd.h&quot;</code><br/>
+<div class="textblock"><code>#include &quot;<a class="el" href="common_8h.html">common.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="automaton_8h.html">automaton.h</a>&quot;</code><br/>
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a5138eaeea2bb13987368ad01004a7576"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5138eaeea2bb13987368ad01004a7576"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>GR1C_VERSION</b>&#160;&#160;&#160;&quot;0.5.13&quot;</td></tr>
-<tr class="separator:a5138eaeea2bb13987368ad01004a7576"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a524ff03555bcaa575aa9b42a97b424be"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a524ff03555bcaa575aa9b42a97b424be"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>GR1C_COPYRIGHT</b>&#160;&#160;&#160;&quot;Copyright (c) 2012, 2013 by Scott C. Livingston,\nCalifornia Institute of Technology\n\nThis is free, open source software, released under a BSD license\nand without warranty.&quot;</td></tr>
-<tr class="separator:a524ff03555bcaa575aa9b42a97b424be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a67c0207b8435eeb0f346fcf181ae0f2c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a67c0207b8435eeb0f346fcf181ae0f2c"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>GR1C_INTERACTIVE_PROMPT</b>&#160;&#160;&#160;&quot;&gt;&gt;&gt; &quot;</td></tr>
-<tr class="separator:a67c0207b8435eeb0f346fcf181ae0f2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:add3ca9eefe3b5b754426f51d3043e579"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="add3ca9eefe3b5b754426f51d3043e579"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>True</b>&#160;&#160;&#160;1</td></tr>
-<tr class="separator:add3ca9eefe3b5b754426f51d3043e579"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a306ebd41c0cd1303b1372c6153f0caf8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a306ebd41c0cd1303b1372c6153f0caf8"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>False</b>&#160;&#160;&#160;0</td></tr>
-<tr class="separator:a306ebd41c0cd1303b1372c6153f0caf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:a441fb1782ec2f7b59ab0b7451366aae0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a441fb1782ec2f7b59ab0b7451366aae0"></a>
-typedef int&#160;</td><td class="memItemRight" valign="bottom"><b>vartype</b></td></tr>
-<tr class="separator:a441fb1782ec2f7b59ab0b7451366aae0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5c9d4ba3dc37783a528b0925dc981a0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad5c9d4ba3dc37783a528b0925dc981a0"></a>
-typedef char&#160;</td><td class="memItemRight" valign="bottom"><b>bool</b></td></tr>
-<tr class="separator:ad5c9d4ba3dc37783a528b0925dc981a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0c8186d9b9b7880309c27230bbb5e69d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0c8186d9b9b7880309c27230bbb5e69d"></a>
-typedef unsigned char&#160;</td><td class="memItemRight" valign="bottom"><b>byte</b></td></tr>
-<tr class="separator:a0c8186d9b9b7880309c27230bbb5e69d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a41315bd0b6a1d7e83d48bcb8c4871aa7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a41315bd0b6a1d7e83d48bcb8c4871aa7"></a>
+<a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>sim_rhc</b> (DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, char *metric_vars, int horizon, vartype *init_state, int num_it, unsigned char verbose)</td></tr>
+<tr class="separator:a41315bd0b6a1d7e83d48bcb8c4871aa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Project-wide definitions and macros. </p>
+<div class="textblock"><p>Simulation support. </p>
 <p>SCL; 2012, 2013. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->

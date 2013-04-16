@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.3.1"/>
-<title>gr1c: patching.h File Reference</title>
+<title>gr1c: solve_metric.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -89,35 +89,37 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">patching.h File Reference</div>  </div>
+<div class="title">solve_metric.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Implementation of patching and incremental synthesis algorithms.  
+<p>Synthesis routines that use a distance between states.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="common_8h.html">common.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="automaton_8h.html">automaton.h</a>&quot;</code><br/>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ad483c1236e8fe914545ce6bc8180f25c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="patching_8h.html#ad483c1236e8fe914545ce6bc8180f25c">patch_localfixpoint</a> (DdManager *manager, FILE *strategy_fp, FILE *change_fp, unsigned char verbose)</td></tr>
-<tr class="separator:ad483c1236e8fe914545ce6bc8180f25c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10c6a1f506834a2a328afe6a287595ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="patching_8h.html#a10c6a1f506834a2a328afe6a287595ad">synthesize_reachgame</a> (DdManager *manager, int num_env, int num_sys, <a class="el" href="structanode__t.html">anode_t</a> **Entry, int Entry_len, <a class="el" href="structanode__t.html">anode_t</a> **Exit, int Exit_len, DdNode *etrans, DdNode *strans, DdNode **egoals, DdNode *N_BDD, unsigned char verbose)</td></tr>
-<tr class="separator:a10c6a1f506834a2a328afe6a287595ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a64b69505e9f5695d6e2439d98c2f8836"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a64b69505e9f5695d6e2439d98c2f8836"></a>
-<a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>add_metric_sysgoal</b> (DdManager *manager, FILE *strategy_fp, int original_num_env, int original_num_sys, int *offw, int num_metric_vars, <a class="el" href="structptree__t.html">ptree_t</a> *new_sysgoal, unsigned char verbose)</td></tr>
-<tr class="separator:a64b69505e9f5695d6e2439d98c2f8836"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24fe4d8bb3dff6575c3e24320e3fb6dd"><td class="memItemLeft" align="right" valign="top">int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__metric_8h.html#a24fe4d8bb3dff6575c3e24320e3fb6dd">get_offsets</a> (char *metric_vars, int *num_vars)</td></tr>
+<tr class="separator:a24fe4d8bb3dff6575c3e24320e3fb6dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa73664b7e77b41756fac964659a15cd8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__metric_8h.html#aa73664b7e77b41756fac964659a15cd8">bounds_DDset</a> (DdManager *manager, DdNode *T, DdNode *G, int *offw, int num_metric_vars, double *Min, double *Max, unsigned char verbose)</td></tr>
+<tr class="separator:aa73664b7e77b41756fac964659a15cd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29ca3fc74e19c5cb6676c252498b410a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a29ca3fc74e19c5cb6676c252498b410a"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>bounds_state</b> (DdManager *manager, DdNode *T, vartype *ref_state, int *offw, int num_metric_vars, double *Min, double *Max, unsigned char verbose)</td></tr>
+<tr class="separator:a29ca3fc74e19c5cb6676c252498b410a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82962f000c75dfbc9f773870d791f68d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a82962f000c75dfbc9f773870d791f68d"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>compute_horizon</b> (DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals, char *metric_vars, unsigned char verbose)</td></tr>
+<tr class="separator:a82962f000c75dfbc9f773870d791f68d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Implementation of patching and incremental synthesis algorithms. </p>
-<p>SCL; 2012, 2013. </p>
+<div class="textblock"><p>Synthesis routines that use a distance between states. </p>
+<p>SCL; 2013. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ad483c1236e8fe914545ce6bc8180f25c"></a>
+<a class="anchor" id="aa73664b7e77b41756fac964659a15cd8"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structanode__t.html">anode_t</a>* patch_localfixpoint </td>
+          <td class="memname">int bounds_DDset </td>
           <td>(</td>
           <td class="paramtype">DdManager *&#160;</td>
           <td class="paramname"><em>manager</em>, </td>
@@ -125,14 +127,38 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">FILE *&#160;</td>
-          <td class="paramname"><em>strategy_fp</em>, </td>
+          <td class="paramtype">DdNode *&#160;</td>
+          <td class="paramname"><em>T</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">FILE *&#160;</td>
-          <td class="paramname"><em>change_fp</em>, </td>
+          <td class="paramtype">DdNode *&#160;</td>
+          <td class="paramname"><em>G</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>offw</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num_metric_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>Min</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>Max</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -147,89 +173,25 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Implementation of algorithm presented in</p>
-<p>S.C. Livingston, P. Prabhakar, A.B. Jose, R.M. Murray (2012). Patching task-level robot controllers based on a local mu-calculus formula. Caltech CDS technical report. <a href="http://resolver.caltech.edu/CaltechCDSTR:2012.003">http://resolver.caltech.edu/CaltechCDSTR:2012.003</a></p>
-<p>Read given strategy in "gr1c automaton" format from stream strategy_fp, using edge set changes to the game graph listed in stream change_fp. See <a href="md_formats.html">external_notes</a> for format details. If strategy_fp = NULL, then read from stdin.</p>
-<p>Return the head pointer of the patched strategy, or NULL if error.</p>
-<p>As usual, this function will not try to close given streams when finished. </p>
+<p>G is the goal set against which to measure distance. Result is written into given variables Min and Max; return 0 on success, -1 error. </p>
 
 </div>
 </div>
-<a class="anchor" id="a10c6a1f506834a2a328afe6a287595ad"></a>
+<a class="anchor" id="a24fe4d8bb3dff6575c3e24320e3fb6dd"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structanode__t.html">anode_t</a>* synthesize_reachgame </td>
+          <td class="memname">int* get_offsets </td>
           <td>(</td>
-          <td class="paramtype">DdManager *&#160;</td>
-          <td class="paramname"><em>manager</em>, </td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>metric_vars</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>num_env</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>num_sys</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structanode__t.html">anode_t</a> **&#160;</td>
-          <td class="paramname"><em>Entry</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>Entry_len</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structanode__t.html">anode_t</a> **&#160;</td>
-          <td class="paramname"><em>Exit</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>Exit_len</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">DdNode *&#160;</td>
-          <td class="paramname"><em>etrans</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">DdNode *&#160;</td>
-          <td class="paramname"><em>strans</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">DdNode **&#160;</td>
-          <td class="paramname"><em>egoals</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">DdNode *&#160;</td>
-          <td class="paramname"><em>N_BDD</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned char&#160;</td>
-          <td class="paramname"><em>verbose</em>&#160;</td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>num_vars</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -238,7 +200,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Solve a reachability game symbolically, by blocking an environment goal or reaching Exit from Entry. States are restricted to the set N (given as a characteristic function named N_BDD). </p>
+<p>Return an array of length 2n, where n is the number of entries in metric_vars. The values at indices 2i and 2i+1 are the offset and width of the i-th variable's binary representation. Return NULL if error. metric_vars is a space-separated list of variables to use in computing distance. The caller is expected to free the array.</p>
+<p>This function assumes that evar_list and svar_list have not been linked. </p>
 
 </div>
 </div>

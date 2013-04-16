@@ -80,6 +80,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li>  </ul>
+</div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
@@ -113,6 +117,8 @@ FILE *&#160;</td><td class="memItemRight" valign="bottom"><b>getlogstream</b> ()
 <tr class="separator:af63fadbaba296ec6e9fd6026d804a175"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4aff371edb15ed7af2d24a5c1d1dbeaa"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logging_8h.html#a4aff371edb15ed7af2d24a5c1d1dbeaa">setlogopt</a> (int options)</td></tr>
 <tr class="separator:a4aff371edb15ed7af2d24a5c1d1dbeaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86995949d6a8d840504605c54e38f1bc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logging_8h.html#a86995949d6a8d840504605c54e38f1bc">getlogopt</a> ()</td></tr>
+<tr class="separator:a86995949d6a8d840504605c54e38f1bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a4b9314223064b86a81d35058c6fef7"><td class="memItemLeft" align="right" valign="top">FILE *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logging_8h.html#a2a4b9314223064b86a81d35058c6fef7">openlogfile</a> (char *prefix)</td></tr>
 <tr class="separator:a2a4b9314223064b86a81d35058c6fef7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab23a1e0f2c1ae0ee9941ce6d9997a515"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logging_8h.html#ab23a1e0f2c1ae0ee9941ce6d9997a515">closelogfile</a> ()</td></tr>
@@ -128,7 +134,7 @@ FILE *&#160;</td><td class="memItemRight" valign="bottom"><b>getlogstream</b> ()
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A simple logging mechanism for gr1c. </p>
-<p>SCL; August 2012. </p>
+<p>SCL; 2012, 2013. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="ab23a1e0f2c1ae0ee9941ce6d9997a515"></a>
 <div class="memitem">
@@ -143,6 +149,22 @@ FILE *&#160;</td><td class="memItemRight" valign="bottom"><b>getlogstream</b> ()
       </table>
 </div><div class="memdoc">
 <p>Manually close the current log stream, unless it is stdout. Return 0 on success, -1 on error. </p>
+
+</div>
+</div>
+<a class="anchor" id="a86995949d6a8d840504605c54e38f1bc"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int getlogopt </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get current log output configuration </p>
 
 </div>
 </div>
@@ -245,7 +267,7 @@ FILE *&#160;</td><td class="memItemRight" valign="bottom"><b>getlogstream</b> ()
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Open a new log file, automatically name it with the current date and given prefix, and return the resulting stream, or NULL if error. If the file already exists, then it is appended to. If prefix=NULL, then use "gr1clog". </p>
+<p>Open a new log file, automatically name it with the current date and given prefix, and return the resulting stream, or NULL if error. If the file already exists, then it is appended to. If prefix=NULL, then use "gr1c". Name ends with ".log" </p>
 
 </div>
 </div>
@@ -289,7 +311,7 @@ LOGOPT_NOTIME : Do not show timestamp.  </pre>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jan 29 2013 06:34:25 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 03:18:15 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

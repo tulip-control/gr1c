@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.3.1"/>
-<title>gr1c: patching.h File Reference</title>
+<title>gr1c: gr1c_util.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -89,56 +89,53 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">patching.h File Reference</div>  </div>
+<div class="title">gr1c_util.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Implementation of patching and incremental synthesis algorithms.  
+<p>Small handy routines not otherwise sorted.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="common_8h.html">common.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="automaton_8h.html">automaton.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="ptree_8h.html">ptree.h</a>&quot;</code><br/>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ad483c1236e8fe914545ce6bc8180f25c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="patching_8h.html#ad483c1236e8fe914545ce6bc8180f25c">patch_localfixpoint</a> (DdManager *manager, FILE *strategy_fp, FILE *change_fp, unsigned char verbose)</td></tr>
-<tr class="separator:ad483c1236e8fe914545ce6bc8180f25c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10c6a1f506834a2a328afe6a287595ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="patching_8h.html#a10c6a1f506834a2a328afe6a287595ad">synthesize_reachgame</a> (DdManager *manager, int num_env, int num_sys, <a class="el" href="structanode__t.html">anode_t</a> **Entry, int Entry_len, <a class="el" href="structanode__t.html">anode_t</a> **Exit, int Exit_len, DdNode *etrans, DdNode *strans, DdNode **egoals, DdNode *N_BDD, unsigned char verbose)</td></tr>
-<tr class="separator:a10c6a1f506834a2a328afe6a287595ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a64b69505e9f5695d6e2439d98c2f8836"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a64b69505e9f5695d6e2439d98c2f8836"></a>
-<a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>add_metric_sysgoal</b> (DdManager *manager, FILE *strategy_fp, int original_num_env, int original_num_sys, int *offw, int num_metric_vars, <a class="el" href="structptree__t.html">ptree_t</a> *new_sysgoal, unsigned char verbose)</td></tr>
-<tr class="separator:a64b69505e9f5695d6e2439d98c2f8836"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adcf1ffa87c3b1f057a37e2467fb4776e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gr1c__util_8h.html#adcf1ffa87c3b1f057a37e2467fb4776e">bitvec_to_int</a> (vartype *vec, int vec_len)</td></tr>
+<tr class="separator:adcf1ffa87c3b1f057a37e2467fb4776e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa0fb81b3c85096540f2d5dcdfe0a009"><td class="memItemLeft" align="right" valign="top">vartype *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gr1c__util_8h.html#afa0fb81b3c85096540f2d5dcdfe0a009">int_to_bitvec</a> (int x, int vec_len)</td></tr>
+<tr class="separator:afa0fb81b3c85096540f2d5dcdfe0a009"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a808176d60fadb9220e5816cf96aa6070"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a808176d60fadb9220e5816cf96aa6070"></a>
+<a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>expand_nonbool_variables</b> (<a class="el" href="structptree__t.html">ptree_t</a> **evar_list, <a class="el" href="structptree__t.html">ptree_t</a> **svar_list, unsigned char verbose)</td></tr>
+<tr class="separator:a808176d60fadb9220e5816cf96aa6070"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a965aa89d6b20fcbaa189286cf14c45d8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a965aa89d6b20fcbaa189286cf14c45d8"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>expand_nonbool_GR1</b> (<a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, <a class="el" href="structptree__t.html">ptree_t</a> **env_init, <a class="el" href="structptree__t.html">ptree_t</a> **sys_init, <a class="el" href="structptree__t.html">ptree_t</a> **env_trans, <a class="el" href="structptree__t.html">ptree_t</a> **sys_trans, <a class="el" href="structptree__t.html">ptree_t</a> ***env_goals, int num_env_goals, <a class="el" href="structptree__t.html">ptree_t</a> ***sys_goals, int num_sys_goals, unsigned char verbose)</td></tr>
+<tr class="separator:a965aa89d6b20fcbaa189286cf14c45d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2ea3143246d93824ac6a8e94513588a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac2ea3143246d93824ac6a8e94513588a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>print_GR1_spec</b> (<a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, <a class="el" href="structptree__t.html">ptree_t</a> *env_init, <a class="el" href="structptree__t.html">ptree_t</a> *sys_init, <a class="el" href="structptree__t.html">ptree_t</a> *env_trans, <a class="el" href="structptree__t.html">ptree_t</a> *sys_trans, <a class="el" href="structptree__t.html">ptree_t</a> **env_goals, int num_env_goals, <a class="el" href="structptree__t.html">ptree_t</a> **sys_goals, int num_sys_goals, FILE *outf)</td></tr>
+<tr class="separator:ac2ea3143246d93824ac6a8e94513588a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a293813eff28c67481a20602966258142"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a293813eff28c67481a20602966258142"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>check_gr1c_form</b> (<a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, <a class="el" href="structptree__t.html">ptree_t</a> *env_init, <a class="el" href="structptree__t.html">ptree_t</a> *sys_init, <a class="el" href="structptree__t.html">ptree_t</a> **env_trans_array, int et_array_len, <a class="el" href="structptree__t.html">ptree_t</a> **sys_trans_array, int st_array_len, <a class="el" href="structptree__t.html">ptree_t</a> **env_goals, int num_env_goals, <a class="el" href="structptree__t.html">ptree_t</a> **sys_goals, int num_sys_goals)</td></tr>
+<tr class="separator:a293813eff28c67481a20602966258142"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Implementation of patching and incremental synthesis algorithms. </p>
-<p>SCL; 2012, 2013. </p>
+<div class="textblock"><p>Small handy routines not otherwise sorted. </p>
+<p>SCL; 2013. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ad483c1236e8fe914545ce6bc8180f25c"></a>
+<a class="anchor" id="adcf1ffa87c3b1f057a37e2467fb4776e"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structanode__t.html">anode_t</a>* patch_localfixpoint </td>
+          <td class="memname">int bitvec_to_int </td>
           <td>(</td>
-          <td class="paramtype">DdManager *&#160;</td>
-          <td class="paramname"><em>manager</em>, </td>
+          <td class="paramtype">vartype *&#160;</td>
+          <td class="paramname"><em>vec</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">FILE *&#160;</td>
-          <td class="paramname"><em>strategy_fp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">FILE *&#160;</td>
-          <td class="paramname"><em>change_fp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned char&#160;</td>
-          <td class="paramname"><em>verbose</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>vec_len</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -147,89 +144,25 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Implementation of algorithm presented in</p>
-<p>S.C. Livingston, P. Prabhakar, A.B. Jose, R.M. Murray (2012). Patching task-level robot controllers based on a local mu-calculus formula. Caltech CDS technical report. <a href="http://resolver.caltech.edu/CaltechCDSTR:2012.003">http://resolver.caltech.edu/CaltechCDSTR:2012.003</a></p>
-<p>Read given strategy in "gr1c automaton" format from stream strategy_fp, using edge set changes to the game graph listed in stream change_fp. See <a href="md_formats.html">external_notes</a> for format details. If strategy_fp = NULL, then read from stdin.</p>
-<p>Return the head pointer of the patched strategy, or NULL if error.</p>
-<p>As usual, this function will not try to close given streams when finished. </p>
+<p>least significant bit first; unsigned. </p>
 
 </div>
 </div>
-<a class="anchor" id="a10c6a1f506834a2a328afe6a287595ad"></a>
+<a class="anchor" id="afa0fb81b3c85096540f2d5dcdfe0a009"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structanode__t.html">anode_t</a>* synthesize_reachgame </td>
+          <td class="memname">vartype* int_to_bitvec </td>
           <td>(</td>
-          <td class="paramtype">DdManager *&#160;</td>
-          <td class="paramname"><em>manager</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>num_env</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>num_sys</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structanode__t.html">anode_t</a> **&#160;</td>
-          <td class="paramname"><em>Entry</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>Entry_len</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structanode__t.html">anode_t</a> **&#160;</td>
-          <td class="paramname"><em>Exit</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>Exit_len</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">DdNode *&#160;</td>
-          <td class="paramname"><em>etrans</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">DdNode *&#160;</td>
-          <td class="paramname"><em>strans</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">DdNode **&#160;</td>
-          <td class="paramname"><em>egoals</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">DdNode *&#160;</td>
-          <td class="paramname"><em>N_BDD</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned char&#160;</td>
-          <td class="paramname"><em>verbose</em>&#160;</td>
+          <td class="paramname"><em>vec_len</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -238,7 +171,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Solve a reachability game symbolically, by blocking an environment goal or reaching Exit from Entry. States are restricted to the set N (given as a characteristic function named N_BDD). </p>
+<p>least significant bit first; unsigned. Up to given length vec_len; if vec_len is not sufficiently large, then the result is effectively a truncated form of the full bitvector for the given integer. The caller is assumed to free the bitvector. </p>
 
 </div>
 </div>

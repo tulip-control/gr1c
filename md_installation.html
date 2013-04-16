@@ -96,7 +96,7 @@ $ ./testsize
 <pre class="fragment">void *: 8
 long: 8
 </pre><h2>Building</h2>
-<p>For the latest development snapshot, either <a href="https://github.com/slivingston/gr1c/tree/master">clone the repo</a> (at <a href="https://github.com/slivingston/gr1c.git">https://github.com/slivingston/gr1c.git</a>) or <a href="https://github.com/slivingston/gr1c/tarball/master">download a tarball</a>. For the latter, untar the file (name may vary) and change into the source directory. </p>
+<p>For the latest development snapshot, either <a href="https://github.com/slivingston/gr1c">clone the repo</a> (at <a href="https://github.com/slivingston/gr1c.git">https://github.com/slivingston/gr1c.git</a>) or <a href="https://github.com/slivingston/gr1c/tarball/master">download a tarball</a>. For the latter, untar the file (name may vary) and change into the source directory. </p>
 <pre class="fragment">$ tar -xzf slivingston-gr1c-658f32b.tar.gz
 $ cd slivingston-gr1c-658f32b
 </pre><p>We will first build <a href="http://vlsi.colorado.edu/~fabio/CUDD/">CUDD</a>. Let's make a directory called <code>extern</code> for this purpose. At the time of writing, the latest version is 2.5.0. Below we use <code>wget</code> to download it from the command-line. You might also try directing your Web browser at <a href="ftp://vlsi.colorado.edu/pub/">ftp://vlsi.colorado.edu/pub/</a>, or see CUDD documentation for instructions. </p>
@@ -105,7 +105,7 @@ $ cd extern
 $ wget ftp://vlsi.colorado.edu/pub/cudd-2.5.0.tar.gz
 $ tar -xzf cudd-2.5.0.tar.gz
 $ cd cudd-2.5.0
-</pre><p>Now you should be in the root of the CUDD source tree. Open the <code>Makefile</code> in your favorite editor (i.e., <a href="http://www.gnu.org/software/emacs/">Emacs</a>) and make sure the settings look reasonable for your setup. On GNU/Linux, it should suffice to append <code>-DSIZEOF_VOID_P=N -DSIZEOF_LONG=M</code> to the default XCFLAGS. On Mac OS X, it should suffice to replace the default XCFLAGS with </p>
+</pre><p>Now you should be in the root of the CUDD source tree. Open the <code>Makefile</code> in your favorite editor (e.g., <a href="http://www.gnu.org/software/emacs/">Emacs</a>) and make sure the settings look reasonable for your setup. On GNU/Linux, it should suffice to append <code>-DSIZEOF_VOID_P=N -DSIZEOF_LONG=M</code> to the default XCFLAGS. On Mac OS X, it should suffice to replace the default XCFLAGS with </p>
 <pre class="fragment">XCFLAGS = -DHAVE_IEEE_754 -DSIZEOF_VOID_P=N -DSIZEOF_LONG=M
 </pre><p>where <code>SIZEOF_VOID_P</code> and <code>SIZEOF_LONG</code> refer to the number of bytes used for <code>void</code> pointers and <code>long int</code> on your computer, as determined earlier. <em>You must replace <code>N</code> and <code>M</code> with the appropriate numbers.</em> Finally, </p>
 <pre class="fragment">$ make
@@ -114,7 +114,7 @@ $ cd cudd-2.5.0
 </pre><h2>Testing</h2>
 <p>Before deploying gr1c and especially if you are building it yourself, run the test suite from the source distribution. After following the build steps above, do </p>
 <pre class="fragment">$ make check
-</pre><p>Most test code is placed under the <code>tests</code> directory. <b>N.B.</b>, scripted interaction will only work if you build without GNU Readline. If a test fails, despite you following the installation instructions, then please open an <a href="https://github.com/slivingston/gr1c/issues">issue on GitHub</a> or contact Scott Livingston at <a href="#" onclick="location.href='mai'+'lto:'+'sli'+'vi'+'ngs'+'to'+'n@c'+'al'+'tec'+'h.'+'edu'; return false;">slivi<span style="display: none;">.nosp@m.</span>ngst<span style="display: none;">.nosp@m.</span>on@ca<span style="display: none;">.nosp@m.</span>ltec<span style="display: none;">.nosp@m.</span>h.edu</a></p>
+</pre><p>Most test code is placed under the <code>tests</code> directory. <b>N.B.</b>, scripted interaction will only work if you build without GNU Readline. If a test fails, despite you following the installation instructions, then please open an <a href="https://github.com/slivingston/gr1c/issues">issue on GitHub</a> or contact Scott Livingston at <a href="#" onclick="location.href='mai'+'lto:'+'sli'+'vi'+'ngs'+'to'+'n@c'+'ds'+'.ca'+'lt'+'ech'+'.e'+'du'; return false;">slivi<span style="display: none;">.nosp@m.</span>ngst<span style="display: none;">.nosp@m.</span>on@cd<span style="display: none;">.nosp@m.</span>s.ca<span style="display: none;">.nosp@m.</span>ltech<span style="display: none;">.nosp@m.</span>.edu</a></p>
 <h2>Placing gr1c on your shell path</h2>
 <p>To use gr1c outside of the directory you just built it in, you will need to add it to the search path of your shell. Assuming you have administrative privileges, one solution is </p>
 <pre class="fragment">$ sudo make install
@@ -122,7 +122,7 @@ $ cd cudd-2.5.0
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jan 29 2013 06:34:25 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 03:18:15 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>
