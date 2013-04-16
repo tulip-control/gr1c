@@ -29,7 +29,7 @@
 
    As usual, this function will not try to close given streams when
    finished. */
-anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *change_fp, unsigned char verbose );
+anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *change_fp, int original_num_env, int original_num_sys, ptree_t *nonbool_var_list, int *offw, unsigned char verbose );
 
 /** Solve a reachability game symbolically, by blocking an environment
    goal or reaching Exit from Entry.  States are restricted to the set

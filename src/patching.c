@@ -1,7 +1,7 @@
 /* patching.c -- Definitions for signatures appearing in patching.h.
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -15,6 +15,7 @@
 #include "ptree.h"
 #include "patching.h"
 #include "solve_support.h"
+#include "gr1c_util.h"
 
 
 extern ptree_t *evar_list;
@@ -315,16 +316,21 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 
 
 #define INPUT_STRING_LEN 1024
-anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *change_fp, unsigned char verbose )
+anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *change_fp, int original_num_env, int original_num_sys, ptree_t *nonbool_var_list, int *offw, unsigned char verbose )
 {
 	ptree_t *var_separator;
 	DdNode *etrans, *strans, **egoals;
 	DdNode *etrans_part, *strans_part;
 	int num_env, num_sys;
+	int num_nonbool;
+	int num_enonbool;  /* Number of env variables with nonboolean domain */
+
+	/* Two copies of offw, for quickly mapping state-next-state arrays */
+	int *doffw = NULL;
 
 	DdNode *vertex1, *vertex2; /* ...regarding vertices of the game graph. */
 	char line[INPUT_STRING_LEN];
-	vartype *state;
+	vartype *state, *state_frag;
 
 	bool env_nogoal_flag = False;  /* Indicate environment has no goals */
 
@@ -359,12 +365,40 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
 
-	strategy = aut_aut_load( num_env+num_sys, strategy_fp );
+	strategy = aut_aut_load( original_num_env+original_num_sys, strategy_fp );
 	if (strategy == NULL) {
 		return NULL;
 	}
 	if (verbose)
 		logprint( "Read in strategy of size %d", aut_size( strategy ) );
+
+	num_nonbool = tree_size( nonbool_var_list );
+	if (num_nonbool > 0) {
+		if (verbose > 1)
+			logprint( "Expanding nonbool variables in the given strategy automaton..." );
+		if (aut_expand_bool( strategy, evar_list, svar_list, nonbool_var_list )) {
+			fprintf( stderr, "Error patch_localfixpoint: Failed to expand nonboolean variables in given automaton." );
+			return NULL;
+		}
+		if (verbose > 1) {
+			logprint( "Given strategy after variable expansion:" );
+			logprint_startline();
+			dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_ATTRIB, getlogstream() );
+			logprint_endline();
+		}
+
+		num_enonbool = 0;
+		while (*(offw+2*num_enonbool) < num_env)
+			num_enonbool++;
+
+		doffw = malloc( sizeof(int)*4*num_nonbool );
+		if (doffw == NULL) {
+			perror( "patch_localfixpoint, malloc" );
+			return NULL;
+		}
+		for (i = 0; i < 2*num_nonbool; i++)
+			*(doffw+2*num_nonbool+i) = *(doffw+i) = *(offw+i);
+	}
 
 	affected = malloc( sizeof(anode_t **)*num_sgoals );
 	if (affected == NULL) {
@@ -403,13 +437,13 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		if (strlen( line ) < 1 || *line == '\n' || *line == '#')
 			continue;
 
-		num_read = read_state_str( line, &state, num_env+num_sys );
+		num_read = read_state_str( line, &state, original_num_env+original_num_sys );
 		if (num_read == 0) {
 			/* This must be the first command, so break from loop and
 			   build local transition rules from N. */
 			break_flag = True;
 			break;
-		} else if (num_read < num_env+num_sys) {
+		} else if (num_read < original_num_env+original_num_sys) {
 			fprintf( stderr, "Error patch_localfixpoint: malformed game change file.\n" );
 			return NULL;
 		}
@@ -420,7 +454,16 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 			perror( "patch_localfixpoint, realloc" );
 			return NULL;
 		}
-		*(N+N_len-1) = state;
+		if (num_nonbool > 0) {
+			*(N+N_len-1) = expand_nonbool_state( state, offw, num_nonbool, num_env+num_sys );
+			if (*(N+N_len-1) == NULL) {
+				fprintf( stderr, "Error patch_localfixpoint: failed to expand nonbool values in edge change file\n" );
+				return NULL;
+			}
+			free( state );
+		} else {
+			*(N+N_len-1) = state;
+		}
 	}
 
 	if (verbose) {
@@ -588,26 +631,48 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 
 			if (!strncmp( line, "restrict ", strlen( "restrict " ) ) || !strncmp( line, "relax ", strlen( "relax " ) )) {
 				if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
-					num_read = read_state_str( line+strlen( "restrict" )+1, &state, 2*(num_env+num_sys) );
+					num_read = read_state_str( line+strlen( "restrict" )+1, &state_frag, 2*(original_num_env+original_num_sys) );
 				} else { /* "relax " */
-					num_read = read_state_str( line+strlen( "relax" )+1, &state, 2*(num_env+num_sys) );
+					num_read = read_state_str( line+strlen( "relax" )+1, &state_frag, 2*(original_num_env+original_num_sys) );
 				}
-				if (num_read != 2*(num_env+num_sys) && num_read != 2*num_env+num_sys) {
+				if (num_read != 2*(original_num_env+original_num_sys)
+					&& num_read != 2*original_num_env+original_num_sys) {
 					if (num_read > 0)
-						free( state );
+						free( state_frag );
 					fprintf( stderr, "Error: invalid arguments to restrict or relax command.\n" );
 					return NULL;
 				}
+
+				if (num_nonbool > 0) {
+					if (num_read == 2*(original_num_env+original_num_sys)) {
+						state = expand_nonbool_state( state_frag, doffw, 2*num_nonbool, 2*(num_env+num_sys) );
+						if (state == NULL) {
+							fprintf( stderr, "Error patch_localfixpoint: failed to expand nonbool values in edge change file\n" );
+							return NULL;
+						}
+						free( state_frag );
+					} else { /* num_read == 2*original_num_env+original_num_sys */
+						state = expand_nonbool_state( state_frag, doffw, num_nonbool+num_enonbool, 2*num_env+num_sys );
+						if (state == NULL) {
+							fprintf( stderr, "Error patch_localfixpoint: failed to expand nonbool values in edge change file\n" );
+							return NULL;
+						}
+						free( state_frag );
+					}
+				} else {
+					state = state_frag;
+				}
+
 				if (verbose) {
 					logprint_startline();
 					if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
-						if (num_read == 2*(num_env+num_sys)) {
+						if (num_read == 2*(original_num_env+original_num_sys)) {
 							logprint_raw( "Removing controlled edge from" );
 						} else {
 							logprint_raw( "Removing uncontrolled edge from" );
 						}
 					} else { /* "relax " */
-						if (num_read == 2*(num_env+num_sys)) {
+						if (num_read == 2*(original_num_env+original_num_sys)) {
 							logprint_raw( "Adding controlled edge from" );
 						} else {
 							logprint_raw( "Adding uncontrolled edge from" );
@@ -624,7 +689,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 					node = find_anode( strategy, j, state, num_env+num_sys );
 					if (node != NULL) {
 						if (!strncmp( line, "restrict ", strlen( "restrict " ) )
-							&& (num_read == 2*(num_env+num_sys))) {
+							&& (num_read == 2*(original_num_env+original_num_sys))) {
 							for (i = 0; i < node->trans_len; i++) {
 								if (statecmp( (*(node->trans+i))->state,
 											  state+num_env+num_sys, num_env+num_sys )) {
@@ -648,7 +713,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 								}
 							}
 						} else if (!strncmp( line, "relax ", strlen( "relax " ) )
-								   && (num_read == 2*num_env+num_sys)) {
+								   && (num_read == 2*original_num_env+original_num_sys)) {
 							for (i = 0; i < node->trans_len; i++) {
 								if (statecmp( (*(node->trans+i))->state,
 											  state+num_env+num_sys, num_env ))
@@ -690,7 +755,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				Cudd_Ref( tmp );
 				Cudd_RecursiveDeref( manager, vertex1 );
 				Cudd_RecursiveDeref( manager, vertex2 );
-				if (num_read == 2*num_env+num_sys) {
+				if (num_read == 2*original_num_env+original_num_sys) {
 					if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
 						tmp2 = Cudd_bddAnd( manager, tmp, etrans );
 					} else { /* "relax " */
@@ -699,7 +764,7 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 					Cudd_Ref( tmp2 );
 					Cudd_RecursiveDeref( manager, etrans );
 					etrans = tmp2;
-				} else { /* num_read == 2*(num_env+num_sys) */
+				} else { /* num_read == 2*(original_num_env+original_num_sys) */
 					if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
 						tmp2 = Cudd_bddAnd( manager, tmp, strans );
 					} else { /* "relax " */
@@ -713,12 +778,22 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				free( state );
 				
 			} else if (!strncmp( line, "blocksys ", strlen( "blocksys " ) )) {
-				num_read = read_state_str( line+strlen( "blocksys" )+1, &state, num_sys );
-				if (num_read != num_sys) {
+				num_read = read_state_str( line+strlen( "blocksys" )+1, &state_frag, original_num_sys );
+				if (num_read != original_num_sys) {
 					if (num_read > 0)
 						free( state );
 					fprintf( stderr, "Error: invalid arguments to blocksys command.\n%d\n%s\n", num_read, line );
 					return NULL;
+				}
+				if (num_nonbool > 0) {
+					state = expand_nonbool_state( state_frag, offw+2*num_enonbool, num_nonbool-num_enonbool, num_sys );
+					if (state == NULL) {
+						fprintf( stderr, "Error patch_localfixpoint: failed to expand nonbool values in edge change file\n" );
+						return NULL;
+					}
+					free( state_frag );
+				} else {
+					state = state_frag;
 				}
 				if (verbose) {
 					logprint_startline();
@@ -834,6 +909,8 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		free( *(affected+i) );
 	free( affected );
 	free( affected_len );
+	if (num_nonbool > 0)
+		free( doffw );
 
 	return strategy;
 }

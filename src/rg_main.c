@@ -224,24 +224,6 @@ int main( int argc, char **argv )
 			env_init = init_ptree( PT_CONSTANT, NULL, 1 );
 	}
 
-	/* Merge component safety (transition) formulas */
-	if (et_array_len > 1) {
-		env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
-	} else if (et_array_len == 1) {
-		env_trans = *env_trans_array;
-	} else {  /* No restrictions on transitions. */
-		fprintf( stderr, "Syntax error: GR(1) specification is missing environment transition rules.\n" );
-		return -1;
-	}
-	if (st_array_len > 1) {
-		sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
-	} else if (st_array_len == 1) {
-		sys_trans = *sys_trans_array;
-	} else {  /* No restrictions on transitions. */
-		fprintf( stderr, "Syntax error: GR(1) specification is missing system transition rules.\n" );
-		return -1;
-	}
-
 	/* Number of variables, before expansion of those that are nonboolean */
 	original_num_env = tree_size( evar_list );
 	original_num_sys = tree_size( svar_list );
@@ -250,8 +232,17 @@ int main( int argc, char **argv )
 	if (ptdump_flag) {
 		tree_dot_dump( env_init, "env_init_ptree.dot" );
 		tree_dot_dump( sys_init, "sys_init_ptree.dot" );
-		tree_dot_dump( env_trans, "env_trans_ptree.dot" );
-		tree_dot_dump( sys_trans, "sys_trans_ptree.dot" );
+
+		for (i = 0; i < et_array_len; i++) {
+			snprintf( dumpfilename, sizeof(dumpfilename),
+					  "env_trans%05d_ptree.dot", i );
+			tree_dot_dump( *(env_trans_array+i), dumpfilename );
+		}
+		for (i = 0; i < st_array_len; i++) {
+			snprintf( dumpfilename, sizeof(dumpfilename),
+					  "sys_trans%05d_ptree.dot", i );
+			tree_dot_dump( *(sys_trans_array+i), dumpfilename );
+		}
 
 		if (num_egoals > 0) {
 			for (i = 0; i < num_egoals; i++) {
@@ -354,15 +345,36 @@ int main( int argc, char **argv )
 	}
 
 	if (expand_nonbool_GR1( evar_list, svar_list, &env_init, &sys_init,
-							&env_trans, &sys_trans,
+							&env_trans_array, &et_array_len,
+							&sys_trans_array, &st_array_len,
 							&env_goals, num_egoals, &sys_goals, num_sgoals,
 							verbose ) < 0)
 		return -1;
 	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list, verbose );
 
+	/* Merge component safety (transition) formulas */
+	if (et_array_len > 1) {
+		env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
+	} else if (et_array_len == 1) {
+		env_trans = *env_trans_array;
+	} else {  /* No restrictions on transitions. */
+		fprintf( stderr, "Syntax error: GR(1) specification is missing environment transition rules.\n" );
+		return -1;
+	}
+	if (st_array_len > 1) {
+		sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
+	} else if (st_array_len == 1) {
+		sys_trans = *sys_trans_array;
+	} else {  /* No restrictions on transitions. */
+		fprintf( stderr, "Syntax error: GR(1) specification is missing system transition rules.\n" );
+		return -1;
+	}
+
 	if (verbose > 1)
 		/* Dump the spec to show results of conversion (if any). */
-		print_GR1_spec( evar_list, svar_list, env_init, sys_init, env_trans, sys_trans,
+		print_GR1_spec( evar_list, svar_list, env_init, sys_init,
+						env_trans_array, et_array_len,
+						sys_trans_array, st_array_len,
 						env_goals, num_egoals, sys_goals, num_sgoals, NULL );
 
 

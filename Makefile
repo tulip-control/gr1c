@@ -30,8 +30,9 @@ LD = ld -r
 # will fail if you build gr1c with GNU Readline.
 
 
-all: $(CORE_PROGRAMS)
+core: $(CORE_PROGRAMS)
 exp: $(EXP_PROGRAMS)
+all: core exp
 
 gr1c: main.o util.o logging.o interactive.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)

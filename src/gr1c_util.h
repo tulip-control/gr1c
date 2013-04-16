@@ -23,16 +23,27 @@ int bitvec_to_int( vartype *vec, int vec_len );
 vartype *int_to_bitvec( int x, int vec_len );
 
 
-/* Expand any variables with integral domains in given lists of
+/** Expand any variables with integral domains in given lists of
    environment and system variables (evar_list and svar_list, respectively). */
 ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 								   unsigned char verbose );
+
+/** Return an array of length mapped_len where the nonboolean
+   variables in given state array have been expanded according to
+   their offsets and widths in offw.  Return NULL if error. */
+vartype *expand_nonbool_state( vartype *state, int *offw, int num_nonbool, int mapped_len );
+
+/** Similar to get_offsets() except that evar_list and svar_list are
+   arguments (rather than global) and the variables with nonboolean
+   domains are given as a list. */
+int *get_offsets_list( ptree_t *evar_list, ptree_t *svar_list, ptree_t *nonbool_var_list );
 
 /* Expand any variables with integral domains in parse trees of the
    GR(1) specification components */
 int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 						ptree_t **env_init, ptree_t **sys_init,
-						ptree_t **env_trans, ptree_t **sys_trans,
+						ptree_t ***env_trans_array, int *et_array_len,
+						ptree_t ***sys_trans_array, int *st_array_len,
 						ptree_t ***env_goals, int num_env_goals,
 						ptree_t ***sys_goals, int num_sys_goals,
 						unsigned char verbose );
@@ -40,7 +51,8 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 /* Print to outf if it is not NULL.  Otherwise, dump to the log. */
 void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
 					 ptree_t *env_init, ptree_t *sys_init,
-					 ptree_t *env_trans, ptree_t *sys_trans,
+					 ptree_t **env_trans_array, int et_array_len,
+					 ptree_t **sys_trans_array, int st_array_len,
 					 ptree_t **env_goals, int num_env_goals,
 					 ptree_t **sys_goals, int num_sys_goals,
 					 FILE *outf );
