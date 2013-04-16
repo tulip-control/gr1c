@@ -352,6 +352,12 @@ int main( int argc, char **argv )
 
 	if (run_option == GR1C_MODE_INTERACTIVE) {
 
+		/* NOT IMPLEMENTED YET FOR NONBOOL VARIABLES */
+		if (nonbool_var_list != NULL) {
+			fprintf( stderr, "gr1c interaction does not yet support specifications with nonboolean domains.\n" );
+			return -1;
+		}
+
 		i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout, verbose );
 		if (i == 0) {
 			printf( "Not realizable.\n" );
