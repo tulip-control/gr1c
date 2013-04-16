@@ -18,7 +18,8 @@
    error.  metric_vars is a space-separated list of variables to use
    in computing distance. The caller is expected to free the array.
 
-   This function assumes that evar_list and svar_list have not been linked. */
+   This function assumes that evar_list and svar_list have not been
+   linked. Cf. get_offsets_list() for a more general version. */
 int *get_offsets( char *metric_vars, int *num_vars );
 
 /** G is the goal set against which to measure distance.
