@@ -2,7 +2,7 @@
 # ./grpatch -l -vv -t dot -a grid-nominal.aut -f '(Y_r = 0) & (Y_c = 2)' examples/hotswap/grid3x3.spc
 
 ENV: ;
-SYS: Y_r [0,3] Y_c [0,3];
+SYS: Y_r [0,2] Y_c [0,2];
 
 ENVINIT: ;
 ENVTRANS:;
