@@ -176,7 +176,7 @@ int main( int argc, char **argv )
 						fprintf( stderr, "Invalid use of -m flag.\n" );
 						return 1;
 					}
-					init_state_acc = read_nonbool_state_str( all_vars, &init_state_ints, -1 );
+					init_state_acc = read_state_str( all_vars, &init_state_ints, -1 );
 					all_vars = strtok( NULL, "," );
 					if (all_vars == NULL) {
 						horizon = -1;  /* The horizon was not given. */
@@ -305,7 +305,7 @@ int main( int argc, char **argv )
 	   the result as a string in all_vars */
 	if (max_sim_it >= 0) {
 		/* At this point, init_state_acc should contain the number of
-		   integers read by read_nonbool_state_str() during
+		   integers read by read_state_str() during
 		   command-line argument parsing. */
 		if (init_state_acc != original_num_env+original_num_sys) {
 			fprintf( stderr, "Number of initial values given does not match number of problem variables.\n" );

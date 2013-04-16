@@ -11,54 +11,6 @@
 #include "solve_support.h"
 
 
-int read_nonbool_state_str( char *input, int **state, int max_len )
-{
-	int i;
-	char *start;
-	char *end;
-	*state = NULL;
-	if (max_len == 0 || strlen( input ) < 1)
-		return 0;
-	if (max_len > 0) {
-		*state = malloc( sizeof(vartype)*max_len );
-		if (*state == NULL) {
-			perror( "read_state_str, malloc" );
-			return 0;
-		}
-	}
-
-	start = input;
-	end = input;
-	for (i = 0; (max_len < 0 || i < max_len) && *end != '\0'; i++) {
-		if (max_len < 0) {
-			*state = realloc( *state, sizeof(int)*(i+1) );
-			if (*state == NULL) {
-				perror( "read_state_str, realloc" );
-				return 0;
-			}
-		}
-		*((*state)+i) = strtol( start, &end, 10 );
-		if (start == end)
-			break;
-		start = end;
-	}
-
-	if (i == 0) {
-		free( *state );
-		*state = NULL;
-		return 0;
-	}
-
-	if (max_len > 0) {
-		*state = realloc( *state, sizeof(int)*i );
-		if (*state == NULL) {
-			perror( "read_state_str, realloc" );
-			return 0;
-		}
-	}
-	return i;
-}
-
 int read_state_str( char *input, vartype **state, int max_len )
 {
 	int i;

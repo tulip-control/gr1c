@@ -2,7 +2,7 @@
  * \brief Mostly internal routines for state vector manipulation.
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2013.
  */
 
 
@@ -18,9 +18,6 @@
    values read (thus, the length of the array pointed to by state at
    exit).  If max_len is negative, then read values until no more are found. */
 int read_state_str( char *input, vartype **state, int max_len );
-
-/** ...because C does not natively support templating.  Entirely similar to read_state_str() */
-int read_nonbool_state_str( char *input, int **state, int max_len );
 
 
 /* Internal routines for setting typical cube arrays. */
