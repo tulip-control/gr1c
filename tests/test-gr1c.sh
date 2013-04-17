@@ -9,6 +9,10 @@ BUILD_ROOT=..
 TESTDIR=tests
 PREFACE="============================================================\nERROR:"
 
+if test -z $VERBOSE; then
+    VERBOSE=0
+fi
+
 
 ################################################################
 # Test realizability
@@ -16,11 +20,11 @@ PREFACE="============================================================\nERROR:"
 REFSPECS="gridworld_bool.spc gridworld_env.spc arbiter4.spc trivial_2var.spc free_counter.spc"
 UNREALIZABLE_REFSPECS="trivial_un.spc"
 
-if [[ $VERBOSE -eq 1 ]]; then
+if test $VERBOSE -eq 1; then
     echo "\nChecking specifications that should be realizable..."
 fi
 for k in `echo $REFSPECS`; do
-    if [[ $VERBOSE -eq 1 ]]; then
+    if test $VERBOSE -eq 1; then
 	echo "\t gr1c -r $TESTDIR/specs/$k"
     fi
     if ! $BUILD_ROOT/gr1c -r specs/$k > /dev/null; then
@@ -29,11 +33,11 @@ for k in `echo $REFSPECS`; do
     fi
 done
 
-if [[ $VERBOSE -eq 1 ]]; then
+if test $VERBOSE -eq 1; then
     echo "\nChecking specifications that should be unrealizable..."
 fi
 for k in `echo $UNREALIZABLE_REFSPECS`; do
-    if [[ $VERBOSE -eq 1 ]]; then
+    if test $VERBOSE -eq 1; then
 	echo "\t gr1c -r $TESTDIR/specs/$k"
     fi
     if $BUILD_ROOT/gr1c -r specs/$k > /dev/null; then
@@ -48,11 +52,11 @@ done
 
 REFSPECS="trivial_2var.spc free_counter.spc"
 
-if [[ $VERBOSE -eq 1 ]]; then
+if test $VERBOSE -eq 1; then
     echo "\nPerforming regression tests for vanilla GR(1) synthesis..."
 fi
 for k in `echo $REFSPECS`; do
-    if [[ $VERBOSE -eq 1 ]]; then
+    if test $VERBOSE -eq 1; then
 	echo "\tComparing  gr1c -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.listdump.out"
     fi
     if ! ($BUILD_ROOT/gr1c -t txt specs/$k | cmp -s expected_outputs/${k}.listdump.out -); then
@@ -67,11 +71,11 @@ done
 
 REFSPECS="reach_2var.spc reach_2var_mustblock.spc reach_free_counter.spc reach_free_counter_mustblock.spc"
 
-if [[ $VERBOSE -eq 1 ]]; then
+if test $VERBOSE -eq 1; then
     echo "\nPerforming regression tests for reachability games..."
 fi
 for k in `echo $REFSPECS`; do
-    if [[ $VERBOSE -eq 1 ]]; then
+    if test $VERBOSE -eq 1; then
 	echo "\tComparing  rg -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.listdump.out"
     fi
     if ! ($BUILD_ROOT/rg -t txt specs/$k | cmp -s expected_outputs/${k}.listdump.out -); then
@@ -86,11 +90,11 @@ done
 
 REFSPECS="trivial_partwin gridworld_bool"
 
-if [[ $VERBOSE -eq 1 ]]; then
+if test $VERBOSE -eq 1; then
     echo "\nPerforming regression tests for interaction..."
 fi
 for k in `echo $REFSPECS`; do
-    if [[ $VERBOSE -eq 1 ]]; then
+    if test $VERBOSE -eq 1; then
 	echo "\tComparing gr1c -i $TESTDIR/specs/${k}.spc < $TESTDIR/interaction_scripts/${k}_IN.txt \n\t\tagainst $TESTDIR/interaction_scripts/${k}_OUT.txt"
     fi
     if ! $BUILD_ROOT/gr1c -i specs/${k}.spc < interaction_scripts/${k}_IN.txt | diff - interaction_scripts/${k}_OUT.txt > /dev/null; then
@@ -103,11 +107,11 @@ done
 ################################################################
 # gr1c specification file syntax
 
-if [[ $VERBOSE -eq 1 ]]; then
+if test $VERBOSE -eq 1; then
     echo "\nChecking detection of flawed specification files..."
 fi
 for k in `ls flawed_specs/*.spc`; do
-    if [[ $VERBOSE -eq 1 ]]; then
+    if test $VERBOSE -eq 1; then
 	echo "\t gr1c -s $k"
     fi
     if $BUILD_ROOT/gr1c -s $k > /dev/null 2>&1; then
@@ -120,11 +124,11 @@ done
 ################################################################
 # rg specification file syntax
 
-if [[ $VERBOSE -eq 1 ]]; then
+if test $VERBOSE -eq 1; then
     echo "\nChecking detection of flawed reachability game (rg) specification files..."
 fi
 for k in `ls flawed_reach_specs/*.spc`; do
-    if [[ $VERBOSE -eq 1 ]]; then
+    if test $VERBOSE -eq 1; then
 	echo "\t gr1c -s $k"
     fi
     if $BUILD_ROOT/rg -s $k > /dev/null 2>&1; then
