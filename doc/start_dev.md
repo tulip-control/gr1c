@@ -41,6 +41,17 @@ testing progress should be reported as it happens.</dd>
 </dl>
 
 
+Unsorted notes
+--------------
+
+Internally variables of non-Boolean domains are mapped into a set of
+Boolean variables that use the original variable name as a prefix and
+then append the corresponding bit index. E.g., `y` with domain of
+{0,1,2} would translate to 2 variables, `y0`, `y1` that are used to
+encode the bitvectors 00, 01, and 10. 11 (i.e., `y0` and `y1` both set
+to `True`) is unreachable.
+
+
 Code style
 ----------
 
