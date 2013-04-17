@@ -29,6 +29,7 @@ path. To see a summary of possible command-line arguments,
 
     $ gr1c -h
 
+
 Examples
 --------
 
@@ -72,6 +73,15 @@ into a [DOT](http://www.graphviz.org/) file, and create a PNG called
 
     $ gr1c -t dot examples/trivial.spc > temp.dot
     $ dot -Tpng -O temp.dot
+
+
+Further reading
+---------------
+
+- [format of input specifications](md_spc_format.html)
+- [interactive sessions](md_interaction.html)
+- [file formats](md_formats.html)
+- [the developer's introduction](md_start_dev.html)
 
 
 License

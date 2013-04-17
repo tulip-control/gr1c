@@ -1,7 +1,10 @@
 Installation
 ============
 
-Aside from standard C libraries and a basic development environment (gcc, etc.), **gr1c** depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/), the CU Decision Diagram package by Fabio Somenzi and others.  Also, gr1c interactive mode optionally uses GNU Readline (disabled by default; see `USE_READLINE` definition in Makefile).  This installation guide should work for anything Unix-like, but in particular it has been tested on 32-bit GNU/Linux and 64-bit Mac OS X.
+This building and installation guide should work for anything Unix-like, but in particular it has been tested on 32-bit GNU/Linux and 64-bit Mac OS X.
+
+Aside from standard C libraries and a basic development environment (gcc, etc.), **gr1c** depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/), the CU Decision Diagram package by Fabio Somenzi and others.  Also, gr1c interactive mode optionally uses GNU Readline (disabled by default; see `USE_READLINE` definition in Makefile).  The parser generator [Bison](http://www.gnu.org/software/bison/) and the lexical analyzer [flex](http://flex.sourceforge.net/) are required to build gr1c.  Other Yacc and lex compatible tools may suffice, but this has not been tested.
+
 
 Determining word size on your computer
 --------------------------------------
@@ -66,8 +69,29 @@ Optionally, set the shell variable `VERBOSE` to 1 to receive detailed progress n
 Placing gr1c on your shell path
 -------------------------------
 
-To use gr1c outside of the directory you just built it in, you will need to add it to the search path of your shell. Assuming you have administrative privileges, one solution is
+To use the program `gr1c` outside of the directory you just built it in, you will need to add it to the search path of your shell. Assuming you have administrative privileges, one solution is
 
     $ sudo make install
 
-which will copy gr1c to ``/usr/local/bin``, a commonly used location for "local" installations.
+which will copy `gr1c` and `rg` to ``/usr/local/bin``, a commonly used location for "local" installations.  The programs `grpatch` and `grjit` are *not* included in as an effect of `make install`.  Extra instructions concerning these are below.
+
+
+Extras
+------
+
+Running `make`, as described above, will not cause the programs
+`grpatch` and `grjit` to be built.  To achieve this,
+
+    $ make exp
+
+Alternatively, you can request a specific executable, e.g., `make
+grpatch`.  You can clean the sourcetree of all executables and other
+temporary files by running `make clean`.
+
+[Doxygen](http://www.doxygen.org) (version 1.8.0 or later) must be
+installed to build the documentation...including the page you are now
+reading.  Try
+
+    $ make doc
+
+and the result will be under ``doc/build``.
