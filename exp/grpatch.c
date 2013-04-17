@@ -201,7 +201,7 @@ int main( int argc, char **argv )
 				"              supported formats: txt, dot, aut, tulip, tulip0\n"
 				"  -p          dump parse trees to DOT files, and echo formulas to screen\n", argv[0] );
 		printf( "  -m VARS     VARS is a space-separated list of metric variables\n"
-				"  -a FILE     automaton file in \"gr1c\" format;\n"
+				"  -a FILE     automaton input file, in gr1c \"aut\" format;\n"
 				"              if FILE is -, then read from stdin\n"
 				"  -e FILE     patch, given game edge set change file; requires -a flag\n"
 				"  -o FILE     output strategy to FILE, rather than stdout (default)\n"
