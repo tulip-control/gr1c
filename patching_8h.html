@@ -100,8 +100,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ad483c1236e8fe914545ce6bc8180f25c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="patching_8h.html#ad483c1236e8fe914545ce6bc8180f25c">patch_localfixpoint</a> (DdManager *manager, FILE *strategy_fp, FILE *change_fp, unsigned char verbose)</td></tr>
-<tr class="separator:ad483c1236e8fe914545ce6bc8180f25c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b1f20bc6e524f1dc449b242875fc280"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="patching_8h.html#a5b1f20bc6e524f1dc449b242875fc280">patch_localfixpoint</a> (DdManager *manager, FILE *strategy_fp, FILE *change_fp, int original_num_env, int original_num_sys, <a class="el" href="structptree__t.html">ptree_t</a> *nonbool_var_list, int *offw, unsigned char verbose)</td></tr>
+<tr class="separator:a5b1f20bc6e524f1dc449b242875fc280"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a10c6a1f506834a2a328afe6a287595ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="patching_8h.html#a10c6a1f506834a2a328afe6a287595ad">synthesize_reachgame</a> (DdManager *manager, int num_env, int num_sys, <a class="el" href="structanode__t.html">anode_t</a> **Entry, int Entry_len, <a class="el" href="structanode__t.html">anode_t</a> **Exit, int Exit_len, DdNode *etrans, DdNode *strans, DdNode **egoals, DdNode *N_BDD, unsigned char verbose)</td></tr>
 <tr class="separator:a10c6a1f506834a2a328afe6a287595ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a64b69505e9f5695d6e2439d98c2f8836"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a64b69505e9f5695d6e2439d98c2f8836"></a>
@@ -112,7 +112,7 @@ Functions</h2></td></tr>
 <div class="textblock"><p>Implementation of patching and incremental synthesis algorithms. </p>
 <p>SCL; 2012, 2013. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ad483c1236e8fe914545ce6bc8180f25c"></a>
+<a class="anchor" id="a5b1f20bc6e524f1dc449b242875fc280"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -137,6 +137,30 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>original_num_env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>original_num_sys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td>
+          <td class="paramname"><em>nonbool_var_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>offw</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">unsigned char&#160;</td>
           <td class="paramname"><em>verbose</em>&#160;</td>
         </tr>
@@ -148,7 +172,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Implementation of algorithm presented in</p>
-<p>S.C. Livingston, P. Prabhakar, A.B. Jose, R.M. Murray (2012). Patching task-level robot controllers based on a local mu-calculus formula. Caltech CDS technical report. <a href="http://resolver.caltech.edu/CaltechCDSTR:2012.003">http://resolver.caltech.edu/CaltechCDSTR:2012.003</a></p>
+<p>S.C. Livingston, P. Prabhakar, A.B. Jose, R.M. Murray. Patching task-level robot controllers based on a local mu-calculus formula. to appear at ICRA in May 2013. (The original Caltech CDS technical report is <a href="http://resolver.caltech.edu/CaltechCDSTR:2012.003">http://resolver.caltech.edu/CaltechCDSTR:2012.003</a>)</p>
 <p>Read given strategy in "gr1c automaton" format from stream strategy_fp, using edge set changes to the game graph listed in stream change_fp. See <a href="md_formats.html">external_notes</a> for format details. If strategy_fp = NULL, then read from stdin.</p>
 <p>Return the head pointer of the patched strategy, or NULL if error.</p>
 <p>As usual, this function will not try to close given streams when finished. </p>
@@ -245,7 +269,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 16 2013 03:18:15 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 17 2013 13:53:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

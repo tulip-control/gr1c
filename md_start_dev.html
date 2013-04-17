@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.3.1"/>
-<title>gr1c: ptree_t Struct Reference</title>
+<title>gr1c: Developer&#39;s introduction</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -38,9 +38,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
+      <li class="current"><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
-      <li class="current"><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
+      <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -60,13 +60,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
-  <div id="navrow2" class="tabs2">
-    <ul class="tablist">
-      <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
-      <li><a href="classes.html"><span>Data&#160;Structure&#160;Index</span></a></li>
-      <li><a href="functions.html"><span>Data&#160;Fields</span></a></li>
-    </ul>
-  </div>
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -83,45 +76,58 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 </div><!-- top -->
 <div class="header">
-  <div class="summary">
-<a href="#pub-attribs">Data Fields</a>  </div>
   <div class="headertitle">
-<div class="title">ptree_t Struct Reference</div>  </div>
+<div class="title">Developer's introduction </div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p>This page describes how to (begin to) navigate the code in a way useful to those who wish to modify it, link against, etc.</p>
+<h2>Layout of the sources</h2>
+<dl>
+<dt><code>.</code> </dt>
+<dd><p class="startdd">Root directory of the source tree. Contains LICENSE.txt, the directories listed below, etc.</p>
+<p class="enddd"></p>
+</dd>
+<dt><code>src/</code> </dt>
+<dd><p class="startdd">Source code. The main entry points for the programs <code>gr1c</code> and <code>rg</code> are in <code>src/main.c</code> and <code>src/rg_main.c</code>, respectively.</p>
+<p class="enddd"></p>
+</dd>
+<dt><code>exp/</code> </dt>
+<dd><p class="startdd">Consult <code>exp/README.txt</code>. The main entry point for the program <code>grpatch</code> is in <code>exp/grpatch.c</code>.</p>
+<p class="enddd"></p>
+</dd>
+<dt><code>examples/</code> </dt>
+<dd><p class="startdd">Example specifications, edge change files, etc. Some files are intended for use with the program <code>gr1c</code>, others with <code>rg</code>, and still others with <code>grpatch</code> and <code>grjit</code>, or some combination thereof. Documentation for examples is provided in <code>examples/README.txt</code> or in comments at the top of the respective file.</p>
+<p class="enddd"></p>
+</dd>
+<dt><code>tests/</code> </dt>
+<dd><p class="startdd">A test suite, which is usually invoked by <code>make check</code> from the root directory. Tests are built and run by <code>tests/Makefile</code>. An environment variable <code>VERBOSE</code> may be set to 1 to indicate that testing progress should be reported as it happens.</p>
+<p class="enddd"></p>
+</dd>
+<dt><code>doc/</code> </dt>
+<dd><p class="startdd">Documentation source files and configuration.</p>
+<p class="enddd"></p>
+</dd>
+</dl>
+<h2>Unsorted notes</h2>
+<p>Internally variables of non-Boolean domains are mapped into a set of Boolean variables that use the original variable name as a prefix and then append the corresponding bit index. E.g., <code>y</code> with domain of {0,1,2} would translate to 2 variables, <code>y0</code>, <code>y1</code> that are used to encode the bitvectors 00, 01, and 10. 11 (i.e., <code>y0</code> and <code>y1</code> both set to <code>True</code>) is unreachable.</p>
+<h2>Code style</h2>
+<p>My strongest taste is for the Linux kernel style, as expounded in <a href="http://lxr.linux.no/#linux+v3.8.8/Documentation/CodingStyle">Documentation/CodingStyle</a>. However, I prefer a tab width of 4 spaces. Documentation in source code should usually be line-wrapped at 70 characters (default in Emacs), but more importantly, lines of code or comments should rarely exceed 80 characters in length. README or other plain text files describing nearby stuff are written in <a href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> and line-wrapped at 80 characters. Many comments in the code (e.g., if beginning with <code>/**</code>) and <code>.md</code> files under the <code>doc</code> directory are processed by <a href="http://www.doxygen.org">Doxygen</a>. So in particular, <code>.md</code> files under <code>doc</code> are written in <a href="http://daringfireball.net/projects/markdown/">Markdown</a>. If you use <a href="http://www.gnu.org/software/emacs/">Emacs</a>, then you may be able to achieve the correct line width and tab conventions by adding the following to your <code>.emacs</code> configuration file. </p>
+<pre class="fragment">(add-hook 'rst-mode-hook
+  '(lambda ()
+ (setq fill-column 80)))
 
-<p>Parse tree nodes.  
- <a href="structptree__t.html#details">More...</a></p>
+(add-hook 'c-mode-common-hook
+      '(lambda ()
+    (c-add-style "scott-c-style" scott-c-style t)))
 
-<p><code>#include &lt;ptree.h&gt;</code></p>
-<table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Data Fields</h2></td></tr>
-<tr class="memitem:a17cc02a7df7035e503b42d25ac0c958e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a17cc02a7df7035e503b42d25ac0c958e"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structptree__t.html#a17cc02a7df7035e503b42d25ac0c958e">type</a></td></tr>
-<tr class="memdesc:a17cc02a7df7035e503b42d25ac0c958e"><td class="mdescLeft">&#160;</td><td class="mdescRight">See table of <a class="el" href="group___p_tree_node_types.html">parse tree node types</a>. <br/></td></tr>
-<tr class="separator:a17cc02a7df7035e503b42d25ac0c958e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6f8e7b5ed17bc61b1760320bd923ea4c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6f8e7b5ed17bc61b1760320bd923ea4c"></a>
-char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structptree__t.html#a6f8e7b5ed17bc61b1760320bd923ea4c">name</a></td></tr>
-<tr class="memdesc:a6f8e7b5ed17bc61b1760320bd923ea4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Name of the variable, if applicable. <br/></td></tr>
-<tr class="separator:a6f8e7b5ed17bc61b1760320bd923ea4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8bf206a372293d1a6dfb49956e57d786"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8bf206a372293d1a6dfb49956e57d786"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structptree__t.html#a8bf206a372293d1a6dfb49956e57d786">value</a></td></tr>
-<tr class="memdesc:a8bf206a372293d1a6dfb49956e57d786"><td class="mdescLeft">&#160;</td><td class="mdescRight">Value of a constant. If of type boolean, then 0 means "false", and 1 "true". <br/></td></tr>
-<tr class="separator:a8bf206a372293d1a6dfb49956e57d786"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8ec16da6488875dab3b884c445705dcf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8ec16da6488875dab3b884c445705dcf"></a>
-struct <a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>left</b></td></tr>
-<tr class="separator:a8ec16da6488875dab3b884c445705dcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a86ab14ea84cd3dd64f598639e95b6d5c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a86ab14ea84cd3dd64f598639e95b6d5c"></a>
-struct <a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>right</b></td></tr>
-<tr class="separator:a86ab14ea84cd3dd64f598639e95b6d5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Parse tree nodes. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
-<li><a class="el" href="ptree_8h.html">ptree.h</a></li>
-</ul>
-</div><!-- contents -->
+(add-hook 'c++-mode-common-hook
+  '(lambda ()
+(c-add-style "scott-c-style" scott-c-style t)))
+
+(setq scott-c-style
+  '((tab-width . 4)
+   (indent-tabs-mode . t)
+   (c-basic-offset . 4)))</pre> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated on Wed Apr 17 2013 13:53:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">

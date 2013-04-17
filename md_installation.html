@@ -80,7 +80,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Installation </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Aside from standard C libraries and a basic development environment (gcc, etc.), <b>gr1c</b> depends on <a href="http://vlsi.colorado.edu/~fabio/CUDD/">CUDD</a>, the CU Decision Diagram package by Fabio Somenzi and others. Also, gr1c interactive mode optionally uses GNU Readline (disabled by default; see "USE_READLINE" definition in Makefile). This installation guide should work for anything Unix-like, but in particular it has been tested on 32-bit GNU/Linux and 64-bit Mac OS X.</p>
+<div class="textblock"><p>This building and installation guide should work for anything Unix-like, but in particular it has been tested on 32-bit GNU/Linux and 64-bit Mac OS X.</p>
+<p>Aside from standard C libraries and a basic development environment (gcc, etc.), <b>gr1c</b> depends on <a href="http://vlsi.colorado.edu/~fabio/CUDD/">CUDD</a>, the CU Decision Diagram package by Fabio Somenzi and others. Also, gr1c interactive mode optionally uses GNU Readline (disabled by default; see <code>USE_READLINE</code> definition in Makefile). The parser generator <a href="http://www.gnu.org/software/bison/">Bison</a> and the lexical analyzer <a href="http://flex.sourceforge.net/">flex</a> are required to build gr1c. Other Yacc and lex compatible tools may suffice, but this has not been tested.</p>
 <h2>Determining word size on your computer</h2>
 <p>As noted in the <a href="https://github.com/slivingston/gr1c/blob/master/README.rst">README</a>, you must determine the number of bytes used for <code>void</code> pointers and <code>long int</code> on your computer. These will be provided as compile flags when building CUDD and gr1c. An easy way to discover these is to place </p>
 <pre class="fragment">#include &lt;stdio.h&gt;
@@ -114,15 +115,22 @@ $ cd cudd-2.5.0
 </pre><h2>Testing</h2>
 <p>Before deploying gr1c and especially if you are building it yourself, run the test suite from the source distribution. After following the build steps above, do </p>
 <pre class="fragment">$ make check
-</pre><p>Most test code is placed under the <code>tests</code> directory. <b>N.B.</b>, scripted interaction will only work if you build without GNU Readline. If a test fails, despite you following the installation instructions, then please open an <a href="https://github.com/slivingston/gr1c/issues">issue on GitHub</a> or contact Scott Livingston at <a href="#" onclick="location.href='mai'+'lto:'+'sli'+'vi'+'ngs'+'to'+'n@c'+'ds'+'.ca'+'lt'+'ech'+'.e'+'du'; return false;">slivi<span style="display: none;">.nosp@m.</span>ngst<span style="display: none;">.nosp@m.</span>on@cd<span style="display: none;">.nosp@m.</span>s.ca<span style="display: none;">.nosp@m.</span>ltech<span style="display: none;">.nosp@m.</span>.edu</a></p>
+</pre><p>Optionally, set the shell variable <code>VERBOSE</code> to 1 to receive detailed progress notifications. E.g., try <code>VERBOSE=1 make check</code>. Most test code is placed under the <code>tests</code> directory. <b>N.B.</b>, scripted interaction will only work if you build without GNU Readline. If a test fails, despite you following the installation instructions, then please open an <a href="https://github.com/slivingston/gr1c/issues">issue on GitHub</a> or contact Scott Livingston at <a href="#" onclick="location.href='mai'+'lto:'+'sli'+'vi'+'ngs'+'to'+'n@c'+'ds'+'.ca'+'lt'+'ech'+'.e'+'du'; return false;">slivi<span style="display: none;">.nosp@m.</span>ngst<span style="display: none;">.nosp@m.</span>on@cd<span style="display: none;">.nosp@m.</span>s.ca<span style="display: none;">.nosp@m.</span>ltech<span style="display: none;">.nosp@m.</span>.edu</a></p>
 <h2>Placing gr1c on your shell path</h2>
-<p>To use gr1c outside of the directory you just built it in, you will need to add it to the search path of your shell. Assuming you have administrative privileges, one solution is </p>
+<p>To use the program <code>gr1c</code> outside of the directory you just built it in, you will need to add it to the search path of your shell. Assuming you have administrative privileges, one solution is </p>
 <pre class="fragment">$ sudo make install
-</pre><p>which will copy gr1c to <code>/usr/local/bin</code>, a commonly used location for "local" installations. </p>
+</pre><p>which will copy <code>gr1c</code> and <code>rg</code> to <code>/usr/local/bin</code>, a commonly used location for "local" installations. The programs <code>grpatch</code> and <code>grjit</code> are <em>not</em> included in as an effect of <code>make install</code>. Extra instructions concerning these are below.</p>
+<h2>Extras</h2>
+<p>Running <code>make</code>, as described above, will not cause the programs <code>grpatch</code> and <code>grjit</code> to be built. To achieve this, </p>
+<pre class="fragment">$ make exp
+</pre><p>Alternatively, you can request a specific executable, e.g., <code>make grpatch</code>. You can clean the sourcetree of all executables and other temporary files by running <code>make clean</code>.</p>
+<p><a href="http://www.doxygen.org">Doxygen</a> (version 1.8.0 or later) must be installed to build the documentation...including the page you are now reading. Try </p>
+<pre class="fragment">$ make doc
+</pre><p>and the result will be under <code>doc/build</code>. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 16 2013 03:18:15 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 17 2013 13:53:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

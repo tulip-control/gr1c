@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['specification_20input_20format',['Specification input format',['../md_spc_format.html',1,'']]],
   ['saturated_5fcube',['saturated_cube',['../solve__support_8h.html#a13d4198bdc7f2cd4cbb57b4b70279730',1,'solve_support.c']]],
   ['setlogopt',['setlogopt',['../logging_8h.html#a4aff371edb15ed7af2d24a5c1d1dbeaa',1,'logging.c']]],
   ['setlogstream',['setlogstream',['../logging_8h.html#a8b5d7d25eabac93a7f351a16f522451b',1,'logging.c']]],
