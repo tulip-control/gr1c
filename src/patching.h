@@ -15,10 +15,11 @@
 
 /** Implementation of algorithm presented in
 
-     S.C. Livingston, P. Prabhakar, A.B. Jose, R.M. Murray (2012).
+     S.C. Livingston, P. Prabhakar, A.B. Jose, R.M. Murray.
      Patching task-level robot controllers based on a local
-     mu-calculus formula. Caltech CDS technical report.
-     http://resolver.caltech.edu/CaltechCDSTR:2012.003
+     mu-calculus formula. to appear at ICRA in May 2013.
+     (The original Caltech CDS technical report is
+      http://resolver.caltech.edu/CaltechCDSTR:2012.003)
 
    Read given strategy in "gr1c automaton" format from stream
    strategy_fp, using edge set changes to the game graph listed in

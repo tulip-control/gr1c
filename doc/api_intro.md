@@ -24,10 +24,6 @@ suggestions, or feature requests, then please open an [issue on
 GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott
 Livingston at <slivingston@cds.caltech.edu>
 
-
-Basic usage
------------
-
 In the documentation below, we assume that gr1c is on the shell
 path. To see a summary of possible command-line arguments,
 
@@ -37,9 +33,10 @@ Examples
 --------
 
 Many specification files are provided under the `examples` directory.
-Begin by reading `examples/README.txt`.  As a simple first step,
-consider the following specification, which is `examples/trivial.spc`
-after removing comments.
+Begin by reading `examples/README.txt`. Then read the [file
+formats](md_formats.html) and [specification input](md_spc_format.html)
+pages.  As a simple first step, consider the following specification,
+which is `examples/trivial.spc` after removing comments.
 
     ENV: x;
     SYS: y;

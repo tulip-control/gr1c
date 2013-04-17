@@ -1,7 +1,7 @@
 Installation
 ============
 
-Aside from standard C libraries and a basic development environment (gcc, etc.), **gr1c** depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/), the CU Decision Diagram package by Fabio Somenzi and others.  Also, gr1c interactive mode optionally uses GNU Readline (disabled by default; see "USE_READLINE" definition in Makefile).  This installation guide should work for anything Unix-like, but in particular it has been tested on 32-bit GNU/Linux and 64-bit Mac OS X.
+Aside from standard C libraries and a basic development environment (gcc, etc.), **gr1c** depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/), the CU Decision Diagram package by Fabio Somenzi and others.  Also, gr1c interactive mode optionally uses GNU Readline (disabled by default; see `USE_READLINE` definition in Makefile).  This installation guide should work for anything Unix-like, but in particular it has been tested on 32-bit GNU/Linux and 64-bit Mac OS X.
 
 Determining word size on your computer
 --------------------------------------
@@ -60,7 +60,8 @@ Before deploying gr1c and especially if you are building it yourself, run the te
 
     $ make check
 
-Most test code is placed under the ``tests`` directory. **N.B.**, scripted interaction will only work if you build without GNU Readline.  If a test fails, despite you following the installation instructions, then please open an [issue on GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott Livingston at <slivingston@cds.caltech.edu>
+Optionally, set the shell variable `VERBOSE` to 1 to receive detailed progress notifications.  E.g., try `VERBOSE=1 make check`.  Most test code is placed under the ``tests`` directory. **N.B.**, scripted interaction will only work if you build without GNU Readline.  If a test fails, despite you following the installation instructions, then please open an [issue on GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott Livingston at <slivingston@cds.caltech.edu>
+
 
 Placing gr1c on your shell path
 -------------------------------

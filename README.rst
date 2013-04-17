@@ -5,17 +5,7 @@ Scott C. Livingston  <slivingston@cds.caltech.edu>
 
 **gr1c** is a tool for GR(1) synthesis and related activities.  Its core
 functionality is checking realizability of and synthesizing strategies for GR(1)
-specifications, though it does much more.  The fixpoint formula defining the
-winning set is given (and its correctness proven) in
-
-    Y. Kesten, N. Piterman, and A. Pnueli (2005). Bridging the gap between
-    fair simulation and trace inclusion. *Information and Computation*,
-    200: 35--61. DOI:`10.1016/j.ic.2005.01.006 <http://dx.doi.org/10.1016/j.ic.2005.01.006>`_.
-
-Documentation is available under the ``doc`` directory. API-related documents
-are built with `Doxygen <http://www.doxygen.org>`_; version 1.8.0 or later
-required for Markdown support.  Snapshots are occasionally posted at
-http://slivingston.github.com/gr1c
+specifications, though it does much more.
 
 **rg** is a tool for solving "reachability games," which are similar to GR(1)
 formulae except with at most one system goal and where that system goal must be
@@ -23,19 +13,12 @@ reached once (not necessarily infinitely often).  The accepted input
 specifications are slightly different; the single system goal is preceded by
 "<>" (as the "eventually" operator).
 
-**gr1c** depends on CUDD, the CU Decision Diagram package by Fabio Somenzi and
-others.  See http://vlsi.colorado.edu/~fabio/CUDD/
+**gr1c** depends on `CUDD <http://vlsi.colorado.edu/~fabio/CUDD/>`_,
+the CU Decision Diagram package by Fabio Somenzi and others.
 
 
 Build and Installation
 ======================
-
-A test suite is available.  To run it, after building gr1c, ::
-
-  $ make check
-
-Each testing step is reported if the environment variable VERBOSE is set to 1.
-E.g., try ``VERBOSE=1 make check``
 
 For installation, CUDD (see above) should be placed in a directory called
 "extern".  Be sure that similar flags are used for compiling both gr1c and CUDD.
@@ -57,27 +40,28 @@ Once CUDD is built, it suffices to run ``make``.  If this fails, first
 look in the Makefile to verify the expected relative location of CUDD
 (named "CUDD_ROOT").
 
+A test suite is available.  To run it, after building gr1c, ::
 
-Grammar for GR(1)
-=================
+  $ make check
 
-*Summary:* C-like, infix syntax. Comments begin with ``#`` and continue until
-the end of line. The grammar below is not complete (nor normative), but should
-be enough for you to compose specifications.  Cf. the ``examples`` directory.
+Each testing step is reported if the environment variable VERBOSE is set to 1.
+E.g., try ``VERBOSE=1 make check``.  Detailed installation instructions are
+available in the documentation (see below).
 
-::
 
-  /* Define which variables are controlled and uncontrolled. */
-  envvarlist ::= 'ENV:' VARIABLE | envvarlist VARIABLE
-  sysvarlist ::= 'SYS:' VARIABLE | sysvarlist VARIABLE
+Examples and Documentation
+==========================
 
-  propformula ::= "False" | "True" | VARIABLE | '!' propformula | propformula '&' propformula | propformula '|' propformula | propformula "->" propformula | VARIABLE '=' NUMBER | '(' propformula ')'
+Many examples are provided.  Begin by reading ``examples/README.txt``.
 
-  /* The only difference between propformula and tpropformula is variables can be primed (next operator) in the latter. */
-  tpropformula ::= "False" | "True" | VARIABLE | VARIABLE '\'' | '!' tpropformula | tpropformula '&' tpropformula | tpropformula '|' tpropformula | tpropformula "->" tpropformula | VARIABLE '=' NUMBER | '(' tpropformula ')'
+Documentation is available under the ``doc`` directory and is built using
+`Doxygen <http://www.doxygen.org>`_; version 1.8.0 or later required for
+Markdown support.  To build it, try ::
 
-  transformula ::= "[]" tpropformula | transformula '&' transformula
-  goalformula ::= "[]<>" propformula | goalformua '&' goalformula
+  $ make doc
+
+and the result will be under ``doc/build``. Snapshots are occasionally posted at
+http://slivingston.github.io/gr1c
 
 
 License
