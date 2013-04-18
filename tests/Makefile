@@ -18,6 +18,7 @@ all: $(PROGRAMS)
 	./test_solve_support
 	./test_patching
 	sh test-gr1c.sh
+	sh test-grpatch.sh
 	@echo "============================================================\nPASSED\n"
 
 
