@@ -99,8 +99,12 @@ rg_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/rg_parse.y
 install:
 	cp $(CORE_PROGRAMS) $(INSTALLDIR)/
 
+.PHONY: expinstall
+expinstall:
+	cp grpatch $(INSTALLDIR)/
+
 uninstall:
-	rm $(INSTALLDIR)/gr1c $(INSTALLDIR)/rg
+	rm -f $(INSTALLDIR)/gr1c $(INSTALLDIR)/rg $(INSTALLDIR)/grpatch
 
 check: $(CORE_PROGRAMS) $(EXP_PROGRAMS)
 	$(MAKE) -C tests
