@@ -105,13 +105,6 @@ uninstall:
 check: $(CORE_PROGRAMS) $(EXP_PROGRAMS)
 	$(MAKE) -C tests
 
-# Generate PNG images from DOT files in local directory
-png:
-	@(for k in *.dot; do \
-		echo $$k; \
-		dot -Tpng -O $$k; \
-	done)
-
 .PHONY: doc
 doc:
 	@(cd doc; doxygen; cd ..)
