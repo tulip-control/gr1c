@@ -786,7 +786,11 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 					return NULL;
 				}
 				if (num_nonbool > 0) {
+					for (i = 0; i < num_nonbool-num_enonbool; i++)
+						*(offw+2*num_enonbool+2*i) -= num_env;
 					state = expand_nonbool_state( state_frag, offw+2*num_enonbool, num_nonbool-num_enonbool, num_sys );
+					for (i = 0; i < num_nonbool-num_enonbool; i++)
+						*(offw+2*num_enonbool+2*i) += num_env;
 					if (state == NULL) {
 						fprintf( stderr, "Error patch_localfixpoint: failed to expand nonbool values in edge change file\n" );
 						return NULL;
