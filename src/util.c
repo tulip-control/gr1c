@@ -167,7 +167,7 @@ vartype *expand_nonbool_state( vartype *state, int *offw, int num_nonbool, int m
 		k++;
 	}
 
-	return mapped_state;	
+	return mapped_state;
 }
 
 
