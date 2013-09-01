@@ -11,9 +11,9 @@ in FILE (see format below).
 tulipcon XML
 ------------
 
-See [nu-TuLiP
-documentation](http://slivingston.github.io/nu-tulip/doc/),
-specifically the [page about data formats](http://slivingston.github.io/nu-tulip/doc/data_formats.html#tulipcon-xml).
+See [nTLP
+documentation](http://slivingston.github.io/nTLP/doc/),
+specifically the [page about data formats](http://slivingston.github.io/nTLP/doc/data_formats.html#tulipcon-xml).
 
 
 gr1c automaton
