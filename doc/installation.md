@@ -85,13 +85,18 @@ Running `make`, as described above, will not cause the programs
     $ make exp
 
 Alternatively, you can request a specific executable, e.g., `make
-grpatch`.  You can clean the sourcetree of all executables and other
-temporary files by running `make clean`.
+grpatch`.  To install `grpatch` in the same place as `gr1c`,
 
+    $ make expinstall
+
+Other experiment-related programs, such as `grjit`, will eventually be
+added to the list installed by the expinstall command.
 [Doxygen](http://www.doxygen.org) (version 1.8.0 or later) must be
 installed to build the documentation...including the page you are now
 reading.  Try
 
     $ make doc
 
-and the result will be under `doc/build`.
+and the result will be under `doc/build`.  You can clean the
+sourcetree of all executables and other temporary files by running
+`make clean`.
