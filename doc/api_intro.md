@@ -6,17 +6,12 @@ repo can be cloned from
 
     https://github.com/slivingston/gr1c.git
 
-**gr1c** is a tool for GR(1) synthesis and related activities.  Its
-core functionality is checking realizability of and synthesizing
-strategies for GR(1) specifications, though it does much more.
-Relevant papers can be found in the [bibliography](md_papers.html).
+**gr1c** is a collection of tools for GR(1) synthesis and related
+activities.  Its core functionality is checking realizability of and
+synthesizing strategies for GR(1) specifications, though it does much
+more.  Relevant papers can be found in the [bibliography](md_papers.html).
 
-**rg** is a tool for solving "reachability games," which are similar
-to GR(1) formulae except with at most one system goal and where that
-system goal must be reached once (not necessarily infinitely often).
-The accepted input specifications are slightly different; the single
-system goal is preceded by "<>" (as the "eventually" operator).
-
+Releases are posted at http://vehicles.caltech.edu/snapshots/.
 See the [installation page](md_installation.html) for instructions
 about installing gr1c from source code.  Beware the code is still
 experimental. If you find a possible bug or have comments,
@@ -73,6 +68,41 @@ into a [DOT](http://www.graphviz.org/) file, and create a PNG called
 
     $ gr1c -t dot examples/trivial.spc > temp.dot
     $ dot -Tpng -O temp.dot
+
+
+Components
+----------
+
+Besides using the API directly and linking to relevant source files
+(cf. [the developer's introduction](md_start_dev.html)), several
+executable programs are built, some of which are considered
+experimental due to inclusion of methods involving active research.  A
+summary of these programs follows:
+
+<dl>
+<dt>gr1c</dt>
+<dd>the basic program for synthesis of strategies for GR(1) formulae
+as defined in [[KPP05]](md_papers.html#KPP05) (GR(1) is referred
+to as "generalized Streett[1]" in that paper).  An original motivating algorithm was
+implemented by Yaniv Sa'ar [[BJPPS12]](md_papers.html#BJPPS12), though
+the implementation in gr1c differs somewhat.
+</dd>
+
+<dt>rg</dt>
+<dd>a tool for solving "reachability games," which are similar
+to GR(1) formulae except with at most one system goal and where that
+system goal must be reached once (not necessarily infinitely often).
+The accepted input specifications are slightly different; the single
+system goal is preceded by "<>" (as the "eventually" operator).
+</dd>
+
+<dt>grpatch</dt>
+<dd>(experimental.)  a command-line tool for using implementations of
+incremental synthesis (or "patching") algorithms, mostly from recent
+research publications.  E.g., patch_localfixpoint() (cf. patching.h)
+concerns the method in [[LPJM13]](md_papers.html#LPJM13).
+</dd>
+</dl>
 
 
 Further reading

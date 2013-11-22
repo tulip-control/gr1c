@@ -3,22 +3,29 @@ Introduction
 
 Scott C. Livingston  <slivingston@cds.caltech.edu>
 
-**gr1c** is a tool for GR(1) synthesis and related activities.  Its core
-functionality is checking realizability of and synthesizing strategies for GR(1)
-specifications, though it does much more.
-
-**rg** is a tool for solving "reachability games," which are similar to GR(1)
-formulae except with at most one system goal and where that system goal must be
-reached once (not necessarily infinitely often).  The accepted input
-specifications are slightly different; the single system goal is preceded by
-"<>" (as the "eventually" operator).
+**gr1c** is a collection of tools for GR(1) synthesis and related activities.
+Its core functionality is checking realizability of and synthesizing strategies
+for GR(1) specifications, though it does much more.
 
 **gr1c** depends on `CUDD <http://vlsi.colorado.edu/~fabio/CUDD/>`_,
 the CU Decision Diagram package by Fabio Somenzi and others.
 
 
-Build and Installation
-======================
+Installation
+============
+
+Releases
+--------
+
+Releases are posted at http://vehicles.caltech.edu/snapshots/
+
+A different location may eventually be chosen, but that URL will be valid at
+least until the year 2015.  Pre-built binaries for several platforms are
+available, though the preferred distribution form is as a source bundle.
+
+
+Building from Source
+--------------------
 
 For installation, CUDD (see above) should be placed in a directory called
 "extern".  Be sure that similar flags are used for compiling both gr1c and CUDD.

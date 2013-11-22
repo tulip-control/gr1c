@@ -1,8 +1,8 @@
 Developer's introduction
 ========================
 
-This page describes how to (begin to) navigate the code in a way
-useful to those who wish to modify it, link against, etc.
+This page describes how to navigate the code in a way useful to those
+who wish to modify it, link against, etc.
 
 
 Layout of the sources
@@ -16,7 +16,10 @@ listed below, etc.</dd>
 
 <dt>`src/`</dt>
 <dd>Source code.  The main entry points for the programs `gr1c` and
-`rg` are in `src/main.c` and `src/rg_main.c`, respectively.</dd>
+`rg` are in `src/main.c` and `src/rg_main.c`, respectively.  Other files include:
+<ul>
+  <li>common.h, which defines the version number.</li>
+</ul></dd>
 
 <dt>`exp/`</dt>
 <dd>Consult `exp/README.txt`.  The main entry point for the program
@@ -41,10 +44,12 @@ testing progress should be reported as it happens.</dd>
 </dl>
 
 
-Unsorted notes
---------------
+Design notes
+------------
 
-Internally variables of non-Boolean domains are mapped into a set of
+### Non-boolean domains
+
+Internally, variables of non-Boolean domains are mapped into a set of
 Boolean variables that use the original variable name as a prefix and
 then append the corresponding bit index. E.g., `y` with domain of
 {0,1,2} would translate to 2 variables, `y0`, `y1` that are used to
@@ -54,6 +59,13 @@ to `True`) is unreachable.
 
 Code style
 ----------
+
+Version numbers are of the form MAJOR.MINOR.MICRO; when a tag is made
+for a release, it must be named as the version number preceded by "v",
+e.g., "v0.6.1" for version 0.6.1.  The next commit following a release
+tag should use a version number greater than that of the tag.  For
+example, the first commit after that tagged "v0.6.1" has version
+0.6.2.
 
 My strongest taste is for the Linux kernel style, as expounded in
 [Documentation/CodingStyle](http://lxr.linux.no/#linux+v3.8.8/Documentation/CodingStyle).

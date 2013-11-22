@@ -13,11 +13,11 @@
 #include "automaton.h"
 
 
-/** Implementation of algorithm presented in
+/** Implementation of algorithm from [[LPJM13]](md_papers.html#LPJM13)
 
      S.C. Livingston, P. Prabhakar, A.B. Jose, R.M. Murray.
      Patching task-level robot controllers based on a local
-     mu-calculus formula. to appear at ICRA in May 2013.
+     mu-calculus formula. presented at ICRA in May 2013.
      (The original Caltech CDS technical report is
       http://resolver.caltech.edu/CaltechCDSTR:2012.003)
 
