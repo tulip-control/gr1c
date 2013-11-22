@@ -82,9 +82,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 <div class="textblock"><p>The citable URL is <a href="http://scottman.net/2012/gr1c">http://scottman.net/2012/gr1c</a>. The public Git repo can be cloned from </p>
 <pre class="fragment">https://github.com/slivingston/gr1c.git
-</pre><p><b>gr1c</b> is a tool for GR(1) synthesis and related activities. Its core functionality is checking realizability of and synthesizing strategies for GR(1) specifications, though it does much more. Relevant papers can be found in the <a href="md_papers.html">bibliography</a>.</p>
-<p><b>rg</b> is a tool for solving "reachability games," which are similar to GR(1) formulae except with at most one system goal and where that system goal must be reached once (not necessarily infinitely often). The accepted input specifications are slightly different; the single system goal is preceded by "&lt;&gt;" (as the "eventually" operator).</p>
-<p>See the <a href="md_installation.html">installation page</a> for instructions about installing gr1c from source code. Beware the code is still experimental. If you find a possible bug or have comments, suggestions, or feature requests, then please open an <a href="https://github.com/slivingston/gr1c/issues">issue on GitHub</a> or contact Scott Livingston at <a href="#" onclick="location.href='mai'+'lto:'+'sli'+'vi'+'ngs'+'to'+'n@c'+'ds'+'.ca'+'lt'+'ech'+'.e'+'du'; return false;">slivi<span style="display: none;">.nosp@m.</span>ngst<span style="display: none;">.nosp@m.</span>on@cd<span style="display: none;">.nosp@m.</span>s.ca<span style="display: none;">.nosp@m.</span>ltech<span style="display: none;">.nosp@m.</span>.edu</a></p>
+</pre><p><b>gr1c</b> is a collection of tools for GR(1) synthesis and related activities. Its core functionality is checking realizability of and synthesizing strategies for GR(1) specifications, though it does much more. Relevant papers can be found in the <a href="md_papers.html">bibliography</a>.</p>
+<p>Releases are posted at <a href="http://vehicles.caltech.edu/snapshots/">http://vehicles.caltech.edu/snapshots/</a>. See the <a href="md_installation.html">installation page</a> for instructions about installing gr1c from source code. Beware the code is still experimental. If you find a possible bug or have comments, suggestions, or feature requests, then please open an <a href="https://github.com/slivingston/gr1c/issues">issue on GitHub</a> or contact Scott Livingston at <a href="#" onclick="location.href='mai'+'lto:'+'sli'+'vi'+'ngs'+'to'+'n@c'+'ds'+'.ca'+'lt'+'ech'+'.e'+'du'; return false;">slivi<span style="display: none;">.nosp@m.</span>ngst<span style="display: none;">.nosp@m.</span>on@cd<span style="display: none;">.nosp@m.</span>s.ca<span style="display: none;">.nosp@m.</span>ltech<span style="display: none;">.nosp@m.</span>.edu</a></p>
 <p>In the documentation below, we assume that gr1c is on the shell path. To see a summary of possible command-line arguments, </p>
 <pre class="fragment">$ gr1c -h
 </pre><h2>Examples</h2>
@@ -104,7 +103,21 @@ SYSGOAL: []&lt;&gt;(y&amp;x) &amp; []&lt;&gt;(!y);
 </pre><p>You should see a message indicating realizability, such as "Realizable." Now, to synthesize a strategy for it, output the result into a <a href="http://www.graphviz.org/">DOT</a> file, and create a PNG called <code>temp.dot.png</code> from that output, try </p>
 <pre class="fragment">$ gr1c -t dot examples/trivial.spc &gt; temp.dot
 $ dot -Tpng -O temp.dot
-</pre><h2>Further reading</h2>
+</pre><h2>Components</h2>
+<p>Besides using the API directly and linking to relevant source files (cf. <a href="md_start_dev.html">the developer's introduction</a>), several executable programs are built, some of which are considered experimental due to inclusion of methods involving active research. A summary of these programs follows:</p>
+<dl>
+<dt>gr1c </dt>
+<dd><p class="startdd">the basic program for synthesis of strategies for GR(1) formulae as defined in <a href="md_papers.html#KPP05">[KPP05]</a> (GR(1) is referred to as "generalized Streett[1]" in that paper). An original motivating algorithm was implemented by Yaniv Sa'ar <a href="md_papers.html#BJPPS12">[BJPPS12]</a>, though the implementation in gr1c differs somewhat. </p>
+<p class="enddd"></p>
+</dd>
+<dt>rg </dt>
+<dd><p class="startdd">a tool for solving "reachability games," which are similar to GR(1) formulae except with at most one system goal and where that system goal must be reached once (not necessarily infinitely often). The accepted input specifications are slightly different; the single system goal is preceded by "&lt;&gt;" (as the "eventually" operator). </p>
+<p class="enddd"></p>
+</dd>
+<dt>grpatch </dt>
+<dd>(experimental.) a command-line tool for using implementations of incremental synthesis (or "patching") algorithms, mostly from recent research publications. E.g., <a class="el" href="patching_8h.html#a5b1f20bc6e524f1dc449b242875fc280">patch_localfixpoint()</a> (cf. <a class="el" href="patching_8h.html" title="Implementation of patching and incremental synthesis algorithms.">patching.h</a>) concerns the method in <a href="md_papers.html#LPJM13">[LPJM13]</a>.  </dd>
+</dl>
+<h2>Further reading</h2>
 <ul>
 <li><a href="md_spc_format.html">format of input specifications</a></li>
 <li><a href="md_interaction.html">interactive sessions</a></li>
@@ -116,7 +129,7 @@ $ dot -Tpng -O temp.dot
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Apr 17 2013 13:53:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 21 2013 16:38:52 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>
