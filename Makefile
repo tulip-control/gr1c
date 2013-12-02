@@ -18,9 +18,11 @@ YACC = bison -y
 YFLAGS = -d
 
 CC = gcc
-CFLAGS = -g -Wall -pedantic -ansi -I$(CUDD_ROOT)/include -Isrc -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8
-LDFLAGS = $(CUDD_LIB) -lm
 LD = ld -r
+
+export CFLAGS_BASE = -g -Wall -pedantic -ansi -DHAVE_IEEE_754 -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8
+CFLAGS = $(CFLAGS_BASE) -I$(CUDD_ROOT)/include -Isrc
+LDFLAGS = $(CUDD_LIB) -lm
 
 # To use and statically link with GNU Readline
 #CFLAGS += -DUSE_READLINE

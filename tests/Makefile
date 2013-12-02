@@ -5,7 +5,7 @@
 
 CUDD_LIB = ../$(CUDD_ROOT)/cudd/libcudd.a ../$(CUDD_ROOT)/mtr/libmtr.a ../$(CUDD_ROOT)/st/libst.a ../$(CUDD_ROOT)/util/libutil.a ../$(CUDD_ROOT)/epd/libepd.a
 
-CFLAGS = -g -Wall -pedantic -ansi -I../src -I../$(CUDD_ROOT)/include
+CFLAGS = $(CFLAGS_BASE) -I../src -I../$(CUDD_ROOT)/include
 LDFLAGS = $(CUDD_LIB) -lm
 PROGRAMS = test_logging test_automaton test_automaton_io test_ptree test_ptree_to_BDD test_solve_support test_patching
 

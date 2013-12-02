@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION 2.6)
-# SCL; 5 June 2012.
+# SCL; 2 Dec 2013.
 
 project (gr1c)
 set (CUDD_ROOT extern/cudd-2.5.0)
-add_definitions (-DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8)
+add_definitions (-DHAVE_IEEE_754 -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8)
 set (USE_READLINE 0)
 
 include_directories (${CUDD_ROOT}/include)

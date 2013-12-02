@@ -52,7 +52,7 @@ where `SIZEOF_VOID_P` and `SIZEOF_LONG` refer to the number of bytes used for `v
 
     $ make
 
-With success building CUDD, we may now build gr1c. Change back to the gr1c root source directory and open the `Makefile`. There are two items to check. First, be sure that CUDD_ROOT matches where you just built CUDD; for the version used above, that would be `extern/cudd-2.5.0`. Second, be sure that CFLAGS has `-DSIZEOF_VOID_P=N -DSIZEOF_LONG=M` that match what you used to build CUDD.  Finally, run `make`. If no errors were reported, you should be able to see the version with
+With success building CUDD, we may now build gr1c. Change back to the gr1c root source directory and open the `Makefile`. There are two items to check. First, be sure that CUDD_ROOT matches where you just built CUDD; for the version used above, that would be `extern/cudd-2.5.0`. Second, be sure that CFLAGS_BASE has `-DSIZEOF_VOID_P=N -DSIZEOF_LONG=M` that match what you used to build CUDD.  Finally, run `make`. If no errors were reported, you should be able to see the version with
 
     $ ./gr1c -V
 
