@@ -41,6 +41,9 @@ testing progress should be reported as it happens.</dd>
 <dt>`doc/`</dt>
 <dd>Documentation source files and configuration.</dd>
 
+<dt>`packaging/`</dt>
+<dd>Consult `packaging/README.txt`.</dd>
+
 </dl>
 
 

@@ -6,4 +6,4 @@ the source tree (where this README file is located).
 
 Mac OS X
 
-  * macports/ MacPorts (http://www.macports.org/) Portfile.
+  * macports/ for use with MacPorts (http://www.macports.org/).
