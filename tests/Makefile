@@ -4,9 +4,10 @@
 
 
 CUDD_LIB = ../$(CUDD_ROOT)/cudd/libcudd.a ../$(CUDD_ROOT)/mtr/libmtr.a ../$(CUDD_ROOT)/st/libst.a ../$(CUDD_ROOT)/util/libutil.a ../$(CUDD_ROOT)/epd/libepd.a
+CUDD_INC = -I../$(CUDD_ROOT)/include
 
 CFLAGS = -g -Wall -pedantic -ansi
-ALL_CFLAGS = $(CFLAGS) $(CUDD_XCFLAGS) -I../$(CUDD_ROOT)/include -I../src
+ALL_CFLAGS = $(CFLAGS) $(CUDD_XCFLAGS) $(CUDD_INC) -I../src
 LDFLAGS = $(CUDD_LIB) -lm $(CUDD_XCFLAGS)
 PROGRAMS = test_logging test_automaton test_automaton_io test_ptree test_ptree_to_BDD test_solve_support test_patching
 

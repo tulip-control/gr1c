@@ -16,7 +16,7 @@ For the latest development snapshot, either [clone the repo](https://github.com/
     $ tar -xzf slivingston-gr1c-658f32b.tar.gz
     $ cd slivingston-gr1c-658f32b
 
-We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/). Let's make a directory called `extern` for this purpose. At the time of writing, the latest version is 2.5.0. Below we use `wget` to download it from the command-line. You might also try directing your Web browser at <ftp://vlsi.colorado.edu/pub/>, or see CUDD documentation for instructions.
+We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/).  Alternatives, e.g., if you have a shared library of CUDD installed, are described later as [additional build options](#altlib).  Let's make a directory called `extern` for this purpose. At the time of writing, the latest version is 2.5.0. Below we use `wget` to download it from the command-line. You might also try directing your Web browser at <ftp://vlsi.colorado.edu/pub/>, or see CUDD documentation for instructions.
 
     $ mkdir extern
     $ cd extern
@@ -102,3 +102,11 @@ reading.  Try
 and the result will be under `doc/build`.  You can clean the
 sourcetree of all executables and other temporary files by running
 `make clean`.
+
+<h3 id="altlib">Alternatives for linking with CUDD</h3>
+
+If you have CUDD available as a shared library (it is not officially distributed this way, but some people have patched it thus), then you can pass alternative flags to the gr1c makefile, e.g.,
+
+    $ make all CUDD_INC='-I/opt/local/include/cudd' CUDD_LIB='-L/opt/local/lib/cudd -lcudd'
+
+To make this behavior permanent, change the variables CUDD_INC and CUDD_LIB in the ``Makefile`` of gr1c.  To run tests against gr1c in this setting, replace "all" with "tests" in the previous command, or change ``tests/Makefile`` similarly.

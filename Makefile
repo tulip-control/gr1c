@@ -18,6 +18,7 @@ EXPDIR = exp
 export CUDD_ROOT = extern/cudd-2.5.0
 CUDD_LIB = $(CUDD_ROOT)/cudd/libcudd.a $(CUDD_ROOT)/mtr/libmtr.a $(CUDD_ROOT)/st/libst.a $(CUDD_ROOT)/util/libutil.a $(CUDD_ROOT)/epd/libepd.a
 export CUDD_XCFLAGS = -mtune=native -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8
+CUDD_INC = -I$(CUDD_ROOT)/include
 
 LEX = flex
 LFLAGS = 
@@ -28,7 +29,7 @@ CC = gcc
 LD = ld -r
 
 CFLAGS = -g -Wall -pedantic -ansi
-ALL_CFLAGS = $(CFLAGS) $(CUDD_XCFLAGS) -I$(CUDD_ROOT)/include -Isrc
+ALL_CFLAGS = $(CFLAGS) $(CUDD_XCFLAGS) $(CUDD_INC) -Isrc
 LDFLAGS = $(CUDD_LIB) -lm $(CUDD_XCFLAGS)
 
 # To use and statically link with GNU Readline
