@@ -27,33 +27,34 @@ available, though the preferred distribution form is as a source bundle.
 Building from Source
 --------------------
 
-For installation, CUDD (see above) should be placed in a directory called
-"extern".  Be sure that similar flags are used for compiling both gr1c and CUDD.
-In particular, SIZEOF_VOID_P and SIZEOF_LONG need to be set to the sizes (in
-bytes) of void pointer (``void *``) and ``long int`` on your system. gr1c ships
-with a Makefile that has these set for Intel x86 64-bit.
+Detailed installation instructions are available in the documentation (see
+below).  This section provides an outline.
 
-If you do not know the appropriate sizes for your system, then write a C program
-that prints ``sizeof(void *)`` and ``sizeof(long)`` to find them.  E.g., ::
+For building entirely from source code, CUDD (see above) should be placed in a
+directory called "extern".  The variable CUDD_ROOT in ``Makefile`` should
+indicate this directory and may need to be adjusted.  Be sure that similar flags
+are used for compiling both gr1c and CUDD.  In particular, SIZEOF_VOID_P and
+SIZEOF_LONG need to be set to the sizes (in bytes) of void pointer (``void *``)
+and ``long int`` on your system.  gr1c ships with a Makefile that has these set
+for Intel x86 64-bit, which will likely succeed for Linux x86_64 and Mac OS X.
+More generally, it should suffice to copy your setting of XCFLAGS in the
+``Makefile`` of CUDD to the variable CUDD_XCFLAGS in the ``Makefile`` of gr1c.
 
-  #include <stdio.h>
-  int main()
-  {
-      printf( "void *: %lu\nlong: %lu\n", sizeof(void *), sizeof(long) );
-      return 0;
-  }
+Once CUDD is built, all gr1c programs may be built and installed ::
 
-Once CUDD is built, it suffices to run ``make``.  If this fails, first
-look in the Makefile to verify the expected relative location of CUDD
-(named "CUDD_ROOT").
+  $ make all
+  $ make install expinstall
+
+The latter ``expinstall`` installs experimental tools, like ``grpatch``.  The
+default installation prefix is /usr/local.  Adjust it by invoking ``make`` with
+something like ``prefix=/your/new/path``.
 
 A test suite is available.  To run it, after building gr1c, ::
 
   $ make check
 
 Each testing step is reported if the environment variable VERBOSE is set to 1.
-E.g., try ``VERBOSE=1 make check``.  Detailed installation instructions are
-available in the documentation (see below).
+E.g., try ``VERBOSE=1 make check``.
 
 
 Examples and Documentation

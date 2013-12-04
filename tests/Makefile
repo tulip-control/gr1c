@@ -5,8 +5,9 @@
 
 CUDD_LIB = ../$(CUDD_ROOT)/cudd/libcudd.a ../$(CUDD_ROOT)/mtr/libmtr.a ../$(CUDD_ROOT)/st/libst.a ../$(CUDD_ROOT)/util/libutil.a ../$(CUDD_ROOT)/epd/libepd.a
 
-CFLAGS = $(CFLAGS_BASE) -I../src -I../$(CUDD_ROOT)/include
-LDFLAGS = $(CUDD_LIB) -lm
+CFLAGS = -g -Wall -pedantic -ansi
+ALL_CFLAGS = $(CFLAGS) $(CUDD_XCFLAGS) -I../$(CUDD_ROOT)/include -I../src
+LDFLAGS = $(CUDD_LIB) -lm $(CUDD_XCFLAGS)
 PROGRAMS = test_logging test_automaton test_automaton_io test_ptree test_ptree_to_BDD test_solve_support test_patching
 
 all: $(PROGRAMS)
@@ -25,26 +26,26 @@ all: $(PROGRAMS)
 COMMON_BINS = ../util.o ../automaton.o ../automaton_io.o ../ptree.o ../solve_support.o ../logging.o
 
 test_logging: test_logging.c
-	gcc $(CFLAGS) $^ ../logging.o -o $@ $(LDFLAGS)
+	$(CC) $(ALL_CFLAGS) $^ ../logging.o -o $@ $(LDFLAGS)
 
 test_ptree: test_ptree.c
-	gcc $(CFLAGS) $^ ../ptree.o -o $@ $(LDFLAGS)
+	$(CC) $(ALL_CFLAGS) $^ ../ptree.o -o $@ $(LDFLAGS)
 
 test_ptree_to_BDD: test_ptree_to_BDD.c
-	gcc $(CFLAGS) $^ ../ptree.o -o $@ $(LDFLAGS)
+	$(CC) $(ALL_CFLAGS) $^ ../ptree.o -o $@ $(LDFLAGS)
 
 test_automaton: test_automaton.c
-	gcc $(CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
+	$(CC) $(ALL_CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
 
 test_automaton_io: test_automaton_io.c
-	gcc $(CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
+	$(CC) $(ALL_CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
 
 test_solve_support: test_solve_support.c
-	gcc $(CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
+	$(CC) $(ALL_CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
 
 test_patching: test_patching.c
-	gcc $(CFLAGS) $^ $(COMMON_BINS) ../patching.o ../patching_support.o -o $@ $(LDFLAGS)
+	$(CC) $(ALL_CFLAGS) $^ $(COMMON_BINS) ../patching.o ../patching_support.o -o $@ $(LDFLAGS)
 
 clean:
-	rm -fv *~ *.o $(PROGRAMS) temp_*_dump*
-	rm -rfv *.dSYM
+	-rm -f *~ *.o $(PROGRAMS) temp_*_dump*
+	-rm -fr *.dSYM
