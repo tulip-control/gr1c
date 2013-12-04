@@ -1,4 +1,4 @@
 *~
-extern/
-doc/build/
+/extern/
+/doc/build/
 /build/
