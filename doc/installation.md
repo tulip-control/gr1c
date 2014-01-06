@@ -24,7 +24,7 @@ We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/).  Alternatives
     $ tar -xzf cudd-2.5.0.tar.gz
     $ cd cudd-2.5.0
 
-Now you should be in the root of the CUDD source tree. Open the `Makefile` in your favorite editor (e.g., [Emacs](http://www.gnu.org/software/emacs/)) and make sure the settings look reasonable for your setup.  The comments therein should be enough to guide you.  If in doubt, consult the `Makefile` of gr1c, in particular CUDD_XCFLAGS, which is known to succeed for x86_64 GNU/Linux and Mac OS (64-bit) and thus could be copied directly into the setting of the XCFLAGS variable in the `Makefile` of CUDD.  More generally, try
+Now you should be in the root of the CUDD source tree. Open the `Makefile` in your favorite editor (e.g., [Emacs](http://www.gnu.org/software/emacs/)) and make sure the settings look reasonable for your setup.  The comments therein should be enough to guide you.  If in doubt, consult the `Makefile` of gr1c, in particular CUDD_XCFLAGS, which is known to succeed for x86_64 GNU/Linux and Mac OS (64-bit; possibly requiring that the switch `-DBSD` be removed) and thus could be copied directly into the setting of the XCFLAGS variable in the `Makefile` of CUDD.  More generally, try
 
     XCFLAGS = -mtune=native -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=N -DSIZEOF_LONG=M
 
