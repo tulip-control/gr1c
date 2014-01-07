@@ -11,7 +11,7 @@
  * applicable to the given type are ignored.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -147,11 +147,14 @@ ptree_t *var_to_bool( char *name, int maxval );
    Return the (possibly new) head pointer, or NULL if error. */
 ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval );
 
-/** Create tree describing unreachable values of the primed form of a
+/** Create tree describing unreachable values of a
    nonboolean-expanded-to-boolean variable.  E.g., this can be used to
    handle "don't care" values that appear as a side-effect of
-   conversion to a bitvector. */
-ptree_t *unreach_expanded_bool( char *name, int min, int max );
+   conversion to a bitvector.  The formula corresponding to the tree
+   is of the form !(v = k1) & !(v = k2) & ...  where k1 < k2 < ... are
+   values in the range [lower, upper] (inclusive).  type should be one
+   PT_VARIABLE or PT_NEXT_VARIABLE. */
+ptree_t *unreach_expanded_bool( char *name, int lower, int upper, int type );
 
 /** Push variable or constant into top of tree.  (Behavior is
    like reverse Polish notation.)  Return the new head. */

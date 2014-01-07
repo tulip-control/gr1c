@@ -1,7 +1,7 @@
 /* ptree.c -- Definitions for signatures appearing in ptree.h.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -433,15 +433,20 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 }
 
 
-ptree_t *unreach_expanded_bool( char *name, int lower, int upper )
+ptree_t *unreach_expanded_bool( char *name, int lower, int upper, int type )
 {
 	ptree_t *head, *node;
 	int i;
 	if (lower > upper)
 		return NULL;
+	if (!(type == PT_VARIABLE || type == PT_NEXT_VARIABLE)) {
+		fprintf( stderr, "unreach_expanded_bool: Invoked with unsupported type, %d\n", type );
+		return NULL;
+	}
+
 	head = init_ptree( PT_NEG, NULL, 0 );
 	head->right = init_ptree( PT_EQUALS, NULL, 0 );
-	head->right->left = init_ptree( PT_NEXT_VARIABLE, name, 0 );
+	head->right->left = init_ptree( type, name, 0 );
 	head->right->right = init_ptree( PT_CONSTANT, NULL, lower );
 	for (i = lower+1; i <= upper; i++) {
 		node = head;
@@ -449,15 +454,7 @@ ptree_t *unreach_expanded_bool( char *name, int lower, int upper )
 		head->right = node;
 		head->left = init_ptree( PT_NEG, NULL, 0 );
 		head->left->right = init_ptree( PT_EQUALS, NULL, 0 );
-		head->left->right->left = init_ptree( PT_NEXT_VARIABLE, name, 0 );
-		head->left->right->right = init_ptree( PT_CONSTANT, NULL, i );
-
-		node = head;
-		head = init_ptree( PT_AND, NULL, 0 );
-		head->right = node;
-		head->left = init_ptree( PT_NEG, NULL, 0 );
-		head->left->right = init_ptree( PT_EQUALS, NULL, 0 );
-		head->left->right->left = init_ptree( PT_VARIABLE, name, 0 );
+		head->left->right->left = init_ptree( type, name, 0 );
 		head->left->right->right = init_ptree( PT_CONSTANT, NULL, i );
 	}
 

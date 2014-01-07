@@ -1,7 +1,7 @@
 /* util.c -- Small handy routines; declarations appear in gr1c_util.h
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "common.h"
+#include "ptree.h"
 #include "gr1c_util.h"
 #include "logging.h"
 
@@ -183,20 +184,29 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 	ptree_t *tmppt, *prevpt, *var_separator;
 	int maxbitval;
 
-	/* Handle "don't care" bits */
+	/* Make nonzero settings of "don't care" bits unreachable */
 	tmppt = evar_list;
 	while (tmppt) {
 		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
 		if (maxbitval-1 > tmppt->value) {
 			if (verbose > 1)
 				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
-			(*et_array_len)++;
+
+			/* Initial conditions */
+			prevpt = *env_init;
+			*env_init = init_ptree( PT_AND, NULL, 0 );
+			(*env_init)->right = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_VARIABLE );;
+			(*env_init)->left = prevpt;
+
+			/* Transition rules */
+			(*et_array_len) += 2;
 			(*env_trans_array) = realloc( (*env_trans_array), sizeof(ptree_t *)*(*et_array_len) );
 			if ((*env_trans_array) == NULL ) {
 				perror( "expand_nonbool_GR1, realloc" );
 				return -1;
 			}
-			*((*env_trans_array)+(*et_array_len)-1) = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1 );
+			*((*env_trans_array)+(*et_array_len)-2) = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_VARIABLE );
+			*((*env_trans_array)+(*et_array_len)-1) = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_NEXT_VARIABLE );
 		}
 		tmppt = tmppt->left;
 	}
@@ -207,13 +217,22 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 		if (maxbitval-1 > tmppt->value) {
 			if (verbose > 1)
 				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
-			(*st_array_len)++;
+
+			/* Initial conditions */
+			prevpt = *sys_init;
+			*sys_init = init_ptree( PT_AND, NULL, 0 );
+			(*sys_init)->right = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_VARIABLE );;
+			(*sys_init)->left = prevpt;
+
+			/* Transition rules */
+			(*st_array_len) += 2;
 			(*sys_trans_array) = realloc( (*sys_trans_array), sizeof(ptree_t *)*(*st_array_len) );
 			if ((*sys_trans_array) == NULL ) {
 				perror( "expand_nonbool_GR1, realloc" );
 				return -1;
 			}
-			*((*sys_trans_array)+(*st_array_len)-1) = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1 );
+			*((*sys_trans_array)+(*st_array_len)-2) = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_VARIABLE );
+			*((*sys_trans_array)+(*st_array_len)-1) = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_NEXT_VARIABLE );
 		}
 		tmppt = tmppt->left;
 	}
