@@ -96,6 +96,8 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 			(*evar_list) = expt;
 			prevpt = get_list_item( expt, -1 );
 			prevpt->left = tmppt->left;
+		} else {
+			prevpt = tmppt;
 		}
 		tmppt = tmppt->left;
 		while (tmppt) {
@@ -118,6 +120,8 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 			(*svar_list) = expt;
 			prevpt = get_list_item( expt, -1 );
 			prevpt->left = tmppt->left;
+		} else {
+			prevpt = tmppt;
 		}
 		tmppt = tmppt->left;
 		while (tmppt) {
