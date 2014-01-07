@@ -1,7 +1,7 @@
 #!/bin/sh
 # Tests not targeted at particular units.
 #
-# SCL; 2012, 2013.
+# SCL; 2012-2014.
 
 set -e
 
@@ -50,7 +50,7 @@ done
 ################################################################
 # Synthesis regression tests
 
-REFSPECS="trivial_2var.spc free_counter.spc"
+REFSPECS="trivial_2var.spc free_counter.spc count_onestep.spc"
 
 if test $VERBOSE -eq 1; then
     echo "\nPerforming regression tests for vanilla GR(1) synthesis..."
@@ -69,7 +69,7 @@ done
 ################################################################
 # Reachability game synthesis regression tests
 
-REFSPECS="reach_2var.spc reach_2var_mustblock.spc reach_free_counter.spc reach_free_counter_mustblock.spc"
+REFSPECS="reach_2var.spc reach_2var_mustblock.spc reach_free_counter.spc reach_free_counter_mustblock.spc reach_count_onestep.spc"
 
 if test $VERBOSE -eq 1; then
     echo "\nPerforming regression tests for reachability games..."
