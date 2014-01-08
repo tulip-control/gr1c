@@ -93,15 +93,22 @@ grpatch`.  To install `grpatch` in the same place as `gr1c`,
 
 Other experiment-related programs, such as `grjit`, will eventually be
 added to the list installed by the expinstall command.
-[Doxygen](http://www.doxygen.org) (version 1.8.0 or later) must be
-installed to build the documentation...including the page you are now
-reading.  Try
+[Doxygen](http://www.doxygen.org) must be installed to build the
+documentation...including the page you are now reading.  Try
 
     $ make doc
 
-and the result will be under `doc/build`.  You can clean the
-sourcetree of all executables and other temporary files by running
-`make clean`.
+and the result will be under `doc/build`.  Note that Doxygen version
+1.8 or later is required to build documentation files formatted with
+[Markdown](http://daringfireball.net/projects/markdown), which have
+names ending in `.md` under `doc/`.  For older versions, you can read
+Markdown files directly using any plain text viewer.  E.g., the main
+page is `doc/api_intro.md`, and this page is `doc/installation.md`.
+
+You can clean the sourcetree of all executables and other temporary
+files by running
+
+    $ make clean
 
 <h3 id="altlib">Alternatives for linking with CUDD</h3>
 
