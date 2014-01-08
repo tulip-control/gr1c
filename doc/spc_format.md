@@ -44,13 +44,28 @@ line. The grammar below is not complete (nor normative), but should be enough
 for you to compose specifications.  Cf. the `examples` directory.
 
     /* Define which variables are controlled and uncontrolled. */
-    envvarlist ::= 'ENV:' VARIABLE | envvarlist VARIABLE | envvarlist VARIABLE [0,NUMBER]
-    sysvarlist ::= 'SYS:' VARIABLE | sysvarlist VARIABLE | sysvarlist VARIABLE [0,NUMBER]
+    envvarlist ::= 'ENV:' VARIABLE | envvarlist VARIABLE
+                   | envvarlist VARIABLE [0,NUMBER]
+    sysvarlist ::= 'SYS:' VARIABLE | sysvarlist VARIABLE
+                   | sysvarlist VARIABLE [0,NUMBER]
 
-    propformula ::= "False" | "True" | VARIABLE | '!' propformula | propformula '&' propformula | propformula '|' propformula | propformula "->" propformula | VARIABLE '=' NUMBER | VARIABLE '!=' NUMBER | VARIABLE '<' NUMBER | '(' propformula ')'
+    propformula ::= "False" | "True" | VARIABLE
+                    | '!' propformula
+                    | propformula '&' propformula
+                    | propformula '|' propformula
+                    | propformula "->" propformula
+                    | propformula "<->" propformula
+                    | VARIABLE '=' NUMBER
+                    | VARIABLE '!=' NUMBER
+                    | VARIABLE '<' NUMBER
+                    | VARIABLE '<=' NUMBER
+                    | VARIABLE '>' NUMBER
+                    | VARIABLE '>=' NUMBER
+                    | '(' propformula ')'
 
-    /* The only difference between propformula and tpropformula is variables can be primed (next operator) in the latter. */
-    tpropformula ::= "False" | "True" | VARIABLE | VARIABLE '\'' |
+    /* The only difference between propformula and tpropformula is
+       variables can be primed (next operator) in the latter. */
+    tpropformula ::= "False" | "True" | VARIABLE | VARIABLE '\'' | ...
 
     transformula ::= "[]" tpropformula | transformula '&' transformula
     goalformula ::= "[]<>" propformula | goalformua '&' goalformula
