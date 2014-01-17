@@ -157,6 +157,9 @@ evar_list: E_VARS
 	       if ($4 != 0) {
                    fprintf( stderr, "Error detected on line %d.  Lower bound must be zero.\n", @1.last_line );
                    YYABORT;
+	       } else if ($6 <= 1) {
+                   fprintf( stderr, "Error detected on line %d.  Upper bound must be greater than one.\n", @1.last_line );
+                   YYABORT;
 	       }
 	       if (evar_list == NULL) {
 		   evar_list = init_ptree( PT_VARIABLE, $2, $6 );
@@ -177,6 +180,9 @@ svar_list: S_VARS
          | svar_list VARIABLE '[' NUMBER ',' NUMBER ']'  {
 	       if ($4 != 0) {
                    fprintf( stderr, "Error detected on line %d.  Lower bound must be zero.\n", @1.last_line );
+                   YYABORT;
+	       } else if ($6 <= 1) {
+                   fprintf( stderr, "Error detected on line %d.  Upper bound must be greater than one.\n", @1.last_line );
                    YYABORT;
 	       }
                if (svar_list == NULL) {
