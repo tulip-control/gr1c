@@ -191,6 +191,11 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 	/* Make nonzero settings of "don't care" bits unreachable */
 	tmppt = evar_list;
 	while (tmppt) {
+		if (tmppt->value == -1) {  /* Ignore Boolean variables */
+			tmppt = tmppt->left;
+			continue;
+		}
+
 		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value > 0 ? tmppt->value+1 : 2 )) ));
 		if (maxbitval-1 > tmppt->value) {
 			if (verbose > 1)
@@ -217,6 +222,11 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 
 	tmppt = svar_list;
 	while (tmppt) {
+		if (tmppt->value == -1) {  /* Ignore Boolean variables */
+			tmppt = tmppt->left;
+			continue;
+		}
+
 		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value > 0 ? tmppt->value+1 : 2 )) ));
 		if (maxbitval-1 > tmppt->value) {
 			if (verbose > 1)
