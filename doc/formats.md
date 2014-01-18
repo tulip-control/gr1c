@@ -1,22 +1,33 @@
 File formats
 ============
 
-The command-line argument "-t" is used to specify the format in which to output
-the synthesized strategy.  The command-line argument "-e FILE" requests patching
-a strategy (given in "gr1c automaton" format) read from stdin, given the edge
-set change to the game graph specified in FILE (see format below).
+The purpose of this page is to describe the file formats supported by gr1c.  The
+specification The command-line argument "-t" is used to specify the format in
+which to output the synthesized strategy.  A key to the choices, including
+functions that provide it, is:
+
+- `txt` : simple plaintext format (not standard); list_aut_dump()
+- `dot` : [Graphviz dot](http://www.graphviz.org/); dot_aut_dump()
+- `aut` : [gr1c automaton format](#gr1cautformat); aut_aut_dump()
+- `tulip` : [tulipcon XML](#tulipconxml); tulip_aut_dump()
+- `tulip0` : for legacy support; *do not* use this in new applications.
+
+Several of the patching routines need to be given a description of changes to
+the game edge set.  This is achieved using the [edge changes file
+format](#edgechangeset).  The relevant command-line argument is "-e FILE".
 
 
-tulipcon XML
-------------
+<h2 id="tulipconxml">tulipcon XML</h2>
 
 See [nTLP documentation](http://slivingston.github.io/nTLP/doc/), specifically
 the [page about data
 formats](http://slivingston.github.io/nTLP/doc/data_formats.html#tulipcon-xml).
 
 
-gr1c automaton
---------------
+<h2 id="gr1cautformat">gr1c automaton</h2>
+
+This format is occasionally referred to as "gr1c aut format".  The relevant
+command-line argument is "-a FILE".
 
 The order of the state vector matches that from the specification (as in most
 other places in the source code).  Each line is of the form
@@ -31,9 +42,11 @@ outgoing transition set of this node.
 The list of IDs is assumed to be tight, meaning if there are N nodes, then the
 file must contain indices 0 through N-1 (not necessarily in order).
 
+For this format, the API includes functions aut_aut_load() and aut_aut_dump()
+for reading and writing, respectively.  Signatures are in automaton.h.
 
-game edge set changes
----------------------
+
+<h2 id="edgechangeset">game edge set changes</h2>
 
 Files of this form consist of two parts: first a list (one per line) of states
 considered to be in the neighborhood; and second a sequence of **restrict**,
