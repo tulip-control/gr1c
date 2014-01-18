@@ -41,7 +41,8 @@ Incomplete summary of the grammar
 
 C-like, infix syntax. Comments begin with `#` and continue until the end of
 line. The grammar below is not complete (nor normative), but should be enough
-for you to compose specifications.  Cf. the `examples` directory.
+for you to compose specifications.  Cf. the `examples` directory.  NUMBER must
+be a nonnegative integer.
 
     /* Define which variables are controlled and uncontrolled. */
     envvarlist ::= 'ENV:' VARIABLE | envvarlist VARIABLE
