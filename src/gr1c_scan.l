@@ -60,7 +60,7 @@ number  (-)?[0-9]+([.][0-9]+)?
 "#".*"\n"  { unput( '\n' ); }  /* Comments.
                                   unput is used to preserve line count. */
 
-[ \t]+  {}  /* Ignore whitespace */
+[ \t\r]+  {}  /* Ignore whitespace besides \n */
 
 .  { return yytext[0]; }  /* Pass anything unknown to parser, as-is,
                              hence a syntax error. */
