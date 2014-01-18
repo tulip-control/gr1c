@@ -58,6 +58,10 @@ corresponding bit index. E.g., `y` with domain of {0,1,2} would translate to 2
 variables, `y0`, `y1` that are used to encode the bitvectors 00, 01, and 10. 11
 (i.e., `y0` and `y1` both set to `True`) is unreachable.
 
+A significant consequence is that the number of states generated internally
+happens at boundaries of powers of two, e.g., so that an integer variable domain
+of `[0,513]` incurs the same number of states as `[0,1023]`.
+
 
 Code style
 ----------
