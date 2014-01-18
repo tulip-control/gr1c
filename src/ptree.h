@@ -55,9 +55,24 @@ typedef struct ptree_t
 {
 	int type;  /**<\brief See table of \ref PTreeNodeTypes. */
 	char *name;  /**<\brief Name of the variable, if applicable. */
-	int value;  /**<\brief Value of a constant.  If of type boolean, then 0
-				   means "false", and 1 "true". */
-	
+
+	/** \brief Value of a constant, or domain of a variable.
+
+	   For constants (type = PT_CONSTANT) describing valuations of a
+	   Boolean variable, value of 0 means "false", and 1 "true".
+
+	   For constants (type = PT_CONSTANT) describing valuations of an
+	   integer variable, value has the obvious meaning.
+
+	   For variables (type is one of PT_VARIABLE, PT_NEXT_VARIABLE),
+	   value indicates the domain as follows.
+
+	   - if value = -1, then variable is of type Boolean.
+
+	   - if value >= 0, then variable is of type integer and may take
+         values in the interval [0,value]. */
+	int value;
+
 	struct ptree_t *left;
 	struct ptree_t *right;
 } ptree_t;

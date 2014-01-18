@@ -272,7 +272,7 @@ int main( int argc, char **argv )
 		} else {
 			tmppt = evar_list;
 			while (tmppt) {
-				if (tmppt->value == 0) {  /* Boolean */
+				if (tmppt->value == -1) {  /* Boolean */
 					if (tmppt->left == NULL) {
 						printf( "%s (%d; bool)", tmppt->name, var_index );
 					} else {
@@ -297,7 +297,7 @@ int main( int argc, char **argv )
 		} else {
 			tmppt = svar_list;
 			while (tmppt) {
-				if (tmppt->value == 0) {  /* Boolean */
+				if (tmppt->value == -1) {  /* Boolean */
 					if (tmppt->left == NULL) {
 						printf( "%s (%d; bool)", tmppt->name, var_index );
 					} else {

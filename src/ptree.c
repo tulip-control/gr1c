@@ -261,7 +261,7 @@ ptree_t *var_to_bool( char *name, int maxval )
 	char varname[VARNAME_STRING_LEN];
 	int i;
 
-	if (name == NULL || maxval < 1)
+	if (name == NULL || maxval < 0)
 		return NULL;
 
 	maxval = (int)(ceil(log2( maxval+1 )));
@@ -361,12 +361,19 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 	ptree_t **heads;
 	int this_val, i;
 	bool is_next;
-	int num_bits = (int)(ceil(log2( maxval+1 )));
+	int num_bits;
 	ptree_t *expanded_varlist;
-	int maxval_padded = (1 << num_bits) - 1;
+	int maxval_padded;
 
 	if (head == NULL)
 		return NULL;
+
+	if (maxval > 0) {
+		num_bits = (int)(ceil(log2( maxval+1 )));
+	} else {
+		num_bits = 1;
+	}
+	maxval_padded = (1 << num_bits) - 1;
 
 	expanded_varlist = var_to_bool( name, maxval );
 	if (expanded_varlist == NULL)

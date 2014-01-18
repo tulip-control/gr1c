@@ -147,17 +147,17 @@ exp: evar_list ';'
 evar_list: E_VARS
          | evar_list VARIABLE  {
               if (evar_list == NULL) {
-                  evar_list = init_ptree( PT_VARIABLE, $2, 0 );
+                  evar_list = init_ptree( PT_VARIABLE, $2, -1 );
               } else {
-                  append_list_item( evar_list, PT_VARIABLE, $2, 0 );
+                  append_list_item( evar_list, PT_VARIABLE, $2, -1 );
               }
           }
          | evar_list VARIABLE '[' NUMBER ',' NUMBER ']'  {
 	       if ($4 != 0) {
                    fprintf( stderr, "Error detected on line %d.  Lower bound must be zero.\n", @1.last_line );
                    YYABORT;
-	       } else if ($6 <= 1) {
-                   fprintf( stderr, "Error detected on line %d.  Upper bound must be greater than one.\n", @1.last_line );
+	       } else if ($6 < 0) {
+                   fprintf( stderr, "Error detected on line %d.  Upper bound must be no less than zero.\n", @1.last_line );
                    YYABORT;
 	       }
 	       if (evar_list == NULL) {
@@ -171,17 +171,17 @@ evar_list: E_VARS
 svar_list: S_VARS
          | svar_list VARIABLE  {
               if (svar_list == NULL) {
-                  svar_list = init_ptree( PT_VARIABLE, $2, 0 );
+                  svar_list = init_ptree( PT_VARIABLE, $2, -1 );
               } else {
-                  append_list_item( svar_list, PT_VARIABLE, $2, 0 );
+                  append_list_item( svar_list, PT_VARIABLE, $2, -1 );
               }
           }
          | svar_list VARIABLE '[' NUMBER ',' NUMBER ']'  {
 	       if ($4 != 0) {
                    fprintf( stderr, "Error detected on line %d.  Lower bound must be zero.\n", @1.last_line );
                    YYABORT;
-	       } else if ($6 <= 1) {
-                   fprintf( stderr, "Error detected on line %d.  Upper bound must be greater than one.\n", @1.last_line );
+	       } else if ($6 < 0) {
+                   fprintf( stderr, "Error detected on line %d.  Upper bound must be no less than zero.\n", @1.last_line );
                    YYABORT;
 	       }
                if (svar_list == NULL) {

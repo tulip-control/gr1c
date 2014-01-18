@@ -72,7 +72,7 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 	}
 	tmppt = (*evar_list);
 	while (tmppt) {
-		if (tmppt->value > 0) {
+		if (tmppt->value >= 0) {
 			if (nonbool_var_list == NULL) {
 				nonbool_var_list = init_ptree( PT_VARIABLE, tmppt->name, tmppt->value );
 			} else {
@@ -91,7 +91,7 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 	/* Expand the variable list */
 	if ((*evar_list) != NULL) {
 		tmppt = (*evar_list);
-		if (tmppt->value > 0) {  /* Handle special case of head node */
+		if (tmppt->value >= 0) {  /* Handle special case of head node */
 			expt = var_to_bool( tmppt->name, tmppt->value );
 			(*evar_list) = expt;
 			prevpt = get_list_item( expt, -1 );
@@ -101,7 +101,7 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 		}
 		tmppt = tmppt->left;
 		while (tmppt) {
-			if (tmppt->value > 0) {
+			if (tmppt->value >= 0) {
 				expt = var_to_bool( tmppt->name, tmppt->value );
 				prevpt->left = expt;
 				prevpt = get_list_item( expt, -1 );
@@ -115,7 +115,7 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 
 	if ((*svar_list) != NULL) {
 		tmppt = (*svar_list);
-		if (tmppt->value > 0) {  /* Handle special case of head node */
+		if (tmppt->value >= 0) {  /* Handle special case of head node */
 			expt = var_to_bool( tmppt->name, tmppt->value );
 			(*svar_list) = expt;
 			prevpt = get_list_item( expt, -1 );
@@ -125,7 +125,7 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 		}
 		tmppt = tmppt->left;
 		while (tmppt) {
-			if (tmppt->value > 0) {
+			if (tmppt->value >= 0) {
 				expt = var_to_bool( tmppt->name, tmppt->value );
 				prevpt->left = expt;
 				prevpt = get_list_item( expt, -1 );
@@ -191,7 +191,7 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 	/* Make nonzero settings of "don't care" bits unreachable */
 	tmppt = evar_list;
 	while (tmppt) {
-		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
+		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value > 0 ? tmppt->value+1 : 2 )) ));
 		if (maxbitval-1 > tmppt->value) {
 			if (verbose > 1)
 				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
@@ -217,7 +217,7 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 
 	tmppt = svar_list;
 	while (tmppt) {
-		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value+1 )) ));
+		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value > 0 ? tmppt->value+1 : 2 )) ));
 		if (maxbitval-1 > tmppt->value) {
 			if (verbose > 1)
 				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
@@ -255,7 +255,7 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 	}
 	tmppt = evar_list;
 	while (tmppt) {
-		if (tmppt->value > 0) {
+		if (tmppt->value >= 0) {
 			if (verbose > 1)
 				logprint( "Expanding nonbool variable %s in SYSINIT...", tmppt->name );
 			(*sys_init) = expand_to_bool( (*sys_init), tmppt->name, tmppt->value );

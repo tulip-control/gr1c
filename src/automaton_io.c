@@ -474,7 +474,7 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 	fprintf( fp, "  <env_vars>\n" );
 	for (i = 0; i < num_env; i++) {
 		var = get_list_item( evar_list, i );
-		if (var->value > 0) {
+		if (var->value >= 0) {
 			fprintf( fp, "    <item key=\"%s\" value=\"[0,%d]\" />\n", var->name, var->value );
 		} else {
 			fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
@@ -484,7 +484,7 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 	fprintf( fp, "  <sys_vars>\n" );
 	for (i = 0; i < num_sys; i++) {
 		var = get_list_item( svar_list, i );
-		if (var->value > 0) {
+		if (var->value >= 0) {
 			fprintf( fp, "    <item key=\"%s\" value=\"[0,%d]\" />\n", var->name, var->value );
 		} else {
 			fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );

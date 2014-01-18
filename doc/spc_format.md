@@ -27,7 +27,7 @@ values section, e.g., `SYSINIT:;` is equivalent to `SYSINIT:True;`.
 System (resp., environment) variables are declared by a section beginning with
 `SYS:` (resp., `ENV:`) and consisting of a space-separated list of variable
 names and domains if not Boolean.  The only supported nonboolean domains are of
-the form `[0,n]` where `n` is a positive integer greater than 1.  E.g.,
+the form `[0,n]` where `n` is a nonnegative integer.  E.g.,
 
     SYS: a b [0,5] c;
 
