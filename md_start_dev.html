@@ -119,6 +119,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <h2>Design notes</h2>
 <h3>Non-boolean domains</h3>
 <p>Internally, variables of non-Boolean domains are mapped into a set of Boolean variables that use the original variable name as a prefix and then append the corresponding bit index. E.g., <code>y</code> with domain of {0,1,2} would translate to 2 variables, <code>y0</code>, <code>y1</code> that are used to encode the bitvectors 00, 01, and 10. 11 (i.e., <code>y0</code> and <code>y1</code> both set to <code>True</code>) is unreachable.</p>
+<p>A significant consequence is that the number of states generated internally happens at boundaries of powers of two, e.g., so that an integer variable domain of <code>[0,513]</code> incurs the same number of states as <code>[0,1023]</code>.</p>
 <h2>Code style</h2>
 <p>Version numbers are of the form MAJOR.MINOR.MICRO; when a tag is made for a release, it must be named as the version number preceded by "v", e.g., "v0.6.1" for version 0.6.1. The next commit following a release tag should use a version number greater than that of the tag. For example, the first commit after that tagged "v0.6.1" has version 0.6.2.</p>
 <p>My strongest taste is for the Linux kernel style, as expounded in <a href="http://lxr.linux.no/#linux+v3.8.8/Documentation/CodingStyle">Documentation/CodingStyle</a>. However, I prefer a tab width of 4 spaces. Documentation in source code should usually be line-wrapped at 70 characters (default in Emacs), but more importantly, lines of code or comments should rarely exceed 80 characters in length. README or other plain text files describing nearby stuff are written in <a href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> and line-wrapped at 80 characters. Many comments in the code (e.g., if beginning with <code>/**</code>) and <code>.md</code> files under the <code>doc</code> directory are processed by <a href="http://www.doxygen.org">Doxygen</a>. So in particular, <code>.md</code> files under <code>doc</code> are written in <a href="http://daringfireball.net/projects/markdown/">Markdown</a>. If you use <a href="http://www.gnu.org/software/emacs/">Emacs</a>, then you may be able to achieve the correct line width and tab conventions by adding the following to your <code>.emacs</code> configuration file. </p>
@@ -140,7 +141,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
    (c-basic-offset . 4)))</pre> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jan 6 2014 13:34:49 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jan 19 2014 11:33:33 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

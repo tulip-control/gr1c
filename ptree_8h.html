@@ -196,8 +196,8 @@ Functions</h2></td></tr>
 <tr class="separator:ae7f0cbc31bd000f3cc7d54f9025d308f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7b9a8f9772d6d48a5fb69c7418f6906"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#af7b9a8f9772d6d48a5fb69c7418f6906">expand_to_bool</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head, char *name, int maxval)</td></tr>
 <tr class="separator:af7b9a8f9772d6d48a5fb69c7418f6906"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a53bfea2d2ef5f7ffbfd99c9ba1e6dbf3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#a53bfea2d2ef5f7ffbfd99c9ba1e6dbf3">unreach_expanded_bool</a> (char *name, int min, int max)</td></tr>
-<tr class="separator:a53bfea2d2ef5f7ffbfd99c9ba1e6dbf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af45bda40e09c6e412d64b38bc7a57dd6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#af45bda40e09c6e412d64b38bc7a57dd6">unreach_expanded_bool</a> (char *name, int lower, int upper, int type)</td></tr>
+<tr class="separator:af45bda40e09c6e412d64b38bc7a57dd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91871715a40802631f35fcc755240e49"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#a91871715a40802631f35fcc755240e49">pusht_terminal</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head, int type, char *name, int value)</td></tr>
 <tr class="separator:a91871715a40802631f35fcc755240e49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43ee9c6d601fdfcb42181e24f1a59505"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ptree_8h.html#a43ee9c6d601fdfcb42181e24f1a59505">pusht_operator</a> (<a class="el" href="structptree__t.html">ptree_t</a> *head, int type)</td></tr>
@@ -215,7 +215,7 @@ Functions</h2></td></tr>
 <div class="textblock"><p>Routines for working with a GR(1) formula parse tree. </p>
 <p>To avoid defining another basic data structure, we may effectively obtain a linked list by making a binary tree with no right children (or more generally, a tree in which each node has at most one child). Functions intended specifically to support this use case include "list" in their names.</p>
 <p>For functions concerning tree nodes, any arguments that are not applicable to the given type are ignored.</p>
-<p>SCL; 2012, 2013. </p>
+<p>SCL; 2012-2014. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="afec3ab9b5f6928970bf419384d05a7da"></a>
 <div class="memitem">
@@ -822,7 +822,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a53bfea2d2ef5f7ffbfd99c9ba1e6dbf3"></a>
+<a class="anchor" id="af45bda40e09c6e412d64b38bc7a57dd6"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -836,13 +836,19 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>min</em>, </td>
+          <td class="paramname"><em>lower</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>max</em>&#160;</td>
+          <td class="paramname"><em>upper</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>type</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -851,7 +857,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Create tree describing unreachable values of the primed form of a nonboolean-expanded-to-boolean variable. E.g., this can be used to handle "don't care" values that appear as a side-effect of conversion to a bitvector. </p>
+<p>Create tree describing unreachable values of a nonboolean-expanded-to-boolean variable. E.g., this can be used to handle "don't care" values that appear as a side-effect of conversion to a bitvector. The formula corresponding to the tree is of the form !(v = k1) &amp; !(v = k2) &amp; ... where k1 &lt; k2 &lt; ... are values in the range [lower, upper] (inclusive). type should be one PT_VARIABLE or PT_NEXT_VARIABLE. </p>
 
 </div>
 </div>
@@ -886,7 +892,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jan 6 2014 13:34:49 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jan 19 2014 11:33:33 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

@@ -130,17 +130,19 @@ long: 8
 <pre class="fragment">$ make exp
 </pre><p>Alternatively, you can request a specific executable, e.g., <code>make grpatch</code>. To install <code>grpatch</code> in the same place as <code>gr1c</code>, </p>
 <pre class="fragment">$ make expinstall
-</pre><p>Other experiment-related programs, such as <code>grjit</code>, will eventually be added to the list installed by the expinstall command. <a href="http://www.doxygen.org">Doxygen</a> (version 1.8.0 or later) must be installed to build the documentation...including the page you are now reading. Try </p>
+</pre><p>Other experiment-related programs, such as <code>grjit</code>, will eventually be added to the list installed by the expinstall command. <a href="http://www.doxygen.org">Doxygen</a> must be installed to build the documentation...including the page you are now reading. Try </p>
 <pre class="fragment">$ make doc
-</pre><p>and the result will be under <code>doc/build</code>. You can clean the sourcetree of all executables and other temporary files by running <code>make clean</code>.</p>
-<h3 id="altlib">Alternatives for linking with CUDD</h3>
+</pre><p>and the result will be under <code>doc/build</code>. Note that Doxygen version 1.8 or later is required to build documentation files formatted with <a href="http://daringfireball.net/projects/markdown">Markdown</a>, which have names ending in <code>.md</code> under <code>doc/</code>. For older versions, you can read Markdown files directly using any plain text viewer. E.g., the main page is <code>doc/api_intro.md</code>, and this page is <code>doc/installation.md</code>.</p>
+<p>You can clean the sourcetree of all executables and other temporary files by running </p>
+<pre class="fragment">$ make clean
+</pre><h3 id="altlib">Alternatives for linking with CUDD</h3>
 <p>If you have CUDD available as a shared library (it is not officially distributed this way, but some people have patched it thus), then you can pass alternative flags to the gr1c makefile, e.g., </p>
 <pre class="fragment">$ make all CUDD_INC='-I/opt/local/include/cudd' CUDD_LIB='-L/opt/local/lib/cudd -lcudd'
 </pre><p>To make this behavior permanent, change the variables CUDD_INC and CUDD_LIB in the <code>Makefile</code> of gr1c. To run tests against gr1c in this setting, replace "all" with "tests" in the previous command, or change <code>tests/Makefile</code> similarly. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jan 6 2014 13:34:49 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jan 19 2014 11:33:33 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>
