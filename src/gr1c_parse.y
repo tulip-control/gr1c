@@ -27,7 +27,8 @@
   int et_array_len = 0;
   int st_array_len = 0;
 
-  /* General purpose tree pointer, which facilitates cleaner Yacc parsing code. */
+  /* General purpose tree pointer,
+     which facilitates cleaner Yacc parsing code. */
   ptree_t *gen_tree_ptr = NULL;
 %}
 
@@ -84,7 +85,8 @@ exp: evar_list ';'
    | svar_list ';'
    | E_INIT ';' {
          if (env_init != NULL) {
-             printf( "Error detected on line %d.  Duplicate ENVINIT.\n", @1.last_line );
+             printf( "Error detected on line %d.  Duplicate ENVINIT.\n",
+                     @1.last_line );
              YYABORT;
          }
          /* Handle empty initial conditions, i.e., no restrictions. */
@@ -92,7 +94,8 @@ exp: evar_list ';'
      }
    | E_INIT propformula ';' {
          if (env_init != NULL) {
-             printf( "Error detected on line %d.  Duplicate ENVINIT\n", @1.last_line );
+             printf( "Error detected on line %d.  Duplicate ENVINIT\n",
+                     @1.last_line );
              YYABORT;
          }
          env_init = gen_tree_ptr;
@@ -114,7 +117,8 @@ exp: evar_list ';'
    | E_GOAL egoalformula ';'
    | S_INIT ';' {
          if (sys_init != NULL) {
-             printf( "Error detected on line %d.  Duplicate SYSINIT.\n", @1.last_line );
+             printf( "Error detected on line %d.  Duplicate SYSINIT.\n",
+                     @1.last_line );
              YYABORT;
          }
          /* Handle empty initial conditions, i.e., no restrictions. */
@@ -122,7 +126,8 @@ exp: evar_list ';'
      }
    | S_INIT propformula ';' {
          if (sys_init != NULL) {
-             printf( "Error detected on line %d.  Duplicate SYSINIT.\n", @1.last_line );
+             printf( "Error detected on line %d.  Duplicate SYSINIT.\n",
+                     @1.last_line );
              YYABORT;
          }
          sys_init = gen_tree_ptr;
@@ -155,10 +160,16 @@ evar_list: E_VARS
            }
          | evar_list VARIABLE '[' NUMBER ',' NUMBER ']'  {
 	       if ($4 != 0) {
-                   fprintf( stderr, "Error detected on line %d.  Lower bound must be zero.\n", @1.last_line );
+                   fprintf( stderr,
+                            "Error detected on line %d.  Lower bound must be"
+                            " zero.\n",
+                            @1.last_line );
                    YYABORT;
 	       } else if ($6 < 0) {
-                   fprintf( stderr, "Error detected on line %d.  Upper bound must be no less than zero.\n", @1.last_line );
+                   fprintf( stderr,
+                            "Error detected on line %d.  Upper bound must be"
+                            " no less than zero.\n",
+                            @1.last_line );
                    YYABORT;
 	       }
 	       if (evar_list == NULL) {
@@ -179,10 +190,16 @@ svar_list: S_VARS
            }
          | svar_list VARIABLE '[' NUMBER ',' NUMBER ']'  {
 	       if ($4 != 0) {
-                   fprintf( stderr, "Error detected on line %d.  Lower bound must be zero.\n", @1.last_line );
+                   fprintf( stderr,
+                            "Error detected on line %d.  Lower bound must be"
+                            " zero.\n",
+                            @1.last_line );
                    YYABORT;
 	       } else if ($6 < 0) {
-                   fprintf( stderr, "Error detected on line %d.  Upper bound must be no less than zero.\n", @1.last_line );
+                   fprintf( stderr,
+                            "Error detected on line %d.  Upper bound must be"
+                            " no less than zero.\n",
+                            @1.last_line );
                    YYABORT;
 	       }
                if (svar_list == NULL) {
@@ -195,7 +212,8 @@ svar_list: S_VARS
 
 etransformula: SAFETY_OP tpropformula  {
                    et_array_len++;
-                   env_trans_array = realloc( env_trans_array, sizeof(ptree_t *)*et_array_len );
+                   env_trans_array = realloc( env_trans_array,
+                                              sizeof(ptree_t *)*et_array_len );
                    if (env_trans_array == NULL) {
                        perror( "gr1c_parse.y, etransformula, realloc" );
                        YYABORT;
@@ -205,7 +223,8 @@ etransformula: SAFETY_OP tpropformula  {
                }
              | etransformula AND_SAFETY_OP tpropformula  {
                    et_array_len++;
-                   env_trans_array = realloc( env_trans_array, sizeof(ptree_t *)*et_array_len );
+                   env_trans_array = realloc( env_trans_array,
+                                              sizeof(ptree_t *)*et_array_len );
                    if (env_trans_array == NULL) {
                        perror( "gr1c_parse.y, etransformula, realloc" );
                        YYABORT;
@@ -217,7 +236,8 @@ etransformula: SAFETY_OP tpropformula  {
 
 stransformula: SAFETY_OP tpropformula  {
                    st_array_len++;
-                   sys_trans_array = realloc( sys_trans_array, sizeof(ptree_t *)*st_array_len );
+                   sys_trans_array = realloc( sys_trans_array,
+                                              sizeof(ptree_t *)*st_array_len );
                    if (sys_trans_array == NULL) {
                        perror( "gr1c_parse.y, stransformula, realloc" );
                        YYABORT;
@@ -227,7 +247,8 @@ stransformula: SAFETY_OP tpropformula  {
                }
              | stransformula AND_SAFETY_OP tpropformula  {
                    st_array_len++;
-                   sys_trans_array = realloc( sys_trans_array, sizeof(ptree_t *)*st_array_len );
+                   sys_trans_array = realloc( sys_trans_array,
+                                              sizeof(ptree_t *)*st_array_len );
                    if (sys_trans_array == NULL) {
                        perror( "gr1c_parse.y, stransformula, realloc" );
                        YYABORT;
@@ -239,7 +260,8 @@ stransformula: SAFETY_OP tpropformula  {
 
 egoalformula: LIVENESS_OP propformula  {
                   num_egoals++;
-                  env_goals = realloc( env_goals, sizeof(ptree_t *)*num_egoals );
+                  env_goals = realloc( env_goals,
+                                       sizeof(ptree_t *)*num_egoals );
                   if (env_goals == NULL) {
                       perror( "gr1c_parse.y, egoalformula, realloc" );
                       YYABORT;
@@ -249,7 +271,8 @@ egoalformula: LIVENESS_OP propformula  {
               }
             | egoalformula AND_LIVENESS_OP propformula  {
                   num_egoals++;
-                  env_goals = realloc( env_goals, sizeof(ptree_t *)*num_egoals );
+                  env_goals = realloc( env_goals,
+                                       sizeof(ptree_t *)*num_egoals );
                   if (env_goals == NULL) {
                       perror( "gr1c_parse.y, egoalformula, realloc" );
                       YYABORT;
@@ -261,7 +284,8 @@ egoalformula: LIVENESS_OP propformula  {
 
 sgoalformula: LIVENESS_OP propformula  {
                   num_sgoals++;
-                  sys_goals = realloc( sys_goals, sizeof(ptree_t *)*num_sgoals );
+                  sys_goals = realloc( sys_goals,
+                                       sizeof(ptree_t *)*num_sgoals );
                   if (sys_goals == NULL) {
                       perror( "gr1c_parse.y, sgoalformula, realloc" );
                       YYABORT;
@@ -271,7 +295,8 @@ sgoalformula: LIVENESS_OP propformula  {
               }
             | sgoalformula AND_LIVENESS_OP propformula  {
                   num_sgoals++;
-                  sys_goals = realloc( sys_goals, sizeof(ptree_t *)*num_sgoals );
+                  sys_goals = realloc( sys_goals,
+                                       sizeof(ptree_t *)*num_sgoals );
                   if (sys_goals == NULL) {
                       perror( "gr1c_parse.y, sgoalformula, realloc" );
                       YYABORT;
@@ -282,13 +307,16 @@ sgoalformula: LIVENESS_OP propformula  {
 ;
 
 propformula: TRUE_CONSTANT  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 1 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_CONSTANT, NULL, 1 );
              }
            | FALSE_CONSTANT  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 0 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_CONSTANT, NULL, 0 );
              }
            | VARIABLE  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_VARIABLE, $1, 0 );
              }
            | '!' propformula  {
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NEG );
@@ -306,49 +334,65 @@ propformula: TRUE_CONSTANT  {
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUIV );
              }
            | VARIABLE '=' NUMBER  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_VARIABLE, $1, 0 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
              }
            | VARIABLE '<' NUMBER  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_VARIABLE, $1, 0 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LT );
              }
            | VARIABLE '>' NUMBER  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_VARIABLE, $1, 0 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GT );
              }
            | VARIABLE LE_OP NUMBER  {  /* less than or equal to */
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_VARIABLE, $1, 0 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LE );
              }
            | VARIABLE GE_OP NUMBER  {  /* greater than or equal to */
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_VARIABLE, $1, 0 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GE );
              }
            | VARIABLE NOT_EQUALS NUMBER  {
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-                 gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_VARIABLE, $1, 0 );
+                 gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NOTEQ );
              }
            | '(' propformula ')'
 ;
 
 tpropformula: TRUE_CONSTANT  {
-                  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 1 );
+                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, 1 );
 	      }
 	    | FALSE_CONSTANT  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, 0 );
 	      }
 	    | VARIABLE  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_VARIABLE, $1, 0 );
 	      }
 	    | VARIABLE '\''  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_NEXT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_NEXT_VARIABLE, $1, 0 );
 	      }
 	    | '!' tpropformula  {
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NEG );
@@ -366,63 +410,87 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUIV );
 	      }
 	    | VARIABLE '=' NUMBER  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
 	      }
 	    | VARIABLE '\'' '=' NUMBER  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_NEXT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $4 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_NEXT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
 	      }
 	    | VARIABLE '<' NUMBER  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LT );
 	      }
 	    | VARIABLE '\'' '<' NUMBER  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_NEXT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $4 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_NEXT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LT );
 	      }
 	    | VARIABLE '>' NUMBER  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GT );
 	      }
 	    | VARIABLE '\'' '>' NUMBER  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_NEXT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $4 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_NEXT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GT );
 	      }
 	    | VARIABLE LE_OP NUMBER  {  /* less than or equal to */
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LE );
 	      }
 	    | VARIABLE '\'' LE_OP NUMBER  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_NEXT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $4 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_NEXT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LE );
 	      }
 	    | VARIABLE GE_OP NUMBER  {  /* greater than or equal to */
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GE );
 	      }
 	    | VARIABLE '\'' GE_OP NUMBER  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_NEXT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $4 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_NEXT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GE );
 	      }
 	    | VARIABLE NOT_EQUALS NUMBER  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $3 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NOTEQ );
 	      }
 	    | VARIABLE '\'' NOT_EQUALS NUMBER  {
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_NEXT_VARIABLE, $1, 0 );
-		  gen_tree_ptr = pusht_terminal( gen_tree_ptr, PT_CONSTANT, NULL, $4 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_NEXT_VARIABLE, $1, 0 );
+		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
+                                                 PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NOTEQ );
 	      }
 	    | '(' tpropformula ')'

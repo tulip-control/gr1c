@@ -60,7 +60,8 @@ FILE *openlogfile( char *prefix )
 
 	clock = time( NULL );
 	timeptr = gmtime( &clock );  /* UTC */
-	if (strftime( logfilename+strlen(logfilename), FILENAME_LEN-strlen(logfilename),
+	if (strftime( logfilename+strlen(logfilename),
+				  FILENAME_LEN-strlen(logfilename),
 				  "-%Y%m%d.log", timeptr ) == 0) {
 		fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
 		return NULL;
@@ -105,7 +106,8 @@ void logprint( char *fmt, ... )
 	if ((logopt & 0x1) == LOGOPT_TIME) {
 		clock = time( NULL );
 		timeptr = gmtime( &clock );  /* UTC */
-		if (strftime( timestamp, TIMESTAMP_LEN, "%Y-%m-%d %H:%M:%S", timeptr ) == 0) {
+		if (strftime( timestamp, TIMESTAMP_LEN,
+					  "%Y-%m-%d %H:%M:%S", timeptr ) == 0) {
 			fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
 			return;
 		}
@@ -156,7 +158,8 @@ void logprint_startline()
 	if ((logopt & 0x1) == LOGOPT_TIME) {
 		clock = time( NULL );
 		timeptr = gmtime( &clock );  /* UTC */
-		if (strftime( timestamp, TIMESTAMP_LEN, "%Y-%m-%d %H:%M:%S", timeptr ) == 0) {
+		if (strftime( timestamp, TIMESTAMP_LEN,
+					  "%Y-%m-%d %H:%M:%S", timeptr ) == 0) {
 			fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
 			return;
 		}

@@ -197,9 +197,11 @@ DdNode *state2BDD( DdManager *manager, vartype *state, int offset, int len )
 	Cudd_Ref( v );
 	for (i = 0; i < len; i++) {
 		if (*(state+i)) {
-			tmp = Cudd_bddAnd( manager, v, Cudd_bddIthVar( manager, offset+i ) );
+			tmp = Cudd_bddAnd( manager, v,
+							   Cudd_bddIthVar( manager, offset+i ) );
 		} else {
-			tmp = Cudd_bddAnd( manager, v, Cudd_Not( Cudd_bddIthVar( manager, offset+i ) ) );
+			tmp = Cudd_bddAnd( manager, v,
+							   Cudd_Not(Cudd_bddIthVar( manager, offset+i )) );
 		}
 		Cudd_Ref( tmp );
 		Cudd_RecursiveDeref( manager, v );
@@ -252,12 +254,14 @@ vartype **get_env_moves( DdManager *manager, int *cube,
 			(*emoves_len)++;
 			env_moves = realloc( env_moves, (*emoves_len)*sizeof(vartype *) );
 			if (env_moves == NULL) {
-				fprintf( stderr, "Error in building next environment moves list." );
+				fprintf( stderr,
+						 "Error in building next environment moves list." );
 				return NULL;
 			}
 			*(env_moves+*emoves_len-1) = malloc( num_env*sizeof(vartype) );
 			if (*(env_moves+*emoves_len-1) == NULL) {
-				fprintf( stderr, "Error in building next environment moves list." );
+				fprintf( stderr,
+						 "Error in building next environment moves list." );
 				return NULL;
 			}
 
@@ -298,7 +302,9 @@ DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
 
 	C = Cudd_bddVarMap( manager, C );
 	if (C == NULL) {
-		fprintf( stderr, "compute_existsmodal: Error in swapping variables with primed forms." );
+		fprintf( stderr,
+				 "compute_existsmodal: Error in swapping variables with"
+				 " primed forms." );
 		return NULL;
 	}
 	Cudd_Ref( C );
@@ -309,13 +315,16 @@ DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
 	cube_prime_sys( cube, num_env, num_sys );
 	ddcube = Cudd_CubeArrayToBdd( manager, cube );
 	if (ddcube == NULL) {
-		fprintf( stderr, "compute_existsmodal: Error in generating cube for quantification." );
+		fprintf( stderr,
+				 "compute_existsmodal: Error in generating cube for"
+				 " quantification." );
 		return NULL;
 	}
 	Cudd_Ref( ddcube );
 	tmp2 = Cudd_bddExistAbstract( manager, tmp, ddcube );
 	if (tmp2 == NULL) {
-		fprintf( stderr, "compute_existsmodal: Error in performing quantification." );
+		fprintf( stderr,
+				 "compute_existsmodal: Error in performing quantification." );
 		return NULL;
 	}
 	Cudd_Ref( tmp2 );
@@ -328,13 +337,16 @@ DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
 	cube_prime_env( cube, num_env, num_sys );
 	ddcube = Cudd_CubeArrayToBdd( manager, cube );
 	if (ddcube == NULL) {
-		fprintf( stderr, "compute_existsmodal: Error in generating cube for quantification." );
+		fprintf( stderr,
+				 "compute_existsmodal: Error in generating cube for"
+				 " quantification." );
 		return NULL;
 	}
 	Cudd_Ref( ddcube );
 	tmp2 = Cudd_bddUnivAbstract( manager, tmp, ddcube );
 	if (tmp2 == NULL) {
-		fprintf( stderr, "compute_existsmodal: Error in performing quantification." );
+		fprintf( stderr,
+				 "compute_existsmodal: Error in performing quantification." );
 		return NULL;
 	}
 	Cudd_Ref( tmp2 );

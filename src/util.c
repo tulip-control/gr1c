@@ -65,7 +65,9 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 	} else {
 		var_separator = get_list_item( (*evar_list), -1 );
 		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
 			return NULL;
 		}
 		var_separator->left = (*svar_list);
@@ -74,9 +76,11 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 	while (tmppt) {
 		if (tmppt->value >= 0) {
 			if (nonbool_var_list == NULL) {
-				nonbool_var_list = init_ptree( PT_VARIABLE, tmppt->name, tmppt->value );
+				nonbool_var_list = init_ptree( PT_VARIABLE,
+											   tmppt->name, tmppt->value );
 			} else {
-				append_list_item( nonbool_var_list, PT_VARIABLE, tmppt->name, tmppt->value );
+				append_list_item( nonbool_var_list, PT_VARIABLE,
+								  tmppt->name, tmppt->value );
 			}
 
 		}
@@ -141,7 +145,8 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 }
 
 
-vartype *expand_nonbool_state( vartype *state, int *offw, int num_nonbool, int mapped_len )
+vartype *expand_nonbool_state( vartype *state, int *offw, int num_nonbool,
+							   int mapped_len )
 {
 	int i, j, k;
 	vartype *mapped_state, *state_frag;
@@ -196,26 +201,35 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 			continue;
 		}
 
-		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value > 0 ? tmppt->value+1 : 2 )) ));
+		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value > 0 ?
+											 tmppt->value+1 : 2 )) ));
 		if (maxbitval-1 > tmppt->value) {
 			if (verbose > 1)
-				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
+				logprint( "In mapping %s to a bitvector, blocking values %d-%d",
+						  tmppt->name, tmppt->value+1, maxbitval-1 );
 
 			/* Initial conditions */
 			prevpt = *env_init;
 			*env_init = init_ptree( PT_AND, NULL, 0 );
-			(*env_init)->right = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_VARIABLE );;
+			(*env_init)->right
+				= unreach_expanded_bool( tmppt->name, tmppt->value+1,
+										 maxbitval-1, PT_VARIABLE );
 			(*env_init)->left = prevpt;
 
 			/* Transition rules */
 			(*et_array_len) += 2;
-			(*env_trans_array) = realloc( (*env_trans_array), sizeof(ptree_t *)*(*et_array_len) );
+			(*env_trans_array) = realloc( (*env_trans_array),
+										  sizeof(ptree_t *)*(*et_array_len) );
 			if ((*env_trans_array) == NULL ) {
 				perror( "expand_nonbool_GR1, realloc" );
 				return -1;
 			}
-			*((*env_trans_array)+(*et_array_len)-2) = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_VARIABLE );
-			*((*env_trans_array)+(*et_array_len)-1) = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_NEXT_VARIABLE );
+			*((*env_trans_array)+(*et_array_len)-2)
+				= unreach_expanded_bool( tmppt->name, tmppt->value+1,
+										 maxbitval-1, PT_VARIABLE );
+			*((*env_trans_array)+(*et_array_len)-1)
+				= unreach_expanded_bool( tmppt->name, tmppt->value+1,
+										 maxbitval-1, PT_NEXT_VARIABLE );
 		}
 		tmppt = tmppt->left;
 	}
@@ -227,26 +241,35 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 			continue;
 		}
 
-		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value > 0 ? tmppt->value+1 : 2 )) ));
+		maxbitval = (int)(pow( 2, ceil(log2( tmppt->value > 0 ?
+											 tmppt->value+1 : 2 )) ));
 		if (maxbitval-1 > tmppt->value) {
 			if (verbose > 1)
-				logprint( "In mapping %s to a bitvector, blocking values %d-%d", tmppt->name, tmppt->value+1, maxbitval-1 );
+				logprint( "In mapping %s to a bitvector, blocking values %d-%d",
+						  tmppt->name, tmppt->value+1, maxbitval-1 );
 
 			/* Initial conditions */
 			prevpt = *sys_init;
 			*sys_init = init_ptree( PT_AND, NULL, 0 );
-			(*sys_init)->right = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_VARIABLE );;
+			(*sys_init)->right
+				= unreach_expanded_bool( tmppt->name, tmppt->value+1,
+										 maxbitval-1, PT_VARIABLE );
 			(*sys_init)->left = prevpt;
 
 			/* Transition rules */
 			(*st_array_len) += 2;
-			(*sys_trans_array) = realloc( (*sys_trans_array), sizeof(ptree_t *)*(*st_array_len) );
+			(*sys_trans_array) = realloc( (*sys_trans_array),
+										  sizeof(ptree_t *)*(*st_array_len) );
 			if ((*sys_trans_array) == NULL ) {
 				perror( "expand_nonbool_GR1, realloc" );
 				return -1;
 			}
-			*((*sys_trans_array)+(*st_array_len)-2) = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_VARIABLE );
-			*((*sys_trans_array)+(*st_array_len)-1) = unreach_expanded_bool( tmppt->name, tmppt->value+1, maxbitval-1, PT_NEXT_VARIABLE );
+			*((*sys_trans_array)+(*st_array_len)-2)
+				= unreach_expanded_bool( tmppt->name, tmppt->value+1,
+										 maxbitval-1, PT_VARIABLE );
+			*((*sys_trans_array)+(*st_array_len)-1)
+				= unreach_expanded_bool( tmppt->name, tmppt->value+1,
+										 maxbitval-1, PT_NEXT_VARIABLE );
 		}
 		tmppt = tmppt->left;
 	}
@@ -258,7 +281,9 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 	} else {
 		var_separator = get_list_item( evar_list, -1 );
 		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
 			return -1;
 		}
 		var_separator->left = svar_list;
@@ -267,25 +292,36 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 	while (tmppt) {
 		if (tmppt->value >= 0) {
 			if (verbose > 1)
-				logprint( "Expanding nonbool variable %s in SYSINIT...", tmppt->name );
-			(*sys_init) = expand_to_bool( (*sys_init), tmppt->name, tmppt->value );
+				logprint( "Expanding nonbool variable %s in SYSINIT...",
+						  tmppt->name );
+			(*sys_init) = expand_to_bool( (*sys_init),
+										  tmppt->name, tmppt->value );
 			if (verbose > 1) {
 				logprint( "Done." );
-				logprint( "Expanding nonbool variable %s in ENVINIT...", tmppt->name );
+				logprint( "Expanding nonbool variable %s in ENVINIT...",
+						  tmppt->name );
 			}
-			(*env_init) = expand_to_bool( (*env_init), tmppt->name, tmppt->value );
+			(*env_init) = expand_to_bool( (*env_init),
+										  tmppt->name, tmppt->value );
 			if (verbose > 1)
 				logprint( "Done." );
 			if ((*sys_init) == NULL || (*env_init) == NULL) {
-				fprintf( stderr, "Error expand_nonbool_GR1: Failed to convert non-Boolean variable to Boolean.\n" );
+				fprintf( stderr,
+						 "Error expand_nonbool_GR1: Failed to convert"
+						 " non-Boolean variable to Boolean.\n" );
 				return -1;
 			}
 			for (i = 0; i < *et_array_len; i++) {
 				if (verbose > 1)
-					logprint( "Expanding nonbool variable %s in ENVTRANS %d...", tmppt->name, i );
-				*((*env_trans_array)+i) = expand_to_bool( *((*env_trans_array)+i), tmppt->name, tmppt->value );
+					logprint( "Expanding nonbool variable %s in ENVTRANS %d...",
+							  tmppt->name, i );
+				*((*env_trans_array)+i)
+					= expand_to_bool( *((*env_trans_array)+i),
+									  tmppt->name, tmppt->value );
 				if (*((*env_trans_array)+i) == NULL) {
-					fprintf( stderr, "Error expand_nonbool_GR1: Failed to convert non-Boolean variable to Boolean.\n" );
+					fprintf( stderr,
+							 "Error expand_nonbool_GR1: Failed to convert"
+							 " non-Boolean variable to Boolean.\n" );
 					return -1;
 				}
 				if (verbose > 1)
@@ -293,10 +329,15 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 			}
 			for (i = 0; i < *st_array_len; i++) {
 				if (verbose > 1)
-					logprint( "Expanding nonbool variable %s in SYSTRANS %d...", tmppt->name, i );
-				*((*sys_trans_array)+i) = expand_to_bool( *((*sys_trans_array)+i), tmppt->name, tmppt->value );
+					logprint( "Expanding nonbool variable %s in SYSTRANS %d...",
+							  tmppt->name, i );
+				*((*sys_trans_array)+i)
+					= expand_to_bool( *((*sys_trans_array)+i),
+									  tmppt->name, tmppt->value );
 				if (*((*sys_trans_array)+i) == NULL) {
-					fprintf( stderr, "Error expand_nonbool_GR1: Failed to convert non-Boolean variable to Boolean.\n" );
+					fprintf( stderr,
+							 "Error expand_nonbool_GR1: Failed to convert"
+							 " non-Boolean variable to Boolean.\n" );
 					return -1;
 				}
 				if (verbose > 1)
@@ -304,10 +345,15 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 			}
 			for (i = 0; i < num_env_goals; i++) {
 				if (verbose > 1)
-					logprint( "Expanding nonbool variable %s in ENVGOAL %d...", tmppt->name, i );
-				*((*env_goals)+i) = expand_to_bool( *((*env_goals)+i), tmppt->name, tmppt->value );
+					logprint( "Expanding nonbool variable %s in ENVGOAL %d...",
+							  tmppt->name, i );
+				*((*env_goals)+i)
+					= expand_to_bool( *((*env_goals)+i),
+									  tmppt->name, tmppt->value );
 				if (*((*env_goals)+i) == NULL) {
-					fprintf( stderr, "Error expand_nonbool_GR1: Failed to convert non-Boolean variable to Boolean.\n" );
+					fprintf( stderr,
+							 "Error expand_nonbool_GR1: Failed to convert"
+							 " non-Boolean variable to Boolean.\n" );
 					return -1;
 				}
 				if (verbose > 1)
@@ -315,10 +361,15 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 			}
 			for (i = 0; i < num_sys_goals; i++) {
 				if (verbose > 1)
-					logprint( "Expanding nonbool variable %s in SYSGOAL %d...", tmppt->name, i );
-				*((*sys_goals)+i) = expand_to_bool( *((*sys_goals)+i), tmppt->name, tmppt->value );
+					logprint( "Expanding nonbool variable %s in SYSGOAL %d...",
+							  tmppt->name, i );
+				*((*sys_goals)+i)
+					= expand_to_bool( *((*sys_goals)+i),
+									  tmppt->name, tmppt->value );
 				if (*((*sys_goals)+i) == NULL) {
-					fprintf( stderr, "Error expand_nonbool_GR1: Failed to convert non-Boolean variable to Boolean.\n" );
+					fprintf( stderr,
+							 "Error expand_nonbool_GR1: Failed to convert"
+							 " non-Boolean variable to Boolean.\n" );
 					return -1;
 				}
 				if (verbose > 1)
@@ -454,18 +505,24 @@ int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
 
 	if (evar_list != NULL) {
 		if (env_init == NULL) {
-			fprintf( stderr, "Syntax error: GR(1) specification is missing ENVINIT.\n" );
+			fprintf( stderr,
+					 "Syntax error: GR(1) specification is missing"
+					 " ENVINIT.\n" );
 			return -1;
 		} else if (et_array_len == 0) {
-			fprintf( stderr, "Syntax error: GR(1) specification is missing ENVTRANS.\n" );
+			fprintf( stderr,
+					 "Syntax error: GR(1) specification is missing"
+					 " ENVTRANS.\n" );
 			return -1;
 		}
 	}
 	if (sys_init == NULL) {
-		fprintf( stderr, "Syntax error: GR(1) specification is missing SYSINIT.\n" );
+		fprintf( stderr,
+				 "Syntax error: GR(1) specification is missing SYSINIT.\n" );
 		return -1;
 	} else if (st_array_len == 0) {
-		fprintf( stderr, "Syntax error: GR(1) specification is missing SYSTRANS.\n" );
+		fprintf( stderr,
+				 "Syntax error: GR(1) specification is missing SYSTRANS.\n" );
 		return -1;
 	}
 
@@ -477,38 +534,58 @@ int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
 		tmppt->left = evar_list;
 	}
 	if ((tmpstr = check_vars( env_init, svar_list, NULL )) != NULL) {
-		fprintf( stderr, "Error: ENVINIT in GR(1) spec contains unexpected variable: %s\n", tmpstr );
+		fprintf( stderr,
+				 "Error: ENVINIT in GR(1) spec contains unexpected variable:"
+				 " %s\n", tmpstr );
 		free( tmpstr );
 		return -1;
 	} else if ((tmpstr = check_vars( sys_init, svar_list, NULL )) != NULL) {
-		fprintf( stderr, "Error: SYSINIT in GR(1) spec contains unexpected variable: %s\n", tmpstr );
+		fprintf( stderr,
+				 "Error: SYSINIT in GR(1) spec contains unexpected variable:"
+				 " %s\n", tmpstr );
 		free( tmpstr );
 		return -1;
 	}
 	for (i = 0; i < et_array_len; i++) {
-		if ((tmpstr = check_vars( *(env_trans_array+i), svar_list, evar_list )) != NULL) {
-			fprintf( stderr, "Error: part %d of ENVTRANS in GR(1) spec contains unexpected variable: %s\n", i+1, tmpstr );
+		if ((tmpstr = check_vars( *(env_trans_array+i),
+								  svar_list, evar_list )) != NULL) {
+			fprintf( stderr,
+					 "Error: part %d of ENVTRANS in GR(1) spec contains"
+					 " unexpected variable: %s\n",
+					 i+1, tmpstr );
 			free( tmpstr );
 			return -1;
 		}
 	}
 	for (i = 0; i < st_array_len; i++) {
-		if ((tmpstr = check_vars( *(sys_trans_array+i), svar_list, svar_list )) != NULL) {
-			fprintf( stderr, "Error: part %d of SYSTRANS in GR(1) spec contains unexpected variable: %s\n", i+1, tmpstr );
+		if ((tmpstr = check_vars( *(sys_trans_array+i),
+								  svar_list, svar_list )) != NULL) {
+			fprintf( stderr,
+					 "Error: part %d of SYSTRANS in GR(1) spec contains"
+					 " unexpected variable: %s\n",
+					 i+1, tmpstr );
 			free( tmpstr );
 			return -1;
 		}
 	}
 	for (i = 0; i < num_env_goals; i++) {
-		if ((tmpstr = check_vars( *(env_goals+i), svar_list, NULL )) != NULL) {
-			fprintf( stderr, "Error: part %d of ENVGOAL in GR(1) spec contains unexpected variable: %s\n", i+1, tmpstr );
+		if ((tmpstr = check_vars( *(env_goals+i),
+								  svar_list, NULL )) != NULL) {
+			fprintf( stderr,
+					 "Error: part %d of ENVGOAL in GR(1) spec contains"
+					 " unexpected variable: %s\n",
+					 i+1, tmpstr );
 			free( tmpstr );
 			return -1;
 		}
 	}
 	for (i = 0; i < num_sys_goals; i++) {
-		if ((tmpstr = check_vars( *(sys_goals+i), svar_list, NULL )) != NULL) {
-			fprintf( stderr, "Error: part %d of SYSGOAL in GR(1) spec contains unexpected variable: %s\n", i+1, tmpstr );
+		if ((tmpstr = check_vars( *(sys_goals+i),
+								  svar_list, NULL )) != NULL) {
+			fprintf( stderr,
+					 "Error: part %d of SYSGOAL in GR(1) spec contains"
+					 " unexpected variable: %s\n",
+					 i+1, tmpstr );
 			free( tmpstr );
 			return -1;
 		}
@@ -526,7 +603,8 @@ int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
 
 /* N.B., we assume that noonbool_var_list is sorted with respect to
    the expanded variable list (evar_list followed by svar_list). */
-int *get_offsets_list( ptree_t *evar_list, ptree_t *svar_list, ptree_t *nonbool_var_list )
+int *get_offsets_list( ptree_t *evar_list, ptree_t *svar_list,
+					   ptree_t *nonbool_var_list )
 {
 	int *offw = NULL;
 	ptree_t *var, *var_tail, *tmppt;
@@ -560,7 +638,9 @@ int *get_offsets_list( ptree_t *evar_list, ptree_t *svar_list, ptree_t *nonbool_
 				start_index++;
 			}
 			if (var == NULL) {
-				fprintf( stderr, "Error get_offsets_list: Could not find match for \"%s\"\n", tmppt->name );
+				fprintf( stderr,
+						 "Error get_offsets_list: Could not find match for"
+						 " \"%s\"\n", tmppt->name );
 				free( offw );
 				return NULL;
 			}
@@ -569,7 +649,8 @@ int *get_offsets_list( ptree_t *evar_list, ptree_t *svar_list, ptree_t *nonbool_
 		var_tail = var;
 		stop_index = start_index;
 		while (var_tail->left) {
-			if (strstr( var_tail->left->name, tmppt->name ) != var_tail->left->name )
+			if (strstr( var_tail->left->name, tmppt->name )
+				!= var_tail->left->name )
 				break;
 			var_tail = var_tail->left;
 			stop_index++;

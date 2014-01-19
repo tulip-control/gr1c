@@ -30,7 +30,7 @@ extern ptree_t *evar_list;
 extern ptree_t *svar_list;
 extern ptree_t *env_init;
 extern ptree_t *sys_init;
-ptree_t *env_trans = NULL;  /* Built from component parse trees in env_trans_array. */
+ptree_t *env_trans = NULL;  /* Built from components in env_trans_array. */
 ptree_t *sys_trans = NULL;
 extern ptree_t **env_goals;
 extern ptree_t **sys_goals;
@@ -46,12 +46,14 @@ extern int st_array_len;
 
 
 /* See solve_metric.c */
-extern DdNode *compute_winning_set_saveBDDs( DdManager *manager, DdNode **etrans, DdNode **strans,
+extern DdNode *compute_winning_set_saveBDDs( DdManager *manager,
+											 DdNode **etrans, DdNode **strans,
 											 DdNode ***egoals, DdNode ***sgoals,
 											 unsigned char verbose );
 
 
-void dump_simtrace( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp )
+void dump_simtrace( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+					FILE *fp )
 {
 	int j, last_nonzero_env, last_nonzero_sys;
 	anode_t *node;
@@ -89,7 +91,8 @@ void dump_simtrace( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 				if (j == last_nonzero_sys) {
 					fprintf( fp, "%s=%d", var->name, *(node->state+num_env+j) );
 				} else {
-					fprintf( fp, "%s=%d, ", var->name, *(node->state+num_env+j) );
+					fprintf( fp, "%s=%d, ",
+							 var->name, *(node->state+num_env+j) );
 				}
 			}
 		}
@@ -143,7 +146,8 @@ int main( int argc, char **argv )
 			if (argv[i][1] == 'h') {
 				help_flag = True;
 			} else if (argv[i][1] == 'V') {
-				printf( "grjit (experiment-related program, distributed with gr1c v" GR1C_VERSION ")\n\n" GR1C_COPYRIGHT "\n" );
+				printf( "grjit (experiment-related program, distributed with"
+						" gr1c v" GR1C_VERSION ")\n\n" GR1C_COPYRIGHT "\n" );
 				return 0;
 			} else if (argv[i][1] == 'v') {
 				verbose = 1;
@@ -176,14 +180,17 @@ int main( int argc, char **argv )
 						fprintf( stderr, "Invalid use of -m flag.\n" );
 						return 1;
 					}
-					init_state_acc = read_state_str( all_vars, &init_state_ints, -1 );
+					init_state_acc = read_state_str( all_vars,
+													 &init_state_ints, -1 );
 					all_vars = strtok( NULL, "," );
 					if (all_vars == NULL) {
 						horizon = -1;  /* The horizon was not given. */
 					} else {
 						horizon = strtol( all_vars, NULL, 10 );
 						if (horizon < 1) {
-							fprintf( stderr, "Invalid use of -m flag.  Horizon must be positive.\n" );
+							fprintf( stderr,
+									 "Invalid use of -m flag.  Horizon must"
+									 " be positive.\n" );
 							return 1;
 						}
 					}
@@ -291,7 +298,9 @@ int main( int argc, char **argv )
 		   integers read by read_state_str() during
 		   command-line argument parsing. */
 		if (init_state_acc != original_num_env+original_num_sys) {
-			fprintf( stderr, "Number of initial values given does not match number of problem variables.\n" );
+			fprintf( stderr,
+					 "Number of initial values given does not match number"
+					 " of problem variables.\n" );
 			return 1;
 		}
 
@@ -377,9 +386,11 @@ int main( int argc, char **argv )
 					}
 				} else {
 					if (tmppt->left == NULL) {
-						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d})",
+								tmppt->name, var_index, tmppt->value );
 					} else {
-						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d}), ",
+								tmppt->name, var_index, tmppt->value );
 					}
 				}
 				tmppt = tmppt->left;
@@ -402,9 +413,11 @@ int main( int argc, char **argv )
 					}
 				} else {
 					if (tmppt->left == NULL) {
-						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d})",
+								tmppt->name, var_index, tmppt->value );
 					} else {
-						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d}), ",
+								tmppt->name, var_index, tmppt->value );
 					}
 				}
 				tmppt = tmppt->left;
@@ -425,14 +438,17 @@ int main( int argc, char **argv )
 							&env_goals, num_egoals, &sys_goals, num_sgoals,
 							verbose ) < 0)
 		return -1;
-	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list, verbose );
+	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list,
+												 verbose );
 
 	if (et_array_len > 1) {
 		env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
 	} else if (et_array_len == 1) {
 		env_trans = *env_trans_array;
 	} else {
-		fprintf( stderr, "Syntax error: GR(1) specification is missing environment transition rules.\n" );
+		fprintf( stderr,
+				 "Syntax error: GR(1) specification is missing environment"
+				 " transition rules.\n" );
 		return -1;
 	}
 	if (st_array_len > 1) {
@@ -440,7 +456,9 @@ int main( int argc, char **argv )
 	} else if (st_array_len == 1) {
 		sys_trans = *sys_trans_array;
 	} else {
-		fprintf( stderr, "Syntax error: GR(1) specification is missing system transition rules.\n" );
+		fprintf( stderr,
+				 "Syntax error: GR(1) specification is missing system"
+				 " transition rules.\n" );
 		return -1;
 	}
 
@@ -472,13 +490,16 @@ int main( int argc, char **argv )
 	if (T != NULL) { /* Print measure data and simulate. */
 		if (horizon < 0) {
 			if (verbose)
-				logprint( "Computing horizon with metric variables: %s", metric_vars );
-			horizon = compute_horizon( manager, &W, &etrans, &strans, &sgoals, metric_vars, verbose );
+				logprint( "Computing horizon with metric variables: %s",
+						  metric_vars );
+			horizon = compute_horizon( manager, &W, &etrans, &strans, &sgoals,
+									   metric_vars, verbose );
 			logprint( "horizon: %d", horizon );
 			if (getlogstream() != stdout)
 				printf( "horizon: %d\n", horizon );
 		} else {
-			W = compute_winning_set_saveBDDs( manager, &etrans, &strans, &egoals, &sgoals, verbose );
+			W = compute_winning_set_saveBDDs( manager, &etrans, &strans,
+											  &egoals, &sgoals, verbose );
 			if (verbose)
 				logprint( "Using given horizon: %d", horizon );
 		}
@@ -488,7 +509,8 @@ int main( int argc, char **argv )
 			   state as a bitvector */
 			offw = get_offsets( all_vars, &num_vars );
 			if (num_vars != original_num_env+original_num_sys) {
-				fprintf( stderr, "Error while computing bitwise variable offsets.\n" );
+				fprintf( stderr,
+						 "Error while computing bitwise variable offsets.\n" );
 				return -1;
 			}
 			free( all_vars );
@@ -512,14 +534,17 @@ int main( int argc, char **argv )
 			play = sim_rhc( manager, W, etrans, strans, sgoals, metric_vars,
 							horizon, init_state, max_sim_it, verbose );
 			if (play == NULL) {
-				fprintf( stderr, "Error while attempting receding horizon simulation.\n" );
+				fprintf( stderr,
+						 "Error while attempting receding horizon"
+						 " simulation.\n" );
 				return -1;
 			}
 			free( init_state );
 			logprint( "play length: %d", aut_size( play ) );
 			tmppt = nonbool_var_list;
 			while (tmppt) {
-				aut_compact_nonbool( play, evar_list, svar_list, tmppt->name, tmppt->value );
+				aut_compact_nonbool( play, evar_list, svar_list,
+									 tmppt->name, tmppt->value );
 				tmppt = tmppt->left;
 			}
 

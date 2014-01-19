@@ -137,9 +137,11 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 			break;
 		} else if (!strncmp( input, "help", strlen( "help" ) )) {
 			fprintf( outfp, INTCOM_HELP_STR );
-		} else if (!strncmp( input, "enable autoreorder", strlen( "enable autoreorder" ) )) {
+		} else if (!strncmp( input, "enable autoreorder",
+							 strlen( "enable autoreorder" ) )) {
 			Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
-		} else if (!strncmp( input, "disable autoreorder", strlen( "disable autoreorder" ) )) {
+		} else if (!strncmp( input, "disable autoreorder",
+							 strlen( "disable autoreorder" ) )) {
 			Cudd_AutodynDisable( manager );
 		} else if (!strncmp( input, "numgoals", strlen( "numgoals" ) )) {
 			fprintf( outfp, "%d", num_sgoals );
@@ -197,14 +199,17 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 					var_index++;
 				}
 			}
-		} else if (!strncmp( input, "refresh winning", strlen( "refresh winning" ) )) {
+		} else if (!strncmp( input, "refresh winning",
+							 strlen( "refresh winning" ) )) {
 			return INTCOM_REWIN;
-		} else if (!strncmp( input, "refresh levels", strlen( "refresh levels" ) )) {
+		} else if (!strncmp( input, "refresh levels",
+							 strlen( "refresh levels" ) )) {
 			return INTCOM_RELEVELS;
 		} else if (!strncmp( input, "printgoal ", strlen( "printgoal " ) )) {
 
 			*(input+strlen( "printgoal" )) = '\0';
-			num_read = read_state_str( input+strlen( "printgoal" )+1, &intcom_state, 1 );
+			num_read = read_state_str( input+strlen( "printgoal" )+1,
+									   &intcom_state, 1 );
 			if (num_read < 1) {
 				fprintf( outfp, "Invalid arguments." );
 			} else {
@@ -227,8 +232,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		} else if (!strncmp( input, "winning ", strlen( "winning " ) )) {
 
 			*(input+strlen( "winning" )) = '\0';
-			num_read = read_state_str( input+strlen( "winning" )+1, &intcom_state,
-									   num_env+num_sys );
+			num_read = read_state_str( input+strlen( "winning" )+1,
+									   &intcom_state, num_env+num_sys );
 			if (num_read == num_env+num_sys) {
 				free( input );
 				return INTCOM_WINNING;
@@ -241,8 +246,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		} else if (!strncmp( input, "envnext ", strlen( "envnext " ) )) {
 
 			*(input+strlen( "envnext" )) = '\0';
-			num_read = read_state_str( input+strlen( "envnext" )+1, &intcom_state,
-									   num_env+num_sys );
+			num_read = read_state_str( input+strlen( "envnext" )+1,
+									   &intcom_state, num_env+num_sys );
 			if (num_read == num_env+num_sys) {
 				free( input );
 				return INTCOM_ENVNEXT;
@@ -255,8 +260,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		} else if (!strncmp( input, "sysnext ", strlen( "sysnext " ) )) {
 
 			*(input+strlen( "sysnext" )) = '\0';
-			num_read = read_state_str( input+strlen( "sysnext" )+1, &intcom_state,
-									   2*num_env+num_sys+1 );
+			num_read = read_state_str( input+strlen( "sysnext" )+1,
+									   &intcom_state, 2*num_env+num_sys+1 );
 			if (num_read != 2*num_env+num_sys+1) {
 				if (num_read > 0)
 					free( intcom_state );
@@ -264,13 +269,17 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 				fprintf( outfp, "Invalid arguments.\n" );
 				continue;
 			}
-			if (*(intcom_state+2*num_env+num_sys) < 0 || *(intcom_state+2*num_env+num_sys) > num_sgoals-1) {
-				fprintf( outfp, "Invalid mode: %d", *(intcom_state+2*num_env+num_sys) );
+			if (*(intcom_state+2*num_env+num_sys) < 0
+				|| *(intcom_state+2*num_env+num_sys) > num_sgoals-1) {
+				fprintf( outfp,
+						 "Invalid mode: %d",
+						 *(intcom_state+2*num_env+num_sys) );
 				free( intcom_state );
 			} else {
 				free( input );
 				intcom_index  = *(intcom_state+2*num_env+num_sys);
-				intcom_state = realloc( intcom_state, (2*num_env+num_sys)*sizeof(vartype) );
+				intcom_state = realloc( intcom_state,
+										(2*num_env+num_sys)*sizeof(vartype) );
 				if (intcom_state == NULL) {
 					perror( "command_loop, realloc" );
 					return -1;
@@ -281,8 +290,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		} else if (!strncmp( input, "sysnexta ", strlen( "sysnexta " ) )) {
 
 			*(input+strlen( "sysnexta" )) = '\0';
-			num_read = read_state_str( input+strlen( "sysnexta" )+1, &intcom_state,
-									   2*num_env+num_sys );
+			num_read = read_state_str( input+strlen( "sysnexta" )+1,
+									   &intcom_state, 2*num_env+num_sys );
 			if (num_read == 2*num_env+num_sys) {
 				free( input );
 				return INTCOM_SYSNEXTA;
@@ -295,9 +304,10 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		} else if (!strncmp( input, "restrict ", strlen( "restrict " ) )) {
 
 			*(input+strlen( "restrict" )) = '\0';
-			num_read = read_state_str( input+strlen( "restrict" )+1, &intcom_state,
-									   2*(num_env+num_sys) );
-			if ((num_read == 2*(num_env+num_sys)) || (num_read == 2*num_env+num_sys)) {
+			num_read = read_state_str( input+strlen( "restrict" )+1,
+									   &intcom_state, 2*(num_env+num_sys) );
+			if ((num_read == 2*(num_env+num_sys))
+				|| (num_read == 2*num_env+num_sys)) {
 				free( input );
 				intcom_index = num_read;
 				return INTCOM_RESTRICT;
@@ -312,7 +322,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 			*(input+strlen( "relax" )) = '\0';
 			num_read = read_state_str( input+strlen( "relax" )+1, &intcom_state,
 									   2*(num_env+num_sys) );
-			if ((num_read == 2*(num_env+num_sys)) || (num_read == 2*num_env+num_sys)) {
+			if ((num_read == 2*(num_env+num_sys))
+				|| (num_read == 2*num_env+num_sys)) {
 				free( input );
 				intcom_index = num_read;
 				return INTCOM_RELAX;
@@ -328,8 +339,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		} else if (!strncmp( input, "blockenv ", strlen( "blockenv " ) )) {
 
 			*(input+strlen( "blockenv" )) = '\0';
-			num_read = read_state_str( input+strlen( "blockenv" )+1, &intcom_state,
-									   num_env );
+			num_read = read_state_str( input+strlen( "blockenv" )+1,
+									   &intcom_state, num_env );
 			if (num_read == num_env) {
 				free( input );
 				return INTCOM_BLKENV;
@@ -342,8 +353,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		} else if (!strncmp( input, "blocksys ", strlen( "blocksys " ) )) {
 
 			*(input+strlen( "blocksys" )) = '\0';
-			num_read = read_state_str( input+strlen( "blocksys" )+1, &intcom_state,
-									   num_sys );
+			num_read = read_state_str( input+strlen( "blocksys" )+1,
+									   &intcom_state, num_sys );
 			if (num_read == num_sys) {
 				free( input );
 				return INTCOM_BLKSYS;
@@ -356,8 +367,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		} else if (!strncmp( input, "getindex ", strlen( "getindex " ) )) {
 
 			*(input+strlen( "getindex" )) = '\0';
-			num_read = read_state_str( input+strlen( "getindex" )+1, &intcom_state,
-									   num_env+num_sys+1 );
+			num_read = read_state_str( input+strlen( "getindex" )+1,
+									   &intcom_state, num_env+num_sys+1 );
 			if (num_read != num_env+num_sys+1) {
 				if (num_read > 0)
 					free( intcom_state );
@@ -365,13 +376,16 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 				fprintf( outfp, "Invalid arguments.\n" );
 				continue;
 			}
-			if (*(intcom_state+num_env+num_sys) < 0 || *(intcom_state+num_env+num_sys) > num_sgoals-1) {
-				fprintf( outfp, "Invalid mode: %d", *(intcom_state+num_env+num_sys) );
+			if (*(intcom_state+num_env+num_sys) < 0
+				|| *(intcom_state+num_env+num_sys) > num_sgoals-1) {
+				fprintf( outfp,
+						 "Invalid mode: %d", *(intcom_state+num_env+num_sys) );
 				free( intcom_state );
 			} else {
 				free( input );
 				intcom_index = *(intcom_state+num_env+num_sys);
-				intcom_state = realloc( intcom_state, (num_env+num_sys)*sizeof(vartype) );
+				intcom_state = realloc( intcom_state,
+										(num_env+num_sys)*sizeof(vartype) );
 				if (intcom_state == NULL) {
 					perror( "command_loop, realloc" );
 					return -1;
@@ -466,7 +480,9 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	} else {
 		var_separator = get_list_item( evar_list, -1 );
 		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
 			return -1;
 		}
 		var_separator->left = svar_list;
@@ -513,9 +529,12 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	strans_patched = strans;
 	Cudd_Ref( strans_patched );
 
-	W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals, verbose );
+	W = compute_winning_set_BDD( manager,
+								 etrans, strans, egoals, sgoals, verbose );
 	if (W == NULL) {
-		fprintf( stderr, "Error levelset_interactive: failed to construct winning set.\n" );
+		fprintf( stderr,
+				 "Error levelset_interactive: failed to construct winning"
+				 " set.\n" );
 		return -1;
 	}
 
@@ -529,7 +548,9 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 										 etrans_patched, strans_patched,
 										 egoals, sgoals, verbose );
 			if (W == NULL) {
-				fprintf( stderr, "Error levelset_interactive: failed to construct winning set.\n" );
+				fprintf( stderr,
+						 "Error levelset_interactive: failed to construct"
+						 " winning set.\n" );
 				return -1;
 			}
 			break;
@@ -541,7 +562,9 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 										 etrans_patched, strans_patched,
 										 egoals, sgoals, verbose );
 			if (W == NULL) {
-				fprintf( stderr, "Error levelset_interactive: failed to construct winning set.\n" );
+				fprintf( stderr,
+						 "Error levelset_interactive: failed to construct"
+						 " winning set.\n" );
 				return -1;
 			}
 			if (Y != NULL) {
@@ -562,7 +585,9 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 									   sgoals, num_sgoals,
 									   &num_sublevels, &X_ijr, verbose );
 			if (Y == NULL) {
-				fprintf( stderr, "Error levelset_interactive: failed to construct sublevel sets.\n" );
+				fprintf( stderr,
+						 "Error levelset_interactive: failed to construct"
+						 " sublevel sets.\n" );
 				return -1;
 			}
 			break;
@@ -599,7 +624,9 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 			tmp = Cudd_bddVarMap( manager, W );
 			if (tmp == NULL) {
-				fprintf( stderr, "Error levelset_interactive: Error in swapping variables with primed forms.\n" );
+				fprintf( stderr,
+						 "Error levelset_interactive: Error in swapping"
+						 " variables with primed forms.\n" );
 				return -1;
 			}
 			Cudd_Ref( tmp );
@@ -618,12 +645,16 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				}
 			} while (j > 0);
 			if (j == 0) {
-				Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+intcom_index)) );
+				Y_i_primed = Cudd_bddVarMap( manager,
+											 *(*(Y+intcom_index)) );
 			} else {
-				Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+intcom_index)+j-1) );
+				Y_i_primed = Cudd_bddVarMap( manager,
+											 *(*(Y+intcom_index)+j-1) );
 			}
 			if (Y_i_primed == NULL) {
-				fprintf( stderr, "levelset_interactive: Error in swapping variables with primed forms.\n" );
+				fprintf( stderr,
+						 "levelset_interactive: Error in swapping variables"
+						 " with primed forms.\n" );
 				return -1;
 			}
 			Cudd_Ref( Y_i_primed );
@@ -656,7 +687,8 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			*state = -1;
 			Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
 				initialize_cube( state, gcube+2*num_env+num_sys, num_sys );
-				while (!saturated_cube( state, gcube+2*num_env+num_sys, num_sys )) {
+				while (!saturated_cube( state, gcube+2*num_env+num_sys,
+										num_sys )) {
 					fprintf( outfp, "%d", *state );
 					for (i = 1; i < num_sys; i++)
 						fprintf( outfp, " %d", *(state+i) );
@@ -675,9 +707,12 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				Cudd_RecursiveDeref( manager, tmp );
 				Cudd_RecursiveDeref( manager, Y_i_primed );
 				if (j > 0) {
-					Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+intcom_index)+j) );
+					Y_i_primed = Cudd_bddVarMap( manager,
+												 *(*(Y+intcom_index)+j) );
 					if (Y_i_primed == NULL) {
-						fprintf( stderr, "levelset_interactive: Error in swapping variables with primed forms.\n" );
+						fprintf( stderr,
+								 "levelset_interactive: Error in swapping"
+								 " variables with primed forms.\n" );
 						return -1;
 					}
 				} else {
@@ -701,12 +736,14 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				Cudd_AutodynDisable( manager );
 				Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
 					initialize_cube( state, gcube+2*num_env+num_sys, num_sys );
-					while (!saturated_cube( state, gcube+2*num_env+num_sys, num_sys )) {
+					while (!saturated_cube( state, gcube+2*num_env+num_sys,
+											num_sys )) {
 						fprintf( outfp, "%d", *state );
 						for (i = 1; i < num_sys; i++)
 							fprintf( outfp, " %d", *(state+i) );
 						fprintf( outfp, "\n" );
-						increment_cube( state, gcube+2*num_env+num_sys, num_sys );
+						increment_cube( state, gcube+2*num_env+num_sys,
+										num_sys );
 					}
 					fprintf( outfp, "%d", *state );
 					for (i = 1; i < num_sys; i++)
@@ -739,7 +776,8 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			Cudd_AutodynDisable( manager );
 			Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
 				initialize_cube( state, gcube+2*num_env+num_sys, num_sys );
-				while (!saturated_cube( state, gcube+2*num_env+num_sys, num_sys )) {
+				while (!saturated_cube( state, gcube+2*num_env+num_sys,
+										num_sys )) {
 					fprintf( outfp, "%d", *state );
 					for (i = 1; i < num_sys; i++)
 						fprintf( outfp, " %d", *(state+i) );
@@ -775,7 +813,8 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 		case INTCOM_GETINDEX:
 			if (verbose) {
-				logprint( "Reachability index for goal %d of state ", intcom_index );
+				logprint( "Reachability index for goal %d of state ",
+						  intcom_index );
 				for (i = 0; i < num_env+num_sys; i++)
 					logprint( " %d", *(intcom_state+i) );
 			}
@@ -826,7 +865,9 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			}
 			
 			vertex1 = state2BDD( manager, intcom_state, 0, num_env+num_sys );
-			vertex2 = state2BDD( manager, intcom_state+num_env+num_sys, num_env+num_sys, intcom_index-(num_env+num_sys) );
+			vertex2 = state2BDD( manager,
+								 intcom_state+num_env+num_sys, num_env+num_sys,
+								 intcom_index-(num_env+num_sys) );
 			if (command == INTCOM_RESTRICT) {
 				tmp = Cudd_Not( vertex2 );
 				Cudd_Ref( tmp );
@@ -869,7 +910,8 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				for (i = 0; i < num_env; i++)
 					logprint( " %d", *(intcom_state+i) );
 			}
-			vertex2 = state2BDD( manager, intcom_state, num_env+num_sys, num_env );
+			vertex2 = state2BDD( manager,
+								 intcom_state, num_env+num_sys, num_env );
 			tmp = Cudd_Not( vertex2 );
 			Cudd_Ref( tmp );
 			Cudd_RecursiveDeref( manager, vertex2 );
@@ -891,7 +933,8 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 					logprint( " %d", *(intcom_state+i) );
 			}
 
-			vertex2 = state2BDD( manager, intcom_state, 2*num_env+num_sys, num_sys );
+			vertex2 = state2BDD( manager,
+								 intcom_state, 2*num_env+num_sys, num_sys );
 			tmp = Cudd_Not( vertex2 );
 			Cudd_Ref( tmp );
 			Cudd_RecursiveDeref( manager, vertex2 );

@@ -148,13 +148,15 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 				Cudd_Ref( X );
 				Cudd_RecursiveDeref( manager, tmp );
 
-			} while (!(Cudd_bddLeq( manager, X, X_prev )*Cudd_bddLeq( manager, X_prev, X )));
+			} while (!(Cudd_bddLeq( manager, X, X_prev )
+					   *Cudd_bddLeq( manager, X_prev, X )));
 
 			*(*(X_jr+num_sublevels-1) + r) = X;
 			Cudd_Ref( *(*(X_jr+num_sublevels-1) + r) );
 
 			tmp = *(Y+num_sublevels-1);
-			*(Y+num_sublevels-1) = Cudd_bddOr( manager, *(Y+num_sublevels-1), X );
+			*(Y+num_sublevels-1) = Cudd_bddOr( manager,
+											   *(Y+num_sublevels-1), X );
 			Cudd_Ref( *(Y+num_sublevels-1) );
 			Cudd_RecursiveDeref( manager, tmp );
 			
@@ -166,18 +168,24 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 		Cudd_RecursiveDeref( manager, Y_exmod );
 
 		tmp = *(Y+num_sublevels-1);
-		*(Y+num_sublevels-1) = Cudd_bddOr( manager, *(Y+num_sublevels-1), *(Y+num_sublevels-2) );
+		*(Y+num_sublevels-1) = Cudd_bddOr( manager, *(Y+num_sublevels-1),
+										   *(Y+num_sublevels-2) );
 		Cudd_Ref( *(Y+num_sublevels-1) );
 		Cudd_RecursiveDeref( manager, tmp );
 
 		tmp = Cudd_bddOr( manager, Entry, *(Y+num_sublevels-1) );
 		Cudd_Ref( tmp );
-		if (Cudd_bddLeq( manager, tmp, *(Y+num_sublevels-1) )*Cudd_bddLeq( manager, *(Y+num_sublevels-1), tmp )) {
+		if (Cudd_bddLeq( manager, tmp, *(Y+num_sublevels-1) )
+			*Cudd_bddLeq( manager, *(Y+num_sublevels-1), tmp )) {
 			Cudd_RecursiveDeref( manager, tmp );
-			if (Cudd_bddLeq( manager, *(Y+num_sublevels-1), *(Y+num_sublevels-2) )*Cudd_bddLeq( manager, *(Y+num_sublevels-2), *(Y+num_sublevels-1) )) {
+			if (Cudd_bddLeq( manager, *(Y+num_sublevels-1),
+							 *(Y+num_sublevels-2) )
+				*Cudd_bddLeq( manager, *(Y+num_sublevels-2),
+							  *(Y+num_sublevels-1) )) {
 				Cudd_RecursiveDeref( manager, *(Y+num_sublevels-1) );
 				for (r = 0; r < num_egoals; r++) {
-					Cudd_RecursiveDeref( manager, *(*(X_jr+num_sublevels-1) + r) );
+					Cudd_RecursiveDeref( manager,
+										 *(*(X_jr+num_sublevels-1) + r) );
 				}
 				free( *(X_jr+num_sublevels-1) );
 				num_sublevels--;
@@ -192,17 +200,22 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 		}
 		Cudd_RecursiveDeref( manager, tmp );
 
-		if (Cudd_bddLeq( manager, *(Y+num_sublevels-1), *(Y+num_sublevels-2) )*Cudd_bddLeq( manager, *(Y+num_sublevels-2), *(Y+num_sublevels-1) )) {
+		if (Cudd_bddLeq( manager, *(Y+num_sublevels-1),
+						 *(Y+num_sublevels-2) )
+			*Cudd_bddLeq( manager, *(Y+num_sublevels-2),
+						  *(Y+num_sublevels-1) )) {
 			return NULL;  /* Local synthesis failed */
 		}
 	}
 
 
-	/* Note that we assume the variable map has been appropriately
-	   defined in the CUDD manager before invocation of synthesize_reachgame_BDD. */
+	/* Note that we assume the variable map has been appropriately defined
+	   in the CUDD manager before invocation of synthesize_reachgame_BDD. */
 	tmp = Cudd_bddVarMap( manager, N_BDD );
 	if (tmp == NULL) {
-		fprintf( stderr, "Error synthesize_reachgame_BDD: Error in swapping variables with primed forms.\n" );
+		fprintf( stderr,
+				 "Error synthesize_reachgame_BDD: Error in swapping variables"
+				 " with primed forms.\n" );
 		return NULL;
 	}
 	Cudd_Ref( tmp );
@@ -215,16 +228,22 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 	Cudd_ForeachCube( manager, Entry, gen, gcube, gvalue ) {
 		initialize_cube( state, gcube, num_env+num_sys );
 		while (!saturated_cube( state, gcube, num_env+num_sys )) {
-			this_node_stack = insert_anode( this_node_stack, -1, -1, state, num_env+num_sys );
+			this_node_stack = insert_anode( this_node_stack, -1, -1,
+											state, num_env+num_sys );
 			if (this_node_stack == NULL) {
-				fprintf( stderr, "Error synthesize_reachgame_BDD: building list of initial states.\n" );
+				fprintf( stderr,
+						 "Error synthesize_reachgame_BDD: building list of"
+						 " initial states.\n" );
 				return NULL;
 			}
 			increment_cube( state, gcube, num_env+num_sys );
 		}
-		this_node_stack = insert_anode( this_node_stack, -1, -1, state, num_env+num_sys );
+		this_node_stack = insert_anode( this_node_stack, -1, -1,
+										state, num_env+num_sys );
 		if (this_node_stack == NULL) {
-			fprintf( stderr, "Error synthesize_reachgame_BDD: building list of initial states.\n" );
+			fprintf( stderr,
+					 "Error synthesize_reachgame_BDD: building list of"
+					 " initial states.\n" );
 			return NULL;
 		}
 	}
@@ -236,7 +255,9 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 		strategy = insert_anode( strategy, -1, node->rgrad,
 								 node->state, num_env+num_sys );
 		if (strategy == NULL) {
-			fprintf( stderr, "Error synthesize_reachgame_BDD: inserting state node into strategy.\n" );
+			fprintf( stderr,
+					 "Error synthesize_reachgame_BDD: inserting state node"
+					 " into strategy.\n" );
 			return NULL;
 		}
 		node = node->next;
@@ -267,7 +288,9 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 
 		Y_i_primed = Cudd_bddVarMap( manager, *(Y+j-1) );
 		if (Y_i_primed == NULL) {
-			fprintf( stderr, "Error synthesize_reachgame_BDD: swapping variables with primed forms.\n" );
+			fprintf( stderr,
+					 "Error synthesize_reachgame_BDD: swapping variables with"
+					 " primed forms.\n" );
 			return NULL;
 		}
 		Cudd_Ref( Y_i_primed );
@@ -299,7 +322,9 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 			Cudd_AutodynDisable( manager );
 			gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
 			if (gen == NULL) {
-				fprintf( stderr, "Error synthesize_reachgame_BDD: failed to find cube.\n" );
+				fprintf( stderr,
+						 "Error synthesize_reachgame_BDD: failed to find"
+						 " cube.\n" );
 				return NULL;
 			}
 			if (Cudd_IsGenEmpty( gen )) {
@@ -313,7 +338,10 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 						Cudd_RecursiveDeref( manager, Y_i_primed );
 						Y_i_primed = Cudd_bddVarMap( manager, *(*(X_jr+j)+r) );
 						if (Y_i_primed == NULL) {
-							fprintf( stderr, "Error synthesize_reachgame_BDD: Error in swapping variables with primed forms.\n" );
+							fprintf( stderr,
+									 "Error synthesize_reachgame_BDD: Error"
+									 " in swapping variables with primed"
+									 " forms.\n" );
 							return NULL;
 						}
 						Cudd_Ref( Y_i_primed );
@@ -332,11 +360,18 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 							tmp = tmp2;
 						}
 					
-						if (!(Cudd_bddLeq( manager, tmp, Cudd_Not( Cudd_ReadOne( manager ) ) )*Cudd_bddLeq( manager, Cudd_Not( Cudd_ReadOne( manager ) ), tmp )))
+						if (!(Cudd_bddLeq( manager,
+										   tmp,
+										   Cudd_Not( Cudd_ReadOne( manager ) ) )
+							  *Cudd_bddLeq( manager,
+											Cudd_Not( Cudd_ReadOne( manager ) ),
+											tmp )))
 							break;
 					}
 					if (r >= num_egoals) {
-						fprintf( stderr, "Error synthesize_reachgame_BDD: unexpected losing state.\n" );
+						fprintf( stderr,
+								 "Error synthesize_reachgame_BDD: unexpected"
+								 " losing state.\n" );
 						return NULL;
 					}
 				} else {
@@ -363,12 +398,16 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 				Cudd_AutodynDisable( manager );
 				gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
 				if (gen == NULL) {
-					fprintf( stderr, "Error synthesize_reachgame_BDD: failed to find cube.\n" );
+					fprintf( stderr,
+							 "Error synthesize_reachgame_BDD: failed to find"
+							 " cube.\n" );
 					return NULL;
 				}
 				if (Cudd_IsGenEmpty( gen )) {
 					Cudd_GenFree( gen );
-					fprintf( stderr, "Error synthesize_reachgame_BDD: unexpected losing state.\n" );
+					fprintf( stderr,
+							 "Error synthesize_reachgame_BDD: unexpected"
+							 " losing state.\n" );
 					return NULL;
 				}
 				for (i = 0; i < 2*(num_env+num_sys); i++)
@@ -392,13 +431,17 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 				strategy = insert_anode( strategy, -1, -1,
 										 state, num_env+num_sys );
 				if (strategy == NULL) {
-					fprintf( stderr, "Error synthesize_reachgame_BDD: inserting new node into strategy.\n" );
+					fprintf( stderr,
+							 "Error synthesize_reachgame_BDD: inserting new"
+							 " node into strategy.\n" );
 					return NULL;
 				}
 				this_node_stack = insert_anode( this_node_stack, -1, -1,
 												state, num_env+num_sys );
 				if (this_node_stack == NULL) {
-					fprintf( stderr, "Error synthesize_reachgame_BDD: pushing node onto stack failed.\n" );
+					fprintf( stderr,
+							 "Error synthesize_reachgame_BDD: pushing node"
+							 " onto stack failed.\n" );
 					return NULL;
 				}
 			} 
@@ -407,7 +450,9 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 										   num_env+num_sys,
 										   -1, state );
 			if (strategy == NULL) {
-				fprintf( stderr, "Error synthesize_reachgame_BDD: inserting new transition into strategy.\n" );
+				fprintf( stderr,
+						 "Error synthesize_reachgame_BDD: inserting new"
+						 " transition into strategy.\n" );
 				return NULL;
 			}
 		}

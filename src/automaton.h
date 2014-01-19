@@ -68,7 +68,8 @@ typedef struct anode_t
    NULL, a new list will be created.
 
    Return new head on success, NULL on error. */
-anode_t *insert_anode( anode_t *head, int mode, int rgrad, vartype *state, int state_len );
+anode_t *insert_anode( anode_t *head, int mode, int rgrad,
+					   vartype *state, int state_len );
 
 /** Delete topmost (head) node from list.  Return pointer to new head. */
 anode_t *pop_anode( anode_t *head );
@@ -85,8 +86,9 @@ anode_t *pop_anode( anode_t *head );
 
    Return given head on success, NULL if one of the needed nodes is
    not found. */
-anode_t *build_anode_trans( anode_t *head, int mode, vartype *state, int state_len,
-							int next_mode, vartype **next_states, int next_len );
+anode_t *build_anode_trans( anode_t *head, int mode,
+							vartype *state, int state_len, int next_mode,
+							vartype **next_states, int next_len );
 
 /** Append transition to array for the node with given state and mode.
    Return new head on success, NULL on error. */
@@ -134,11 +136,13 @@ anode_t *aut_prune_deadends( anode_t *head );
    placed in a <name> tag in that order.
 
    If fp = NULL, then write to stdout.  Return nonzero if error. */
-int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp );
+int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+					FILE *fp );
 
 /** Dump using tulipcon version 0.
    tulip0_aut_dump() is provided only for legacy code. */
-int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp );
+int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+					 FILE *fp );
 
 /** Dump DOT file describing the automaton (strategy).  See \ref
    DotDumpFlags.  Also see comments for tulip_aut_dump().   */
@@ -182,9 +186,8 @@ void delete_aut( anode_t *head );
    head, restricting attention to nodes with state in N and goal mode
    of mode, and setting the mode field of each reached node to
    magic_mode.  Return zero on success, nonzero on error. */
-int forward_modereach( anode_t *head, anode_t *node,
-					   int mode, vartype **N, int N_len, int magic_mode,
-					   int state_len );
+int forward_modereach( anode_t *head, anode_t *node, int mode,
+					   vartype **N, int N_len, int magic_mode, int state_len );
 
 
 /** Convert binary-expanded form of a variable back into nonboolean.
@@ -192,7 +195,8 @@ int forward_modereach( anode_t *head, anode_t *node,
    value field is set to maxval in the resulting (merged) variable
    entry (in evar_list or svar_list).
    Returns the new state vector length, or -1 on error. */
-int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, char *name, int maxval );
+int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+						 char *name, int maxval );
 
 /** Inverse operation of aut_compact_nonbool().
 	Return zero on success, nonzero on error. */

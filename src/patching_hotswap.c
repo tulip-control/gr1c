@@ -30,16 +30,22 @@ extern ptree_t *env_trans;
 extern ptree_t *sys_trans;
 
 
-extern void pprint_state( vartype *state, int num_env, int num_sys, FILE *fp );  /* Defined in patching.c */
+/* Defined in patching.c */
+extern void pprint_state( vartype *state, int num_env, int num_sys, FILE *fp );
 
-extern anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
+/* Defined in patching_support.c */
+extern anode_t *synthesize_reachgame_BDD( DdManager *manager,
+										  int num_env, int num_sys,
 										  DdNode *Entry, DdNode *Exit,
 										  DdNode *etrans, DdNode *strans,
 										  DdNode **egoals, DdNode *N_BDD,
-										  unsigned char verbose );  /* Defined in patching_support.c */
+										  unsigned char verbose );
 
 
-anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original_num_env, int original_num_sys, int *offw, int num_metric_vars, ptree_t *new_sysgoal, unsigned char verbose )
+anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
+							 int original_num_env, int original_num_sys,
+							 int *offw, int num_metric_vars,
+							 ptree_t *new_sysgoal, unsigned char verbose )
 {
 	ptree_t *var_separator;
 	DdNode *etrans, *strans, **egoals, **sgoals;
@@ -84,16 +90,20 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 		logprint( "Read in strategy of size %d", aut_size( strategy ) );
 
 	if (verbose > 1)
-		logprint( "Expanding nonbool variables in the given strategy automaton..." );
+		logprint( "Expanding nonbool variables in the given strategy"
+				  " automaton..." );
 	if (aut_expand_bool( strategy, evar_list, svar_list, nonbool_var_list )) {
-		fprintf( stderr, "Error add_metric_sysgoal: Failed to expand nonboolean variables in given automaton." );
+		fprintf( stderr,
+				 "Error add_metric_sysgoal: Failed to expand nonboolean"
+				 " variables in given automaton." );
 		return NULL;
 	}
 	if (verbose > 1) {
 		logprint( "Given strategy after variable expansion:" );
 		logprint_startline();
 		/* list_aut_dump( strategy, num_env+num_sys, getlogstream() ); */
-		dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_ATTRIB, getlogstream() );
+		dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_ATTRIB,
+					  getlogstream() );
 		logprint_endline();
 	}
 
@@ -115,7 +125,9 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 	} else {
 		var_separator = get_list_item( evar_list, -1 );
 		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
 			return NULL;
 		}
 		var_separator->left = svar_list;
@@ -167,8 +179,12 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 			return NULL;
 		}
 		for (i = 0; i < num_sgoals; i++) {
-			if (bounds_DDset( manager, *(sgoals+i), new_sgoal, offw, num_metric_vars, Min+i, Max+i, verbose )) {
-				fprintf( stderr, "Error add_metric_sysgoal: bounds_DDset() failed to compute distance from original goal %d", i );
+			if (bounds_DDset( manager, *(sgoals+i), new_sgoal,
+							  offw, num_metric_vars, Min+i, Max+i, verbose )) {
+				fprintf( stderr,
+						 "Error add_metric_sysgoal: bounds_DDset() failed to"
+						 " compute distance from original goal %d",
+						 i );
 				return NULL;
 			}
 		}
@@ -178,7 +194,9 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 				istar[0] = i;
 		}
 		if (verbose)
-			logprint( "add_metric_sysgoal: The original system goal with index %d has minimum distance", istar[0] );
+			logprint( "add_metric_sysgoal: The original system goal with"
+					  " index %d has minimum distance",
+					  istar[0] );
 	} else {
 		Min = Max = NULL;
 		istar[0] = num_sgoals-1;
@@ -204,11 +222,16 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 			while (node2 && !found_flag) {
 				for (j = 0; j < node2->trans_len; j++) {
 					if (*(node2->trans+j) == node1) {
-						if ((node2->mode < node1->mode && node2->mode <= istar[i] && node1->mode > istar[i])
-							|| (node2->mode > node1->mode && (node1->mode > istar[i] || node2->mode <= istar[i]))) {
+						if ((node2->mode < node1->mode
+							 && node2->mode <= istar[i]
+							 && node1->mode > istar[i])
+							|| (node2->mode > node1->mode
+								&& (node1->mode > istar[i]
+									|| node2->mode <= istar[i]))) {
 
 							Gi_len[i]++;
-							Gi[i] = realloc( Gi[i], Gi_len[i]*sizeof(anode_t *) );
+							Gi[i] = realloc( Gi[i],
+											 Gi_len[i]*sizeof(anode_t *) );
 							if (Gi[i] == NULL) {
 								perror( "add_metric_sysgoal, realloc" );
 								return NULL;
@@ -217,7 +240,8 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 							if (verbose > 1) {
 								logprint_startline();
 								logprint_raw( "\t%d : ", node_counter );
-								pprint_state( node1->state, num_env, num_sys, getlogstream() );
+								pprint_state( node1->state, num_env, num_sys,
+											  getlogstream() );
 								logprint_raw( " - %d", node1->mode );
 								logprint_endline();
 							}
@@ -246,7 +270,8 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 		*(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
 	}
 	if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
-		fprintf( stderr, "Error: failed to define variable map in CUDD manager.\n" );
+		fprintf( stderr,
+				 "Error: failed to define variable map in CUDD manager.\n" );
 		return NULL;
 	}
 	free( vars );
@@ -270,17 +295,19 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 	Cudd_Ref( tmp );
 	component_strategy = synthesize_reachgame_BDD( manager, num_env, num_sys,
 												   Gi_BDD, new_sgoal,
-												   etrans, strans, egoals, tmp, verbose );
+												   etrans, strans, egoals, tmp,
+												   verbose );
 	Cudd_RecursiveDeref( manager, tmp );
 	if (component_strategy == NULL) {
 		delete_aut( strategy );
 		return NULL;  /* Failure */
 	}
 	if (verbose > 1) {
-		logprint( "Component strategy to reach the new system goal from  G_{i*}:" );
+		logprint( "Component strategy to reach the new system goal from"
+				  "  G_{i*}:" );
 		logprint_startline();
-		/* list_aut_dump( component_strategy, num_env+num_sys, getlogstream() ); */
-		dot_aut_dump( component_strategy, evar_list, svar_list, DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
+		dot_aut_dump( component_strategy, evar_list, svar_list,
+					  DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
 		logprint_endline();
 	}
 		
@@ -294,7 +321,8 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 	while (node1) {
 		if (node1->trans_len == 0) {
 			new_reached_len++;
-			new_reached = realloc(new_reached, new_reached_len*sizeof(anode_t *) );
+			new_reached = realloc(new_reached,
+								  new_reached_len*sizeof(anode_t *) );
 			if (new_reached == NULL) {
 				perror( "add_metric_sysgoal, realloc" );
 				return NULL;
@@ -313,14 +341,17 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 
 	node1 = component_strategy;
 	while (node1) {
-		node1->mode = num_sgoals+1;  /* Temporary mode label for this component. */
+		/* Temporary mode label for this component. */
+		node1->mode = num_sgoals+1;
 		node1 = node1->next;
 	}
 
 	/* From original to first component... */
 	for (i = 0; i < Gi_len[0]; i++) {
 		if ((*(Gi[0]+i))->trans_len > 0) {
-			Gi_succ = realloc( Gi_succ, (Gi_succ_len + (*(Gi[0]+i))->trans_len)*sizeof(anode_t *) );
+			Gi_succ = realloc( Gi_succ,
+							   (Gi_succ_len + (*(Gi[0]+i))->trans_len)
+							   *sizeof(anode_t *) );
 			if (Gi_succ == NULL) {
 				perror( "add_metric_sysgoal, realloc" );
 				return NULL;
@@ -334,13 +365,16 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 		free( (*(Gi[0]+i))->trans );
 		(*(Gi[0]+i))->trans = NULL;
 
-		(*(Gi[0]+i))->mode = num_sgoals+1;  /* Temporary mode label for this component. */
+		/* Temporary mode label for this component. */
+		(*(Gi[0]+i))->mode = num_sgoals+1;
 
 		node1 = component_strategy;
 		while (node1) {
-			if (statecmp( node1->state, (*(Gi[0]+i))->state, num_env+num_sys )) {
+			if (statecmp( node1->state, (*(Gi[0]+i))->state,
+						  num_env+num_sys )) {
 				(*(Gi[0]+i))->trans_len = node1->trans_len;
-				(*(Gi[0]+i))->trans = malloc( (node1->trans_len)*sizeof(anode_t *) );
+				(*(Gi[0]+i))->trans = malloc( (node1->trans_len)
+											  *sizeof(anode_t *) );
 				if ((*(Gi[0]+i))->trans == NULL) {
 					perror( "add_metric_sysgoal, malloc" );
 					return NULL;
@@ -352,7 +386,9 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 			node1 = node1->next;
 		}
 		if (node1 == NULL) {
-			fprintf( stderr, "Error add_metric_sysgoal: component automaton is not compatible with original." );
+			fprintf( stderr,
+					 "Error add_metric_sysgoal: component automaton is not"
+					 " compatible with original." );
 			delete_aut( strategy );
 			return NULL;
 		}
@@ -365,8 +401,8 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 	if (verbose > 1) {
 		logprint( "Partially patched strategy before de-expanding variables:" );
 		logprint_startline();
-		/* list_aut_dump( strategy, num_env+num_sys, getlogstream() ); */
-		dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
+		dot_aut_dump( strategy, evar_list, svar_list,
+					  DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
 		logprint_endline();
 	}
 
@@ -376,17 +412,19 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 	component_strategy = synthesize_reachgame( manager, num_env, num_sys,
 											   new_reached, new_reached_len,
 											   Gi[1], Gi_len[1],
-											   etrans, strans, egoals, tmp, verbose );
+											   etrans, strans, egoals, tmp,
+											   verbose );
 	Cudd_RecursiveDeref( manager, tmp );
 	if (component_strategy == NULL) {
 		delete_aut( strategy );
 		return NULL;  /* Failure */
 	}
 	if (verbose > 1) {
-		logprint( "Component strategy to reach G_{i*+1} from the new system goal:" );
+		logprint( "Component strategy to reach G_{i*+1} from the new system"
+				  " goal:" );
 		logprint_startline();
-		/* list_aut_dump( component_strategy, num_env+num_sys, getlogstream() ); */
-		dot_aut_dump( component_strategy, evar_list, svar_list, DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
+		dot_aut_dump( component_strategy, evar_list, svar_list,
+					  DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
 		logprint_endline();
 	}
 
@@ -398,12 +436,15 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 
 	/* From first component to second component... */
 	for (i = 0; i < new_reached_len; i++) {
-		(*(new_reached+i))->mode = -1;  /* Temporary mode label for this component. */
+		/* Temporary mode label for this component. */
+		(*(new_reached+i))->mode = -1;
 		node1 = component_strategy;
 		while (node1) {
-			if (statecmp( node1->state, (*(new_reached+i))->state, num_env+num_sys )) {
+			if (statecmp( node1->state, (*(new_reached+i))->state,
+						  num_env+num_sys )) {
 				(*(new_reached+i))->trans_len = node1->trans_len;
-				(*(new_reached+i))->trans = malloc( (node1->trans_len)*sizeof(anode_t *) );
+				(*(new_reached+i))->trans = malloc( (node1->trans_len)
+													*sizeof(anode_t *) );
 				if ((*(new_reached+i))->trans == NULL) {
 					perror( "add_metric_sysgoal, malloc" );
 					return NULL;
@@ -416,7 +457,9 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 			node1 = node1->next;
 		}
 		if (node1 == NULL) {
-			fprintf( stderr, "Error add_metric_sysgoal: component automata are not compatible." );
+			fprintf( stderr,
+					 "Error add_metric_sysgoal: component automata are not"
+					 " compatible." );
 			delete_aut( strategy );
 			return NULL;
 		}
@@ -431,9 +474,11 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 		if (node1->trans_len == 0) {
 
 			for (i = 0; i < Gi_len[1]; i++) {
-				if (statecmp( (*(Gi[1]+i))->state, node1->state, num_env+num_sys )) {
+				if (statecmp( (*(Gi[1]+i))->state, node1->state,
+							  num_env+num_sys )) {
 					node1->trans_len = (*(Gi[1]+i))->trans_len;
-					node1->trans = malloc( (node1->trans_len)*sizeof(anode_t *) );
+					node1->trans = malloc( (node1->trans_len)
+										   *sizeof(anode_t *) );
 					if (node1->trans == NULL) {
 						perror( "add_metric_sysgoal, malloc" );
 						return NULL;
@@ -446,7 +491,9 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp, int original
 				}
 			}
 			if (i == Gi_len[1]) {
-				fprintf( stderr, "Error add_metric_sysgoal: component automata are not compatible." );
+				fprintf( stderr,
+						 "Error add_metric_sysgoal: component automata are"
+						 " not compatible." );
 				delete_aut( strategy );
 				return NULL;
 			}

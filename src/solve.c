@@ -29,7 +29,8 @@ extern int num_sgoals;
 
 
 DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
-								   unsigned char init_flags, unsigned char verbose );
+								   unsigned char init_flags,
+								   unsigned char verbose );
 
 
 /* N.B., we assume there is at least one system goal.  This assumption
@@ -106,7 +107,9 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	} else {
 		var_separator = get_list_item( evar_list, -1 );
 		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
 			return NULL;
 		}
 		var_separator->left = svar_list;
@@ -148,9 +151,11 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		var_separator->left = NULL;
 	}
 
-	W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals, verbose );
+	W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals,
+								 verbose );
 	if (W == NULL) {
-		fprintf( stderr, "Error synthesize: failed to construct winning set.\n" );
+		fprintf( stderr,
+				 "Error synthesize: failed to construct winning set.\n" );
 		return NULL;
 	}
 	Y = compute_sublevel_sets( manager, W, etrans, strans,
@@ -158,7 +163,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 							   sgoals, num_sgoals,
 							   &num_sublevels, &X_ijr, verbose );
 	if (Y == NULL) {
-		fprintf( stderr, "Error synthesize: failed to construct sublevel sets.\n" );
+		fprintf( stderr,
+				 "Error synthesize: failed to construct sublevel sets.\n" );
 		return NULL;
 	}
 
@@ -189,7 +195,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			*(*(X_ijr+i)+j) = *(*(X_ijr+i)+j+1);
 		}
 		*(Y+i) = realloc( *(Y+i), (*(num_sublevels+i))*sizeof(DdNode *) );
-		*(X_ijr+i) = realloc( *(X_ijr+i), (*(num_sublevels+i))*sizeof(DdNode *) );
+		*(X_ijr+i) = realloc( *(X_ijr+i),
+							  (*(num_sublevels+i))*sizeof(DdNode *) );
 		if (*(Y+i) == NULL || *(X_ijr+i) == NULL) {
 			perror( "synthesize, realloc" );
 			return NULL;
@@ -203,7 +210,9 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	   compute_winning_set_BDD above. */
 	tmp = Cudd_bddVarMap( manager, W );
 	if (tmp == NULL) {
-		fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
+		fprintf( stderr,
+				 "Error synthesize: Error in swapping variables with primed"
+				 " forms.\n" );
 		return NULL;
 	}
 	Cudd_Ref( tmp );
@@ -223,16 +232,22 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
 			initialize_cube( state, gcube, num_env+num_sys );
 			while (!saturated_cube( state, gcube, num_env+num_sys )) {
-				this_node_stack = insert_anode( this_node_stack, 0, -1, state, num_env+num_sys );
+				this_node_stack = insert_anode( this_node_stack, 0, -1,
+												state, num_env+num_sys );
 				if (this_node_stack == NULL) {
-					fprintf( stderr, "Error synthesize: building list of initial states.\n" );
+					fprintf( stderr,
+							 "Error synthesize: building list of initial"
+							 " states.\n" );
 					return NULL;
 				}
 				increment_cube( state, gcube, num_env+num_sys );
 			}
-			this_node_stack = insert_anode( this_node_stack, 0, -1, state, num_env+num_sys );
+			this_node_stack = insert_anode( this_node_stack, 0, -1,
+											state, num_env+num_sys );
 			if (this_node_stack == NULL) {
-				fprintf( stderr, "Error synthesize: building list of initial states.\n" );
+				fprintf( stderr,
+						 "Error synthesize: building list of initial"
+						 " states.\n" );
 				return NULL;
 			}
 		}
@@ -248,16 +263,22 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
 			initialize_cube( state, gcube, num_env+num_sys );
 			while (!saturated_cube( state, gcube, num_env+num_sys )) {
-				this_node_stack = insert_anode( this_node_stack, 0, -1, state, num_env+num_sys );
+				this_node_stack = insert_anode( this_node_stack, 0, -1,
+												state, num_env+num_sys );
 				if (this_node_stack == NULL) {
-					fprintf( stderr, "Error synthesize: building list of initial states.\n" );
+					fprintf( stderr,
+							 "Error synthesize: building list of initial"
+							 " states.\n" );
 					return NULL;
 				}
 				increment_cube( state, gcube, num_env+num_sys );
 			}
-			this_node_stack = insert_anode( this_node_stack, 0, -1, state, num_env+num_sys );
+			this_node_stack = insert_anode( this_node_stack, 0, -1,
+											state, num_env+num_sys );
 			if (this_node_stack == NULL) {
-				fprintf( stderr, "Error synthesize: building list of initial states.\n" );
+				fprintf( stderr,
+						 "Error synthesize: building list of initial"
+						 " states.\n" );
 				return NULL;
 			}
 		}
@@ -271,7 +292,9 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		strategy = insert_anode( strategy, node->mode, node->rgrad,
 								 node->state, num_env+num_sys );
 		if (strategy == NULL) {
-			fprintf( stderr, "Error synthesize: inserting state node into strategy.\n" );
+			fprintf( stderr,
+					 "Error synthesize: inserting state node into"
+					 " strategy.\n" );
 			return NULL;
 		}
 		node = node->next;
@@ -287,7 +310,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			j = *(num_sublevels+this_node_stack->mode);
 			do {
 				j--;
-				ddval = Cudd_Eval( manager, *(*(Y+this_node_stack->mode)+j), cube );
+				ddval = Cudd_Eval( manager,
+								   *(*(Y+this_node_stack->mode)+j), cube );
 				if (ddval->type.value < .1) {
 					j++;
 					break;
@@ -304,8 +328,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			}
 		} while (loop_mode != this_node_stack->mode);
 		if (this_node_stack->mode == loop_mode) {
-			node = find_anode( strategy, this_node_stack->mode, this_node_stack->state,
-							   num_env+num_sys );
+			node = find_anode( strategy, this_node_stack->mode,
+							   this_node_stack->state, num_env+num_sys );
 			if (node->trans_len > 0) {
 				/* This state and mode combination is already in strategy. */
 				this_node_stack = pop_anode( this_node_stack );
@@ -321,17 +345,25 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				continue;
 			} else {
 				strategy = delete_anode( strategy, node );
-				new_node = find_anode( strategy, this_node_stack->mode, this_node_stack->state, num_env+num_sys );
+				new_node = find_anode( strategy, this_node_stack->mode,
+									   this_node_stack->state,
+									   num_env+num_sys );
 				if (new_node == NULL) {
-					strategy = insert_anode( strategy, this_node_stack->mode, -1, this_node_stack->state, num_env+num_sys );
+					strategy = insert_anode( strategy,
+											 this_node_stack->mode, -1,
+											 this_node_stack->state,
+											 num_env+num_sys );
 					if (strategy == NULL) {
-						fprintf( stderr, "Error synthesize: inserting state node into strategy.\n" );
+						fprintf( stderr,
+								 "Error synthesize: inserting state node into"
+								 " strategy.\n" );
 						return NULL;
 					}
-					new_node = find_anode( strategy, this_node_stack->mode, this_node_stack->state, num_env+num_sys );
+					new_node = find_anode( strategy, this_node_stack->mode,
+										   this_node_stack->state,
+										   num_env+num_sys );
 				} else if (new_node->trans_len > 0) {
 					replace_anode_trans( strategy, node, new_node );
-					/* This state and mode combination is already in strategy. */
 					this_node_stack = pop_anode( this_node_stack );
 					continue;
 				}
@@ -361,7 +393,9 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+node->mode)+j-1) );
 			}
 			if (Y_i_primed == NULL) {
-				fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
+				fprintf( stderr,
+						 "Error synthesize: Error in swapping variables with"
+						 " primed forms.\n" );
 				return NULL;
 			}
 			Cudd_Ref( Y_i_primed );
@@ -396,9 +430,13 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 					for (r = 0; r < num_egoals; r++) {
 						Cudd_RecursiveDeref( manager, tmp );
 						Cudd_RecursiveDeref( manager, Y_i_primed );
-						Y_i_primed = Cudd_bddVarMap( manager, *(*(*(X_ijr+node->mode)+j)+r) );
+						Y_i_primed
+							= Cudd_bddVarMap( manager,
+											  *(*(*(X_ijr+node->mode)+j)+r) );
 						if (Y_i_primed == NULL) {
-							fprintf( stderr, "Error synthesize: Error in swapping variables with primed forms.\n" );
+							fprintf( stderr,
+									 "Error synthesize: Error in swapping"
+									 " variables with primed forms.\n" );
 							return NULL;
 						}
 						Cudd_Ref( Y_i_primed );
@@ -417,11 +455,17 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 							tmp = tmp2;
 						}
 					
-						if (!(Cudd_bddLeq( manager, tmp, Cudd_Not( Cudd_ReadOne( manager ) ) )*Cudd_bddLeq( manager, Cudd_Not( Cudd_ReadOne( manager ) ), tmp )))
+						if (!(Cudd_bddLeq( manager, tmp,
+										   Cudd_Not( Cudd_ReadOne( manager ) ) )
+							  *Cudd_bddLeq( manager,
+											Cudd_Not( Cudd_ReadOne( manager ) ),
+											tmp )))
 							break;
 					}
 					if (r >= num_egoals) {
-						fprintf( stderr, "Error synthesize: unexpected losing state.\n" );
+						fprintf( stderr,
+								 "Error synthesize: unexpected losing"
+								 " state.\n" );
 						return NULL;
 					}
 				} else {
@@ -449,12 +493,14 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				Cudd_AutodynDisable( manager );
 				gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
 				if (gen == NULL) {
-					fprintf( stderr, "Error synthesize: failed to find cube.\n" );
+					fprintf( stderr,
+							 "Error synthesize: failed to find cube.\n" );
 					return NULL;
 				}
 				if (Cudd_IsGenEmpty( gen )) {
 					Cudd_GenFree( gen );
-					fprintf( stderr, "Error synthesize: unexpected losing state.\n" );
+					fprintf( stderr,
+							 "Error synthesize: unexpected losing state.\n" );
 					return NULL;
 				}
 				for (i = 0; i < 2*(num_env+num_sys); i++)
@@ -485,18 +531,23 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				}
 			}
 
-			new_node = find_anode( strategy, next_mode, state, num_env+num_sys );
+			new_node = find_anode( strategy, next_mode,
+								   state, num_env+num_sys );
 			if (new_node == NULL) {
 				strategy = insert_anode( strategy, next_mode, -1,
 										 state, num_env+num_sys );
 				if (strategy == NULL) {
-					fprintf( stderr, "Error synthesize: inserting new node into strategy.\n" );
+					fprintf( stderr,
+							 "Error synthesize: inserting new node into"
+							 " strategy.\n" );
 					return NULL;
 				}
 				this_node_stack = insert_anode( this_node_stack, next_mode, -1,
 												state, num_env+num_sys );
 				if (this_node_stack == NULL) {
-					fprintf( stderr, "Error synthesize: pushing node onto stack failed.\n" );
+					fprintf( stderr,
+							 "Error synthesize: pushing node onto stack"
+							 " failed.\n" );
 					return NULL;
 				}
 			} 
@@ -506,7 +557,9 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 										   num_env+num_sys,
 										   next_mode, state );
 			if (strategy == NULL) {
-				fprintf( stderr, "Error synthesize: inserting new transition into strategy.\n" );
+				fprintf( stderr,
+						 "Error synthesize: inserting new transition into"
+						 " strategy.\n" );
 				return NULL;
 			}
 
@@ -575,7 +628,8 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 
 
 DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
-								   unsigned char init_flags, unsigned char verbose )
+								   unsigned char init_flags,
+								   unsigned char verbose )
 {
 	bool realizable;
 	DdNode *tmp, *tmp2;
@@ -606,7 +660,9 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 	} else {
 		var_separator = get_list_item( evar_list, -1 );
 		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
 			return NULL;
 		}
 		var_separator->left = svar_list;
@@ -629,7 +685,8 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 		Cudd_Ref( tmp );
 		tmp2 = Cudd_bddAnd( manager, tmp, W );
 		Cudd_Ref( tmp2 );
-		if (!(Cudd_bddLeq( manager, tmp, tmp2 )*Cudd_bddLeq( manager, tmp2, tmp ))) {
+		if (!(Cudd_bddLeq( manager, tmp, tmp2 )
+			  *Cudd_bddLeq( manager, tmp2, tmp ))) {
 			realizable = False;
 		} else {
 			realizable = True;
@@ -674,7 +731,8 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 		Cudd_RecursiveDeref( manager, ddcube );
 		Cudd_RecursiveDeref( manager, tmp );
 
-		if (!(Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )*Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 ))) {
+		if (!(Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )
+			  *Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 ))) {
 			realizable = False;
 		} else {
 			realizable = True;

@@ -24,7 +24,7 @@ extern ptree_t *evar_list;
 extern ptree_t *svar_list;
 extern ptree_t *env_init;
 extern ptree_t *sys_init;
-ptree_t *env_trans = NULL;  /* Built from component parse trees in env_trans_array. */
+ptree_t *env_trans = NULL;  /* Built from components in env_trans_array. */
 ptree_t *sys_trans = NULL;
 extern ptree_t **env_goals;
 extern ptree_t **sys_goals;
@@ -52,7 +52,8 @@ extern int st_array_len;
 #define RG_MODE_SYNTHESIS 2
 
 
-extern anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
+extern anode_t *synthesize_reachgame_BDD( DdManager *manager,
+										  int num_env, int num_sys,
 										  DdNode *Entry, DdNode *Exit,
 										  DdNode *etrans, DdNode *strans,
 										  DdNode **egoals, DdNode *N_BDD,
@@ -94,7 +95,8 @@ int main( int argc, char **argv )
 			if (argv[i][1] == 'h') {
 				help_flag = True;
 			} else if (argv[i][1] == 'V') {
-				printf( "rg (part of gr1c) " GR1C_VERSION "\n\n" GR1C_COPYRIGHT "\n" );
+				printf( "rg (part of gr1c) " GR1C_VERSION "\n\n"
+						GR1C_COPYRIGHT "\n" );
 				return 0;
 			} else if (argv[i][1] == 'v') {
 				verbose = 1;
@@ -114,7 +116,8 @@ int main( int argc, char **argv )
 				}
 				if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
 					format_option = OUTPUT_FORMAT_TEXT;
-				} else if (!strncmp( argv[i+1], "tulip0", strlen( "tulip0" ) )) {
+				} else if (!strncmp( argv[i+1], "tulip0",
+									 strlen( "tulip0" ) )) {
 					format_option = OUTPUT_FORMAT_TULIP0;
 				} else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
 					format_option = OUTPUT_FORMAT_TULIP;
@@ -123,7 +126,8 @@ int main( int argc, char **argv )
 				} else if (!strncmp( argv[i+1], "aut", strlen( "aut" ) )) {
 					format_option = OUTPUT_FORMAT_AUT;
 				} else {
-					fprintf( stderr, "Unrecognized output format. Try \"-h\".\n" );
+					fprintf( stderr,
+							 "Unrecognized output format. Try \"-h\".\n" );
 					return 1;
 				}
 				i++;
@@ -192,7 +196,9 @@ int main( int argc, char **argv )
 	}
 
 	if (num_sgoals > 1) {
-		fprintf( stderr, "Syntax error: reachability game specification has more than 1 system goal.\n" );
+		fprintf( stderr,
+				 "Syntax error: reachability game specification has more"
+				 " than 1 system goal.\n" );
 		return -1;
 	}
 
@@ -269,9 +275,11 @@ int main( int argc, char **argv )
 					}
 				} else {
 					if (tmppt->left == NULL) {
-						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d})",
+								tmppt->name, var_index, tmppt->value );
 					} else {
-						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d}), ",
+								tmppt->name, var_index, tmppt->value );
 					}
 				}
 				tmppt = tmppt->left;
@@ -294,9 +302,11 @@ int main( int argc, char **argv )
 					}
 				} else {
 					if (tmppt->left == NULL) {
-						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d})",
+								tmppt->name, var_index, tmppt->value );
 					} else {
-						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d}), ",
+								tmppt->name, var_index, tmppt->value );
 					}
 				}
 				tmppt = tmppt->left;
@@ -350,7 +360,8 @@ int main( int argc, char **argv )
 							&env_goals, num_egoals, &sys_goals, num_sgoals,
 							verbose ) < 0)
 		return -1;
-	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list, verbose );
+	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list,
+												 verbose );
 
 	/* Merge component safety (transition) formulas */
 	if (et_array_len > 1) {
@@ -358,7 +369,9 @@ int main( int argc, char **argv )
 	} else if (et_array_len == 1) {
 		env_trans = *env_trans_array;
 	} else {  /* No restrictions on transitions. */
-		fprintf( stderr, "Syntax error: GR(1) specification is missing environment transition rules.\n" );
+		fprintf( stderr,
+				 "Syntax error: GR(1) specification is missing environment"
+				 " transition rules.\n" );
 		return -1;
 	}
 	if (st_array_len > 1) {
@@ -366,7 +379,9 @@ int main( int argc, char **argv )
 	} else if (st_array_len == 1) {
 		sys_trans = *sys_trans_array;
 	} else {  /* No restrictions on transitions. */
-		fprintf( stderr, "Syntax error: GR(1) specification is missing system transition rules.\n" );
+		fprintf( stderr,
+				 "Syntax error: GR(1) specification is missing system"
+				 " transition rules.\n" );
 		return -1;
 	}
 
@@ -407,7 +422,9 @@ int main( int argc, char **argv )
 	} else {
 		var_separator = get_list_item( evar_list, -1 );
 		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
 			return -2;
 		}
 		var_separator->left = svar_list;
@@ -458,7 +475,8 @@ int main( int argc, char **argv )
 		*(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
 	}
 	if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
-		fprintf( stderr, "Error: failed to define variable map in CUDD manager.\n" );
+		fprintf( stderr,
+				 "Error: failed to define variable map in CUDD manager.\n" );
 		return -2;
 	}
 	free( vars );
@@ -477,7 +495,8 @@ int main( int argc, char **argv )
 		/* De-expand nonboolean variables */
 		tmppt = nonbool_var_list;
 		while (tmppt) {
-			aut_compact_nonbool( strategy, evar_list, svar_list, tmppt->name, tmppt->value );
+			aut_compact_nonbool( strategy, evar_list, svar_list,
+								 tmppt->name, tmppt->value );
 			tmppt = tmppt->left;
 		}
 

@@ -1,4 +1,4 @@
-/* solve_metric.c -- Mostly definitions for signatures appearing in solve_metric.h.
+/* solve_metric.c -- Mostly definitions for signatures in solve_metric.h.
  *
  *
  * SCL; 2012, 2013.
@@ -235,7 +235,8 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 				perror( "bounds_DDset, realloc" );
 				return -1;
 			}
-			*(states+num_states-1) = malloc( (num_env+num_sys)*sizeof(vartype) );
+			*(states+num_states-1) = malloc( (num_env+num_sys)
+											 *sizeof(vartype) );
 			if (*(states+num_states-1) == NULL) {
 				perror( "bounds_DDset, malloc" );
 				return -1;
@@ -270,7 +271,8 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 		return -1;
 	}
 	for (k = 0; k < num_states; k++) {
-		bounds_state( manager, G, *(states+k), offw, num_metric_vars, &tMin, &tMax, verbose );
+		bounds_state( manager, G, *(states+k), offw, num_metric_vars,
+					  &tMin, &tMax, verbose );
 		if (*Min == -1. || tMin < *Min)
 			*Min = tMin;
 		if (*Max == -1. || tMin > *Max)
@@ -302,7 +304,8 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
    egoals, and sgoals as required by compute_winning_set_BDD() but
    save the result.  The motivating use-case is to compute these once
    and then provide them to later functions as needed. */
-DdNode *compute_winning_set_saveBDDs( DdManager *manager, DdNode **etrans, DdNode **strans,
+DdNode *compute_winning_set_saveBDDs( DdManager *manager,
+									  DdNode **etrans, DdNode **strans,
 									  DdNode ***egoals, DdNode ***sgoals,
 									  unsigned char verbose )
 {
@@ -323,7 +326,9 @@ DdNode *compute_winning_set_saveBDDs( DdManager *manager, DdNode **etrans, DdNod
 	} else {
 		var_separator = get_list_item( evar_list, -1 );
 		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
 			return -1;
 		}
 		var_separator->left = svar_list;
@@ -362,9 +367,13 @@ DdNode *compute_winning_set_saveBDDs( DdManager *manager, DdNode **etrans, DdNod
 		var_separator->left = NULL;
 	}
 
-	W = compute_winning_set_BDD( manager, (*etrans), (*strans), (*egoals), (*sgoals), verbose );
+	W = compute_winning_set_BDD( manager,
+								 (*etrans), (*strans), (*egoals), (*sgoals),
+								 verbose );
 	if (W == NULL) {
-		fprintf( stderr, "Error compute_winning_set_saveBDDs: failed to construct winning set.\n" );
+		fprintf( stderr,
+				 "Error compute_winning_set_saveBDDs: failed to construct"
+				 " winning set.\n" );
 		return NULL;
 	}
 
@@ -372,7 +381,8 @@ DdNode *compute_winning_set_saveBDDs( DdManager *manager, DdNode **etrans, DdNod
 }
 
 
-int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **strans, DdNode ***sgoals,
+int compute_minmax( DdManager *manager,DdNode **W,
+					DdNode **etrans, DdNode **strans, DdNode ***sgoals,
 					int **num_sublevels, double ***Min, double ***Max,
 					int *offw, int num_metric_vars,
 					unsigned char verbose )
@@ -387,13 +397,15 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 	if (num_egoals == 0)
 		env_nogoal_flag = True;
 
-	*W = compute_winning_set_saveBDDs( manager, etrans, strans, &egoals, sgoals, verbose );
+	*W = compute_winning_set_saveBDDs( manager, etrans, strans, &egoals, sgoals,
+									   verbose );
 	Y = compute_sublevel_sets( manager, *W, (*etrans), (*strans),
 							   egoals, num_egoals,
 							   (*sgoals), num_sgoals,
 							   num_sublevels, &X_ijr, verbose );
 	if (Y == NULL) {
-		fprintf( stderr, "Error compute_minmax: failed to construct sublevel sets.\n" );
+		fprintf( stderr,
+				 "Error compute_minmax: failed to construct sublevel sets.\n" );
 		return -1;
 	}
 
@@ -416,12 +428,13 @@ int compute_minmax( DdManager *manager, DdNode **W, DdNode **etrans, DdNode **st
 		for (j = 1; j < *(*num_sublevels+i)-1; j++) {
 			if (verbose > 1)
 				logprint( "goal %d, level %d...", i, j );
-			tmp = Cudd_bddAnd( manager, *(*(Y+i)+j+1), Cudd_Not( *(*(Y+i)+j) ) );
+			tmp = Cudd_bddAnd( manager,
+							   *(*(Y+i)+j+1), Cudd_Not( *(*(Y+i)+j) ) );
 			Cudd_Ref( tmp );
 			tmp2 = Cudd_bddAnd( manager, *((*sgoals)+i), *W );
 			Cudd_Ref( tmp2 );
-			if (bounds_DDset( manager, tmp, tmp2, offw, num_metric_vars, *(*Min+i)+j, *(*Max+i)+j,
-							  verbose )) {
+			if (bounds_DDset( manager, tmp, tmp2, offw, num_metric_vars,
+							  *(*Min+i)+j, *(*Max+i)+j, verbose )) {
 				*(*(*Min+i)+j) = *(*(*Max+i)+j) = -1.;
 			}
 			Cudd_RecursiveDeref( manager, tmp );

@@ -30,7 +30,7 @@ extern ptree_t *evar_list;
 extern ptree_t *svar_list;
 extern ptree_t *env_init;
 extern ptree_t *sys_init;
-ptree_t *env_trans = NULL;  /* Built from component parse trees in env_trans_array. */
+ptree_t *env_trans = NULL;  /* Built from components in env_trans_array. */
 ptree_t *sys_trans = NULL;
 extern ptree_t **env_goals;
 extern ptree_t **sys_goals;
@@ -97,7 +97,8 @@ int main( int argc, char **argv )
 			if (argv[i][1] == 'h') {
 				help_flag = True;
 			} else if (argv[i][1] == 'V') {
-				printf( "grpatch (experiment-related program, distributed with gr1c v" GR1C_VERSION ")\n\n" GR1C_COPYRIGHT "\n" );
+				printf( "grpatch (experiment-related program, distributed with"
+						" gr1c v" GR1C_VERSION ")\n\n" GR1C_COPYRIGHT "\n" );
 				return 0;
 			} else if (argv[i][1] == 'v') {
 				verbose = 1;
@@ -125,7 +126,8 @@ int main( int argc, char **argv )
 				}
 				if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
 					format_option = OUTPUT_FORMAT_TEXT;
-				} else if (!strncmp( argv[i+1], "tulip0", strlen( "tulip0" ) )) {
+				} else if (!strncmp( argv[i+1], "tulip0",
+									 strlen( "tulip0" ) )) {
 					format_option = OUTPUT_FORMAT_TULIP0;
 				} else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
 					format_option = OUTPUT_FORMAT_TULIP;
@@ -134,7 +136,8 @@ int main( int argc, char **argv )
 				} else if (!strncmp( argv[i+1], "aut", strlen( "aut" ) )) {
 					format_option = OUTPUT_FORMAT_AUT;
 				} else {
-					fprintf( stderr, "Unrecognized output format. Try \"-h\".\n" );
+					fprintf( stderr,
+							 "Unrecognized output format. Try \"-h\".\n" );
 					return 1;
 				}
 				i++;
@@ -180,7 +183,8 @@ int main( int argc, char **argv )
 	}
 
 	if (edges_input_index >= 0 && clformula_index >= 0) {
-		fprintf( stderr, "\"-e\" and \"-a\" flags cannot be used simultaneously.\n" );
+		fprintf( stderr,
+				 "\"-e\" and \"-a\" flags cannot be used simultaneously.\n" );
 		return 1;
 	} else if (edges_input_index >= 0 && aut_input_index < 0) {
 		fprintf( stderr, "\"-e\" flag can only be used with \"-a\"\n" );
@@ -210,12 +214,16 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
-	if (input_index < 0 && (run_option == GR1C_MODE_PATCH && !strncmp( argv[aut_input_index], "-", 1 ))) {
-		printf( "Reading spec from stdin in some cases while patching is not yet implemented.\n" );
+	if (input_index < 0 && (run_option == GR1C_MODE_PATCH
+							&& !strncmp( argv[aut_input_index], "-", 1 ))) {
+		printf( "Reading spec from stdin in some cases while patching is"
+				" not yet implemented.\n" );
 		return 1;
 	}
 	if (run_option == GR1C_MODE_UNSET) {
-		fprintf( stderr, "%s requires a patching request. Try \"-h\".\n", argv[0] );
+		fprintf( stderr,
+				 "%s requires a patching request. Try \"-h\".\n",
+				 argv[0] );
 		return 1;
 	}
 
@@ -240,7 +248,8 @@ int main( int argc, char **argv )
 
 	if (clformula_index >= 0) {
 		if (verbose > 1) {
-			logprint( "Parsing command-line formula \"%s\"...", argv[clformula_index] );
+			logprint( "Parsing command-line formula \"%s\"...",
+					  argv[clformula_index] );
 		}
 
 		clf_file = tmpfile();
@@ -363,9 +372,11 @@ int main( int argc, char **argv )
 					}
 				} else {
 					if (tmppt->left == NULL) {
-						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d})",
+								tmppt->name, var_index, tmppt->value );
 					} else {
-						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d}), ",
+								tmppt->name, var_index, tmppt->value );
 					}
 				}
 				tmppt = tmppt->left;
@@ -388,9 +399,11 @@ int main( int argc, char **argv )
 					}
 				} else {
 					if (tmppt->left == NULL) {
-						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d})",
+								tmppt->name, var_index, tmppt->value );
 					} else {
-						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d}), ",
+								tmppt->name, var_index, tmppt->value );
 					}
 				}
 				tmppt = tmppt->left;
@@ -411,13 +424,15 @@ int main( int argc, char **argv )
 							&env_goals, num_egoals, &sys_goals, num_sgoals,
 							verbose ) < 0)
 		return -1;
-	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list, verbose );
+	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list,
+												 verbose );
 
 	tmppt = nonbool_var_list;
 	while (tmppt) {
 		if (clformula != NULL) {
 			if (verbose > 1)
-				logprint( "Expanding nonbool variable %s in command-line formula...", tmppt->name );
+				logprint( "Expanding nonbool variable %s in command-line"
+						  " formula...", tmppt->name );
 			clformula = expand_to_bool( clformula, tmppt->name, tmppt->value );
 			if (verbose > 1)
 				logprint( "Done." );
@@ -469,7 +484,9 @@ int main( int argc, char **argv )
 
 		if (verbose)
 			logprint( "Patching given strategy..." );
-		strategy = patch_localfixpoint( manager, strategy_fp, fp, original_num_env, original_num_sys, nonbool_var_list, offw, verbose );
+		strategy = patch_localfixpoint( manager, strategy_fp, fp,
+										original_num_env, original_num_sys,
+										nonbool_var_list, offw, verbose );
 		if (verbose)
 			logprint( "Done." );
 
@@ -481,7 +498,9 @@ int main( int argc, char **argv )
 		} else if (et_array_len == 1) {
 			env_trans = *env_trans_array;
 		} else {
-			fprintf( stderr, "Syntax error: GR(1) specification is missing environment transition rules.\n" );
+			fprintf( stderr,
+					 "Syntax error: GR(1) specification is missing environment"
+					 " transition rules.\n" );
 			return -1;
 		}
 		if (st_array_len > 1) {
@@ -489,13 +508,18 @@ int main( int argc, char **argv )
 		} else if (st_array_len == 1) {
 			sys_trans = *sys_trans_array;
 		} else {
-			fprintf( stderr, "Syntax error: GR(1) specification is missing system transition rules.\n" );
+			fprintf( stderr,
+					 "Syntax error: GR(1) specification is missing system"
+					 " transition rules.\n" );
 			return -1;
 		}
 
 		if (verbose)
 			logprint( "Patching given strategy..." );
-		strategy = add_metric_sysgoal( manager, strategy_fp, original_num_env, original_num_sys, offw, num_metric_vars, clformula, verbose );
+		strategy = add_metric_sysgoal( manager, strategy_fp,
+									   original_num_env, original_num_sys,
+									   offw, num_metric_vars, clformula,
+									   verbose );
 		if (verbose)
 			logprint( "Done." );
 
@@ -515,7 +539,8 @@ int main( int argc, char **argv )
 	if (strategy != NULL) {  /* De-expand nonboolean variables */
 		tmppt = nonbool_var_list;
 		while (tmppt) {
-			aut_compact_nonbool( strategy, evar_list, svar_list, tmppt->name, tmppt->value );
+			aut_compact_nonbool( strategy, evar_list, svar_list,
+								 tmppt->name, tmppt->value );
 			tmppt = tmppt->left;
 		}
 

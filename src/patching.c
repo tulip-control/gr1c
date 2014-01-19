@@ -77,7 +77,8 @@ void pprint_state( vartype *state, int num_env, int num_sys, FILE *fp )
 anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 								 anode_t *strategy, int goal_mode,
 								 anode_t ***affected, int *affected_len,
-								 DdNode *etrans, DdNode *strans, DdNode **egoals,
+								 DdNode *etrans, DdNode *strans,
+								 DdNode **egoals,
 								 DdNode *N_BDD, vartype **N, int N_len,
 								 unsigned char verbose )
 {
@@ -135,11 +136,14 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 				for (j = 0; j < head->trans_len; j++) {
 					for (k = 0; k < N_len; k++)
 						if ((*(head->trans+j))->mode == goal_mode
-							&& statecmp( (*(head->trans+j))->state, *(N+k), num_env+num_sys ))
+							&& statecmp( (*(head->trans+j))->state, *(N+k),
+										 num_env+num_sys ))
 							break;
 					if (k < N_len) {
 						for (k = 0; k < Entry_len; k++)
-							if (statecmp((*(Entry+k))->state, (*(head->trans+j))->state, num_env+num_sys ))
+							if (statecmp((*(Entry+k))->state,
+										 (*(head->trans+j))->state,
+										 num_env+num_sys ))
 								break;
 						if (k == Entry_len) {
 							Entry_len++;
@@ -165,7 +169,8 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 			min_rgrad = (*(*(affected+goal_mode)+i))->rgrad;
 	}
 	if (verbose)
-		logprint( "Minimum reach annotation value in Entry or U_i: %d", min_rgrad );
+		logprint( "Minimum reach annotation value in Entry or U_i: %d",
+				  min_rgrad );
 	i = 0;
 	while (i < Exit_len) {
 		if ((*(Exit+i))->rgrad >= min_rgrad) {
@@ -185,13 +190,15 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 		logprint( "Entry set:" );
 		for (i = 0; i < Entry_len; i++) {
 			logprint_startline();
-			pprint_state( (*(Entry+i))->state, num_env, num_sys, getlogstream() );
+			pprint_state( (*(Entry+i))->state, num_env, num_sys,
+						  getlogstream() );
 			logprint_endline();
 		}
 		logprint( "Exit set:" );
 		for (i = 0; i < Exit_len; i++) {
 			logprint_startline();
-			pprint_state( (*(Exit+i))->state, num_env, num_sys, getlogstream() );
+			pprint_state( (*(Exit+i))->state, num_env, num_sys,
+						  getlogstream() );
 			logprint_endline();
 		}
 	}
@@ -219,10 +226,14 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 	/* Connect local strategy to original */
 	for (i = 0; i < Entry_len; i++) {
 		node = local_strategy;
-		while (node && !statecmp( (*(Entry+i))->state, node->state, num_env+num_sys ))
+		while (node && !statecmp( (*(Entry+i))->state, node->state,
+								  num_env+num_sys ))
 			node = node->next;
 		if (node == NULL) {
-			fprintf( stderr, "Error localfixpoint_goalmode: expected Entry node missing from local strategy, in goal mode %d\n", goal_mode );
+			fprintf( stderr,
+					 "Error localfixpoint_goalmode: expected Entry node"
+					 " missing from local strategy, in goal mode %d\n",
+					 goal_mode );
 			return NULL;
 		}
 
@@ -234,19 +245,29 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 	while (node) {
 		if (node->trans_len == 0) {  /* Terminal node of the local strategy? */
 			for (i = 0; i < Exit_len; i++) {
-				if (statecmp( node->state, (*(Exit+i))->state, num_env+num_sys ))
+				if (statecmp( node->state, (*(Exit+i))->state,
+							  num_env+num_sys ))
 					break;
 			}
 			if (i == Exit_len) {
-				fprintf( stderr, "Error localfixpoint_goalmode: terminal node in local strategy does not have a\nmatching Exit node, in goal mode %d\n", goal_mode );
+				fprintf( stderr,
+						 "Error localfixpoint_goalmode: terminal node in"
+						 " local strategy does not have a\nmatching Exit"
+						 " node, in goal mode %d\n",
+						 goal_mode );
 				return NULL;
 			}
 
 			if ((*(Exit+i))->rgrad > Exit_rgrad)
 				Exit_rgrad = (*(Exit+i))->rgrad;
 
-			if (forward_modereach( strategy, *(Exit+i), goal_mode, N, N_len, -1, num_env+num_sys )) {
-				fprintf( stderr, "Error localfixpoint_goalmode: forward graph reachability computation failed\nfrom Entry node in goal mode %d\n", goal_mode );
+			if (forward_modereach( strategy, *(Exit+i), goal_mode, N, N_len,
+								   -1, num_env+num_sys )) {
+				fprintf( stderr,
+						 "Error localfixpoint_goalmode: forward graph"
+						 " reachability computation failed\nfrom Entry node"
+						 " in goal mode %d\n",
+						 goal_mode );
 				return NULL;
 			}
 
@@ -316,7 +337,11 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 
 
 #define INPUT_STRING_LEN 1024
-anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *change_fp, int original_num_env, int original_num_sys, ptree_t *nonbool_var_list, int *offw, unsigned char verbose )
+anode_t *patch_localfixpoint( DdManager *manager,
+							  FILE *strategy_fp, FILE *change_fp,
+							  int original_num_env, int original_num_sys,
+							  ptree_t *nonbool_var_list, int *offw,
+							  unsigned char verbose )
 {
 	ptree_t *var_separator;
 	DdNode *etrans, *strans, **egoals;
@@ -375,15 +400,20 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	num_nonbool = tree_size( nonbool_var_list );
 	if (num_nonbool > 0) {
 		if (verbose > 1)
-			logprint( "Expanding nonbool variables in the given strategy automaton..." );
-		if (aut_expand_bool( strategy, evar_list, svar_list, nonbool_var_list )) {
-			fprintf( stderr, "Error patch_localfixpoint: Failed to expand nonboolean variables in given automaton." );
+			logprint( "Expanding nonbool variables in the given strategy"
+					  " automaton..." );
+		if (aut_expand_bool( strategy,
+							 evar_list, svar_list, nonbool_var_list )) {
+			fprintf( stderr,
+					 "Error patch_localfixpoint: Failed to expand"
+					 " nonboolean variables in given automaton." );
 			return NULL;
 		}
 		if (verbose > 1) {
 			logprint( "Given strategy after variable expansion:" );
 			logprint_startline();
-			dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_ATTRIB, getlogstream() );
+			dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_ATTRIB,
+						  getlogstream() );
 			logprint_endline();
 		}
 
@@ -437,14 +467,17 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		if (strlen( line ) < 1 || *line == '\n' || *line == '#')
 			continue;
 
-		num_read = read_state_str( line, &state, original_num_env+original_num_sys );
+		num_read = read_state_str( line, &state,
+								   original_num_env+original_num_sys );
 		if (num_read == 0) {
 			/* This must be the first command, so break from loop and
 			   build local transition rules from N. */
 			break_flag = True;
 			break;
 		} else if (num_read < original_num_env+original_num_sys) {
-			fprintf( stderr, "Error patch_localfixpoint: malformed game change file.\n" );
+			fprintf( stderr,
+					 "Error patch_localfixpoint: malformed game change"
+					 " file.\n" );
 			return NULL;
 		}
 
@@ -455,9 +488,12 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 			return NULL;
 		}
 		if (num_nonbool > 0) {
-			*(N+N_len-1) = expand_nonbool_state( state, offw, num_nonbool, num_env+num_sys );
+			*(N+N_len-1) = expand_nonbool_state( state, offw, num_nonbool,
+												 num_env+num_sys );
 			if (*(N+N_len-1) == NULL) {
-				fprintf( stderr, "Error patch_localfixpoint: failed to expand nonbool values in edge change file\n" );
+				fprintf( stderr,
+						 "Error patch_localfixpoint: failed to expand"
+						 " nonbool values in edge change file\n" );
 				return NULL;
 			}
 			free( state );
@@ -497,7 +533,9 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 	} else {
 		var_separator = get_list_item( evar_list, -1 );
 		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
 			return NULL;
 		}
 		var_separator->left = svar_list;
@@ -520,19 +558,23 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 			}
 			ddval = Cudd_CubeArrayToBdd( manager, cube );
 			if (ddval == NULL) {
-				fprintf( stderr, "Error patch_localfixpoint: building characteristic function of N." );
+				fprintf( stderr,
+						 "Error patch_localfixpoint: building characteristic"
+						 " function of N." );
 				return NULL;
 			}
 			Cudd_Ref( ddval );
 		
 			tmp2 = Cudd_Cofactor( manager, etrans_part, ddval );
 			if (tmp2 == NULL) {
-				fprintf( stderr, "Error patch_localfixpoint: computing cofactor." );
+				fprintf( stderr,
+						 "Error patch_localfixpoint: computing cofactor." );
 				return NULL;
 			}
 			Cudd_Ref( tmp2 );
 
-			if (!(Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )*Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 ))) {
+			if (!(Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )
+				  *Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 ))) {
 				Cudd_RecursiveDeref( manager, tmp2 );
 				Cudd_RecursiveDeref( manager, ddval );
 				break;
@@ -571,19 +613,23 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 			}
 			ddval = Cudd_CubeArrayToBdd( manager, cube );
 			if (ddval == NULL) {
-				fprintf( stderr, "Error patch_localfixpoint: building characteristic function of N." );
+				fprintf( stderr,
+						 "Error patch_localfixpoint: building characteristic"
+						 " function of N." );
 				return NULL;
 			}
 			Cudd_Ref( ddval );
 		
 			tmp2 = Cudd_Cofactor( manager, strans_part, ddval );
 			if (tmp2 == NULL) {
-				fprintf( stderr, "Error patch_localfixpoint: computing cofactor." );
+				fprintf( stderr,
+						 "Error patch_localfixpoint: computing cofactor." );
 				return NULL;
 			}
 			Cudd_Ref( tmp2 );
 
-			if (!(Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )*Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 ))) {
+			if (!(Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )
+				  *Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 ))) {
 				Cudd_RecursiveDeref( manager, tmp2 );
 				Cudd_RecursiveDeref( manager, ddval );
 				break;
@@ -629,32 +675,53 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 			if (strlen( line ) < 1 || *line == '\n' || *line == '#')
 				continue;
 
-			if (!strncmp( line, "restrict ", strlen( "restrict " ) ) || !strncmp( line, "relax ", strlen( "relax " ) )) {
+			if (!strncmp( line, "restrict ", strlen( "restrict " ) )
+				|| !strncmp( line, "relax ", strlen( "relax " ) )) {
 				if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
-					num_read = read_state_str( line+strlen( "restrict" )+1, &state_frag, 2*(original_num_env+original_num_sys) );
+					num_read
+						= read_state_str( line+strlen( "restrict" )+1,
+										  &state_frag,
+										  2*(original_num_env
+											 +original_num_sys) );
 				} else { /* "relax " */
-					num_read = read_state_str( line+strlen( "relax" )+1, &state_frag, 2*(original_num_env+original_num_sys) );
+					num_read
+						= read_state_str( line+strlen( "relax" )+1,
+										  &state_frag,
+										  2*(original_num_env
+											 +original_num_sys) );
 				}
 				if (num_read != 2*(original_num_env+original_num_sys)
 					&& num_read != 2*original_num_env+original_num_sys) {
 					if (num_read > 0)
 						free( state_frag );
-					fprintf( stderr, "Error: invalid arguments to restrict or relax command.\n" );
+					fprintf( stderr,
+							 "Error: invalid arguments to restrict or relax"
+							 " command.\n" );
 					return NULL;
 				}
 
 				if (num_nonbool > 0) {
 					if (num_read == 2*(original_num_env+original_num_sys)) {
-						state = expand_nonbool_state( state_frag, doffw, 2*num_nonbool, 2*(num_env+num_sys) );
+						state = expand_nonbool_state( state_frag, doffw,
+													  2*num_nonbool,
+													  2*(num_env+num_sys) );
 						if (state == NULL) {
-							fprintf( stderr, "Error patch_localfixpoint: failed to expand nonbool values in edge change file\n" );
+							fprintf( stderr,
+									 "Error patch_localfixpoint: failed to"
+									 " expand nonbool values in edge change"
+									 " file\n" );
 							return NULL;
 						}
 						free( state_frag );
-					} else { /* num_read == 2*original_num_env+original_num_sys */
-						state = expand_nonbool_state( state_frag, doffw, num_nonbool+num_enonbool, 2*num_env+num_sys );
+					} else { /* num_read==2*original_num_env+original_num_sys */
+						state = expand_nonbool_state( state_frag, doffw,
+													  num_nonbool+num_enonbool,
+													  2*num_env+num_sys );
 						if (state == NULL) {
-							fprintf( stderr, "Error patch_localfixpoint: failed to expand nonbool values in edge change file\n" );
+							fprintf( stderr,
+									 "Error patch_localfixpoint: failed to"
+									 " expand nonbool values in edge change"
+									 " file\n" );
 							return NULL;
 						}
 						free( state_frag );
@@ -680,7 +747,9 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 					}
 					pprint_state( state, num_env, num_sys, getlogstream() );
 					logprint_raw( " to" );
-					pprint_state( state+num_env+num_sys, num_env, num_read-(2*num_env+num_sys), getlogstream() );
+					pprint_state( state+num_env+num_sys,
+								  num_env, num_read-(2*num_env+num_sys),
+								  getlogstream() );
 					logprint_endline();
 				}
 				
@@ -689,31 +758,46 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 					node = find_anode( strategy, j, state, num_env+num_sys );
 					if (node != NULL) {
 						if (!strncmp( line, "restrict ", strlen( "restrict " ) )
-							&& (num_read == 2*(original_num_env+original_num_sys))) {
+							&& (num_read
+								== 2*(original_num_env+original_num_sys))) {
 							for (i = 0; i < node->trans_len; i++) {
 								if (statecmp( (*(node->trans+i))->state,
-											  state+num_env+num_sys, num_env+num_sys )) {
+											  state+num_env+num_sys,
+											  num_env+num_sys )) {
 									(*(affected_len + node->mode))++;
-									*(affected + node->mode) = realloc( *(affected + node->mode), sizeof(anode_t *)*(*(affected_len + node->mode)) );
+									*(affected + node->mode)
+										= realloc( *(affected + node->mode),
+												   sizeof(anode_t *)
+												   *(*(affected_len
+													   + node->mode)) );
 									if (*(affected + node->mode) == NULL) {
-										perror( "patch_localfixpoint, realloc" );
+										perror( "patch_localfixpoint,"
+												" realloc" );
 										return NULL;
 									}
-									/* If affected state is not in N, then fail. */
+									/* If affected state is not in N,
+									   then fail. */
 									for (i = 0; i < N_len; i++) {
-										if (statecmp( state, *(N+i), num_env+num_sys ))
+										if (statecmp( state, *(N+i),
+													  num_env+num_sys ))
 											break;
 									}
 									if (i == N_len) {
-										fprintf( stderr, "Error patch_localfixpoint: affected state not contained in N.\n" );
+										fprintf( stderr,
+												 "Error patch_localfixpoint:"
+												 " affected state not"
+												 " contained in N.\n" );
 										return NULL;
 									}
-									*(*(affected + node->mode) + *(affected_len + node->mode)-1) = node;
+									*(*(affected + node->mode)
+									  + *(affected_len + node->mode)-1) = node;
 									break;
 								}
 							}
-						} else if (!strncmp( line, "relax ", strlen( "relax " ) )
-								   && (num_read == 2*original_num_env+original_num_sys)) {
+						} else if (!strncmp( line, "relax ", strlen("relax ") )
+								   && (num_read
+									   == 2*original_num_env+original_num_sys)
+							) {
 							for (i = 0; i < node->trans_len; i++) {
 								if (statecmp( (*(node->trans+i))->state,
 											  state+num_env+num_sys, num_env ))
@@ -721,28 +805,39 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 							}
 							if (i == node->trans_len) {
 								(*(affected_len + node->mode))++;
-								*(affected + node->mode) = realloc( *(affected + node->mode), sizeof(anode_t *)*(*(affected_len + node->mode)) );
+								*(affected + node->mode)
+									= realloc( *(affected + node->mode),
+											   sizeof(anode_t *)
+											   *(*(affected_len
+												   + node->mode)) );
 								if (*(affected + node->mode) == NULL) {
 									perror( "patch_localfixpoint, realloc" );
 									return NULL;
 								}
 								/* If affected state is not in N, then fail. */
 								for (i = 0; i < N_len; i++) {
-									if (statecmp( state, *(N+i), num_env+num_sys ))
+									if (statecmp( state, *(N+i),
+												  num_env+num_sys ))
 										break;
 								}
 								if (i == N_len) {
-									fprintf( stderr, "Error patch_localfixpoint: affected state not contained in N.\n" );
+									fprintf( stderr,
+											 "Error patch_localfixpoint:"
+											 " affected state not contained"
+											 " in N.\n" );
 									return NULL;
 								}
-								*(*(affected + node->mode) + *(affected_len + node->mode)-1) = node;
+								*(*(affected + node->mode)
+								  + *(affected_len + node->mode)-1) = node;
 							}
 						}
 					}
 				}
 				
 				vertex1 = state2BDD( manager, state, 0, num_env+num_sys );
-				vertex2 = state2BDD( manager, state+num_env+num_sys, num_env+num_sys, num_read-(num_env+num_sys) );
+				vertex2 = state2BDD( manager, state+num_env+num_sys,
+									 num_env+num_sys,
+									 num_read-(num_env+num_sys) );
 				if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
 					tmp = Cudd_Not( vertex2 );
 					Cudd_Ref( tmp );
@@ -778,21 +873,29 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				free( state );
 				
 			} else if (!strncmp( line, "blocksys ", strlen( "blocksys " ) )) {
-				num_read = read_state_str( line+strlen( "blocksys" )+1, &state_frag, original_num_sys );
+				num_read = read_state_str( line+strlen( "blocksys" )+1,
+										   &state_frag, original_num_sys );
 				if (num_read != original_num_sys) {
 					if (num_read > 0)
 						free( state );
-					fprintf( stderr, "Error: invalid arguments to blocksys command.\n%d\n%s\n", num_read, line );
+					fprintf( stderr,
+							 "Error: invalid arguments to blocksys"
+							 " command.\n%d\n%s\n", num_read, line );
 					return NULL;
 				}
 				if (num_nonbool > 0) {
 					for (i = 0; i < num_nonbool-num_enonbool; i++)
 						*(offw+2*num_enonbool+2*i) -= num_env;
-					state = expand_nonbool_state( state_frag, offw+2*num_enonbool, num_nonbool-num_enonbool, num_sys );
+					state = expand_nonbool_state( state_frag,
+												  offw+2*num_enonbool,
+												  num_nonbool-num_enonbool,
+												  num_sys );
 					for (i = 0; i < num_nonbool-num_enonbool; i++)
 						*(offw+2*num_enonbool+2*i) += num_env;
 					if (state == NULL) {
-						fprintf( stderr, "Error patch_localfixpoint: failed to expand nonbool values in edge change file\n" );
+						fprintf( stderr,
+								 "Error patch_localfixpoint: failed to expand"
+								 " nonbool values in edge change file\n" );
 						return NULL;
 					}
 					free( state_frag );
@@ -811,23 +914,31 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				node_counter = 0;
 				while (head) {
 					for (i = 0; i < head->trans_len; i++) {
-						if (statecmp( state, (*(head->trans+i))->state+num_env, num_sys )) {
+						if (statecmp( state, (*(head->trans+i))->state+num_env,
+									  num_sys )) {
 							(*(affected_len + head->mode))++;
-							*(affected + head->mode) = realloc( *(affected + head->mode), sizeof(anode_t *)*(*(affected_len + head->mode)) );
+							*(affected + head->mode)
+								= realloc( *(affected + head->mode),
+										   sizeof(anode_t *)
+										   *(*(affected_len + head->mode)) );
 							if (*(affected + head->mode) == NULL) {
 								perror( "patch_localfixpoint, realloc" );
 								return NULL;
 							}
 							/* If affected state is not in N, then fail. */
 							for (i = 0; i < N_len; i++) {
-								if (statecmp( head->state, *(N+i), num_env+num_sys ))
+								if (statecmp( head->state, *(N+i),
+											  num_env+num_sys ))
 									break;
 							}
 							if (i == N_len) {
-								fprintf( stderr, "Error patch_localfixpoint: affected state not contained in N.\n" );
+								fprintf( stderr,
+										 "Error patch_localfixpoint: affected"
+										 " state not contained in N.\n" );
 								return NULL;
 							}
-							*(*(affected + head->mode) + *(affected_len + head->mode)-1) = head;
+							*(*(affected + head->mode)
+							  + *(affected_len + head->mode)-1) = head;
 							break;
 						}
 					}
@@ -835,7 +946,8 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 					node_counter++;
 				}
 
-				vertex2 = state2BDD( manager, state, 2*num_env+num_sys, num_sys );
+				vertex2 = state2BDD( manager, state,
+									 2*num_env+num_sys, num_sys );
 				tmp = Cudd_Not( vertex2 );
 				Cudd_Ref( tmp );
 				Cudd_RecursiveDeref( manager, vertex2 );
@@ -850,7 +962,9 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 				free( state );
 
 			} else {
-				fprintf( stderr, "Error patch_localfixpoint: unrecognized line in given edge change file.\n" );
+				fprintf( stderr,
+						 "Error patch_localfixpoint: unrecognized line in"
+						 " given edge change file.\n" );
 				return NULL;
 			}
 		} while (fgets( line, INPUT_STRING_LEN, change_fp ));
@@ -865,7 +979,8 @@ anode_t *patch_localfixpoint( DdManager *manager, FILE *strategy_fp, FILE *chang
 		*(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
 	}
 	if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
-		fprintf( stderr, "Error: failed to define variable map in CUDD manager.\n" );
+		fprintf( stderr,
+				 "Error: failed to define variable map in CUDD manager.\n" );
 		return NULL;
 	}
 	free( vars );

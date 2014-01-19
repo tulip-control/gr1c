@@ -137,11 +137,13 @@ int rmin_tree_value( ptree_t *head, char *name )
 		return -9999;
 
 	if (head->type == PT_EQUALS) {
-		if ((head->left->type == PT_VARIABLE || head->left->type == PT_NEXT_VARIABLE)
+		if ((head->left->type == PT_VARIABLE
+			 || head->left->type == PT_NEXT_VARIABLE)
 			&& head->right->type == PT_CONSTANT
 			&& !strncmp(head->left->name, name, strlen(name))) {
 			minval = head->right->value;
-		} else if ((head->right->type == PT_VARIABLE || head->right->type == PT_NEXT_VARIABLE)
+		} else if ((head->right->type == PT_VARIABLE
+					|| head->right->type == PT_NEXT_VARIABLE)
 				   && head->left->type == PT_CONSTANT
 				   && !strncmp(head->right->name, name, strlen(name))) {
 			minval = head->left->value;
@@ -179,11 +181,13 @@ int rmax_tree_value( ptree_t *head, char *name )
 		return -9999;
 
 	if (head->type == PT_EQUALS) {
-		if ((head->left->type == PT_VARIABLE || head->left->type == PT_NEXT_VARIABLE)
+		if ((head->left->type == PT_VARIABLE
+			 || head->left->type == PT_NEXT_VARIABLE)
 			&& head->right->type == PT_CONSTANT
 			&& !strncmp(head->left->name, name, strlen(name))) {
 			maxval = head->right->value;
-		} else if ((head->right->type == PT_VARIABLE || head->right->type == PT_NEXT_VARIABLE)
+		} else if ((head->right->type == PT_VARIABLE
+					|| head->right->type == PT_NEXT_VARIABLE)
 				   && head->left->type == PT_CONSTANT
 				   && !strncmp(head->right->name, name, strlen(name))) {
 			maxval = head->left->value;
@@ -288,7 +292,18 @@ ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
 	int i;
 
 	/* Handle pointless calls */
-	if (head == NULL || !((head->type == PT_LT) || (head->type == PT_GT) || (head->type == PT_LE) || (head->type == PT_GE) || (head->type == PT_NOTEQ)) || !(((head->left->type == PT_VARIABLE || head->left->type == PT_NEXT_VARIABLE) && head->right->type == PT_CONSTANT && !strcmp( head->left->name, name )) || ((head->right->type == PT_VARIABLE || head->right->type == PT_NEXT_VARIABLE) && head->left->type == PT_CONSTANT && !strcmp( head->right->name, name ))))
+	if (head == NULL
+		|| !((head->type == PT_LT) || (head->type == PT_GT)
+			 || (head->type == PT_LE) || (head->type == PT_GE)
+			 || (head->type == PT_NOTEQ))
+		|| !(((head->left->type == PT_VARIABLE
+			   || head->left->type == PT_NEXT_VARIABLE)
+			  && head->right->type == PT_CONSTANT
+			  && !strcmp( head->left->name, name ))
+			 || ((head->right->type == PT_VARIABLE
+				  || head->right->type == PT_NEXT_VARIABLE)
+				 && head->left->type == PT_CONSTANT
+				 && !strcmp( head->right->name, name ))))
 		return head;
 
 	op_type = head->type;
@@ -382,7 +397,11 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 		|| head->type == PT_NOTEQ)
 		head = expand_nonbool_varnum( head, name, maxval );
 
-	if (head->type == PT_EQUALS && ((head->left->type != PT_CONSTANT && !strcmp( head->left->name, name )) || (head->right->type != PT_CONSTANT && !strcmp( head->right->name, name )))) {
+	if (head->type == PT_EQUALS
+		&& ((head->left->type != PT_CONSTANT
+			 && !strcmp( head->left->name, name ))
+			|| (head->right->type != PT_CONSTANT
+				&& !strcmp( head->right->name, name )))) {
 		/* We assume that nonboolean comparison is only between a
 		   variable and a number; will be generalized soon. */
 		if (head->left->type == PT_CONSTANT) {
@@ -441,7 +460,9 @@ ptree_t *unreach_expanded_bool( char *name, int lower, int upper, int type )
 	if (lower > upper)
 		return NULL;
 	if (!(type == PT_VARIABLE || type == PT_NEXT_VARIABLE)) {
-		fprintf( stderr, "unreach_expanded_bool: Invoked with unsupported type, %d\n", type );
+		fprintf( stderr,
+				 "unreach_expanded_bool: Invoked with unsupported type, %d\n",
+				 type );
 		return NULL;
 	}
 
@@ -459,7 +480,6 @@ ptree_t *unreach_expanded_bool( char *name, int lower, int upper, int type )
 		head->left->right->right = init_ptree( PT_CONSTANT, NULL, i );
 	}
 
-	/* return expand_to_bool( head, name, upper ); */
 	return head;
 }
 
@@ -587,7 +607,9 @@ ptree_t *merge_ptrees( ptree_t **heads, int len, int type )
 	for (i = len-1; i > 1; i--) {
 		node->left = init_ptree( type, NULL, -1 );
 		if (node->left == NULL) {
-			fprintf( stderr, "Error: merge_ptrees failed to create enough new nodes.\n" );
+			fprintf( stderr,
+					 "Error: merge_ptrees failed to create enough new"
+					 " nodes.\n" );
 			return NULL;
 		}
 		node = node->left;
@@ -622,11 +644,15 @@ ptree_t *remove_list_item( ptree_t *head, int index )
 
 	/* Error-checking */
 	if (head == NULL) {
-		fprintf( stderr, "WARNING: remove_list_item called with empty tree.\n" );
+		fprintf( stderr,
+				 "WARNING: remove_list_item called with empty tree.\n" );
 		return NULL;
 	}
 	if (index < -1 || index >= length) {
-		fprintf( stderr, "Error: remove_list_item given invalid index, %d. Max possible is %d.\n", index, length-1 );
+		fprintf( stderr,
+				 "Error: remove_list_item given invalid index, %d."
+				 " Max possible is %d.\n",
+				 index, length-1 );
 		return NULL;
 	}
 
@@ -793,7 +819,8 @@ void print_formula( ptree_t *head, FILE *fp )
 		return;
 
 	default:
-		fprintf( stderr, "WARNING: print_formula called with node of unknown type" );
+		fprintf( stderr,
+				 "WARNING: print_formula called with node of unknown type" );
 		return;
 	}
 
@@ -854,7 +881,10 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 	case PT_VARIABLE:
 		index = find_list_item( var_list, head->type, head->name, 0 );
 		if (index < 0) {
-			fprintf( stderr, "Error: ptree_BDD requested variable \"%s\", but it is not in given list.\n", head->name );
+			fprintf( stderr,
+					 "Error: ptree_BDD requested variable \"%s\","
+					 " but it is not in given list.\n",
+					 head->name );
 			exit(-1);
 		}
 		lsub = Cudd_ReadOne( manager );
@@ -868,13 +898,17 @@ DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 	case PT_NEXT_VARIABLE:
 		index = find_list_item( var_list, PT_VARIABLE, head->name, 0 );
 		if (index < 0) {
-			fprintf( stderr, "Error: ptree_BDD requested primed variable \"%s\", but it is not in given list.\n", head->name );
+			fprintf( stderr,
+					 "Error: ptree_BDD requested primed variable \"%s\","
+					 " but it is not in given list.\n",
+					 head->name );
 			exit(-1);
 		}
 		lsub = Cudd_ReadOne( manager );
 		Cudd_Ref( lsub );
 		fn = Cudd_bddAnd( manager, lsub,
-						  Cudd_bddIthVar( manager, tree_size(var_list)+index ) );
+						  Cudd_bddIthVar( manager,
+										  tree_size(var_list)+index ) );
 		Cudd_Ref( fn );
 		Cudd_RecursiveDeref( manager, lsub );
 		break;
@@ -957,7 +991,8 @@ int find_list_item( ptree_t *head, int type, char *name, int value )
 		if (head->type == type) {
 			if (head->type == PT_VARIABLE || head->type == PT_NEXT_VARIABLE) {
 				/* If node is variable type, then names must match. */
-				if (name != NULL && head->name != NULL && !strcmp( head->name, name ))
+				if (name != NULL && head->name != NULL
+					&& !strcmp( head->name, name ))
 					break;
 			} else if (head->type == PT_CONSTANT) {
 				/* If node is constant (e.g., True), then values must match. */

@@ -55,7 +55,9 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 	} else {
 		var_separator = get_list_item( evar_list, -1 );
 		if (var_separator == NULL) {
-			fprintf( stderr, "Error: get_list_item failed on environment variables list.\n" );
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
 			return NULL;
 		}
 		var_separator->left = svar_list;
@@ -97,7 +99,8 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 		var_separator->left = NULL;
 	}
 
-	W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals, verbose );
+	W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals,
+								 verbose );
 
 	Cudd_RecursiveDeref( manager, etrans );
 	Cudd_RecursiveDeref( manager, strans );
@@ -159,7 +162,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 		*(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
 	}
 	if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
-		fprintf( stderr, "Error: failed to define variable map in CUDD manager.\n" );
+		fprintf( stderr,
+				 "Error: failed to define variable map in CUDD manager.\n" );
 		return NULL;
 	}
 	free( vars );
@@ -197,8 +201,9 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 				*(Z+i) = compute_existsmodal( manager, *Z_prev, etrans, strans,
 											  num_env, num_sys, cube );
 			} else {
-				*(Z+i) = compute_existsmodal( manager, *(Z_prev+i+1), etrans, strans,
-											  num_env, num_sys, cube );
+				*(Z+i) = compute_existsmodal( manager, *(Z_prev+i+1),
+											  etrans, strans, num_env, num_sys,
+											  cube );
 			}
 			if (*(Z+i) == NULL) {
 				/* fatal error */
@@ -249,7 +254,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 						if (X_prev != NULL)
 							Cudd_RecursiveDeref( manager, X_prev );
 						X_prev = X;
-						X = compute_existsmodal( manager, X_prev, etrans, strans,
+						X = compute_existsmodal( manager, X_prev,
+												 etrans, strans,
 												 num_env, num_sys, cube );
 						if (X == NULL) {
 							/* fatal error */
@@ -262,7 +268,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 						Cudd_Ref( tmp2 );
 						Cudd_RecursiveDeref( manager, tmp );
 
-						tmp = Cudd_bddAnd( manager, X, Cudd_Not( *(egoals+j) ) );
+						tmp = Cudd_bddAnd( manager,
+										   X, Cudd_Not( *(egoals+j) ) );
 						Cudd_Ref( tmp );
 						Cudd_RecursiveDeref( manager, X );
 
@@ -276,7 +283,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 						Cudd_Ref( X );
 						Cudd_RecursiveDeref( manager, tmp );
 
-					} while (!(Cudd_bddLeq( manager, X, X_prev )*Cudd_bddLeq( manager, X_prev, X )));
+					} while (!(Cudd_bddLeq( manager, X, X_prev )
+							   *Cudd_bddLeq( manager, X_prev, X )));
 
 					tmp = Y;
 					Y = Cudd_bddOr( manager, Y, X );
@@ -294,7 +302,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 				Cudd_Ref( Y );
 				Cudd_RecursiveDeref( manager, tmp2 );
 
-			} while (!(Cudd_bddLeq( manager, Y, Y_prev )*Cudd_bddLeq( manager, Y_prev, Y )));
+			} while (!(Cudd_bddLeq( manager, Y, Y_prev )
+					   *Cudd_bddLeq( manager, Y_prev, Y )));
 
 			Cudd_RecursiveDeref( manager, *(Z+i) );
 			*(Z+i) = Cudd_bddAnd( manager, Y, *(Z_prev+i) );
@@ -311,7 +320,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 
 		Z_changed = False;
 		for (i = 0; i < num_sgoals; i++) {
-			if (!(Cudd_bddLeq( manager, *(Z+i), *(Z_prev+i) )*Cudd_bddLeq( manager, *(Z_prev+i), *(Z+i) ))) {
+			if (!(Cudd_bddLeq( manager, *(Z+i), *(Z_prev+i) )
+				  *Cudd_bddLeq( manager, *(Z_prev+i), *(Z+i) ))) {
 				Z_changed = True;
 				break;
 			}
@@ -370,7 +380,8 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 		*(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
 	}
 	if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
-		fprintf( stderr, "Error: failed to define variable map in CUDD manager.\n" );
+		fprintf( stderr,
+				 "Error: failed to define variable map in CUDD manager.\n" );
 		return NULL;
 	}
 	free( vars );
@@ -424,23 +435,26 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 		while (True) {
 			(*(*num_sublevels+i))++;
 			*(Y+i) = realloc( *(Y+i), *(*num_sublevels+i)*sizeof(DdNode *) );
-			*(*X_ijr+i) = realloc( *(*X_ijr+i), *(*num_sublevels+i)*sizeof(DdNode **) );
+			*(*X_ijr+i) = realloc( *(*X_ijr+i),
+								   *(*num_sublevels+i)*sizeof(DdNode **) );
 			if (*(Y+i) == NULL || *(*X_ijr+i) == NULL) {
 				perror( "compute_sublevel_sets, realloc" );
 				return NULL;
 			}
 
-			*(*(*X_ijr+i) + *(*num_sublevels+i)-1) = malloc( num_env_goals*sizeof(DdNode *) );
+			*(*(*X_ijr+i) + *(*num_sublevels+i)-1)
+				= malloc( num_env_goals*sizeof(DdNode *) );
 			if (*(*(*X_ijr+i) + *(*num_sublevels+i)-1) == NULL) {
 				perror( "compute_sublevel_sets, malloc" );
 				return NULL;
 			}
 
-			Y_exmod = compute_existsmodal( manager, *(*(Y+i)+*(*num_sublevels+i)-2),
-										   etrans, strans,
-										   num_env, num_sys, cube );
+			Y_exmod = compute_existsmodal( manager,
+										   *(*(Y+i)+*(*num_sublevels+i)-2),
+										   etrans, strans, num_env, num_sys,
+										   cube );
 
-			*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_Not( Cudd_ReadOne( manager ) );
+			*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_Not(Cudd_ReadOne( manager ));
 			Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
 			for (r = 0; r < num_env_goals; r++) {
 					
@@ -482,13 +496,15 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 					Cudd_Ref( X );
 					Cudd_RecursiveDeref( manager, tmp );
 
-				} while (!(Cudd_bddLeq( manager, X, X_prev )*Cudd_bddLeq( manager, X_prev, X )));
+				} while (!(Cudd_bddLeq( manager, X, X_prev )
+						   *Cudd_bddLeq( manager, X_prev, X )));
 
 				*(*(*(*X_ijr+i) + *(*num_sublevels+i)-1) + r) = X;
 				Cudd_Ref( *(*(*(*X_ijr+i) + *(*num_sublevels+i)-1) + r) );
 
 				tmp = *(*(Y+i)+*(*num_sublevels+i)-1);
-				*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1), X );
+				*(*(Y+i)+*(*num_sublevels+i)-1)
+					= Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1), X );
 				Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
 				Cudd_RecursiveDeref( manager, tmp );
 			
@@ -499,19 +515,28 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 			}
 
 			tmp = *(*(Y+i)+*(*num_sublevels+i)-1);
-			*(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1), *(*(Y+i)+*(*num_sublevels+i)-2) );
+			*(*(Y+i)+*(*num_sublevels+i)-1)
+				= Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1),
+							  *(*(Y+i)+*(*num_sublevels+i)-2) );
 			Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
 			Cudd_RecursiveDeref( manager, tmp );
 
-			if (Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-1), *(*(Y+i)+*(*num_sublevels+i)-2))*Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-2), *(*(Y+i)+*(*num_sublevels+i)-1) )) {
+			if (Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-1),
+							 *(*(Y+i)+*(*num_sublevels+i)-2))
+				*Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-2),
+							  *(*(Y+i)+*(*num_sublevels+i)-1) )) {
 				Cudd_RecursiveDeref( manager, *(*(Y+i)+*(*num_sublevels+i)-1) );
 				for (r = 0; r < num_env_goals; r++) {
-					Cudd_RecursiveDeref( manager, *(*(*(*X_ijr+i) + *(*num_sublevels+i)-1) + r) );
+					Cudd_RecursiveDeref( manager, *(*(*(*X_ijr+i)
+													  + *(*num_sublevels+i)-1)
+													+ r) );
 				}
 				free( *(*(*X_ijr+i) + *(*num_sublevels+i)-1) );
 				(*(*num_sublevels+i))--;
-				*(Y+i) = realloc( *(Y+i), *(*num_sublevels+i)*sizeof(DdNode *) );
-				*(*X_ijr+i) = realloc( *(*X_ijr+i), *(*num_sublevels+i)*sizeof(DdNode **) );
+				*(Y+i) = realloc( *(Y+i),
+								  *(*num_sublevels+i)*sizeof(DdNode *) );
+				*(*X_ijr+i) = realloc( *(*X_ijr+i),
+									   *(*num_sublevels+i)*sizeof(DdNode **) );
 				if (*(Y+i) == NULL || *(*X_ijr+i) == NULL) {
 					perror( "compute_sublevel_sets, realloc" );
 					return NULL;

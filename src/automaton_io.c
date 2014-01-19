@@ -70,7 +70,8 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 			start = end;
 		}
 		if (i != state_len) {
-			fprintf( stderr, "Error parsing gr1c automaton line %d.\n", line_num );
+			fprintf( stderr,
+					 "Error parsing gr1c automaton line %d.\n", line_num );
 			return NULL;
 		}
 
@@ -82,14 +83,16 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 
 		(*(node_array+ia_len-1))->mode = strtol( start, &end, 10 );
 		if (start == end || *end == '\0') {
-			fprintf( stderr, "Error parsing gr1c automaton line %d.\n", line_num );
+			fprintf( stderr,
+					 "Error parsing gr1c automaton line %d.\n", line_num );
 			return NULL;
 		}
 		start = end;
 
 		(*(node_array+ia_len-1))->rgrad = strtol( start, &end, 10 );
 		if (start == end) {
-			fprintf( stderr, "Error parsing gr1c automaton line %d.\n", line_num );
+			fprintf( stderr,
+					 "Error parsing gr1c automaton line %d.\n", line_num );
 			return NULL;
 		}
 		start = end;
@@ -102,13 +105,15 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 		this_trans = strtol( start, &end, 10 );
 		while (start != end) {
 			((*(node_array+ia_len-1))->trans_len)++;
-			*(trans_array+ia_len-1) = realloc( *(trans_array+ia_len-1),
-											   sizeof(int)*((*(node_array+ia_len-1))->trans_len) );
+			*(trans_array+ia_len-1)
+				= realloc( *(trans_array+ia_len-1),
+						   sizeof(int)*((*(node_array+ia_len-1))->trans_len) );
 			if (*(trans_array+ia_len-1) == NULL) {
 				perror( "aut_aut_load, realloc" );
 				return NULL;
 			}
-			*(*(trans_array+ia_len-1) + (*(node_array+ia_len-1))->trans_len - 1) = this_trans;
+			*(*(trans_array+ia_len-1)
+			  + (*(node_array+ia_len-1))->trans_len - 1) = this_trans;
 
 			start = end;
 			this_trans = strtol( start, &end, 10 );
@@ -141,7 +146,8 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 	for (i = 0; i < ia_len; i++) {
 		for (j = 0; j < ia_len && *(ID_array+j) != i; j++) ;
 		if (j == ia_len) {
-			fprintf( stderr, "Error parsing gr1c automaton data; missing indices.\n" );
+			fprintf( stderr,
+					 "Error parsing gr1c automaton data; missing indices.\n" );
 			return NULL;
 		}
 
@@ -160,9 +166,13 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 				return NULL;
 			}
 			for (j = 0; j < node->trans_len; j++) {
-				for (k = 0; k < ia_len && *(ID_array+k) != *(*(trans_array+i)+j); k++) ;
+				for (k = 0;
+					 k < ia_len && *(ID_array+k) != *(*(trans_array+i)+j);
+					 k++) ;
 				if (k == ia_len) {
-					fprintf( stderr, "Error parsing gr1c automaton data; missing indices.\n" );
+					fprintf( stderr,
+							 "Error parsing gr1c automaton data; missing"
+							 " indices.\n" );
 					return NULL;
 				}
 				*(node->trans+j) = *(node_array+k);
@@ -219,7 +229,9 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
 
-	fprintf( fp, "/* strategy synthesized with gr1c, version " GR1C_VERSION " */\n" );
+	fprintf( fp,
+			 "/* strategy synthesized with gr1c, version "
+			 GR1C_VERSION " */\n" );
 	fprintf( fp, "digraph A {\n" );
 	node = head;
 	while (node) {
@@ -233,16 +245,19 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 			last_nonzero_sys = num_sys-1;
 		} else {
 			for (last_nonzero_env = num_env-1; last_nonzero_env >= 0
-					 && *(node->state+last_nonzero_env) == 0; last_nonzero_env--) ;
+					 && *(node->state+last_nonzero_env) == 0;
+				 last_nonzero_env--) ;
 			for (last_nonzero_sys = num_sys-1; last_nonzero_sys >= 0
-					 && *(node->state+num_env+last_nonzero_sys) == 0; last_nonzero_sys--) ;
+					 && *(node->state+num_env+last_nonzero_sys) == 0;
+				 last_nonzero_sys--) ;
 		}
 		if (last_nonzero_env < 0 && last_nonzero_sys < 0) {
 			fprintf( fp, "{}" );
 		} else {
 			if (!(format_flags & DOT_AUT_EDGEINPUT)) {
 				for (j = 0; j < num_env; j++) {
-					if ((format_flags & DOT_AUT_BINARY) && *(node->state+j) == 0)
+					if ((format_flags & DOT_AUT_BINARY)
+						&& *(node->state+j) == 0)
 						continue;
 					var = get_list_item( evar_list, j );
 					if (j == last_nonzero_env) {
@@ -251,14 +266,16 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 						} else {
 							fprintf( fp, "%s=%d", var->name, *(node->state+j) );
 						}
-						if ((last_nonzero_sys >= 0 || (format_flags & DOT_AUT_ALL))
+						if ((last_nonzero_sys >= 0
+							 || (format_flags & DOT_AUT_ALL))
 							&& !(format_flags & DOT_AUT_EDGEINPUT))
 							fprintf( fp, ", " );
 					} else {
 						if (format_flags & DOT_AUT_BINARY) {
 							fprintf( fp, "%s, ", var->name );
 						} else {
-							fprintf( fp, "%s=%d, ", var->name, *(node->state+j) );
+							fprintf( fp,
+									 "%s=%d, ", var->name, *(node->state+j) );
 						}
 					}
 				}
@@ -267,20 +284,25 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 				fprintf( fp, "{}" );
 			} else {
 				for (j = 0; j < num_sys; j++) {
-					if ((format_flags & DOT_AUT_BINARY) && *(node->state+num_env+j) == 0)
+					if ((format_flags & DOT_AUT_BINARY)
+						&& *(node->state+num_env+j) == 0)
 						continue;
 					var = get_list_item( svar_list, j );
 					if (j == last_nonzero_sys) {
 						if (format_flags & DOT_AUT_BINARY) {
 							fprintf( fp, "%s", var->name );
 						} else {
-							fprintf( fp, "%s=%d", var->name, *(node->state+num_env+j) );
+							fprintf( fp,
+									 "%s=%d",
+									 var->name, *(node->state+num_env+j) );
 						}
 					} else {
 						if (format_flags & DOT_AUT_BINARY) {
 							fprintf( fp, "%s, ", var->name );
 						} else {
-							fprintf( fp, "%s=%d, ", var->name, *(node->state+num_env+j) );
+							fprintf( fp,
+									 "%s=%d, ",
+									 var->name, *(node->state+num_env+j) );
 						}
 					}
 				}
@@ -299,54 +321,67 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 				last_nonzero_sys = num_sys-1;
 			} else {
 				for (last_nonzero_env = num_env-1; last_nonzero_env >= 0
-						 && *(node->state+last_nonzero_env) == 0; last_nonzero_env--) ;
+						 && *(node->state+last_nonzero_env) == 0;
+					 last_nonzero_env--) ;
 				for (last_nonzero_sys = num_sys-1; last_nonzero_sys >= 0
-						 && *(node->state+num_env+last_nonzero_sys) == 0; last_nonzero_sys--) ;
+						 && *(node->state+num_env+last_nonzero_sys) == 0;
+					 last_nonzero_sys--) ;
 			}
 			if (last_nonzero_env < 0 && last_nonzero_sys < 0) {
 				fprintf( fp, "{}" );
 			} else {
 				if (!(format_flags & DOT_AUT_EDGEINPUT)) {
 					for (j = 0; j < num_env; j++) {
-						if ((format_flags & DOT_AUT_BINARY) && *(node->state+j) == 0)
+						if ((format_flags & DOT_AUT_BINARY)
+							&& *(node->state+j) == 0)
 							continue;
 						var = get_list_item( evar_list, j );
 						if (j == last_nonzero_env) {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s", var->name );
 							} else {
-								fprintf( fp, "%s=%d", var->name, *(node->state+j) );
+								fprintf( fp,
+										 "%s=%d", var->name, *(node->state+j) );
 							}
-							if ((last_nonzero_sys >= 0 || (format_flags & DOT_AUT_ALL))
+							if ((last_nonzero_sys >= 0
+								 || (format_flags & DOT_AUT_ALL))
 								&& !(format_flags & DOT_AUT_EDGEINPUT))
 								fprintf( fp, ", " );
 						} else {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s, ", var->name );
 							} else {
-								fprintf( fp, "%s=%d, ", var->name, *(node->state+j) );
+								fprintf( fp,
+										 "%s=%d, ",
+										 var->name, *(node->state+j) );
 							}
 						}
 					}
 				}
-				if (last_nonzero_sys < 0 && (format_flags & DOT_AUT_EDGEINPUT)) {
+				if (last_nonzero_sys < 0
+					&& (format_flags & DOT_AUT_EDGEINPUT)) {
 					fprintf( fp, "{}" );
 				} else {
 					for (j = 0; j < num_sys; j++) {
-						if ((format_flags & DOT_AUT_BINARY) && *(node->state+num_env+j) == 0)
+						if ((format_flags & DOT_AUT_BINARY)
+							&& *(node->state+num_env+j) == 0)
 							continue;
 						var = get_list_item( svar_list, j );
 						if (j == last_nonzero_sys) {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s", var->name );
 							} else {
-								fprintf( fp, "%s=%d", var->name, *(node->state+num_env+j) );
+								fprintf( fp,
+										 "%s=%d",
+										 var->name, *(node->state+num_env+j) );
 							}
 						} else {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s, ", var->name );
 							} else {
-								fprintf( fp, "%s=%d, ", var->name, *(node->state+num_env+j) );
+								fprintf( fp,
+										 "%s=%d, ",
+										 var->name, *(node->state+num_env+j) );
 							}
 						}
 					}
@@ -355,63 +390,87 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 			fprintf( fp, "\" -> \"%d;\\n",
 					 find_anode_index( head,
 									   (*(node->trans+i))->mode,
-									   (*(node->trans+i))->state, num_env+num_sys ) );
+									   (*(node->trans+i))->state,
+									   num_env+num_sys ) );
 			if (format_flags & DOT_AUT_ATTRIB) {
-				fprintf( fp, "(%d, %d)\\n", (*(node->trans+i))->mode, (*(node->trans+i))->rgrad);
+				fprintf( fp,
+						 "(%d, %d)\\n",
+						 (*(node->trans+i))->mode, (*(node->trans+i))->rgrad);
 			}
 			if ((format_flags & 0x1) == DOT_AUT_ALL) {
 				last_nonzero_env = num_env-1;
 				last_nonzero_sys = num_sys-1;
 			} else {
 				for (last_nonzero_env = num_env-1; last_nonzero_env >= 0
-						 && *((*(node->trans+i))->state+last_nonzero_env) == 0; last_nonzero_env--) ;
+						 && *((*(node->trans+i))->state+last_nonzero_env) == 0;
+					 last_nonzero_env--) ;
 				for (last_nonzero_sys = num_sys-1; last_nonzero_sys >= 0
-						 && *((*(node->trans+i))->state+num_env+last_nonzero_sys) == 0; last_nonzero_sys--) ;
+						 && *((*(node->trans+i))->state
+							  +num_env+last_nonzero_sys) == 0;
+					 last_nonzero_sys--) ;
 			}
 			if (last_nonzero_env < 0 && last_nonzero_sys < 0) {
 				fprintf( fp, "{}" );
 			} else {
 				if (!(format_flags & DOT_AUT_EDGEINPUT)) {
 					for (j = 0; j < num_env; j++) {
-						if ((format_flags & DOT_AUT_BINARY) && *((*(node->trans+i))->state+j) == 0)
+						if ((format_flags & DOT_AUT_BINARY)
+							&& *((*(node->trans+i))->state+j) == 0)
 							continue;
 						var = get_list_item( evar_list, j );
 						if (j == last_nonzero_env) {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s", var->name );
 							} else {
-								fprintf( fp, "%s=%d", var->name, *((*(node->trans+i))->state+j) );
+								fprintf( fp,
+										 "%s=%d",
+										 var->name,
+										 *((*(node->trans+i))->state+j) );
 							}
-							if ((last_nonzero_sys >= 0 || (format_flags & DOT_AUT_ALL))
+							if ((last_nonzero_sys >= 0
+								 || (format_flags & DOT_AUT_ALL))
 								&& !(format_flags & DOT_AUT_EDGEINPUT))
 								fprintf( fp, ", " );
 						} else {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s, ", var->name );
 							} else {
-								fprintf( fp, "%s=%d, ", var->name, *((*(node->trans+i))->state+j) );
+								fprintf( fp,
+										 "%s=%d, ",
+										 var->name,
+										 *((*(node->trans+i))->state+j) );
 							}
 						}
 					}
 				}
-				if (last_nonzero_sys < 0 && (format_flags & DOT_AUT_EDGEINPUT)) {
+				if (last_nonzero_sys < 0
+					&& (format_flags & DOT_AUT_EDGEINPUT)) {
 					fprintf( fp, "{}" );
 				} else {
 					for (j = 0; j < num_sys; j++) {
-						if ((format_flags & DOT_AUT_BINARY) && *((*(node->trans+i))->state+num_env+j) == 0)
+						if ((format_flags & DOT_AUT_BINARY)
+							&& *((*(node->trans+i))->state+num_env+j) == 0)
 							continue;
 						var = get_list_item( svar_list, j );
 						if (j == last_nonzero_sys) {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s", var->name );
 							} else {
-								fprintf( fp, "%s=%d", var->name, *((*(node->trans+i))->state+num_env+j) );
+								fprintf( fp,
+										 "%s=%d",
+										 var->name,
+										 *((*(node->trans+i))->state
+										   +num_env+j) );
 							}
 						} else {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s, ", var->name );
 							} else {
-								fprintf( fp, "%s=%d, ", var->name, *((*(node->trans+i))->state+num_env+j) );
+								fprintf( fp,
+										 "%s=%d, ",
+										 var->name,
+										 *((*(node->trans+i))->state
+										   +num_env+j) );
 							}
 						}
 					}
@@ -424,20 +483,27 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					fprintf( fp, "{}" );
 				} else {
 					for (j = 0; j < num_env; j++) {
-						if ((format_flags & DOT_AUT_BINARY) && *((*(node->trans+i))->state+j) == 0)
+						if ((format_flags & DOT_AUT_BINARY)
+							&& *((*(node->trans+i))->state+j) == 0)
 							continue;
 						var = get_list_item( evar_list, j );
 						if (j == last_nonzero_env) {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s", var->name );
 							} else {
-								fprintf( fp, "%s=%d", var->name, *((*(node->trans+i))->state+j) );
+								fprintf( fp,
+										 "%s=%d",
+										 var->name,
+										 *((*(node->trans+i))->state+j) );
 							}
 						} else {
 							if (format_flags & DOT_AUT_BINARY) {
 								fprintf( fp, "%s, ", var->name );
 							} else {
-								fprintf( fp, "%s=%d, ", var->name, *((*(node->trans+i))->state+j) );
+								fprintf( fp,
+										 "%s=%d, ",
+										 var->name,
+										 *((*(node->trans+i))->state+j) );
 							}
 						}
 					}
@@ -455,7 +521,8 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 }
 
 
-int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp )
+int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+					FILE *fp )
 {
 	int i;
 	anode_t *node;
@@ -470,14 +537,20 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 	num_sys = tree_size( svar_list );
 
 	fprintf( fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
-	fprintf( fp, "<tulipcon xmlns=\"http://tulip-control.sourceforge.net/ns/1\" version=\"1\">\n" );
+	fprintf( fp,
+			 "<tulipcon xmlns=\"http://tulip-control.sourceforge.net/ns/1\""
+			 " version=\"1\">\n" );
 	fprintf( fp, "  <env_vars>\n" );
 	for (i = 0; i < num_env; i++) {
 		var = get_list_item( evar_list, i );
 		if (var->value >= 0) {
-			fprintf( fp, "    <item key=\"%s\" value=\"[0,%d]\" />\n", var->name, var->value );
+			fprintf( fp,
+					 "    <item key=\"%s\" value=\"[0,%d]\" />\n",
+					 var->name, var->value );
 		} else {
-			fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
+			fprintf( fp,
+					 "    <item key=\"%s\" value=\"boolean\" />\n",
+					 var->name );
 		}
 	}
 	fprintf( fp, "  </env_vars>\n" );
@@ -485,13 +558,23 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 	for (i = 0; i < num_sys; i++) {
 		var = get_list_item( svar_list, i );
 		if (var->value >= 0) {
-			fprintf( fp, "    <item key=\"%s\" value=\"[0,%d]\" />\n", var->name, var->value );
+			fprintf( fp,
+					 "    <item key=\"%s\" value=\"[0,%d]\" />\n",
+					 var->name, var->value );
 		} else {
-			fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
+			fprintf( fp,
+					 "    <item key=\"%s\" value=\"boolean\" />\n",
+					 var->name );
 		}
 	}
 	fprintf( fp, "  </sys_vars>\n" );
-	fprintf( fp, "  <spec>\n    <env_init></env_init><env_safety></env_safety><env_prog></env_prog><sys_init></sys_init><sys_safety></sys_safety><sys_prog></sys_prog>\n  </spec>\n" );
+	fprintf( fp,
+			 "  <spec>\n    "
+			 "<env_init></env_init><env_safety></env_safety>"
+			 "<env_prog></env_prog>"
+			 "<sys_init></sys_init><sys_safety></sys_safety>"
+			 "<sys_prog></sys_prog>\n"
+			 "  </spec>\n" );
 	
 	fprintf( fp, "  <aut type=\"basic\">\n" );
 	node = head;
@@ -504,7 +587,8 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 			fprintf( fp, " %d",
 					 find_anode_index( head,
 									   (*(node->trans+i))->mode,
-									   (*(node->trans+i))->state, num_env+num_sys ) );
+									   (*(node->trans+i))->state,
+									   num_env+num_sys ) );
 		fprintf( fp, "</child_list>\n      <state>\n" );
 		for (i = 0; i < num_env; i++) {
 			var = get_list_item( evar_list, i );
@@ -522,7 +606,9 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE 
 	}
 
 	fprintf( fp, "  </aut>\n" );
-	fprintf( fp, "  <extra>strategy synthesized with gr1c, version " GR1C_VERSION "</extra>\n</tulipcon>\n" );
+	fprintf( fp,
+			 "  <extra>strategy synthesized with gr1c, version "
+			 GR1C_VERSION "</extra>\n</tulipcon>\n" );
 
 	return 0;
 }
@@ -560,7 +646,8 @@ void list_aut_dump( anode_t *head, int state_len, FILE *fp )
 }
 
 
-int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE *fp )
+int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+					 FILE *fp )
 {
 	int i;
 	anode_t *node;
@@ -575,20 +662,29 @@ int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE
 	num_sys = tree_size( svar_list );
 
 	fprintf( fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
-	fprintf( fp, "<tulipcon xmlns=\"http://tulip-control.sourceforge.net/ns/0\" version=\"0\">\n" );
+	fprintf( fp,
+			 "<tulipcon xmlns=\"http://tulip-control.sourceforge.net/ns/0\""
+			 " version=\"0\">\n" );
 	fprintf( fp, "  <env_vars>\n" );
 	for (i = 0; i < num_env; i++) {
 		var = get_list_item( evar_list, i );
-		fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
+		fprintf( fp,
+				 "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
 	}
 	fprintf( fp, "  </env_vars>\n" );
 	fprintf( fp, "  <sys_vars>\n" );
 	for (i = 0; i < num_sys; i++) {
 		var = get_list_item( svar_list, i );
-		fprintf( fp, "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
+		fprintf( fp,
+				 "    <item key=\"%s\" value=\"boolean\" />\n", var->name );
 	}
 	fprintf( fp, "  </sys_vars>\n" );
-	fprintf( fp, "  <spec>\n    <env_init></env_init><env_safety></env_safety><env_prog></env_prog><sys_init></sys_init><sys_safety></sys_safety><sys_prog></sys_prog>\n  </spec>\n" );
+	fprintf( fp, "  <spec>\n    "
+			 "<env_init></env_init><env_safety></env_safety>"
+			 "<env_prog></env_prog>"
+			 "<sys_init></sys_init><sys_safety></sys_safety>"
+			 "<sys_prog></sys_prog>\n"
+			 "  </spec>\n" );
 
 	fprintf( fp, "  <aut>\n" );
 	node = head;
@@ -601,7 +697,8 @@ int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE
 			fprintf( fp, " %d",
 					 find_anode_index( head,
 									   (*(node->trans+i))->mode,
-									   (*(node->trans+i))->state, num_env+num_sys ) );
+									   (*(node->trans+i))->state,
+									   num_env+num_sys ) );
 		fprintf( fp, "</child_list>\n      <state>\n" );
 		for (i = 0; i < num_env; i++) {
 			var = get_list_item( evar_list, i );
@@ -619,7 +716,8 @@ int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, FILE
 	}
 
 	fprintf( fp, "  </aut>\n" );
-	fprintf( fp, "  <extra>strategy synthesized with gr1c, version " GR1C_VERSION "</extra>\n</tulipcon>\n" );
+	fprintf( fp, "  <extra>strategy synthesized with gr1c, version "
+			 GR1C_VERSION "</extra>\n</tulipcon>\n" );
 
 	return 0;
 }

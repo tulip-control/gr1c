@@ -15,7 +15,10 @@
 
 /* Environment strategy is random walk (so permissibility depends on
    the specification, and is only with probability 1). */
-anode_t *sim_rhc( DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **sgoals, char *metric_vars, int horizon, vartype *init_state, int num_it, unsigned char verbose );
+anode_t *sim_rhc( DdManager *manager, DdNode *W,
+				  DdNode *etrans, DdNode *strans, DdNode **sgoals,
+				  char *metric_vars, int horizon, vartype *init_state,
+				  int num_it, unsigned char verbose );
 
 
 #endif

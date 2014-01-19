@@ -31,7 +31,7 @@ extern ptree_t *evar_list;
 extern ptree_t *svar_list;
 extern ptree_t *env_init;
 extern ptree_t *sys_init;
-ptree_t *env_trans = NULL;  /* Built from component parse trees in env_trans_array. */
+ptree_t *env_trans = NULL;  /* Built from components in env_trans_array. */
 ptree_t *sys_trans = NULL;
 extern ptree_t **env_goals;
 extern ptree_t **sys_goals;
@@ -115,7 +115,8 @@ int main( int argc, char **argv )
 				}
 				if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
 					format_option = OUTPUT_FORMAT_TEXT;
-				} else if (!strncmp( argv[i+1], "tulip0", strlen( "tulip0" ) )) {
+				} else if (!strncmp( argv[i+1], "tulip0",
+									 strlen( "tulip0" ) )) {
 					format_option = OUTPUT_FORMAT_TULIP0;
 				} else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
 					format_option = OUTPUT_FORMAT_TULIP;
@@ -124,7 +125,8 @@ int main( int argc, char **argv )
 				} else if (!strncmp( argv[i+1], "aut", strlen( "aut" ) )) {
 					format_option = OUTPUT_FORMAT_AUT;
 				} else {
-					fprintf( stderr, "Unrecognized output format. Try \"-h\".\n" );
+					fprintf( stderr,
+							 "Unrecognized output format. Try \"-h\".\n" );
 					return 1;
 				}
 				i++;
@@ -165,7 +167,8 @@ int main( int argc, char **argv )
 	}
 
 	if (input_index < 0 && (run_option == GR1C_MODE_INTERACTIVE)) {
-		printf( "Reading spec from stdin in interactive mode is not yet implemented.\n" );
+		printf( "Reading spec from stdin in interactive mode is not yet"
+				" implemented.\n" );
 		return 1;
 	}
 
@@ -280,9 +283,11 @@ int main( int argc, char **argv )
 					}
 				} else {
 					if (tmppt->left == NULL) {
-						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d})",
+								tmppt->name, var_index, tmppt->value );
 					} else {
-						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d}), ",
+								tmppt->name, var_index, tmppt->value );
 					}
 				}
 				tmppt = tmppt->left;
@@ -305,9 +310,11 @@ int main( int argc, char **argv )
 					}
 				} else {
 					if (tmppt->left == NULL) {
-						printf( "%s (%d; {0..%d})", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d})",
+								tmppt->name, var_index, tmppt->value );
 					} else {
-						printf( "%s (%d; {0..%d}), ", tmppt->name, var_index, tmppt->value );
+						printf( "%s (%d; {0..%d}), ",
+								tmppt->name, var_index, tmppt->value );
 					}
 				}
 				tmppt = tmppt->left;
@@ -328,7 +335,8 @@ int main( int argc, char **argv )
 							&env_goals, num_egoals, &sys_goals, num_sgoals,
 							verbose ) < 0)
 		return -1;
-	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list, verbose );
+	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list,
+												 verbose );
 
 	/* Merge component safety (transition) formulas */
 	if (et_array_len > 1) {
@@ -336,7 +344,9 @@ int main( int argc, char **argv )
 	} else if (et_array_len == 1) {
 		env_trans = *env_trans_array;
 	} else {
-		fprintf( stderr, "Syntax error: GR(1) specification is missing environment transition rules.\n" );
+		fprintf( stderr,
+				 "Syntax error: GR(1) specification is missing environment"
+				 " transition rules.\n" );
 		return -1;
 	}
 	if (st_array_len > 1) {
@@ -344,7 +354,9 @@ int main( int argc, char **argv )
 	} else if (st_array_len == 1) {
 		sys_trans = *sys_trans_array;
 	} else {
-		fprintf( stderr, "Syntax error: GR(1) specification is missing system transition rules.\n" );
+		fprintf( stderr,
+				 "Syntax error: GR(1) specification is missing system"
+				 " transition rules.\n" );
 		return -1;
 	}
 
@@ -368,11 +380,14 @@ int main( int argc, char **argv )
 
 		/* NOT IMPLEMENTED YET FOR NONBOOL VARIABLES */
 		if (nonbool_var_list != NULL) {
-			fprintf( stderr, "gr1c interaction does not yet support specifications with nonboolean domains.\n" );
+			fprintf( stderr,
+					 "gr1c interaction does not yet support specifications"
+					 " with nonboolean domains.\n" );
 			return -1;
 		}
 
-		i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout, verbose );
+		i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout,
+								  verbose );
 		if (i == 0) {
 			printf( "Not realizable.\n" );
 			return -1;
@@ -421,7 +436,8 @@ int main( int argc, char **argv )
 	if (strategy != NULL) {  /* De-expand nonboolean variables */
 		tmppt = nonbool_var_list;
 		while (tmppt) {
-			aut_compact_nonbool( strategy, evar_list, svar_list, tmppt->name, tmppt->value );
+			aut_compact_nonbool( strategy, evar_list, svar_list,
+								 tmppt->name, tmppt->value );
 			tmppt = tmppt->left;
 		}
 

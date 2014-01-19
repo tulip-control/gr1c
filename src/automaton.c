@@ -15,7 +15,8 @@
 #include "solve_support.h"
 
 
-anode_t *insert_anode( anode_t *head, int mode, int rgrad, vartype *state, int state_len )
+anode_t *insert_anode( anode_t *head, int mode, int rgrad,
+					   vartype *state, int state_len )
 {
 	int i;
 	anode_t *new_head = malloc( sizeof(anode_t) );
@@ -38,7 +39,9 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad, vartype *state, int s
 	new_head->trans_len = 0;
 
 	if (find_anode( head, mode, state, state_len )) {
-		fprintf( stderr, "WARNING: inserting indistinguishable nodes into automaton.\n" );
+		fprintf( stderr,
+				 "WARNING: inserting indistinguishable nodes into"
+				 " automaton.\n" );
 	}
 
 	if (head == NULL) {
@@ -51,8 +54,9 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad, vartype *state, int s
 }
 
 
-anode_t *build_anode_trans( anode_t *head, int mode, vartype *state, int state_len,
-							int next_mode, vartype **next_states, int next_len )
+anode_t *build_anode_trans( anode_t *head, int mode,
+							vartype *state, int state_len, int next_mode,
+							vartype **next_states, int next_len )
 {
 	int i;
 	anode_t **trans;
@@ -301,7 +305,8 @@ int aut_size( anode_t *head )
 }
 
 
-int forward_modereach( anode_t *head, anode_t *node, int mode, vartype **N, int N_len, int magic_mode, int state_len )
+int forward_modereach( anode_t *head, anode_t *node, int mode,
+					   vartype **N, int N_len, int magic_mode, int state_len )
 {
 	int i, j;
 	for (i = 0; i < node->trans_len; i++) {
@@ -311,7 +316,8 @@ int forward_modereach( anode_t *head, anode_t *node, int mode, vartype **N, int 
 					break;
 			if (j < N_len) {
 				(*(node->trans+i))->mode = magic_mode;
-				if (forward_modereach( head, *(node->trans+i), mode, N, N_len, magic_mode, state_len ))
+				if (forward_modereach( head, *(node->trans+i), mode,
+									   N, N_len, magic_mode, state_len ))
 					return -1;
 			}
 		}
@@ -321,7 +327,8 @@ int forward_modereach( anode_t *head, anode_t *node, int mode, vartype **N, int 
 }
 
 
-int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, char *name, int maxval )
+int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+						 char *name, int maxval )
 {
 	int num_env, num_sys;
 	ptree_t *var = evar_list, *var_tail, *var_next;
@@ -373,7 +380,8 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, 
 	}
 
 	while (head) {
-		new_state = malloc( (num_env+num_sys - (stop_index-start_index))*sizeof(vartype) );
+		new_state = malloc( (num_env+num_sys - (stop_index-start_index))
+							* sizeof(vartype) );
 		if (new_state == NULL) {
 			perror( "aut_compact_nonbool, malloc" );
 			return -1;
@@ -383,7 +391,8 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list, 
 			*(new_state+i) = *(head->state+i);
 		*(new_state+start_index) = bitvec_to_int( head->state+start_index,
 												  stop_index-start_index+1 );
-		for (i = start_index+1; i < num_env+num_sys - (stop_index-start_index); i++)
+		for (i = start_index+1;
+			 i < num_env+num_sys - (stop_index-start_index); i++)
 			*(new_state+i) = *(head->state+i+stop_index-start_index);
 		
 		free( head->state );
@@ -419,9 +428,12 @@ int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 		return -1;
 
 	while (head) {
-		new_state = expand_nonbool_state( head->state, offw, num_nonbool, mapped_len );
+		new_state = expand_nonbool_state( head->state, offw, num_nonbool,
+										  mapped_len );
 		if (new_state == NULL) {
-			fprintf( stderr, "Error aut_expand_bool: failed to expand nonbool values in automaton.\n" );
+			fprintf( stderr,
+					 "Error aut_expand_bool: failed to expand nonbool values"
+					 " in automaton.\n" );
 			return -1;
 		}
 
@@ -468,7 +480,8 @@ anode_t *forward_prune( anode_t *head, anode_t **U, int U_len )
 			}
 			if (node == NULL) {  /* No Pred found */
 				touched = True;
-				U = realloc( U, (U_len + (*(U+i))->trans_len)*sizeof(anode_t *) );
+				U = realloc( U,
+							 (U_len + (*(U+i))->trans_len)*sizeof(anode_t *) );
 				if (U == NULL) {
 					perror( "forward_prune, realloc" );
 					return NULL;
@@ -477,7 +490,8 @@ anode_t *forward_prune( anode_t *head, anode_t **U, int U_len )
 					*(U+U_len+j) = *((*(U+i))->trans+j);
 				U_len += (*(U+i))->trans_len;
 				head = delete_anode( head, *(U+i) );
-				for (j = 0; j < U_len; j++) {  /* Delete duplicate pointers in U */
+				for (j = 0; j < U_len; j++) {
+					/* Delete duplicate pointers in U */
 					if (j == i)
 						continue;
 					if (*(U+i) == *(U+j))
