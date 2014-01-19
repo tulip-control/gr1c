@@ -2,9 +2,9 @@ File formats
 ============
 
 The purpose of this page is to describe the file formats supported by gr1c.  The
-specification The command-line argument "-t" is used to specify the format in
-which to output the synthesized strategy.  A key to the choices, including
-functions that provide it, is:
+command-line argument "-t" is used to specify the format in which to output the
+synthesized strategy.  A key to the choices, including functions that provide
+it, is:
 
 - `txt` : simple plaintext format (not standard); list_aut_dump()
 - `dot` : [Graphviz dot](http://www.graphviz.org/); dot_aut_dump()
