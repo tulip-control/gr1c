@@ -1,6 +1,6 @@
 /* gr1c -- lexical analyzer (or "scanner")
  *
- * SCL; Jan-Feb, Aug-Sep 2012, Feb 2013.
+ * SCL; 2012-2014.
  */
 
 %{

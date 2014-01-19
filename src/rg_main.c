@@ -1,7 +1,7 @@
 /* rg_main.c -- main entry point for execution of rg.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 

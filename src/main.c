@@ -4,7 +4,7 @@
  * getopt, once sophistication of usage demands.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
