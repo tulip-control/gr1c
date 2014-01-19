@@ -4,7 +4,7 @@
 PortSystem          1.0
 
 name                gr1c
-version             0.6.3
+version             0.6.5
 categories          math devel
 
 license             BSD
@@ -21,8 +21,8 @@ master_sites        http://vehicles.caltech.edu/snapshots/gr1c/
 platforms           darwin
 supported_archs     i386 x86_64
 
-checksums           rmd160   \
-                    sha256  
+checksums           rmd160  9d3f4eb46a82f5f61b0459706639928a6a36b951 \
+                    sha256  3c0daf15c7f0c243be7b99cea0618d3e11ff94c374ecbd5a1b31c8ac97455005
 
 if {![string match "-arch x86_64" ${configure.cc_archflags}]
     && ![string match "-arch ppc64" ${configure.cc_archflags}]} {
@@ -42,6 +42,8 @@ build.args          CUDD_INC="-I${prefix}/include/cudd" \
 
 test.run            yes
 test.target         check
+test.args           CUDD_INC="-I${prefix}/include/cudd" \
+                    CUDD_LIB="-L${prefix}/lib/cudd -lcudd"
 destroot {
     xinstall -m 0755 -W ${worksrcpath} gr1c rg grpatch ${destroot}${prefix}/bin
 }
