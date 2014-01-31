@@ -17,7 +17,7 @@
 /* Memory recovery in the case of error, whether from a system call or
    while parsing, is almost nil.  Correct this behavior before
    release.  Also note that sorting of nodes could be made faster. */
-anode_t *aut_aut_load( int state_len, FILE *fp )
+anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 {
 	anode_t *head = NULL, *node;
 	vartype *state;
@@ -30,6 +30,7 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 	char line[INPUT_STRING_LEN];
 	char *start, *end;
 	int line_num;
+	int detected_version = -1;
 	
 	if (fp == NULL)
 		fp = stdin;
@@ -55,12 +56,38 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 	line_num = 0;
 	while (fgets( line, INPUT_STRING_LEN, fp )) {
 		line_num++;
-		if (strlen( line ) < 1 || *line == '\n')
+		if (strlen( line ) < 1 || *line == '#' || *line == '\n' || *line == '\r')
 			continue;
 
 		*(ID_array+ia_len-1) = strtol( line, &end, 10 );
-		if (line == end || *end == '\0')
-			continue;
+		if (line == end) {
+			fprintf( stderr,
+					 "Error parsing gr1c automaton line %d.\n", line_num );
+			return NULL;
+		} else if (detected_version < 0) {
+			if (*end == '\0' || *end == '\n' || *end == '\r') {
+				detected_version = *(ID_array+ia_len-1);
+				if (detected_version < 0) {
+					fprintf( stderr,
+							 "Invalid version number \"%d\" found while"
+							 " parsing gr1c automaton line %d.\n",
+							 detected_version,
+							 line_num );
+					return NULL;
+				}
+				continue;
+			} else {
+				/* If no explicit version number, then assume 0, and
+				   continue parsing this line accordingly. */
+				detected_version = 0;
+			}
+
+			if (detected_version != 0) {
+				fprintf( stderr,
+						 "Only gr1c automaton format version 0 is supported." );
+				return NULL;
+			}
+		}
 
 		start = end;
 		for (i = 0; i < state_len && *end != '\0'; i++) {
@@ -185,32 +212,58 @@ anode_t *aut_aut_load( int state_len, FILE *fp )
 	for (i = 0; i < ia_len; i++)
 		free( *(trans_array+i) );
 	free( trans_array );
-	
+
+	if (version != NULL)
+		*version = detected_version;
 	return head;
+}
+
+anode_t *aut_aut_load( int state_len, FILE *fp )
+{
+	return aut_aut_loadver( state_len, fp, NULL );
+}
+
+
+int aut_aut_dumpver( anode_t *head, int state_len, FILE *fp, int version )
+{
+	anode_t *node = head;
+	int node_counter = 0;
+	int i;
+
+	if (fp == NULL)
+		fp = stdout;
+
+	fprintf( fp, "%d\n", version );
+	switch (version) {
+	case 0:
+		while (node) {
+			fprintf( fp, "%d", node_counter );
+			for (i = 0; i < state_len; i++)
+				fprintf( fp, " %d", *(node->state+i) );
+			fprintf( fp, " %d %d", node->mode, node->rgrad );
+			for (i = 0; i < node->trans_len; i++)
+				fprintf( fp, " %d",
+						 find_anode_index( head,
+										   (*(node->trans+i))->mode,
+										   (*(node->trans+i))->state,
+										   state_len ) );
+			fprintf( fp, "\n" );
+			node = node->next;
+			node_counter++;
+		}
+		break;
+
+	default:
+		return -1;  /* Unrecognized gr1c automaton format version */
+	}
+
+	return 0;
 }
 
 
 void aut_aut_dump( anode_t *head, int state_len, FILE *fp )
 {
-	anode_t *node = head;
-	int node_counter = 0;
-	int i;
-	if (fp == NULL)
-		fp = stdout;
-	while (node) {
-		fprintf( fp, "%d", node_counter );
-		for (i = 0; i < state_len; i++)
-			fprintf( fp, " %d", *(node->state+i) );
-		fprintf( fp, " %d %d", node->mode, node->rgrad );
-		for (i = 0; i < node->trans_len; i++)
-			fprintf( fp, " %d",
-					 find_anode_index( head,
-									   (*(node->trans+i))->mode,
-									   (*(node->trans+i))->state, state_len ) );
-		fprintf( fp, "\n" );
-		node = node->next;
-		node_counter++;
-	}
+	aut_aut_dumpver( head, state_len, fp, 0 );
 }
 
 

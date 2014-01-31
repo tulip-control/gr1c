@@ -1,8 +1,8 @@
 # Build executables and documentation; run tests.
 #
-# SCL; 2012, 2013.
+# SCL; 2012-2014.
 
-CORE_PROGRAMS = gr1c rg
+CORE_PROGRAMS = gr1c rg autman
 EXP_PROGRAMS = grjit grpatch
 
 
@@ -50,12 +50,17 @@ gr1c: main.o util.o logging.o interactive.o solve_support.o solve_operators.o so
 rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
+autman: util.o logging.o solve_support.o ptree.o autman.o automaton.o automaton_io.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
 grpatch: grpatch.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o patching_hotswap.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 grjit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
+autman.o: src/autman.c
+	$(CC) $(ALL_CFLAGS) -c $^
 
 grpatch.o: $(EXPDIR)/grpatch.c
 	$(CC) $(ALL_CFLAGS) -c $^
