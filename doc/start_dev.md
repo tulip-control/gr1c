@@ -15,10 +15,13 @@ Layout of the sources
 listed below, etc.</dd>
 
 <dt>`src/`</dt>
-<dd>Source code.  The main entry points for the programs `gr1c` and `rg` are in
-`src/main.c` and `src/rg_main.c`, respectively.  Other files include:
+<dd>Source code.  Noteworthy files for beginning to learn the internals of
+gr1c include:
 <ul>
-  <li>common.h, which defines the version number.</li>
+  <li>`common.h`, which defines the version number.</li>
+  <li>`main.c`, main entry point for the program `gr1c`.</li>
+  <li>`rg_main.c`, main entry point for the program `rg`.</li>
+  <li>`autman.c`, main entry point for the program `autman`.</li>
 </ul></dd>
 
 <dt>`exp/`</dt>
