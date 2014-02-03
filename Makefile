@@ -2,8 +2,9 @@
 #
 # SCL; 2012-2014.
 
-CORE_PROGRAMS = gr1c rg autman
+CORE_PROGRAMS = gr1c rg
 EXP_PROGRAMS = grjit grpatch
+AUX_PROGRAMS = autman
 
 
 prefix = /usr/local
@@ -42,7 +43,8 @@ LDFLAGS = $(CUDD_LIB) -lm $(CUDD_XCFLAGS)
 
 core: $(CORE_PROGRAMS)
 exp: $(EXP_PROGRAMS)
-all: core exp
+aux: $(AUX_PROGRAMS)
+all: core exp aux
 
 gr1c: main.o util.o logging.o interactive.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
@@ -136,7 +138,7 @@ dclean:
 # Delete only executables and corresponding object code
 .PHONY: eclean
 eclean:
-	-rm -f *~ *.o y.tab.h y.tab.c lex.yy.c $(CORE_PROGRAMS) $(EXP_PROGRAMS)
+	-rm -f *~ *.o y.tab.h y.tab.c lex.yy.c $(CORE_PROGRAMS) $(EXP_PROGRAMS) $(AUX_PROGRAMS)
 
 # Delete testing-related things
 .PHONY: tclean
