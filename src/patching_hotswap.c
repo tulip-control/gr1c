@@ -1,7 +1,7 @@
 /* patching_hotswap.c -- More definitions for signatures in patching.h.
  *
  *
- * SCL; 2013.
+ * SCL; 2013, 2014.
  */
 
 
@@ -557,6 +557,347 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 		free( egoals );
 	if (num_sgoals > 0)
 		free( sgoals );
+	if (env_nogoal_flag) {
+		num_egoals = 0;
+		delete_tree( *env_goals );
+		free( env_goals );
+	}
+
+	return strategy;
+}
+
+
+anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
+					 int original_num_env, int original_num_sys,
+					 int delete_i, unsigned char verbose )
+{
+	ptree_t *var_separator;
+	DdNode *etrans, *strans, **egoals;
+	bool env_nogoal_flag = False;  /* Indicate environment has no goals */
+
+	anode_t *strategy = NULL;
+	int num_env, num_sys;
+	int num_i_nodes = 0;
+
+	anode_t *substrategy;
+	anode_t **Entry;
+	anode_t **Exit;
+	int Entry_len = 0, Exit_len = 0;
+	int max_rgrad;
+	anode_t *node;
+
+	int i, j;
+	DdNode **vars, **pvars;
+	DdNode *tmp;
+
+	if (strategy_fp == NULL)
+		strategy_fp = stdin;
+
+	if (delete_i < 0 || delete_i >= num_sgoals)
+		return NULL;
+
+	num_env = tree_size( evar_list );
+	num_sys = tree_size( svar_list );
+
+	strategy = aut_aut_load( original_num_env+original_num_sys, strategy_fp );
+	if (strategy == NULL) {
+		return NULL;
+	}
+	if (verbose)
+		logprint( "Read in strategy of size %d", aut_size( strategy ) );
+
+	if (verbose > 1)
+		logprint( "Expanding nonbool variables in the given strategy"
+				  " automaton..." );
+	if (aut_expand_bool( strategy,
+						 evar_list, svar_list, nonbool_var_list )) {
+		fprintf( stderr,
+				 "Error rm_sysgoal: Failed to expand nonboolean variables"
+				 " in given automaton." );
+		return NULL;
+	}
+	if (verbose > 1) {
+		logprint( "Given strategy after variable expansion:" );
+		logprint_startline();
+		dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_ATTRIB,
+					  getlogstream() );
+		logprint_endline();
+	}
+
+	/* Set environment goal to True (i.e., any state) if none was
+	   given. This simplifies the implementation below. */
+	if (num_egoals == 0) {
+		env_nogoal_flag = True;
+		num_egoals = 1;
+		env_goals = malloc( sizeof(ptree_t *) );
+		*env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
+
+	/* Chain together environment and system variable lists for
+	   working with BDD library. */
+	if (evar_list == NULL) {
+		var_separator = NULL;
+		evar_list = svar_list;  /* that this is the deterministic case
+								   is indicated by var_separator = NULL. */
+	} else {
+		var_separator = get_list_item( evar_list, -1 );
+		if (var_separator == NULL) {
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
+			return NULL;
+		}
+		var_separator->left = svar_list;
+	}
+
+	/* Generate BDDs for the various parse trees from the problem spec. */
+	if (verbose)
+		logprint( "Building environment transition BDD..." );
+	etrans = ptree_BDD( env_trans, evar_list, manager );
+	if (verbose) {
+		logprint( "Done." );
+		logprint( "Building system transition BDD..." );
+	}
+	strans = ptree_BDD( sys_trans, evar_list, manager );
+	if (verbose)
+		logprint( "Done." );
+
+	/* Build goal BDDs, if present. */
+	if (num_egoals > 0) {
+		egoals = malloc( num_egoals*sizeof(DdNode *) );
+		for (i = 0; i < num_egoals; i++)
+			*(egoals+i) = ptree_BDD( *(env_goals+i), evar_list, manager );
+	} else {
+		egoals = NULL;
+	}
+
+	if (var_separator == NULL) {
+		evar_list = NULL;
+	} else {
+		var_separator->left = NULL;
+	}
+
+
+	node = strategy;
+	num_i_nodes = 0;
+	while (node) {
+		if (node->mode == delete_i)
+			num_i_nodes++;
+		node = node->next;
+	}
+	if (verbose)
+		logprint( "rm_sysgoal: Found %d automaton nodes annotated with mode"
+				  " to-be-deleted (%d)",
+				  num_i_nodes,
+				  delete_i );
+
+	/* Pre-allocate space for Entry and Exit sets; the number of
+	   elements actually used is tracked by Entry_len and Exit_len,
+	   respectively. */
+	Entry = malloc( sizeof(anode_t *)*num_i_nodes );
+	if (Entry == NULL) {
+		perror( "rm_sysgoal, malloc" );
+		return NULL;
+
+	}
+	Exit = malloc( sizeof(anode_t *)*num_i_nodes );
+	if (Exit == NULL) {
+		perror( "rm_sysgoal, malloc" );
+		return NULL;
+	}
+
+	node = strategy;
+	while (node) {
+		if (node->mode == (delete_i+1)%num_sgoals) {
+
+			for (i = 0; i < node->trans_len; i++) {
+				if ((*(node->trans+i))->mode != (delete_i+1)%num_sgoals) {
+					for (j = 0; j < Exit_len; j++)
+						if (*(Exit+j) == node)
+							break;
+					if (j == Exit_len) {
+						Exit_len++;
+						*(Exit+Exit_len-1) = node;
+					}
+				}
+			}
+
+		}
+		if (node->mode != delete_i) {
+
+			for (i = 0; i < node->trans_len; i++) {
+				if ((*(node->trans+i))->mode == delete_i) {
+					for (j = 0; j < Entry_len; j++)
+						if (*(Entry+j) == *(node->trans+i))
+							break;
+					if (j == Entry_len) {
+						Entry_len++;
+						*(Entry+Entry_len-1) = *(node->trans+i);
+					}
+				}
+			}
+
+		}
+
+		node = node->next;
+	}
+
+	if (verbose) {
+		logprint( "Entry set:" );
+		for (i = 0; i < Entry_len; i++) {
+			logprint_startline();
+			fprintf( getlogstream(),
+					 " node with mode %d and state ", (*(Entry+i))->mode );
+			pprint_state( (*(Entry+i))->state, num_env, num_sys,
+						  getlogstream() );
+			logprint_endline();
+		}
+		logprint( "Exit set:" );
+		for (i = 0; i < Exit_len; i++) {
+			logprint_startline();
+			fprintf( getlogstream(),
+					 " node with mode %d and state ", (*(Exit+i))->mode );
+			pprint_state( (*(Exit+i))->state, num_env, num_sys,
+						  getlogstream() );
+			logprint_endline();
+		}
+	}
+
+	/* Define a map in the manager to easily swap variables with their
+	   primed selves. */
+	vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+	pvars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+	for (i = 0; i < num_env+num_sys; i++) {
+		*(vars+i) = Cudd_bddIthVar( manager, i );
+		*(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
+	}
+	if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
+		fprintf( stderr,
+				 "Error: failed to define variable map in CUDD manager.\n" );
+		return NULL;
+	}
+	free( vars );
+	free( pvars );
+
+
+	tmp = Cudd_ReadOne( manager );
+	Cudd_Ref( tmp );
+	substrategy = synthesize_reachgame( manager, num_env, num_sys,
+										   Entry, Entry_len, Exit, Exit_len,
+										   etrans, strans, egoals, tmp,
+										   verbose );
+	Cudd_RecursiveDeref( manager, tmp );
+	if (substrategy == NULL) {
+		free( Exit );
+		free( Entry );
+		/* XXX Need to free other resources, e.g., etrans */
+		return NULL;
+	}
+	if (verbose > 1) {
+		logprint( "rm_sysgoal: substrategy from Entry to Exit:" );
+		logprint_startline();
+		dot_aut_dump( substrategy, evar_list, svar_list,
+					  DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
+		logprint_endline();
+	}
+
+	/* Connect local strategy to original */
+	for (i = 0; i < Entry_len; i++) {
+		node = substrategy;
+		while (node && !statecmp( (*(Entry+i))->state, node->state,
+								  num_env+num_sys ))
+			node = node->next;
+		if (node == NULL) {
+			fprintf( stderr,
+					 "Error rm_sysgoal: expected Entry node"
+					 " missing from local strategy" );
+			return NULL;
+		}
+
+		replace_anode_trans( strategy, *(Entry+i), node );
+	}
+
+	node = substrategy;
+	while (node) {
+		if (node->trans_len == 0) {  /* Terminal node of the local strategy? */
+			for (i = 0; i < Exit_len; i++) {
+				if (statecmp( node->state, (*(Exit+i))->state,
+							  num_env+num_sys ))
+					break;
+			}
+			if (i == Exit_len) {
+				fprintf( stderr,
+						 "Error rm_sysgoal: terminal node in"
+						 " local strategy does not have a\nmatch in Exit\n" );
+				return NULL;
+			}
+
+			node->trans = (*(Exit+i))->trans;
+			node->trans_len = (*(Exit+i))->trans_len;
+			node->mode = (*(Exit+i))->mode;
+			node->rgrad = (*(Exit+i))->rgrad;
+			(*(Exit+i))->trans = NULL;
+			(*(Exit+i))->trans_len = 0;
+		}
+		node = node->next;
+	}
+
+	/* Delete nodes of the deleted and superseded goal modes */
+	node = strategy;
+	while (node) {
+		if (node->mode == delete_i || node->mode == (delete_i+1)%num_sgoals) {
+			replace_anode_trans( strategy, node, NULL );
+			strategy = delete_anode( strategy, node );
+			node = strategy;
+		} else {
+			node = node->next;
+		}
+	}
+
+	/* Offset rgrad to achieve new reach annotation. */
+	max_rgrad = 0;
+	node = substrategy;
+	while (node) {
+		if (node->mode < 0) {
+			for (i = 0; i < node->trans_len; i++) {
+				if ((*(node->trans+i))->mode == (delete_i+1)%num_sgoals
+					&& (*(node->trans+i))->rgrad > max_rgrad)
+					max_rgrad = (*(node->trans+i))->rgrad;
+			}
+		}
+		node = node->next;
+	}
+	if (verbose > 1)
+		logprint( "Largest rgrad value among old %d-nodes: %d",
+				  (delete_i+1)%num_sgoals,
+				  max_rgrad );
+
+	node = substrategy;
+	while (node) {
+		if (node->mode < 0) {
+			node->mode = (delete_i+1)%num_sgoals;
+			node->rgrad += max_rgrad;
+		}
+		node = node->next;
+	}
+
+	/* Append new substrategy */
+	if (strategy == NULL) {
+		strategy = substrategy;
+	} else {
+		node = strategy;
+		while (node->next)
+			node = node->next;
+		node->next = substrategy;
+	}
+
+
+	Cudd_RecursiveDeref( manager, etrans );
+	Cudd_RecursiveDeref( manager, strans );
+	for (i = 0; i < num_egoals; i++)
+		Cudd_RecursiveDeref( manager, *(egoals+i) );
+	if (num_egoals > 0)
+		free( egoals );
 	if (env_nogoal_flag) {
 		num_egoals = 0;
 		delete_tree( *env_goals );

@@ -2,7 +2,7 @@
  * \brief Implementation of patching and incremental synthesis algorithms.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -55,5 +55,14 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 							 int original_num_env, int original_num_sys,
 							 int *offw, int num_metric_vars,
 							 ptree_t *new_sysgoal, unsigned char verbose );
+
+/* rm_sysgoal assumes that the given strategy is of a particular form.
+   System goals are sought in order, so that upon reaching an
+   \psi_i-state, the next system goal sought is \psi_{i+1}.  Thus,
+   upon deleting nodes with "goal mode" (part of "reach annotation")
+   i, it suffices to label the new substrategy with "goal mode" (i+1) mod n. */
+anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
+					 int original_num_env, int original_num_sys,
+					 int delete_i, unsigned char verbose );
 
 #endif

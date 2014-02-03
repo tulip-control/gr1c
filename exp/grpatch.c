@@ -1,7 +1,7 @@
 /* grpatch.c -- main entry point for execution of patching routines.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -78,6 +78,11 @@ int main( int argc, char **argv )
 	FILE *clf_file = NULL;
 	int clformula_index = -1;  /* For command-line flag "-f". */
 	ptree_t *clformula = NULL;
+
+	/* System goal to be removed; -1 indicates unset.  Order matches
+	   that of the given specification file, which should also be
+	   consistent with goal mode labeling of the given automaton. */
+	int remove_goal_mode = -1;  /* For command-line flag "-r". */
 
 	int i, j, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
@@ -171,6 +176,19 @@ int main( int argc, char **argv )
 				run_option = GR1C_MODE_PATCH;
 				clformula_index = i+1;
 				i++;
+			} else if (argv[i][1] == 'r') {
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				run_option = GR1C_MODE_PATCH;
+				remove_goal_mode = strtol( argv[i+1], NULL, 10 );
+				if (remove_goal_mode < 0) {
+					fprintf( stderr,
+							 "System goal indices must be nonnegative.\n" );
+					return 1;
+				}
+				i++;
 			} else {
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 				return 1;
@@ -192,6 +210,9 @@ int main( int argc, char **argv )
 	} else if (clformula_index >= 0 && aut_input_index < 0) {
 		fprintf( stderr, "\"-f\" flag can only be used with \"-a\"\n" );
 		return 1;
+	} else if (remove_goal_mode >= 0 && aut_input_index < 0) {
+		fprintf( stderr, "\"-r\" flag can only be used with \"-a\"\n" );
+		return 1;
 	}
 
 	if (help_flag) {
@@ -208,9 +229,11 @@ int main( int argc, char **argv )
 				"  -a FILE     automaton input file, in gr1c \"aut\" format;\n"
 				"              if FILE is -, then read from stdin\n"
 				"  -e FILE     patch, given game edge set change file; requires -a flag\n"
-				"  -o FILE     output strategy to FILE, rather than stdout (default)\n"
-				"  -f FORM     FORM is a Boolean (state) formula, currently only\n"
-				"              used for appending a system goal; requires -a flag.\n" );
+				"  -o FILE     output strategy to FILE, rather than stdout (default)\n" );
+		printf( "  -f FORM     FORM is a Boolean (state) formula, currently only\n"
+				"              used for appending a system goal; requires -a flag.\n"
+				"  -r N        remove system goal N (in order, according to given file);\n"
+				"              requires -a flag.\n" );
 		return 1;
 	}
 
@@ -520,6 +543,45 @@ int main( int argc, char **argv )
 									   original_num_env, original_num_sys,
 									   offw, num_metric_vars, clformula,
 									   verbose );
+		if (verbose)
+			logprint( "Done." );
+
+	} else if (remove_goal_mode >= 0) {  /* rm_sysgoal() */
+
+		if (remove_goal_mode > num_sgoals-1) {
+			fprintf( stderr,
+					 "Requested system goal index %d exceeds maximum %d.\n",
+					 remove_goal_mode,
+					 num_sgoals-1 );
+			return 1;
+		}
+
+		if (et_array_len > 1) {
+			env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
+		} else if (et_array_len == 1) {
+			env_trans = *env_trans_array;
+		} else {
+			fprintf( stderr,
+					 "Syntax error: GR(1) specification is missing environment"
+					 " transition rules.\n" );
+			return -1;
+		}
+		if (st_array_len > 1) {
+			sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
+		} else if (st_array_len == 1) {
+			sys_trans = *sys_trans_array;
+		} else {
+			fprintf( stderr,
+					 "Syntax error: GR(1) specification is missing system"
+					 " transition rules.\n" );
+			return -1;
+		}
+
+		if (verbose)
+			logprint( "Patching given strategy..." );
+		strategy = rm_sysgoal( manager, strategy_fp,
+							   original_num_env, original_num_sys,
+							   remove_goal_mode, verbose );
 		if (verbose)
 			logprint( "Done." );
 
