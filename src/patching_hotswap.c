@@ -577,13 +577,12 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 
 	anode_t *strategy = NULL;
 	int num_env, num_sys;
-	int num_i_nodes = 0;
+	int num_del_nodes = 0;
 
 	anode_t *substrategy;
 	anode_t **Entry;
 	anode_t **Exit;
 	int Entry_len = 0, Exit_len = 0;
-	int max_rgrad;
 	anode_t *node;
 
 	int i, j;
@@ -679,28 +678,29 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 
 
 	node = strategy;
-	num_i_nodes = 0;
+	num_del_nodes = 0;
 	while (node) {
-		if (node->mode == delete_i)
-			num_i_nodes++;
+		if (node->mode == delete_i || node->mode == (delete_i+1)%num_sgoals)
+			num_del_nodes++;
 		node = node->next;
 	}
 	if (verbose)
 		logprint( "rm_sysgoal: Found %d automaton nodes annotated with mode"
-				  " to-be-deleted (%d)",
-				  num_i_nodes,
-				  delete_i );
+				  " to-be-deleted (%d) or successor (%d)",
+				  num_del_nodes,
+				  delete_i,
+				  (delete_i+1)%num_sgoals );
 
 	/* Pre-allocate space for Entry and Exit sets; the number of
 	   elements actually used is tracked by Entry_len and Exit_len,
 	   respectively. */
-	Entry = malloc( sizeof(anode_t *)*num_i_nodes );
+	Entry = malloc( sizeof(anode_t *)*num_del_nodes );
 	if (Entry == NULL) {
 		perror( "rm_sysgoal, malloc" );
 		return NULL;
 
 	}
-	Exit = malloc( sizeof(anode_t *)*num_i_nodes );
+	Exit = malloc( sizeof(anode_t *)*num_del_nodes );
 	if (Exit == NULL) {
 		perror( "rm_sysgoal, malloc" );
 		return NULL;
@@ -708,16 +708,17 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 
 	node = strategy;
 	while (node) {
-		if (node->mode == (delete_i+1)%num_sgoals) {
+		if (node->mode == delete_i || node->mode == (delete_i+1)%num_sgoals) {
 
 			for (i = 0; i < node->trans_len; i++) {
-				if ((*(node->trans+i))->mode != (delete_i+1)%num_sgoals) {
+				if ((*(node->trans+i))->mode != (delete_i+1)%num_sgoals
+					&& (*(node->trans+i))->mode != delete_i) {
 					for (j = 0; j < Exit_len; j++)
-						if (*(Exit+j) == node)
+						if (*(Exit+j) == *(node->trans+i))
 							break;
 					if (j == Exit_len) {
 						Exit_len++;
-						*(Exit+Exit_len-1) = node;
+						*(Exit+Exit_len-1) = *(node->trans+i);
 					}
 				}
 			}
@@ -821,6 +822,8 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 	while (node) {
 		if (node->trans_len == 0) {  /* Terminal node of the local strategy? */
 			for (i = 0; i < Exit_len; i++) {
+				if (*(Exit+i) == NULL)
+					continue;
 				if (statecmp( node->state, (*(Exit+i))->state,
 							  num_env+num_sys ))
 					break;
@@ -832,12 +835,16 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 				return NULL;
 			}
 
-			node->trans = (*(Exit+i))->trans;
-			node->trans_len = (*(Exit+i))->trans_len;
 			node->mode = (*(Exit+i))->mode;
 			node->rgrad = (*(Exit+i))->rgrad;
+			node->trans = (*(Exit+i))->trans;
+			node->trans_len = (*(Exit+i))->trans_len;
 			(*(Exit+i))->trans = NULL;
 			(*(Exit+i))->trans_len = 0;
+			replace_anode_trans( strategy, *(Exit+i), node );
+			replace_anode_trans( substrategy, *(Exit+i), node );
+			strategy = delete_anode( strategy, *(Exit+i) );
+			*(Exit+i) = NULL;
 		}
 		node = node->next;
 	}
@@ -847,6 +854,7 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 	while (node) {
 		if (node->mode == delete_i || node->mode == (delete_i+1)%num_sgoals) {
 			replace_anode_trans( strategy, node, NULL );
+			replace_anode_trans( substrategy, node, NULL );
 			strategy = delete_anode( strategy, node );
 			node = strategy;
 		} else {
@@ -854,29 +862,10 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 		}
 	}
 
-	/* Offset rgrad to achieve new reach annotation. */
-	max_rgrad = 0;
 	node = substrategy;
 	while (node) {
-		if (node->mode < 0) {
-			for (i = 0; i < node->trans_len; i++) {
-				if ((*(node->trans+i))->mode == (delete_i+1)%num_sgoals
-					&& (*(node->trans+i))->rgrad > max_rgrad)
-					max_rgrad = (*(node->trans+i))->rgrad;
-			}
-		}
-		node = node->next;
-	}
-	if (verbose > 1)
-		logprint( "Largest rgrad value among old %d-nodes: %d",
-				  (delete_i+1)%num_sgoals,
-				  max_rgrad );
-
-	node = substrategy;
-	while (node) {
-		if (node->mode < 0) {
+		if (node->mode == -1) {
 			node->mode = (delete_i+1)%num_sgoals;
-			node->rgrad += max_rgrad;
 		}
 		node = node->next;
 	}
@@ -903,6 +892,8 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 		delete_tree( *env_goals );
 		free( env_goals );
 	}
+	free( Exit );
+	free( Entry );
 
 	return strategy;
 }
