@@ -21,12 +21,15 @@ gr1c include:
   <li>`common.h`, which defines the version number.</li>
   <li>`main.c`, main entry point for the program `gr1c`.</li>
   <li>`rg_main.c`, main entry point for the program `rg`.</li>
-  <li>`autman.c`, main entry point for the program `autman`.</li>
 </ul></dd>
 
 <dt>`exp/`</dt>
 <dd>Consult `exp/README.txt`.  The main entry point for the program `grpatch` is
 in `exp/grpatch.c`.</dd>
+
+<dt>`aux/`</dt>
+<dd>Consult `aux/README.txt`.  The main entry point for the program `autman` is
+in `aux/autman.c`.</dd></dd>
 
 <dt>`examples/`</dt>
 <dd>Example specifications, edge change files, etc.  Some files are intended for

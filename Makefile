@@ -61,7 +61,7 @@ grpatch: grpatch.o util.o logging.o interactive.o solve_metric.o solve_support.o
 grjit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-autman.o: src/autman.c
+autman.o: aux/autman.c
 	$(CC) $(ALL_CFLAGS) -c $^
 
 grpatch.o: $(EXPDIR)/grpatch.c
