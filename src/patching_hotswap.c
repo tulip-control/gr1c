@@ -592,8 +592,18 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 	if (strategy_fp == NULL)
 		strategy_fp = stdin;
 
-	if (delete_i < 0 || delete_i >= num_sgoals)
+	if (delete_i < 0 || delete_i >= num_sgoals) {
+		logprint( "Error rm_sysgoal: invoked with goal index %d outside"
+				  " bounds [0,%d]",
+				  delete_i,
+				  num_sgoals-1 );
 		return NULL;
+	}
+	if (num_sgoals < 3) {
+		logprint( "Error rm_sysgoal: Current implementation requires at"
+				  " least 3 initial system goals." );
+		return NULL;
+	}
 
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
