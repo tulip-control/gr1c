@@ -17,7 +17,7 @@ fi
 ################################################################
 # Test realizability
 
-REFSPECS="gridworld_bool.spc gridworld_env.spc arbiter4.spc trivial_2var.spc free_counter.spc"
+REFSPECS="gridworld_bool.spc gridworld_env.spc arbiter4.spc trivial_2var.spc free_counter.spc empty.spc"
 UNREALIZABLE_REFSPECS="trivial_un.spc"
 
 if test $VERBOSE -eq 1; then

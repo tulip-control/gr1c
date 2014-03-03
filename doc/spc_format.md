@@ -20,9 +20,12 @@ Comments begin with "#", span the remainder of the line (after "#"), and may be
 inserted anywhere.  For entirely deterministic problems (i.e., no *environment
 variables*), all sections beginning with "ENV" may be omitted.
 
-An empty transition rule section, e.g., `SYSTRANS:;`, is equivalent to
-`SYSTRANS:[]True;`, thus imposing no restrictions.  Similarly, an empty initial
-values section, e.g., `SYSINIT:;` is equivalent to `SYSINIT:True;`.
+For both the environment and system sections, an empty transition rule section,
+e.g., `SYSTRANS:;`, is equivalent to `SYSTRANS:[]True;`, thus imposing no
+restrictions.  Similarly, an empty initial values section, e.g., `SYSINIT:;` is
+equivalent to `SYSINIT:True;`.
+
+An empty system goal section, i.e., `SYSGOAL:;`, is equivalent to `[]<>True`.
 
 System (resp., environment) variables are declared by a section beginning with
 `SYS:` (resp., `ENV:`) and consisting of a space-separated list of variable
