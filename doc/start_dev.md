@@ -72,9 +72,10 @@ for version 0.6.1.  The next commit following a release tag should use a version
 number greater than that of the tag.  For example, the first commit after that
 tagged "v0.6.1" has version 0.6.2.
 
-My strongest taste is for the Linux kernel style, as expounded in
-[Documentation/CodingStyle](http://lxr.linux.no/#linux+v3.8.8/Documentation/CodingStyle).
-However, I prefer a tab width of 4 spaces.  Documentation in source code should
+For C, I mostly prefer the [Linux](https://www.kernel.org/) kernel style (as
+expounded in the [Linux](https://www.kernel.org/) source tree at
+[Documentation/CodingStyle](http://lxr.linux.no/#linux+v3.8.8/Documentation/CodingStyle)),
+except that tab width should be 4 spaces.  Documentation in source code should
 usually be line-wrapped at 70 characters (default in Emacs), but more
 importantly, lines of code or comments should rarely exceed 80 characters in
 length.  README or other plain text files describing nearby stuff are written in
