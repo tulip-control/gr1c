@@ -609,7 +609,7 @@ int main( int argc, char **argv )
 		Cudd_RecursiveDeref( manager, T );
 	if (strategy)
 		delete_aut( strategy );
-	if (verbose)
+	if (verbose > 1)
 		logprint( "Cudd_CheckZeroRef -> %d", Cudd_CheckZeroRef( manager ) );
 	Cudd_Quit(manager);
 	if (logging_flag)
