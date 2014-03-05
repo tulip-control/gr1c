@@ -1,9 +1,9 @@
 # Build executables and documentation; run tests.
 #
-# SCL; 2012, 2013.
+# SCL; 2012-2014.
 
 CORE_PROGRAMS = gr1c rg
-EXP_PROGRAMS = grjit grpatch
+EXP_PROGRAMS = grpatch
 
 
 prefix = /usr/local

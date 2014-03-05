@@ -1,7 +1,7 @@
 /* solve_metric.c -- Mostly definitions for signatures in solve_metric.h.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -21,8 +21,6 @@
 
 extern ptree_t *evar_list;
 extern ptree_t *svar_list;
-extern ptree_t *env_init;
-extern ptree_t *sys_init;
 extern ptree_t *env_trans;
 extern ptree_t *sys_trans;
 extern ptree_t **env_goals;

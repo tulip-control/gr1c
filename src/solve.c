@@ -2,7 +2,7 @@
  *            Also see solve_operators.c
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -116,8 +116,18 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	}
 
 	/* Generate BDDs for the various parse trees from the problem spec. */
-	einit = ptree_BDD( env_init, evar_list, manager );
-	sinit = ptree_BDD( sys_init, evar_list, manager );
+	if (env_init != NULL) {
+		einit = ptree_BDD( env_init, evar_list, manager );
+	} else {
+		einit = Cudd_ReadOne( manager );
+		Cudd_Ref( einit );
+	}
+	if (sys_init != NULL) {
+		sinit = ptree_BDD( sys_init, evar_list, manager );
+	} else {
+		sinit = Cudd_ReadOne( manager );
+		Cudd_Ref( sinit );
+	}
 	if (verbose)
 		logprint( "Building environment transition BDD..." );
 	etrans = ptree_BDD( env_trans, evar_list, manager );
@@ -225,8 +235,20 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	   of a state), and iterating until every reached state and mode
 	   combination has already been encountered (whence the
 	   strategy already built). */
-	if (init_flags == ALL_SYS_INIT) {
-		tmp = Cudd_bddAnd( manager, einit, sinit );
+	if (init_flags == ALL_INIT
+		|| (init_flags == ONE_SIDE_INIT && sys_init == NULL)) {
+		if (init_flags == ALL_INIT) {
+			if (verbose > 1)
+				logprint( "Enumerating initial states, given init_flags ="
+						  " ALL_INIT" );
+			tmp = Cudd_bddAnd( manager, einit, sinit );
+		} else {
+			if (verbose > 1)
+				logprint( "Enumerating initial states, given init_flags ="
+						  " ONE_SIDE_INIT and empty SYSINIT" );
+			tmp = einit;
+			Cudd_Ref( tmp );
+		}
 		Cudd_Ref( tmp );
 		Cudd_AutodynDisable( manager );
 		Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
@@ -253,16 +275,35 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		}
 		Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 		Cudd_RecursiveDeref( manager, tmp );
-	} else { /* EXIST_SYS_INIT */
-		tmp = Cudd_bddAnd( manager, einit, sinit );
-		Cudd_Ref( tmp );
-		tmp2 = Cudd_bddAnd( manager, tmp, W );
+
+	} else if (init_flags == ALL_ENV_EXIST_SYS_INIT) {
+		if (verbose > 1)
+			logprint( "Enumerating initial states, given init_flags ="
+					  " ALL_ENV_EXIST_SYS_INIT" );
+
+		/* Generate initial environment states */
+		for (i = 0; i < num_env; i++)
+			*(cube+i) = 2;
+		for (i = num_env; i < 2*(num_sys+num_env); i++)
+			*(cube+i) = 1;
+		tmp2 = Cudd_CubeArrayToBdd( manager, cube );
+		if (tmp2 == NULL) {
+			fprintf( stderr, "Error in generating cube for quantification.\n" );
+			return NULL;
+		}
 		Cudd_Ref( tmp2 );
-		Cudd_RecursiveDeref( manager, tmp );
+		tmp = Cudd_bddExistAbstract( manager, einit, tmp2 );
+		if (tmp == NULL) {
+			fprintf( stderr, "Error in performing quantification.\n" );
+			return NULL;
+		}
+		Cudd_Ref( tmp );
+		Cudd_RecursiveDeref( manager, tmp2 );
+
 		Cudd_AutodynDisable( manager );
-		Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
-			initialize_cube( state, gcube, num_env+num_sys );
-			while (!saturated_cube( state, gcube, num_env+num_sys )) {
+		Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
+			initialize_cube( state, gcube, num_env );
+			while (!saturated_cube( state, gcube, num_env )) {
 				this_node_stack = insert_anode( this_node_stack, 0, -1,
 												state, num_env+num_sys );
 				if (this_node_stack == NULL) {
@@ -271,7 +312,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 							 " states.\n" );
 					return NULL;
 				}
-				increment_cube( state, gcube, num_env+num_sys );
+				increment_cube( state, gcube, num_env );
 			}
 			this_node_stack = insert_anode( this_node_stack, 0, -1,
 											state, num_env+num_sys );
@@ -283,7 +324,87 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			}
 		}
 		Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
-		Cudd_RecursiveDeref( manager, tmp2 );
+		Cudd_RecursiveDeref( manager, tmp );
+
+		/* For each initial environment state, find a system state in
+		   the winning set W. */
+		node = this_node_stack;
+		while (node) {
+			for (i = num_env; i < 2*(num_env+num_sys); i++)
+				*(cube+i) = 2;
+			for (i = 0; i < num_env; i++)
+				*(cube+i) = *(node->state+i);
+
+			tmp2 = Cudd_CubeArrayToBdd( manager, cube );
+			if (tmp2 == NULL) {
+				fprintf( stderr, "Error in generating cube for cofactor.\n" );
+				return NULL;
+			}
+			Cudd_Ref( tmp2 );
+
+			tmp = Cudd_Cofactor( manager, W, tmp2 );
+			if (tmp == NULL) {
+				fprintf( stderr, "Error in computing cofactor.\n" );
+				return NULL;
+			}
+			Cudd_Ref( tmp );
+			Cudd_RecursiveDeref( manager, tmp2 );
+
+			tmp2 = Cudd_bddAnd( manager, tmp, sinit );
+			Cudd_Ref( tmp2 );
+			Cudd_RecursiveDeref( manager, tmp );
+
+			Cudd_AutodynDisable( manager );
+			gen = Cudd_FirstCube( manager, tmp2, &gcube, &gvalue );
+			if (gen == NULL) {
+				fprintf( stderr, "Error synthesize: failed to find cube.\n" );
+				return NULL;
+			}
+			if (Cudd_IsGenEmpty( gen )) {
+				fprintf( stderr,
+						 "Error synthesize: unexpected losing initial"
+						 " environment state found.\n" );
+				return NULL;
+			}
+			initialize_cube( state, gcube, num_env+num_sys );
+			for (i = num_env; i < num_env+num_sys; i++)
+				*(node->state+i) = *(state+i);
+			Cudd_GenFree( gen );
+			Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+			Cudd_RecursiveDeref( manager, tmp2 );
+
+			node = node->next;
+		}
+
+	} else { /* ONE_SIDE_INIT; N.B., case of sys_init==NULL is treated above */
+		if (verbose > 1)
+			logprint( "Enumerating initial states, given init_flags ="
+					  " ONE_SIDE_INIT and empty ENVINIT" );
+
+		tmp = Cudd_bddAnd( manager, sinit, W );
+		Cudd_Ref( tmp );
+		Cudd_AutodynDisable( manager );
+		gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
+		if (gen == NULL) {
+			fprintf( stderr, "Error synthesize: failed to find cube.\n" );
+			return NULL;
+		}
+		if (Cudd_IsGenEmpty( gen )) {
+			fprintf( stderr,
+					 "Error synthesize: no winning initial state found.\n" );
+			return NULL;
+		}
+		initialize_cube( state, gcube, num_env+num_sys );
+		this_node_stack = insert_anode( this_node_stack, 0, -1,
+										state, num_env+num_sys );
+		if (this_node_stack == NULL) {
+			fprintf( stderr,
+					 "Error synthesize: building list of initial states.\n" );
+			return NULL;
+		}
+		Cudd_GenFree( gen );
+		Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+		Cudd_RecursiveDeref( manager, tmp );
 	}
 
 	/* Insert all stacked, initial nodes into strategy. */
@@ -632,14 +753,21 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 								   unsigned char verbose )
 {
 	bool realizable;
-	DdNode *tmp, *tmp2;
-	DdNode *einit, *sinit;
+	DdNode *tmp, *tmp2, *tmp3;
+	DdNode *einit = NULL, *sinit = NULL;
 
 	ptree_t *var_separator;
 	int num_env, num_sys;
 	int *cube;  /* length will be twice total number of variables (to
 				   account for both variables and their primes). */
 	DdNode *ddcube;
+
+	if (verbose > 1) {
+		logprint_startline();
+		logprint_raw( "check_realizable_internal invoked with init_flags: " );
+		LOGPRINT_INIT_FLAGS( init_flags );
+		logprint_endline();
+	}
 
 	num_env = tree_size( evar_list );
 	num_sys = tree_size( svar_list );
@@ -668,8 +796,18 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 		var_separator->left = svar_list;
 	}
 
-	einit = ptree_BDD( env_init, evar_list, manager );
-	sinit = ptree_BDD( sys_init, evar_list, manager );
+	if (env_init != NULL) {
+		einit = ptree_BDD( env_init, evar_list, manager );
+	} else {
+		einit = Cudd_ReadOne( manager );
+		Cudd_Ref( einit );
+	}
+	if (sys_init != NULL) {
+		sinit = ptree_BDD( sys_init, evar_list, manager );
+	} else {
+		sinit = Cudd_ReadOne( manager );
+		Cudd_Ref( sinit );
+	}
 
 	/* Break the link that appended the system variables list to the
 	   environment variables list. */
@@ -679,8 +817,13 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 		var_separator->left = NULL;
 	}
 
-	/* Does winning set contain all initial states? */
-	if (init_flags == ALL_SYS_INIT) {
+	/* Does winning set contain all initial states?
+
+	   We assume that the initial condition formulae, i.e., env_init
+	   and sys_init, are appropriate for the given init_flags.  This
+	   can be checked with check_gr1c_form() (cf. gr1c_util.h). */
+	if (init_flags == ALL_INIT) {
+
 		tmp = Cudd_bddAnd( manager, einit, sinit );
 		Cudd_Ref( tmp );
 		tmp2 = Cudd_bddAnd( manager, tmp, W );
@@ -693,9 +836,15 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 		}
 		Cudd_RecursiveDeref( manager, tmp );
 		Cudd_RecursiveDeref( manager, tmp2 );
-	} else { /* EXIST_SYS_INIT */
-		tmp = Cudd_bddAnd( manager, sinit, W );
+
+	} else if (init_flags == ALL_ENV_EXIST_SYS_INIT) {
+
+		tmp = Cudd_bddAnd( manager, sinit, einit );
 		Cudd_Ref( tmp );
+
+		tmp3 = Cudd_bddAnd( manager, tmp, W );
+		Cudd_Ref( tmp3 );
+
 		cube_sys( cube, num_env, num_sys );
 		ddcube = Cudd_CubeArrayToBdd( manager, cube );
 		if (ddcube == NULL) {
@@ -709,35 +858,56 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 			return NULL;
 		}
 		Cudd_Ref( tmp2 );
-		Cudd_RecursiveDeref( manager, ddcube );
 		Cudd_RecursiveDeref( manager, tmp );
 
-		tmp = Cudd_bddOr( manager, Cudd_Not( einit ), tmp2 );
-		Cudd_Ref( tmp );
-		Cudd_RecursiveDeref( manager, tmp2 );
-		cube_env( cube, num_env, num_sys );
-		ddcube = Cudd_CubeArrayToBdd( manager, cube );
-		if (ddcube == NULL) {
-			fprintf( stderr, "Error in generating cube for quantification." );
-			return NULL;
-		}
-		Cudd_Ref( ddcube );
-		tmp2 = Cudd_bddUnivAbstract( manager, tmp, ddcube );
-		if (tmp2 == NULL) {
+		tmp = Cudd_bddExistAbstract( manager, tmp3, ddcube );
+		if (tmp == NULL) {
 			fprintf( stderr, "Error in performing quantification." );
 			return NULL;
 		}
-		Cudd_Ref( tmp2 );
+		Cudd_Ref( tmp );
 		Cudd_RecursiveDeref( manager, ddcube );
-		Cudd_RecursiveDeref( manager, tmp );
+		Cudd_RecursiveDeref( manager, tmp3 );
 
-		if (!(Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )
-			  *Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 ))) {
+		if (!(Cudd_bddLeq( manager, tmp, tmp2 )
+			  *Cudd_bddLeq( manager, tmp2, tmp ))) {
 			realizable = False;
 		} else {
 			realizable = True;
 		}
+		Cudd_RecursiveDeref( manager, tmp );
 		Cudd_RecursiveDeref( manager, tmp2 );
+
+	} else { /* ONE_SIDE_INIT */
+		if (sys_init == NULL) {
+
+			tmp = Cudd_bddAnd( manager, einit, W );
+			Cudd_Ref( tmp );
+			if (!(Cudd_bddLeq( manager, tmp, einit )
+				  *Cudd_bddLeq( manager, einit, tmp ))) {
+				realizable = False;
+			} else {
+				realizable = True;
+			}
+			Cudd_RecursiveDeref( manager, tmp );
+
+		} else {
+			/* If env_init and sys_init were both NULL, we would still
+			   want to treat env_init as True.  Cf. ONE_SIDE_INIT
+			   option for init_flags in documentation for
+			   check_realizable(). */
+
+			tmp = Cudd_bddAnd( manager, sinit, W );
+			Cudd_Ref( tmp );
+			if (!(Cudd_bddLeq( manager, tmp, Cudd_Not( Cudd_ReadOne( manager ) ) )
+				  *Cudd_bddLeq( manager, Cudd_Not( Cudd_ReadOne( manager ) ), tmp ))) {
+				realizable = True;
+			} else {
+				realizable = False;
+			}
+			Cudd_RecursiveDeref( manager, tmp );
+		}
+
 	}
 
 	Cudd_RecursiveDeref( manager, einit );

@@ -307,19 +307,33 @@ int main( int argc, char **argv )
 	if (input_index > 0)
 		fclose( fp );
 
-	/* Treat deterministic problem in which ETRANS or EINIT is omitted. */
-	if (evar_list == NULL) {
-		if (et_array_len == 0) {
-			et_array_len = 1;
-			env_trans_array = malloc( sizeof(ptree_t *) );
-			if (env_trans_array == NULL) {
-				perror( "gr1c, malloc" );
-				return -1;
-			}
-			*env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+	/* Omission implies empty. */
+	if (et_array_len == 0) {
+		et_array_len = 1;
+		env_trans_array = malloc( sizeof(ptree_t *) );
+		if (env_trans_array == NULL) {
+			perror( "gr1c, malloc" );
+			return -1;
 		}
-		if (env_init == NULL)
-			env_init = init_ptree( PT_CONSTANT, NULL, 1 );
+		*env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
+	if (st_array_len == 0) {
+		st_array_len = 1;
+		sys_trans_array = malloc( sizeof(ptree_t *) );
+		if (sys_trans_array == NULL) {
+			perror( "gr1c, malloc" );
+			return -1;
+		}
+		*sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
+	if (num_sgoals == 0) {
+		num_sgoals = 1;
+		sys_goals = malloc( sizeof(ptree_t *) );
+		if (sys_goals == NULL) {
+			perror( "gr1c, malloc" );
+			return -1;
+		}
+		*sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );
 	}
 
 	/* Number of variables, before expansion of those that are nonboolean */
@@ -422,7 +436,7 @@ int main( int argc, char **argv )
 							&env_trans_array, &et_array_len,
 							&sys_trans_array, &st_array_len,
 							&env_goals, num_egoals, &sys_goals, num_sgoals,
-							verbose ) < 0)
+							ALL_ENV_EXIST_SYS_INIT, verbose ) < 0)
 		return -1;
 	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list,
 												 verbose );

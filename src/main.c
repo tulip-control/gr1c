@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "common.h"
 #include "logging.h"
@@ -67,6 +68,7 @@ int main( int argc, char **argv )
 	bool help_flag = False;
 	bool ptdump_flag = False;
 	bool logging_flag = False;
+	unsigned char init_flags = ALL_ENV_EXIST_SYS_INIT;
 	byte format_option = OUTPUT_FORMAT_TULIP;
 	unsigned char verbose = 0;
 	int input_index = -1;
@@ -130,6 +132,28 @@ int main( int argc, char **argv )
 					return 1;
 				}
 				i++;
+			} else if (argv[i][1] == 'n') {
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				for (j = 0; j < strlen( argv[i+1] ); j++)
+					argv[i+1][j] = tolower( argv[i+1][j] );
+				if (!strncmp( argv[i+1], "all_env_exist_sys_init",
+							  strlen( "all_env_exist_sys_init" ) )) {
+					init_flags = ALL_ENV_EXIST_SYS_INIT;
+				} else if (!strncmp( argv[i+1], "all_init",
+									 strlen( "all_init" ) )) {
+					init_flags = ALL_INIT;
+				} else if (!strncmp( argv[i+1], "one_side_init",
+									 strlen( "one_side_init" ) )) {
+					init_flags = ONE_SIDE_INIT;
+				} else {
+					fprintf( stderr,
+							 "Unrecognized init flags. Try \"-h\".\n" );
+					return 1;
+				}
+				i++;
 			} else if (argv[i][1] == 'o') {
 				if (i == argc-1) {
 					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
@@ -150,16 +174,21 @@ int main( int argc, char **argv )
 
 	if (help_flag) {
 		/* Split among printf() calls to conform with ISO C90 string length */
-		printf( "Usage: %s [-hVvlspri] [-t TYPE] [-o FILE] [FILE]\n\n"
+		printf( "Usage: %s [-hVvlspri] [-n INIT] [-t TYPE] [-o FILE] [FILE]\n\n"
 				"  -h          this help message\n"
 				"  -V          print version and exit\n"
 				"  -v          be verbose; use -vv to be more verbose\n"
 				"  -l          enable logging\n"
 				"  -t TYPE     strategy output format; default is \"tulip\";\n"
-				"              supported formats: txt, dot, aut, tulip, tulip0\n"
-				"  -s          only check specification syntax (return -1 on error)\n"
-				"  -p          dump parse trees to DOT files, and echo formulas to screen\n", argv[0] );
-		printf( "  -r          only check realizability; do not synthesize strategy\n"
+				"              supported formats: txt, dot, aut, tulip, tulip0\n", argv[0] );
+		printf( "  -n INIT     initial condition interpretation; (not case sensitive)\n"
+				"              one of\n"
+				"                  ALL_ENV_EXIST_SYS_INIT (default)\n"
+				"                  ALL_INIT\n"
+				"                  ONE_SIDE_INIT\n"
+				"  -s          only check specification syntax (return -1 on error)\n" );
+		printf( "  -p          dump parse trees to DOT files, and echo formulas to screen\n"
+				"  -r          only check realizability; do not synthesize strategy\n"
 				"              (return 0 if realizable, -1 if not)\n"
 				"  -i          interactive mode\n"
 				"  -o FILE     output strategy to FILE, rather than stdout (default)\n" );
@@ -208,7 +237,8 @@ int main( int argc, char **argv )
 	if (check_gr1c_form( evar_list, svar_list, env_init, sys_init,
 						 env_trans_array, et_array_len,
 						 sys_trans_array, st_array_len,
-						 env_goals, num_egoals, sys_goals, num_sgoals ) < 0)
+						 env_goals, num_egoals, sys_goals, num_sgoals,
+						 init_flags ) < 0)
 		return -1;
 
 	if (run_option == GR1C_MODE_SYNTAX)
@@ -218,19 +248,33 @@ int main( int argc, char **argv )
 	if (input_index > 0)
 		fclose( fp );
 
-	/* Treat deterministic problem in which ETRANS or EINIT is omitted. */
-	if (evar_list == NULL) {
-		if (et_array_len == 0) {
-			et_array_len = 1;
-			env_trans_array = malloc( sizeof(ptree_t *) );
-			if (env_trans_array == NULL) {
-				perror( "gr1c, malloc" );
-				return -1;
-			}
-			*env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+	/* Omission implies empty. */
+	if (et_array_len == 0) {
+		et_array_len = 1;
+		env_trans_array = malloc( sizeof(ptree_t *) );
+		if (env_trans_array == NULL) {
+			perror( "gr1c, malloc" );
+			return -1;
 		}
-		if (env_init == NULL)
-			env_init = init_ptree( PT_CONSTANT, NULL, 1 );
+		*env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
+	if (st_array_len == 0) {
+		st_array_len = 1;
+		sys_trans_array = malloc( sizeof(ptree_t *) );
+		if (sys_trans_array == NULL) {
+			perror( "gr1c, malloc" );
+			return -1;
+		}
+		*sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
+	if (num_sgoals == 0) {
+		num_sgoals = 1;
+		sys_goals = malloc( sizeof(ptree_t *) );
+		if (sys_goals == NULL) {
+			perror( "gr1c, malloc" );
+			return -1;
+		}
+		*sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );
 	}
 
 	/* Number of variables, before expansion of those that are nonboolean */
@@ -333,7 +377,7 @@ int main( int argc, char **argv )
 							&env_trans_array, &et_array_len,
 							&sys_trans_array, &st_array_len,
 							&env_goals, num_egoals, &sys_goals, num_sgoals,
-							verbose ) < 0)
+							init_flags, verbose ) < 0)
 		return -1;
 	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list,
 												 verbose );
@@ -386,8 +430,7 @@ int main( int argc, char **argv )
 			return -1;
 		}
 
-		i = levelset_interactive( manager, EXIST_SYS_INIT, stdin, stdout,
-								  verbose );
+		i = levelset_interactive( manager, init_flags, stdin, stdout, verbose );
 		if (i == 0) {
 			printf( "Not realizable.\n" );
 			return -1;
@@ -399,7 +442,7 @@ int main( int argc, char **argv )
 		T = NULL;  /* To avoid seg faults by the generic clean-up code. */
 	} else {
 
-		T = check_realizable( manager, EXIST_SYS_INIT, verbose );
+		T = check_realizable( manager, init_flags, verbose );
 		if (run_option == GR1C_MODE_REALIZABLE) {
 			if ((verbose == 0) || (getlogstream() != stdout)) {
 				if (T != NULL) {
@@ -422,7 +465,7 @@ int main( int argc, char **argv )
 
 			if (verbose)
 				logprint( "Synthesizing a strategy..." );
-			strategy = synthesize( manager, EXIST_SYS_INIT, verbose );
+			strategy = synthesize( manager, init_flags, verbose );
 			if (verbose)
 				logprint( "Done." );
 			if (strategy == NULL) {

@@ -9,7 +9,7 @@
  * levelset_interactive() behaves more like synthesize().
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -31,8 +31,6 @@
 
 extern ptree_t *evar_list;
 extern ptree_t *svar_list;
-extern ptree_t *env_init;
-extern ptree_t *sys_init;
 extern ptree_t *env_trans;
 extern ptree_t *sys_trans;
 extern ptree_t **env_goals;
@@ -421,7 +419,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	DdNode *W;
 	DdNode *strans_into_W;
 
-	DdNode *einit, *sinit, *etrans, *strans, **egoals, **sgoals;
+	DdNode *etrans, *strans, **egoals, **sgoals;
 
 	DdNode *etrans_patched, *strans_patched;
 	DdNode *vertex1, *vertex2; /* ...regarding vertices of the game graph. */
@@ -489,8 +487,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	}
 
 	/* Generate BDDs for the various parse trees from the problem spec. */
-	einit = ptree_BDD( env_init, evar_list, manager );
-	sinit = ptree_BDD( sys_init, evar_list, manager );
 	if (verbose)
 		logprint( "Building environment transition BDD..." );
 	etrans = ptree_BDD( env_trans, evar_list, manager );
@@ -966,8 +962,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	Cudd_RecursiveDeref( manager, etrans_patched );
 	Cudd_RecursiveDeref( manager, strans_patched );
 	Cudd_RecursiveDeref( manager, W );
-	Cudd_RecursiveDeref( manager, einit );
-	Cudd_RecursiveDeref( manager, sinit );
 	Cudd_RecursiveDeref( manager, etrans );
 	Cudd_RecursiveDeref( manager, strans );
 	for (i = 0; i < num_egoals; i++)

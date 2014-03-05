@@ -13,6 +13,7 @@
 
 #include "common.h"
 #include "ptree.h"
+#include "solve.h"
 #include "gr1c_util.h"
 #include "logging.h"
 
@@ -187,6 +188,7 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 						ptree_t ***sys_trans_array, int *st_array_len,
 						ptree_t ***env_goals, int num_env_goals,
 						ptree_t ***sys_goals, int num_sys_goals,
+						unsigned char init_flags,
 						unsigned char verbose )
 {
 	int i;
@@ -209,12 +211,23 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 						  tmppt->name, tmppt->value+1, maxbitval-1 );
 
 			/* Initial conditions */
-			prevpt = *env_init;
-			*env_init = init_ptree( PT_AND, NULL, 0 );
-			(*env_init)->right
-				= unreach_expanded_bool( tmppt->name, tmppt->value+1,
-										 maxbitval-1, PT_VARIABLE );
-			(*env_init)->left = prevpt;
+			if (init_flags == ONE_SIDE_INIT && *sys_init != NULL) {
+				prevpt = *sys_init;
+				*sys_init = init_ptree( PT_AND, NULL, 0 );
+				(*sys_init)->right
+					= unreach_expanded_bool( tmppt->name, tmppt->value+1,
+											 maxbitval-1, PT_VARIABLE );
+				(*sys_init)->left = prevpt;
+			} else {
+				if (*env_init == NULL)
+					*env_init = init_ptree( PT_CONSTANT, NULL, 1 );
+				prevpt = *env_init;
+				*env_init = init_ptree( PT_AND, NULL, 0 );
+				(*env_init)->right
+					= unreach_expanded_bool( tmppt->name, tmppt->value+1,
+											 maxbitval-1, PT_VARIABLE );
+				(*env_init)->left = prevpt;
+			}
 
 			/* Transition rules */
 			(*et_array_len) += 2;
@@ -249,12 +262,25 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 						  tmppt->name, tmppt->value+1, maxbitval-1 );
 
 			/* Initial conditions */
-			prevpt = *sys_init;
-			*sys_init = init_ptree( PT_AND, NULL, 0 );
-			(*sys_init)->right
-				= unreach_expanded_bool( tmppt->name, tmppt->value+1,
-										 maxbitval-1, PT_VARIABLE );
-			(*sys_init)->left = prevpt;
+			if (init_flags == ONE_SIDE_INIT && *sys_init == NULL) {
+				if (*env_init == NULL)
+					*env_init = init_ptree( PT_CONSTANT, NULL, 1 );
+				prevpt = *env_init;
+				*env_init = init_ptree( PT_AND, NULL, 0 );
+				(*env_init)->right
+					= unreach_expanded_bool( tmppt->name, tmppt->value+1,
+											 maxbitval-1, PT_VARIABLE );
+				(*env_init)->left = prevpt;
+			} else {
+				if (*sys_init == NULL)
+					*sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
+				prevpt = *sys_init;
+				*sys_init = init_ptree( PT_AND, NULL, 0 );
+				(*sys_init)->right
+					= unreach_expanded_bool( tmppt->name, tmppt->value+1,
+											 maxbitval-1, PT_VARIABLE );
+				(*sys_init)->left = prevpt;
+			}
 
 			/* Transition rules */
 			(*st_array_len) += 2;
@@ -291,25 +317,35 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 	tmppt = evar_list;
 	while (tmppt) {
 		if (tmppt->value >= 0) {
-			if (verbose > 1)
-				logprint( "Expanding nonbool variable %s in SYSINIT...",
-						  tmppt->name );
-			(*sys_init) = expand_to_bool( (*sys_init),
-										  tmppt->name, tmppt->value );
-			if (verbose > 1) {
-				logprint( "Done." );
-				logprint( "Expanding nonbool variable %s in ENVINIT...",
-						  tmppt->name );
+			if (*sys_init != NULL) {
+				if (verbose > 1)
+					logprint( "Expanding nonbool variable %s in SYSINIT...",
+							  tmppt->name );
+				(*sys_init) = expand_to_bool( (*sys_init),
+											  tmppt->name, tmppt->value );
+				if ((*sys_init) == NULL) {
+					fprintf( stderr,
+							 "Error expand_nonbool_GR1: Failed to convert"
+							 " non-Boolean variable to Boolean in SYSINIT.\n" );
+					return -1;
+				}
+				if (verbose > 1)
+					logprint( "Done." );
 			}
-			(*env_init) = expand_to_bool( (*env_init),
-										  tmppt->name, tmppt->value );
-			if (verbose > 1)
-				logprint( "Done." );
-			if ((*sys_init) == NULL || (*env_init) == NULL) {
-				fprintf( stderr,
-						 "Error expand_nonbool_GR1: Failed to convert"
-						 " non-Boolean variable to Boolean.\n" );
-				return -1;
+			if (*env_init != NULL) {
+				if (verbose > 1)
+					logprint( "Expanding nonbool variable %s in ENVINIT...",
+							  tmppt->name );
+				(*env_init) = expand_to_bool( (*env_init),
+											  tmppt->name, tmppt->value );
+				if ((*env_init) == NULL) {
+					fprintf( stderr,
+							 "Error expand_nonbool_GR1: Failed to convert"
+							 " non-Boolean variable to Boolean in ENVINIT.\n" );
+					return -1;
+				}
+				if (verbose > 1)
+					logprint( "Done." );
 			}
 			for (i = 0; i < *et_array_len; i++) {
 				if (verbose > 1)
@@ -497,33 +533,46 @@ int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
 					 ptree_t **env_trans_array, int et_array_len,
 					 ptree_t **sys_trans_array, int st_array_len,
 					 ptree_t **env_goals, int num_env_goals,
-					 ptree_t **sys_goals, int num_sys_goals )
+					 ptree_t **sys_goals, int num_sys_goals,
+					 unsigned char init_flags )
 {
 	ptree_t *tmppt;
 	char *tmpstr;
 	int i;
 
-	if (evar_list != NULL) {
-		if (env_init == NULL) {
+	if (init_flags == ALL_ENV_EXIST_SYS_INIT) {
+		if (env_init != NULL) {
+			if ((tmpstr = check_vars( env_init, evar_list, NULL )) != NULL) {
+				fprintf( stderr,
+						 "Error: ENVINIT in GR(1) spec contains"
+						 " unexpected variable: %s,\ngiven interpretation"
+						 " from init_flags = ALL_ENV_EXIST_SYS_INIT.\n",
+						 tmpstr );
+				free( tmpstr );
+				return -1;
+			}
+		}
+
+		if (sys_init != NULL) {
+			if ((tmpstr = check_vars( sys_init, svar_list, NULL )) != NULL) {
+				fprintf( stderr,
+						 "Error: SYSINIT in GR(1) spec contains"
+						 " unexpected variable: %s,\ngiven interpretation"
+						 " from init_flags = ALL_ENV_EXIST_SYS_INIT.\n",
+						 tmpstr );
+				free( tmpstr );
+				return -1;
+			}
+		}
+		
+	} else if (init_flags == ONE_SIDE_INIT) {
+		if (env_init != NULL && sys_init != NULL) {
 			fprintf( stderr,
-					 "Syntax error: GR(1) specification is missing"
-					 " ENVINIT.\n" );
-			return -1;
-		} else if (et_array_len == 0) {
-			fprintf( stderr,
-					 "Syntax error: GR(1) specification is missing"
-					 " ENVTRANS.\n" );
+					 "Syntax error: init_flags = ONE_SIDE_INIT and"
+					 " GR(1) specification has\nboth ENV_INIT and"
+					 " SYS_INIT nonempty.\n" );
 			return -1;
 		}
-	}
-	if (sys_init == NULL) {
-		fprintf( stderr,
-				 "Syntax error: GR(1) specification is missing SYSINIT.\n" );
-		return -1;
-	} else if (st_array_len == 0) {
-		fprintf( stderr,
-				 "Syntax error: GR(1) specification is missing SYSTRANS.\n" );
-		return -1;
 	}
 
 	tmppt = NULL;
@@ -533,13 +582,15 @@ int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
 		tmppt = get_list_item( svar_list, -1 );
 		tmppt->left = evar_list;
 	}
-	if ((tmpstr = check_vars( env_init, svar_list, NULL )) != NULL) {
+	if (env_init != NULL
+		&& (tmpstr = check_vars( env_init, svar_list, NULL )) != NULL) {
 		fprintf( stderr,
 				 "Error: ENVINIT in GR(1) spec contains unexpected variable:"
 				 " %s\n", tmpstr );
 		free( tmpstr );
 		return -1;
-	} else if ((tmpstr = check_vars( sys_init, svar_list, NULL )) != NULL) {
+	} else if (sys_init != NULL
+			   && (tmpstr = check_vars( sys_init, svar_list, NULL )) != NULL) {
 		fprintf( stderr,
 				 "Error: SYSINIT in GR(1) spec contains unexpected variable:"
 				 " %s\n", tmpstr );

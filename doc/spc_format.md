@@ -17,15 +17,8 @@ Formatting possibilities for specification files are diverse.  The main cases
 are covered here.  Each file consists of several sections each of which may span
 multiple lines.  Each section begins with "ENV" or "SYS" and ends with ";".
 Comments begin with "#", span the remainder of the line (after "#"), and may be
-inserted anywhere.  For entirely deterministic problems (i.e., no *environment
-variables*), all sections beginning with "ENV" may be omitted.
-
-For both the environment and system sections, an empty transition rule section,
-e.g., `SYSTRANS:;`, is equivalent to `SYSTRANS:[]True;`, thus imposing no
-restrictions.  Similarly, an empty initial values section, e.g., `SYSINIT:;` is
-equivalent to `SYSINIT:True;`.
-
-An empty system goal section, i.e., `SYSGOAL:;`, is equivalent to `[]<>True`.
+inserted anywhere.  Any omitted sections are considered empty.  E.g., omission
+of the `ENVINIT` section is equivalent to including `ENVINIT:;`.
 
 System (resp., environment) variables are declared by a section beginning with
 `SYS:` (resp., `ENV:`) and consisting of a space-separated list of variable
@@ -37,6 +30,48 @@ the form `[0,n]` where `n` is a nonnegative integer.  E.g.,
 declares three variables: `a`, `b`, and `c`.  `a` and `c` have Boolean domains
 (i.e., can only be `True` or `False`), while `b` can take any integer value in
 the set `{0,1,2,3,4,5}`.
+
+For both the environment and system sections, an empty transition rule section,
+e.g., `SYSTRANS:;`, is equivalent to `SYSTRANS:[]True;`, thus imposing no
+restrictions.  Depending on the desired [interpretation of initial
+conditions](#initconditions), an empty initial values section, e.g., `SYSINIT:;`
+is equivalent to `SYSINIT:True;`.  An empty system goal section, i.e.,
+`SYSGOAL:;`, is equivalent to `[]<>True`.
+
+
+<h2 id="initconditions">Interpretations of initial conditions</h2>
+
+Several definitions of initial conditions have been used in the literature for
+GR(1) games and other reactive synthesis problems.  **gr1c** provides several
+variations that are normatively defined in the documentation for
+check_realizable() (cf. solve.h).  Here we briefly introduce each.  While these
+are not part of the input specification file format, the manner in which
+`ENVINIT` and `SYSINIT` are used to select initial states relies on the declared
+interpretation of initial conditions.  The API convention is for functions that
+care to take an argument called `init_flags` in which one of these is selected.
+Most of the command-line tools provide the `-n` switch for declaring an
+interpretation, e.g., `gr1c` can be invoked with `-n ONE_SIDE_INIT` to use the
+option described by the same name below.
+
+Unless stated otherwise, `ENVINIT:;` is equivalent to `ENVINIT:True;` and
+similarly for `SYSINIT`.
+
+* `ALL_ENV_EXIST_SYS_INIT` (default) : For each initial valuation of environment
+  variables that satisfies the `ENVINIT:...;` section, the strategy must provide
+  some valuation of system variables that satisfies `SYSINIT:...;`.
+
+* `ALL_INIT` : Any state that satisfies the conjunction of the `ENVINIT:...;`
+  and `SYSINIT:...;` sections can occur initially.  Any variable can appear in
+  each, but for the sake of syntactic compatibility with ALL_ENV_EXIST_SYS_INIT,
+  the convention is to only use `ENV` variables in `ENVINIT` and `SYS` variables
+  in `SYSINIT`.
+
+* `ONE_SIDE_INIT` : At most one of `ENVINIT` and `SYSINIT` is nonempty.  Both
+  being empty is equivalent to `ENVINIT: True;`.  Let `f` be a (nonempty)
+  boolean formula in terms of environment (ENV) and system (SYS) variables.  If
+  `ENVINIT: f;`, then the strategy must regard *any* state that satisfies `f` as
+  possible initially.  If `SYSINIT: f;`, then the strategy need only choose one
+  initial state satisfying `f`.
 
 
 Incomplete summary of the grammar
