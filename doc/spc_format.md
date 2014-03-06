@@ -108,3 +108,29 @@ be a nonnegative integer.
 
     transformula ::= "[]" tpropformula | transformula '&' transformula
     goalformula ::= "[]<>" propformula | goalformua '&' goalformula
+
+
+<h2 id="reachgames">Specifying reachability games</h2>
+
+gr1c also treats reachability games, which can be solved from the command-line
+using the program `rg`.  We take a *reachability game* to be formulated in a
+manner similar to that of GR(1) synthesis except that there is only one system
+goal and it need only be reached once.  Accordingly, the above description of
+the specification input format holds also for `rg` with the following
+modifications.
+
+* The specification can have at most one single system goal, and if present, it
+  is preceded by `<>` (as the "eventually" operator).
+
+* If there is no system goal, i.e., the `SYSGOAL` section is omitted, then the
+  environment must be blocked.
+
+Concerning the form of automata providing strategies:
+
+* Since there is only one set of states to reach, the notion of `mode` as in the
+  anode_t structure (cf. automaton.h) is not pertinent.  In the case of
+  successful synthesis, all nodes in the output of `rg` will have `mode` `-1`.
+
+* There may be nodes that have no outgoing edges, even when the corresponding
+  state reached is not a dead-end for the environment.  (Hint: a system goal
+  state must have been reached!)

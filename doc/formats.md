@@ -1,7 +1,8 @@
 File formats
 ============
 
-The purpose of this page is to describe the file formats supported by gr1c.  The
+The purpose of this page is to describe the file formats supported by gr1c,
+besides the [format of input specifications](md_spc_format.html).  The
 command-line argument "-t" is used to specify the format in which to output the
 synthesized strategy.  A key to the choices, including functions that provide
 it, is:
