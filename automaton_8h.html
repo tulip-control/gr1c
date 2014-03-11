@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.6.5</span>
+   &#160;<span id="projectnumber">0.7.3</span>
    </div>
   </td>
  </tr>
@@ -115,6 +115,9 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___dot_dump_flags.html#ga2f380c751f91c6f27c8b8ca8c34c4ac2">DOT_AUT_ALL</a>&#160;&#160;&#160;0</td></tr>
 <tr class="memdesc:ga2f380c751f91c6f27c8b8ca8c34c4ac2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Show all variables with values. <br/></td></tr>
 <tr class="separator:ga2f380c751f91c6f27c8b8ca8c34c4ac2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf43296551a53d0f526ed5224d1f407e4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___dot_dump_flags.html#gaf43296551a53d0f526ed5224d1f407e4">DOT_AUT_ATTRIB</a>&#160;&#160;&#160;4</td></tr>
+<tr class="memdesc:gaf43296551a53d0f526ed5224d1f407e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Show node attributes.  <a href="group___dot_dump_flags.html#gaf43296551a53d0f526ed5224d1f407e4">More...</a><br/></td></tr>
+<tr class="separator:gaf43296551a53d0f526ed5224d1f407e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae2a4e537f3f20d76ed8d98247da74d75"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gae2a4e537f3f20d76ed8d98247da74d75"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___dot_dump_flags.html#gae2a4e537f3f20d76ed8d98247da74d75">DOT_AUT_BINARY</a>&#160;&#160;&#160;1</td></tr>
 <tr class="memdesc:gae2a4e537f3f20d76ed8d98247da74d75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assume variables have Boolean domains, and only label nodes with those that are True. <br/></td></tr>
@@ -123,9 +126,6 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___dot_dump_flags.html#ga274bae2c00790303c7690b97ab7ae104">DOT_AUT_EDGEINPUT</a>&#160;&#160;&#160;2</td></tr>
 <tr class="memdesc:ga274bae2c00790303c7690b97ab7ae104"><td class="mdescLeft">&#160;</td><td class="mdescRight">Show environment variables on edges. <br/></td></tr>
 <tr class="separator:ga274bae2c00790303c7690b97ab7ae104"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf43296551a53d0f526ed5224d1f407e4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___dot_dump_flags.html#gaf43296551a53d0f526ed5224d1f407e4">DOT_AUT_ATTRIB</a>&#160;&#160;&#160;4</td></tr>
-<tr class="memdesc:gaf43296551a53d0f526ed5224d1f407e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Show node attributes.  <a href="group___dot_dump_flags.html#gaf43296551a53d0f526ed5224d1f407e4">More...</a><br/></td></tr>
-<tr class="separator:gaf43296551a53d0f526ed5224d1f407e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -136,54 +136,60 @@ typedef struct <a class="el" href="structanode__t.html">anode_t</a>&#160;</td><t
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ac51c68acc77ea201aea12d53dbe8b009"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#ac51c68acc77ea201aea12d53dbe8b009">insert_anode</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int mode, int rgrad, vartype *state, int state_len)</td></tr>
-<tr class="separator:ac51c68acc77ea201aea12d53dbe8b009"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aea6e451c56cf9ed34916afa860221490"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#aea6e451c56cf9ed34916afa860221490">pop_anode</a> (<a class="el" href="structanode__t.html">anode_t</a> *head)</td></tr>
-<tr class="separator:aea6e451c56cf9ed34916afa860221490"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa891331c0240fd76c11421f50e2653e3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#aa891331c0240fd76c11421f50e2653e3">build_anode_trans</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int mode, vartype *state, int state_len, int next_mode, vartype **next_states, int next_len)</td></tr>
-<tr class="separator:aa891331c0240fd76c11421f50e2653e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a19117fcc49ec68e9ded2509805151220"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a19117fcc49ec68e9ded2509805151220">append_anode_trans</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int mode, vartype *state, int state_len, int next_mode, vartype *next_state)</td></tr>
 <tr class="separator:a19117fcc49ec68e9ded2509805151220"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0921457452ddc98b3fcf28ec8dd9a9c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a0921457452ddc98b3fcf28ec8dd9a9c5">find_anode</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int mode, vartype *state, int state_len)</td></tr>
-<tr class="separator:a0921457452ddc98b3fcf28ec8dd9a9c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5c6e4b0af816787fd51d57884a58fa93"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a5c6e4b0af816787fd51d57884a58fa93">find_anode_index</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int mode, vartype *state, int state_len)</td></tr>
-<tr class="separator:a5c6e4b0af816787fd51d57884a58fa93"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1c2058a2959949782553b2f4bf3302fa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a1c2058a2959949782553b2f4bf3302fa">delete_anode</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structanode__t.html">anode_t</a> *target)</td></tr>
-<tr class="separator:a1c2058a2959949782553b2f4bf3302fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a703c9ee45cce2fa6963c08c6e47ae36d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a703c9ee45cce2fa6963c08c6e47ae36d"></a>
-<a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>forward_prune</b> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structanode__t.html">anode_t</a> **U, int U_len)</td></tr>
-<tr class="separator:a703c9ee45cce2fa6963c08c6e47ae36d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af69834ddebd4ca217886025375182f19"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#af69834ddebd4ca217886025375182f19">replace_anode_trans</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structanode__t.html">anode_t</a> *old, <a class="el" href="structanode__t.html">anode_t</a> *new)</td></tr>
-<tr class="separator:af69834ddebd4ca217886025375182f19"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adda7c3c8f7ffdfaa59b6455bc54e90cb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#adda7c3c8f7ffdfaa59b6455bc54e90cb">aut_prune_deadends</a> (<a class="el" href="structanode__t.html">anode_t</a> *head)</td></tr>
-<tr class="separator:adda7c3c8f7ffdfaa59b6455bc54e90cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad135af09f28e95ad66d501893df662d6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#ad135af09f28e95ad66d501893df662d6">tulip_aut_dump</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, FILE *fp)</td></tr>
-<tr class="separator:ad135af09f28e95ad66d501893df662d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a67ce928c0c55d6482bc6b6a0e7135240"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a67ce928c0c55d6482bc6b6a0e7135240">tulip0_aut_dump</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, FILE *fp)</td></tr>
-<tr class="separator:a67ce928c0c55d6482bc6b6a0e7135240"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa042707aac1b8820ab74ae4272068284"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#aa042707aac1b8820ab74ae4272068284">dot_aut_dump</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, unsigned char format_flags, FILE *fp)</td></tr>
-<tr class="separator:aa042707aac1b8820ab74ae4272068284"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acb0084e8abf09eed89cd7aa2acc03e15"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#acb0084e8abf09eed89cd7aa2acc03e15">list_aut_dump</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int state_len, FILE *fp)</td></tr>
-<tr class="separator:acb0084e8abf09eed89cd7aa2acc03e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7280119d68f6970fc7146b20833ffd63"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a7280119d68f6970fc7146b20833ffd63">aut_aut_dump</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int state_len, FILE *fp)</td></tr>
 <tr class="separator:a7280119d68f6970fc7146b20833ffd63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab1ee46d08bdd897ae13d09e50771523"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#aab1ee46d08bdd897ae13d09e50771523">aut_aut_dumpver</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int state_len, FILE *fp, int version)</td></tr>
+<tr class="separator:aab1ee46d08bdd897ae13d09e50771523"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa88038233d4f53e8d4746c8d1bd12064"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#aa88038233d4f53e8d4746c8d1bd12064">aut_aut_load</a> (int state_len, FILE *fp)</td></tr>
 <tr class="separator:aa88038233d4f53e8d4746c8d1bd12064"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5cb2e6e6ecbabd19b75c00ecef27278"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#ad5cb2e6e6ecbabd19b75c00ecef27278">aut_size</a> (<a class="el" href="structanode__t.html">anode_t</a> *head)</td></tr>
-<tr class="separator:ad5cb2e6e6ecbabd19b75c00ecef27278"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6003bf5e6d68756a2ff99dfd86d1b2f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a6003bf5e6d68756a2ff99dfd86d1b2f4">delete_aut</a> (<a class="el" href="structanode__t.html">anode_t</a> *head)</td></tr>
-<tr class="separator:a6003bf5e6d68756a2ff99dfd86d1b2f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:affa8c4d499e4fbc90e717b35ba2cb555"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#affa8c4d499e4fbc90e717b35ba2cb555">forward_modereach</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structanode__t.html">anode_t</a> *node, int mode, vartype **N, int N_len, int magic_mode, int state_len)</td></tr>
-<tr class="separator:affa8c4d499e4fbc90e717b35ba2cb555"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a067126ca7da0a5fde4f540fda603b32a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a067126ca7da0a5fde4f540fda603b32a">aut_aut_loadver</a> (int state_len, FILE *fp, int *version)</td></tr>
+<tr class="separator:a067126ca7da0a5fde4f540fda603b32a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9ed4487bcde54e28bc052775df303abb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a9ed4487bcde54e28bc052775df303abb">aut_compact_nonbool</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, char *name, int maxval)</td></tr>
 <tr class="separator:a9ed4487bcde54e28bc052775df303abb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9ce2f635a2a35a4ed1e50f1e01dd54b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#ad9ce2f635a2a35a4ed1e50f1e01dd54b">aut_expand_bool</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, <a class="el" href="structptree__t.html">ptree_t</a> *nonbool_var_list)</td></tr>
 <tr class="separator:ad9ce2f635a2a35a4ed1e50f1e01dd54b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adda7c3c8f7ffdfaa59b6455bc54e90cb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#adda7c3c8f7ffdfaa59b6455bc54e90cb">aut_prune_deadends</a> (<a class="el" href="structanode__t.html">anode_t</a> *head)</td></tr>
+<tr class="separator:adda7c3c8f7ffdfaa59b6455bc54e90cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5cb2e6e6ecbabd19b75c00ecef27278"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#ad5cb2e6e6ecbabd19b75c00ecef27278">aut_size</a> (<a class="el" href="structanode__t.html">anode_t</a> *head)</td></tr>
+<tr class="separator:ad5cb2e6e6ecbabd19b75c00ecef27278"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa891331c0240fd76c11421f50e2653e3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#aa891331c0240fd76c11421f50e2653e3">build_anode_trans</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int mode, vartype *state, int state_len, int next_mode, vartype **next_states, int next_len)</td></tr>
+<tr class="separator:aa891331c0240fd76c11421f50e2653e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c2058a2959949782553b2f4bf3302fa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a1c2058a2959949782553b2f4bf3302fa">delete_anode</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structanode__t.html">anode_t</a> *target)</td></tr>
+<tr class="separator:a1c2058a2959949782553b2f4bf3302fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6003bf5e6d68756a2ff99dfd86d1b2f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a6003bf5e6d68756a2ff99dfd86d1b2f4">delete_aut</a> (<a class="el" href="structanode__t.html">anode_t</a> *head)</td></tr>
+<tr class="separator:a6003bf5e6d68756a2ff99dfd86d1b2f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa042707aac1b8820ab74ae4272068284"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#aa042707aac1b8820ab74ae4272068284">dot_aut_dump</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, unsigned char format_flags, FILE *fp)</td></tr>
+<tr class="separator:aa042707aac1b8820ab74ae4272068284"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0921457452ddc98b3fcf28ec8dd9a9c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a0921457452ddc98b3fcf28ec8dd9a9c5">find_anode</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int mode, vartype *state, int state_len)</td></tr>
+<tr class="separator:a0921457452ddc98b3fcf28ec8dd9a9c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c6e4b0af816787fd51d57884a58fa93"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a5c6e4b0af816787fd51d57884a58fa93">find_anode_index</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int mode, vartype *state, int state_len)</td></tr>
+<tr class="separator:a5c6e4b0af816787fd51d57884a58fa93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affa8c4d499e4fbc90e717b35ba2cb555"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#affa8c4d499e4fbc90e717b35ba2cb555">forward_modereach</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structanode__t.html">anode_t</a> *node, int mode, vartype **N, int N_len, int magic_mode, int state_len)</td></tr>
+<tr class="separator:affa8c4d499e4fbc90e717b35ba2cb555"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a703c9ee45cce2fa6963c08c6e47ae36d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a703c9ee45cce2fa6963c08c6e47ae36d"></a>
+<a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>forward_prune</b> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structanode__t.html">anode_t</a> **U, int U_len)</td></tr>
+<tr class="separator:a703c9ee45cce2fa6963c08c6e47ae36d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac51c68acc77ea201aea12d53dbe8b009"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#ac51c68acc77ea201aea12d53dbe8b009">insert_anode</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int mode, int rgrad, vartype *state, int state_len)</td></tr>
+<tr class="separator:ac51c68acc77ea201aea12d53dbe8b009"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf8e5e021f2e1f64687936957440de5e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#acf8e5e021f2e1f64687936957440de5e">json_aut_dump</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, FILE *fp)</td></tr>
+<tr class="separator:acf8e5e021f2e1f64687936957440de5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb0084e8abf09eed89cd7aa2acc03e15"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#acb0084e8abf09eed89cd7aa2acc03e15">list_aut_dump</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, int state_len, FILE *fp)</td></tr>
+<tr class="separator:acb0084e8abf09eed89cd7aa2acc03e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea6e451c56cf9ed34916afa860221490"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#aea6e451c56cf9ed34916afa860221490">pop_anode</a> (<a class="el" href="structanode__t.html">anode_t</a> *head)</td></tr>
+<tr class="separator:aea6e451c56cf9ed34916afa860221490"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af69834ddebd4ca217886025375182f19"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#af69834ddebd4ca217886025375182f19">replace_anode_trans</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structanode__t.html">anode_t</a> *old, <a class="el" href="structanode__t.html">anode_t</a> *new)</td></tr>
+<tr class="separator:af69834ddebd4ca217886025375182f19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67ce928c0c55d6482bc6b6a0e7135240"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#a67ce928c0c55d6482bc6b6a0e7135240">tulip0_aut_dump</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, FILE *fp)</td></tr>
+<tr class="separator:a67ce928c0c55d6482bc6b6a0e7135240"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad135af09f28e95ad66d501893df662d6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="automaton_8h.html#ad135af09f28e95ad66d501893df662d6">tulip_aut_dump</a> (<a class="el" href="structanode__t.html">anode_t</a> *head, <a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, FILE *fp)</td></tr>
+<tr class="separator:ad135af09f28e95ad66d501893df662d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Routines for working with a strategy, as a finite automaton. </p>
 <p>A node is uniquely determined by its state and goal mode. Thus other attributes such as values for a reach annotation are not required when invoking some functions. Note that the length of the state vector in each node is not stored anywhere in this data structure. It is assumed to be positive and constant for a particular automaton (strategy).</p>
-<p>SCL; 2012, 2013. </p>
+<p>SCL; 2012-2014. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="a19117fcc49ec68e9ded2509805151220"></a>
 <div class="memitem">
@@ -265,7 +271,46 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Dump strategy using "gr1c automaton" file format. See <a href="md_formats.html">external_notes</a> for details. If fp = NULL, then write to stdout. </p>
+<p>Dump strategy using the current version of the "gr1c automaton" file format. See <a href="md_formats.html">external_notes</a> for details. If fp = NULL, then write to stdout. </p>
+
+</div>
+</div>
+<a class="anchor" id="aab1ee46d08bdd897ae13d09e50771523"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int aut_aut_dumpver </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td>
+          <td class="paramname"><em>head</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>state_len</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>fp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>version</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Dump strategy using the specified version of the "gr1c automaton" file format. This function is wrapped by <a class="el" href="automaton_8h.html#a7280119d68f6970fc7146b20833ffd63">aut_aut_dump()</a>. Return 0 on success. If the given version number is not supported, then return -1. </p>
 
 </div>
 </div>
@@ -292,7 +337,41 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Load strategy given in "gr1c automaton" format from file fp. See <a href="md_formats.html">external_notes</a> for details. If fp = NULL, then read from stdin. Return resulting head pointer, or NULL if error. </p>
+<p>Legacy wrapper for <a class="el" href="automaton_8h.html#aa88038233d4f53e8d4746c8d1bd12064">aut_aut_load()</a>. Equivalent to calling <a class="el" href="automaton_8h.html#a067126ca7da0a5fde4f540fda603b32a">aut_aut_loadver()</a> with version == NULL </p>
+
+</div>
+</div>
+<a class="anchor" id="a067126ca7da0a5fde4f540fda603b32a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structanode__t.html">anode_t</a>* aut_aut_loadver </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>state_len</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>fp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>version</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Load strategy given in "gr1c automaton" format from file fp. See <a href="md_formats.html">external_notes</a> for details. If fp = NULL, then read from stdin. Return resulting head pointer, or NULL if error. If version is not NULL, then the detected format version number is placed in *version.</p>
+<p>Note that attempting to load a gr1c automaton file for a version that includes fields not present in this build of gr1c results in a warning message while all supported fields are used. If expected fields are missing (e.g., no rgrad number is available), then the appropriate "unset" indicator is set to each such field; typically this is -1, check the definition of <a class="el" href="structanode__t.html" title="Strategy automaton nodes.">anode_t</a> for details. </p>
 
 </div>
 </div>
@@ -745,6 +824,45 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="acf8e5e021f2e1f64687936957440de5e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int json_aut_dump </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td>
+          <td class="paramname"><em>head</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td>
+          <td class="paramname"><em>evar_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td>
+          <td class="paramname"><em>svar_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>fp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Dump strategy using the current version of the gr1c-JSON file format. Consult <a href="md_formats.html">external_notes</a> for details. </p>
+
+</div>
+</div>
 <a class="anchor" id="acb0084e8abf09eed89cd7aa2acc03e15"></a>
 <div class="memitem">
 <div class="memproto">
@@ -865,7 +983,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Dump using tulipcon version 0. <a class="el" href="automaton_8h.html#a67ce928c0c55d6482bc6b6a0e7135240">tulip0_aut_dump()</a> is provided only for legacy code. </p>
+<p>Dump using tulipcon version 0. DEPRECATED! Please use <a class="el" href="automaton_8h.html#ad135af09f28e95ad66d501893df662d6">tulip_aut_dump()</a> instead. <a class="el" href="automaton_8h.html#a67ce928c0c55d6482bc6b6a0e7135240">tulip0_aut_dump()</a> is provided only for legacy code and will soon be removed. </p>
 
 </div>
 </div>
@@ -913,7 +1031,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 19 2014 11:36:09 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 11 2014 11:49:53 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.6.5</span>
+   &#160;<span id="projectnumber">0.7.3</span>
    </div>
   </td>
  </tr>
@@ -89,15 +89,23 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p class="enddd"></p>
 </dd>
 <dt><code>src/</code> </dt>
-<dd><p class="startdd">Source code. The main entry points for the programs <code>gr1c</code> and <code>rg</code> are in <code>src/main.c</code> and <code>src/rg_main.c</code>, respectively. Other files include: </p>
+<dd><p class="startdd">Source code. Noteworthy files for beginning to learn the internals of gr1c include: </p>
 <ul>
 <li>
-<a class="el" href="common_8h.html" title="Project-wide definitions and macros.">common.h</a>, which defines the version number. </li>
+<code><a class="el" href="common_8h.html" title="Project-wide definitions and macros.">common.h</a></code>, which defines the version number. </li>
+<li>
+<code>main.c</code>, main entry point for the program <code>gr1c</code>. </li>
+<li>
+<code>rg_main.c</code>, main entry point for the program <code>rg</code>. </li>
 </ul>
 <p class="enddd"></p>
 </dd>
 <dt><code>exp/</code> </dt>
 <dd><p class="startdd">Consult <code>exp/README.txt</code>. The main entry point for the program <code>grpatch</code> is in <code>exp/grpatch.c</code>.</p>
+<p class="enddd"></p>
+</dd>
+<dt><code>aux/</code> </dt>
+<dd><p class="startdd">Consult <code>aux/README.txt</code>. The main entry point for the program <code>autman</code> is in <code>aux/autman.c</code>.</p>
 <p class="enddd"></p>
 </dd>
 <dt><code>examples/</code> </dt>
@@ -123,7 +131,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A significant consequence is that the number of states generated internally happens at boundaries of powers of two, e.g., so that an integer variable domain of <code>[0,513]</code> incurs the same number of states as <code>[0,1023]</code>.</p>
 <h2>Code style</h2>
 <p>Version numbers are of the form MAJOR.MINOR.MICRO; when a tag is made for a release, it must be named as the version number preceded by "v", e.g., "v0.6.1" for version 0.6.1. The next commit following a release tag should use a version number greater than that of the tag. For example, the first commit after that tagged "v0.6.1" has version 0.6.2.</p>
-<p>My strongest taste is for the Linux kernel style, as expounded in <a href="http://lxr.linux.no/#linux+v3.8.8/Documentation/CodingStyle">Documentation/CodingStyle</a>. However, I prefer a tab width of 4 spaces. Documentation in source code should usually be line-wrapped at 70 characters (default in Emacs), but more importantly, lines of code or comments should rarely exceed 80 characters in length. README or other plain text files describing nearby stuff are written in <a href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> and line-wrapped at 80 characters. Many comments in the code (e.g., if beginning with <code>/**</code>) and <code>.md</code> files under the <code>doc</code> directory are processed by <a href="http://www.doxygen.org">Doxygen</a>. So in particular, <code>.md</code> files under <code>doc</code> are written in <a href="http://daringfireball.net/projects/markdown/">Markdown</a>. If you use <a href="http://www.gnu.org/software/emacs/">Emacs</a>, then you may be able to achieve the correct line width and tab conventions by adding the following to your <code>.emacs</code> configuration file. </p>
+<p>For C, I mostly prefer the <a href="https://www.kernel.org/">Linux</a> kernel style (as expounded in the <a href="https://www.kernel.org/">Linux</a> source tree at <a href="http://lxr.linux.no/#linux+v3.8.8/Documentation/CodingStyle">Documentation/CodingStyle</a>), except that tab width should be 4 spaces. Documentation in source code should usually be line-wrapped at 70 characters (default in Emacs), but more importantly, lines of code or comments should rarely exceed 80 characters in length. README or other plain text files describing nearby stuff are written in <a href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> and line-wrapped at 80 characters. Many comments in the code (e.g., if beginning with <code>/**</code>) and <code>.md</code> files under the <code>doc</code> directory are processed by <a href="http://www.doxygen.org">Doxygen</a>. So in particular, <code>.md</code> files under <code>doc</code> are written in <a href="http://daringfireball.net/projects/markdown/">Markdown</a>. If you use <a href="http://www.gnu.org/software/emacs/">Emacs</a>, then you may be able to achieve the correct line width and tab conventions by adding the following to your <code>.emacs</code> configuration file. </p>
 <pre class="fragment">(add-hook 'rst-mode-hook
   '(lambda ()
  (setq fill-column 80)))
@@ -142,7 +150,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
    (c-basic-offset . 4)))</pre> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 19 2014 11:36:09 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 11 2014 11:49:53 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.6.5</span>
+   &#160;<span id="projectnumber">0.7.3</span>
    </div>
   </td>
  </tr>
@@ -103,32 +103,63 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a105dddb960f7b479f86d7e75c0f35e01"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a105dddb960f7b479f86d7e75c0f35e01"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>EXIST_SYS_INIT</b>&#160;&#160;&#160;1</td></tr>
-<tr class="separator:a105dddb960f7b479f86d7e75c0f35e01"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1864368e97e1ea6ae2f2d054bf119c5e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1864368e97e1ea6ae2f2d054bf119c5e"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ALL_SYS_INIT</b>&#160;&#160;&#160;2</td></tr>
-<tr class="separator:a1864368e97e1ea6ae2f2d054bf119c5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d2bcafb4965cb44f048cdd610794f9d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7d2bcafb4965cb44f048cdd610794f9d"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>ALL_ENV_EXIST_SYS_INIT</b>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:a7d2bcafb4965cb44f048cdd610794f9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71cb094df2689a52e469398d644eb1b8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a71cb094df2689a52e469398d644eb1b8"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>ALL_INIT</b>&#160;&#160;&#160;2</td></tr>
+<tr class="separator:a71cb094df2689a52e469398d644eb1b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82ee6774b15077698419c2db2289bac4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>LOGPRINT_INIT_FLAGS</b>(X)</td></tr>
+<tr class="separator:a82ee6774b15077698419c2db2289bac4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d0d837a1d99d4edd3eea7c9e4410e0a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2d0d837a1d99d4edd3eea7c9e4410e0a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>ONE_SIDE_INIT</b>&#160;&#160;&#160;3</td></tr>
+<tr class="separator:a2d0d837a1d99d4edd3eea7c9e4410e0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a23b0078c4cecd73f4aeebf12c2cfcc09"><td class="memItemLeft" align="right" valign="top">DdNode *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve_8h.html#a23b0078c4cecd73f4aeebf12c2cfcc09">check_realizable</a> (DdManager *manager, unsigned char init_flags, unsigned char verbose)</td></tr>
 <tr class="separator:a23b0078c4cecd73f4aeebf12c2cfcc09"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95874103a14d0ab9b3b28c23331e0521"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve_8h.html#a95874103a14d0ab9b3b28c23331e0521">synthesize</a> (DdManager *manager, unsigned char init_flags, unsigned char verbose)</td></tr>
-<tr class="separator:a95874103a14d0ab9b3b28c23331e0521"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5846ee4d8c84f070af03c6ff6a6370db"><td class="memItemLeft" align="right" valign="top">DdNode ***&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve_8h.html#a5846ee4d8c84f070af03c6ff6a6370db">compute_sublevel_sets</a> (DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **egoals, int num_env_goals, DdNode **sgoals, int num_sys_goals, int **num_sublevels, DdNode *****X_ijr, unsigned char verbose)</td></tr>
+<tr class="separator:a5846ee4d8c84f070af03c6ff6a6370db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a207c23f97417bdc49725eae6cd864f88"><td class="memItemLeft" align="right" valign="top">DdNode *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve_8h.html#a207c23f97417bdc49725eae6cd864f88">compute_winning_set</a> (DdManager *manager, unsigned char verbose)</td></tr>
 <tr class="separator:a207c23f97417bdc49725eae6cd864f88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af03041a1b6e4bd83dc50830e17513380"><td class="memItemLeft" align="right" valign="top">DdNode *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve_8h.html#af03041a1b6e4bd83dc50830e17513380">compute_winning_set_BDD</a> (DdManager *manager, DdNode *etrans, DdNode *strans, DdNode **egoals, DdNode **sgoals, unsigned char verbose)</td></tr>
 <tr class="separator:af03041a1b6e4bd83dc50830e17513380"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5846ee4d8c84f070af03c6ff6a6370db"><td class="memItemLeft" align="right" valign="top">DdNode ***&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve_8h.html#a5846ee4d8c84f070af03c6ff6a6370db">compute_sublevel_sets</a> (DdManager *manager, DdNode *W, DdNode *etrans, DdNode *strans, DdNode **egoals, int num_env_goals, DdNode **sgoals, int num_sys_goals, int **num_sublevels, DdNode *****X_ijr, unsigned char verbose)</td></tr>
-<tr class="separator:a5846ee4d8c84f070af03c6ff6a6370db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2f03d0abdebc9bb6162d92cf2800e91"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve_8h.html#af2f03d0abdebc9bb6162d92cf2800e91">levelset_interactive</a> (DdManager *manager, unsigned char init_flags, FILE *infp, FILE *outfp, unsigned char verbose)</td></tr>
 <tr class="separator:af2f03d0abdebc9bb6162d92cf2800e91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95874103a14d0ab9b3b28c23331e0521"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve_8h.html#a95874103a14d0ab9b3b28c23331e0521">synthesize</a> (DdManager *manager, unsigned char init_flags, unsigned char verbose)</td></tr>
+<tr class="separator:a95874103a14d0ab9b3b28c23331e0521"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Compute realizability and a strategy for a GR(1) game. </p>
-<p>SCL; 2012. </p>
-</div><h2 class="groupheader">Function Documentation</h2>
+<p>SCL; 2012, 2014. </p>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="a82ee6774b15077698419c2db2289bac4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LOGPRINT_INIT_FLAGS</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">X</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">if</span> ((X) == ALL_ENV_EXIST_SYS_INIT) { \</div>
+<div class="line">        logprint_raw( <span class="stringliteral">&quot;ALL_ENV_EXIST_SYS_INIT&quot;</span> ); \</div>
+<div class="line">    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> ((X) == ALL_INIT) { \</div>
+<div class="line">        logprint_raw( <span class="stringliteral">&quot;ALL_INIT&quot;</span> ); \</div>
+<div class="line">    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> ((X) == ONE_SIDE_INIT) {  \</div>
+<div class="line">        logprint_raw( <span class="stringliteral">&quot;ONE_SIDE_INIT&quot;</span> ); \</div>
+<div class="line">    } <span class="keywordflow">else</span> { \</div>
+<div class="line">        logprint_raw( <span class="stringliteral">&quot;(unrecognized)&quot;</span> ); \</div>
+<div class="line">    }</div>
+</div><!-- fragment -->
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="a23b0078c4cecd73f4aeebf12c2cfcc09"></a>
 <div class="memitem">
 <div class="memproto">
@@ -162,15 +193,18 @@ Functions</h2></td></tr>
 <pre class="fragment">manager = Cudd_Init( 2*(tree_size( evar_list )+tree_size( svar_list )),
                      0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
 </pre><p>If an error occurs, then a message is printed to stderr and NULL is returned. Depending on when and what provoked the error, there may be memory leaks.</p>
-<p>init_flags can be </p>
-<pre class="fragment">EXIST_SYS_INIT : realizable if for each possible environment
-                 initialization, there exists a system
-                 initialization such that the corresponding
-                 state is in the winning set.
+<p>init_flags can be one of</p>
+<ul>
+<li>ALL_ENV_EXIST_SYS_INIT : realizable if for each possible environment initialization, there exists a system initialization such that the corresponding state is in the winning set. Empty ...INIT:; clauses are equivalent to ...INIT:True;</li>
+</ul>
+<ul>
+<li>ALL_INIT : realizable if every state satisfying both environment and system initial conditions is in the winning set. Empty ...INIT:; clauses are equivalent to ...INIT:True;</li>
+</ul>
+<ul>
+<li>ONE_SIDE_INIT : At most one of ENVINIT or SYSINIT can be nonempty. If ENVINIT is nonempty, and let ENVINIT: f;, then f is an arbitrary state formula in terms of environment and system variables and the system strategy must allow for any initial state that satisfies f. If SYSINIT is nonempty, and let SYSINIT: f;, then f is an arbitrary state formula in terms of environment and system variables and the system strategy must find a strategy for some state that satisfies f. If both of the ...INIT:; clauses are empty, then it is equivalent to having ENVINIT:True;</li>
+</ul>
+<p>Let ENVINIT: f; and SYSINIT: g;, where it may be that f or g is the empty string. If init_flags is ALL_ENV_EXIST_SYS_INIT, then f must only be in terms of ENV variables, and g only in terms of SYS variables. For other init_flags settings, f and g are not over constrained variable sets. However, a common convention for init_flags of ALL_INIT is to only have ENV variables in f, etc., like for ALL_ENV_EXIST_SYS_INIT. </p>
 
-ALL_SYS_INIT   : realizable if every state satisfying both
-                 environment and system initial conditions is
-                 in the winning set.</pre> 
 </div>
 </div>
 <a class="anchor" id="a5846ee4d8c84f070af03c6ff6a6370db"></a>
@@ -414,7 +448,7 @@ ALL_SYS_INIT   : realizable if every state satisfying both
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 19 2014 11:36:09 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 11 2014 11:49:53 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

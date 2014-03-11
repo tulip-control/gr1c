@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.6.5</span>
+   &#160;<span id="projectnumber">0.7.3</span>
    </div>
   </td>
  </tr>
@@ -81,24 +81,61 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">File formats </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>The purpose of this page is to describe the file formats supported by gr1c. The command-line argument "-t" is used to specify the format in which to output the synthesized strategy. A key to the choices, including functions that provide it, is:</p>
+<div class="textblock"><p>The purpose of this page is to describe the file formats supported by gr1c, besides the <a href="md_spc_format.html">format of input specifications</a>. The command-line argument "-t" is used to specify the format in which to output the synthesized strategy. A key to the choices, including functions that provide it, is:</p>
 <ul>
 <li><code>txt</code> : simple plaintext format (not standard); <a class="el" href="automaton_8h.html#acb0084e8abf09eed89cd7aa2acc03e15">list_aut_dump()</a></li>
 <li><code>dot</code> : <a href="http://www.graphviz.org/">Graphviz dot</a>; <a class="el" href="automaton_8h.html#aa042707aac1b8820ab74ae4272068284">dot_aut_dump()</a></li>
 <li><code>aut</code> : <a href="#gr1cautformat">gr1c automaton format</a>; <a class="el" href="automaton_8h.html#a7280119d68f6970fc7146b20833ffd63">aut_aut_dump()</a></li>
+<li><code>json</code> : <a href="#gr1cjson">strategy in JSON</a>; <a class="el" href="automaton_8h.html#acf8e5e021f2e1f64687936957440de5e">json_aut_dump()</a></li>
 <li><code>tulip</code> : <a href="#tulipconxml">tulipcon XML</a>; <a class="el" href="automaton_8h.html#ad135af09f28e95ad66d501893df662d6">tulip_aut_dump()</a></li>
-<li><code>tulip0</code> : for legacy support; <em>do not</em> use this in new applications.</li>
 </ul>
 <p>Several of the patching routines need to be given a description of changes to the game edge set. This is achieved using the <a href="#edgechangeset">edge changes file format</a>. The relevant command-line argument is "-e FILE".</p>
-<h2 id="tulipconxml">tulipcon XML</h2>
+<h2 id="gr1cjson">strategy in JSON</h2>
+<p>The gross file formatting is <a href="http://json.org/">JSON</a>. The details of what gr1c provides are versioned. The current and only version is zero. A key to entries is:</p>
+<ul>
+<li><code>version</code> : format version number</li>
+<li><code>gr1c</code> : version of gr1c that generated the output</li>
+<li><code>date</code> : timestamp in UTC; e.g., invocation time of <a class="el" href="automaton_8h.html#acf8e5e021f2e1f64687936957440de5e">json_aut_dump()</a></li>
+<li><code>extra</code> : an arbitrary, printable string</li>
+<li><code>nodes</code> : object of automaton nodes, each of which is uniquely named and has as value an object organized by the various members of <a class="el" href="structanode__t.html" title="Strategy automaton nodes.">anode_t</a> (cf. <a class="el" href="automaton_8h.html" title="Routines for working with a strategy, as a finite automaton.">automaton.h</a>).</li>
+</ul>
+<p>Note that the notion of "object" in JSON maps to <code>dict</code> (i.e., "dictionary
+objects") in Python. An example is the following. </p>
+<pre class="fragment">{"version": 0,
+ "gr1c": "0.7.2",
+ "date": "2014-03-11 15:13:28",
+ "extra": "Experiment trial number 1.",
+
+ "ENV": [{"x": "boolean"}],
+ "SYS": [{"y": "boolean"}],
+
+ "nodes": {
+"0x101090": {
+    "state": [0, 0],
+    "mode": 0,
+    "rgrad": 1,
+    "trans": ["0x101040"] },
+"0x101040": {
+    "state": [1, 1],
+    "mode": 1,
+    "rgrad": 1,
+    "trans": ["0x101090"] },
+"0x101010": {
+    "state": [0, 1],
+    "mode": 0,
+    "rgrad": 1,
+    "trans": ["0x101040"] }
+}}
+</pre><h2 id="tulipconxml">tulipcon XML</h2>
 <p>See <a href="http://slivingston.github.io/nTLP/doc/">nTLP documentation</a>, specifically the <a href="http://slivingston.github.io/nTLP/doc/data_formats.html#tulipcon-xml">page about data formats</a>.</p>
 <h2 id="gr1cautformat">gr1c automaton</h2>
-<p>This format is occasionally referred to as "gr1c aut format". The relevant command-line argument is "-a FILE".</p>
+<p>This format is occasionally referred to as "gr1c aut format". The relevant command-line argument is "-a FILE". Note that version numbers of this format are independent (for most practical purposes) from the version of gr1c itself. For all versions, the version number is given as a single nonnegative integer on the first non-comment, non-blank line. In the case of a missing version number, <a href="#gr1cautformatv0">0 is assumed</a> (also known as the <a href="#gr1cautformatv0">legacy format</a>). Unless explicitly stated to the contrary in the format version description below, blank lines and lines beginning with <code>#</code> (known as "comments") are always ignored.</p>
+<p>For this format, the API includes functions <a class="el" href="automaton_8h.html#aa88038233d4f53e8d4746c8d1bd12064">aut_aut_load()</a> and <a class="el" href="automaton_8h.html#a7280119d68f6970fc7146b20833ffd63">aut_aut_dump()</a> for reading and writing, respectively. Signatures are in <a class="el" href="automaton_8h.html" title="Routines for working with a strategy, as a finite automaton.">automaton.h</a>.</p>
+<h3 id="gr1cautformatv0">version 0 (legacy)</h3>
 <p>The order of the state vector matches that from the specification (as in most other places in the source code). Each line is of the form </p>
 <pre class="fragment">i S m r t0 t1 ...
 </pre><p>where i is the node ID, S is a space-separated list of values taken by variables at this node (i.e., its state label), m the goal mode, r is a reach annotation value (-1 if not available), and all remaining integers are IDs of nodes in the outgoing transition set of this node.</p>
 <p>The list of IDs is assumed to be tight, meaning if there are N nodes, then the file must contain indices 0 through N-1 (not necessarily in order).</p>
-<p>For this format, the API includes functions <a class="el" href="automaton_8h.html#aa88038233d4f53e8d4746c8d1bd12064">aut_aut_load()</a> and <a class="el" href="automaton_8h.html#a7280119d68f6970fc7146b20833ffd63">aut_aut_dump()</a> for reading and writing, respectively. Signatures are in <a class="el" href="automaton_8h.html" title="Routines for working with a strategy, as a finite automaton.">automaton.h</a>.</p>
 <h2 id="edgechangeset">game edge set changes</h2>
 <p>Files of this form consist of two parts: first a list (one per line) of states considered to be in the neighborhood; and second a sequence of <b>restrict</b>, <b>relax</b>, or <b>blocksys</b> commands (as defined in the section <a href="md_interaction.html">Interaction</a>). Blank lines and lines beginning with <code>#</code> are ignored.</p>
 <p>For example, if there are two variables, and we have declared the "neighborhood" to consist of states 00, 01, and 11 (with states given as bitvectors), and we wish to change the game graph by removing the controlled edge from 00 to 01, then the file would be </p>
@@ -111,7 +148,7 @@ restrict 0 0 0 1
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 19 2014 11:36:09 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 11 2014 11:49:53 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

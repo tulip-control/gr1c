@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.6.5</span>
+   &#160;<span id="projectnumber">0.7.3</span>
    </div>
   </td>
  </tr>
@@ -128,7 +128,7 @@ long: 8
 </pre><p>which will copy <code>gr1c</code> and <code>rg</code> to <code>/usr/local/bin</code>, a commonly used location for "local" installations. This is based on a default installation prefix of <code>/usr/local</code>. Adjust it by invoking <code>make</code> with something like <code>prefix=/your/new/path</code>. The programs <code>grpatch</code> and <code>grjit</code> are <em>not</em> included in as an effect of <code>make install</code>. <a href="#extras">Extra instructions</a> concerning these are below.</p>
 <h2 id="extras">Extras</h2>
 <p>Running <code>make</code>, as described above, will not cause the programs <code>grpatch</code> and <code>grjit</code> to be built. To achieve this, </p>
-<pre class="fragment">$ make exp
+<pre class="fragment">$ make all
 </pre><p>Alternatively, you can request a specific executable, e.g., <code>make grpatch</code>. To install <code>grpatch</code> in the same place as <code>gr1c</code>, </p>
 <pre class="fragment">$ make expinstall
 </pre><p>Other experiment-related programs, such as <code>grjit</code>, will eventually be added to the list installed by the expinstall command. <a href="http://www.doxygen.org">Doxygen</a> must be installed to build the documentation...including the page you are now reading. Try </p>
@@ -143,7 +143,7 @@ long: 8
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 19 2014 11:36:09 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 11 2014 11:49:53 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

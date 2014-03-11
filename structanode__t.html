@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.6.5</span>
+   &#160;<span id="projectnumber">0.7.3</span>
    </div>
   </td>
  </tr>
@@ -98,17 +98,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:ae3c0764ae4e38f435adfdc70f98b6e61"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae3c0764ae4e38f435adfdc70f98b6e61"></a>
-vartype *&#160;</td><td class="memItemRight" valign="bottom"><b>state</b></td></tr>
-<tr class="separator:ae3c0764ae4e38f435adfdc70f98b6e61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a020d138b020804b6fd9176e27faf85fd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a020d138b020804b6fd9176e27faf85fd"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structanode__t.html#a020d138b020804b6fd9176e27faf85fd">mode</a></td></tr>
 <tr class="memdesc:a020d138b020804b6fd9176e27faf85fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Goal mode; indicates which system goal is currently being pursued. <br/></td></tr>
 <tr class="separator:a020d138b020804b6fd9176e27faf85fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec67af797f98f8ae626195da362f8bc8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aec67af797f98f8ae626195da362f8bc8"></a>
+struct <a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>next</b></td></tr>
+<tr class="separator:aec67af797f98f8ae626195da362f8bc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a239bd418bd6021ff3da00ac71f33ae59"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a239bd418bd6021ff3da00ac71f33ae59"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structanode__t.html#a239bd418bd6021ff3da00ac71f33ae59">rgrad</a></td></tr>
 <tr class="memdesc:a239bd418bd6021ff3da00ac71f33ae59"><td class="mdescLeft">&#160;</td><td class="mdescRight">reach annotation value; unset value is indicated by -1. <br/></td></tr>
 <tr class="separator:a239bd418bd6021ff3da00ac71f33ae59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3c0764ae4e38f435adfdc70f98b6e61"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae3c0764ae4e38f435adfdc70f98b6e61"></a>
+vartype *&#160;</td><td class="memItemRight" valign="bottom"><b>state</b></td></tr>
+<tr class="separator:ae3c0764ae4e38f435adfdc70f98b6e61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31f6debe2f2f3c4edbb8fd0a3dae1961"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a31f6debe2f2f3c4edbb8fd0a3dae1961"></a>
 struct <a class="el" href="structanode__t.html">anode_t</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structanode__t.html#a31f6debe2f2f3c4edbb8fd0a3dae1961">trans</a></td></tr>
 <tr class="memdesc:a31f6debe2f2f3c4edbb8fd0a3dae1961"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array of transitions. <br/></td></tr>
@@ -116,9 +119,6 @@ struct <a class="el" href="structanode__t.html">anode_t</a> **&#160;</td><td cla
 <tr class="memitem:a1c32340ae7d1aef2dd66ef97f368ceb8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1c32340ae7d1aef2dd66ef97f368ceb8"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>trans_len</b></td></tr>
 <tr class="separator:a1c32340ae7d1aef2dd66ef97f368ceb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aec67af797f98f8ae626195da362f8bc8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aec67af797f98f8ae626195da362f8bc8"></a>
-struct <a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>next</b></td></tr>
-<tr class="separator:aec67af797f98f8ae626195da362f8bc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Strategy automaton nodes. </p>
@@ -128,7 +128,7 @@ struct <a class="el" href="structanode__t.html">anode_t</a> *&#160;</td><td clas
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 19 2014 11:36:09 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 11 2014 11:49:53 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

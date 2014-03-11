@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.6.5</span>
+   &#160;<span id="projectnumber">0.7.3</span>
    </div>
   </td>
  </tr>
@@ -100,42 +100,42 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a2b244a2f2454a5ac19565c65df8797b2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__support_8h.html#a2b244a2f2454a5ac19565c65df8797b2">read_state_str</a> (char *input, vartype **state, int max_len)</td></tr>
-<tr class="separator:a2b244a2f2454a5ac19565c65df8797b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f8474527fe0f603ba5c94aa3fa62c7a"><td class="memItemLeft" align="right" valign="top">DdNode *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__support_8h.html#a8f8474527fe0f603ba5c94aa3fa62c7a">compute_existsmodal</a> (DdManager *manager, DdNode *C, DdNode *etrans, DdNode *strans, int num_env, int num_sys, int *cube)</td></tr>
+<tr class="separator:a8f8474527fe0f603ba5c94aa3fa62c7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3199338777206d0d431c61b6ac59fbfa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3199338777206d0d431c61b6ac59fbfa"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>cube_env</b> (int *cube, int num_env, int num_sys)</td></tr>
 <tr class="separator:a3199338777206d0d431c61b6ac59fbfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb5e5d2aa11c458cbcc4b7123aca6093"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeb5e5d2aa11c458cbcc4b7123aca6093"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>cube_sys</b> (int *cube, int num_env, int num_sys)</td></tr>
-<tr class="separator:aeb5e5d2aa11c458cbcc4b7123aca6093"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac9a5ab1acf5b2cd4ccfa5eb2df05b441"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac9a5ab1acf5b2cd4ccfa5eb2df05b441"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>cube_prime_env</b> (int *cube, int num_env, int num_sys)</td></tr>
 <tr class="separator:ac9a5ab1acf5b2cd4ccfa5eb2df05b441"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acbe140d5440df6ecdea659152e97dbf5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acbe140d5440df6ecdea659152e97dbf5"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>cube_prime_sys</b> (int *cube, int num_env, int num_sys)</td></tr>
 <tr class="separator:acbe140d5440df6ecdea659152e97dbf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb5e5d2aa11c458cbcc4b7123aca6093"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeb5e5d2aa11c458cbcc4b7123aca6093"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>cube_sys</b> (int *cube, int num_env, int num_sys)</td></tr>
+<tr class="separator:aeb5e5d2aa11c458cbcc4b7123aca6093"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29f751384780329814fd7eabc46f5abe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a29f751384780329814fd7eabc46f5abe"></a>
+vartype **&#160;</td><td class="memItemRight" valign="bottom"><b>get_env_moves</b> (DdManager *manager, int *cube, vartype *state, DdNode *etrans, int num_env, int num_sys, int *emoves_len)</td></tr>
+<tr class="separator:a29f751384780329814fd7eabc46f5abe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a553cfa55f4d362dde447f8f6d2d00c21"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__support_8h.html#a553cfa55f4d362dde447f8f6d2d00c21">increment_cube</a> (vartype *cube, int *gcube, int len)</td></tr>
 <tr class="separator:a553cfa55f4d362dde447f8f6d2d00c21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a13d4198bdc7f2cd4cbb57b4b70279730"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__support_8h.html#a13d4198bdc7f2cd4cbb57b4b70279730">saturated_cube</a> (vartype *cube, int *gcube, int len)</td></tr>
-<tr class="separator:a13d4198bdc7f2cd4cbb57b4b70279730"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a11daed5317ed697de00ab08e6c06b70c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a11daed5317ed697de00ab08e6c06b70c"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_cube</b> (vartype *cube, int *gcube, int len)</td></tr>
 <tr class="separator:a11daed5317ed697de00ab08e6c06b70c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b244a2f2454a5ac19565c65df8797b2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__support_8h.html#a2b244a2f2454a5ac19565c65df8797b2">read_state_str</a> (char *input, vartype **state, int max_len)</td></tr>
+<tr class="separator:a2b244a2f2454a5ac19565c65df8797b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13d4198bdc7f2cd4cbb57b4b70279730"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__support_8h.html#a13d4198bdc7f2cd4cbb57b4b70279730">saturated_cube</a> (vartype *cube, int *gcube, int len)</td></tr>
+<tr class="separator:a13d4198bdc7f2cd4cbb57b4b70279730"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5aa2b5bc2e5090d61e8739dd568eccf7"><td class="memItemLeft" align="right" valign="top">DdNode *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__support_8h.html#a5aa2b5bc2e5090d61e8739dd568eccf7">state2BDD</a> (DdManager *manager, vartype *state, int offset, int len)</td></tr>
+<tr class="separator:a5aa2b5bc2e5090d61e8739dd568eccf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a680eb3d6a53ba996b4c02f4100bc040f"><td class="memItemLeft" align="right" valign="top">DdNode *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__support_8h.html#a680eb3d6a53ba996b4c02f4100bc040f">state2cof</a> (DdManager *manager, int *cube, int cube_len, vartype *state, DdNode *trans, int offset, int len)</td></tr>
+<tr class="separator:a680eb3d6a53ba996b4c02f4100bc040f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e8e112622951407c1cddfb15fe021f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3e8e112622951407c1cddfb15fe021f8"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>state2cube</b> (vartype *state, int *cube, int len)</td></tr>
 <tr class="separator:a3e8e112622951407c1cddfb15fe021f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9ff03d9ec1f88acbd03a5d29113fc5df"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9ff03d9ec1f88acbd03a5d29113fc5df"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>statecmp</b> (vartype *state1, vartype *state2, int state_len)</td></tr>
 <tr class="separator:a9ff03d9ec1f88acbd03a5d29113fc5df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a680eb3d6a53ba996b4c02f4100bc040f"><td class="memItemLeft" align="right" valign="top">DdNode *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__support_8h.html#a680eb3d6a53ba996b4c02f4100bc040f">state2cof</a> (DdManager *manager, int *cube, int cube_len, vartype *state, DdNode *trans, int offset, int len)</td></tr>
-<tr class="separator:a680eb3d6a53ba996b4c02f4100bc040f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5aa2b5bc2e5090d61e8739dd568eccf7"><td class="memItemLeft" align="right" valign="top">DdNode *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__support_8h.html#a5aa2b5bc2e5090d61e8739dd568eccf7">state2BDD</a> (DdManager *manager, vartype *state, int offset, int len)</td></tr>
-<tr class="separator:a5aa2b5bc2e5090d61e8739dd568eccf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29f751384780329814fd7eabc46f5abe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a29f751384780329814fd7eabc46f5abe"></a>
-vartype **&#160;</td><td class="memItemRight" valign="bottom"><b>get_env_moves</b> (DdManager *manager, int *cube, vartype *state, DdNode *etrans, int num_env, int num_sys, int *emoves_len)</td></tr>
-<tr class="separator:a29f751384780329814fd7eabc46f5abe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f8474527fe0f603ba5c94aa3fa62c7a"><td class="memItemLeft" align="right" valign="top">DdNode *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="solve__support_8h.html#a8f8474527fe0f603ba5c94aa3fa62c7a">compute_existsmodal</a> (DdManager *manager, DdNode *C, DdNode *etrans, DdNode *strans, int num_env, int num_sys, int *cube)</td></tr>
-<tr class="separator:a8f8474527fe0f603ba5c94aa3fa62c7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Mostly internal routines for state vector manipulation. </p>
@@ -399,7 +399,7 @@ POSTCONDITION: cube = [0,1,0,0].  </pre>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 19 2014 11:36:09 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 11 2014 11:49:53 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

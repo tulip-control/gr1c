@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.6.5</span>
+   &#160;<span id="projectnumber">0.7.3</span>
    </div>
   </td>
  </tr>
@@ -84,11 +84,23 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="textblock"><p>In its most basic usage, the program <code>gr1c</code> will synthesize a winning strategy for a given specification or declare that it is impossible (i.e., the GR(1) specification is <em>unrealizable</em>). Specifications (informally abbreviated "specs") are provided as input files at invocation. If no file is provided, then <code>gr1c</code> will attempt to read the specification from <code>stdin</code>. For instance, the following two commands will lead to the same output. Note that you may need to use <code>./gr1c</code> instead if you have built but not installed the <code>gr1c</code> executable. </p>
 <pre class="fragment">$ gr1c examples/trivial.spc
 $ cat examples/trivial.spc | gr1c
-</pre><p>Formatting possibilities for specification files are diverse. The main cases are covered here. Each file consists of several sections each of which may span multiple lines. Each section begins with "ENV" or "SYS" and ends with ";". Comments begin with "#", span the remainder of the line (after "#"), and may be inserted anywhere. For entirely deterministic problems (i.e., no <em>environment variables</em>), all sections beginning with "ENV" may be omitted.</p>
-<p>An empty transition rule section, e.g., <code>SYSTRANS:;</code>, is equivalent to <code>SYSTRANS:[]True;</code>, thus imposing no restrictions. Similarly, an empty initial values section, e.g., <code>SYSINIT:;</code> is equivalent to <code>SYSINIT:True;</code>.</p>
+</pre><p>Formatting possibilities for specification files are diverse. The main cases are covered here. Each file consists of several sections each of which may span multiple lines. Each section begins with "ENV" or "SYS" and ends with ";". Comments begin with "#", span the remainder of the line (after "#"), and may be inserted anywhere. Any omitted sections are considered empty. E.g., omission of the <code>ENVINIT</code> section is equivalent to including <code>ENVINIT:;</code>.</p>
 <p>System (resp., environment) variables are declared by a section beginning with <code>SYS:</code> (resp., <code>ENV:</code>) and consisting of a space-separated list of variable names and domains if not Boolean. The only supported nonboolean domains are of the form <code>[0,n]</code> where <code>n</code> is a nonnegative integer. E.g., </p>
 <pre class="fragment">SYS: a b [0,5] c;
 </pre><p>declares three variables: <code>a</code>, <code>b</code>, and <code>c</code>. <code>a</code> and <code>c</code> have Boolean domains (i.e., can only be <code>True</code> or <code>False</code>), while <code>b</code> can take any integer value in the set <code>{0,1,2,3,4,5}</code>.</p>
+<p>For both the environment and system sections, an empty transition rule section, e.g., <code>SYSTRANS:;</code>, is equivalent to <code>SYSTRANS:[]True;</code>, thus imposing no restrictions. Depending on the desired <a href="#initconditions">interpretation of initial conditions</a>, an empty initial values section, e.g., <code>SYSINIT:;</code> is equivalent to <code>SYSINIT:True;</code>. An empty system goal section, i.e., <code>SYSGOAL:;</code>, is equivalent to <code>[]&lt;&gt;True</code>.</p>
+<h2 id="initconditions">Interpretations of initial conditions</h2>
+<p>Several definitions of initial conditions have been used in the literature for GR(1) games and other reactive synthesis problems. <b>gr1c</b> provides several variations that are normatively defined in the documentation for <a class="el" href="solve_8h.html#a23b0078c4cecd73f4aeebf12c2cfcc09">check_realizable()</a> (cf. <a class="el" href="solve_8h.html" title="Compute realizability and a strategy for a GR(1) game.">solve.h</a>). Here we briefly introduce each. While these are not part of the input specification file format, the manner in which <code>ENVINIT</code> and <code>SYSINIT</code> are used to select initial states relies on the declared interpretation of initial conditions. The API convention is for functions that care to take an argument called <code>init_flags</code> in which one of these is selected. Most of the command-line tools provide the <code>-n</code> switch for declaring an interpretation, e.g., <code>gr1c</code> can be invoked with <code>-n ONE_SIDE_INIT</code> to use the option described by the same name below.</p>
+<p>Unless stated otherwise, <code>ENVINIT:;</code> is equivalent to <code>ENVINIT:True;</code> and similarly for <code>SYSINIT</code>.</p>
+<ul>
+<li><code>ALL_ENV_EXIST_SYS_INIT</code> (default) : For each initial valuation of environment variables that satisfies the <code>ENVINIT:...;</code> section, the strategy must provide some valuation of system variables that satisfies <code>SYSINIT:...;</code>.</li>
+</ul>
+<ul>
+<li><code>ALL_INIT</code> : Any state that satisfies the conjunction of the <code>ENVINIT:...;</code> and <code>SYSINIT:...;</code> sections can occur initially. Any variable can appear in each, but for the sake of syntactic compatibility with ALL_ENV_EXIST_SYS_INIT, the convention is to only use <code>ENV</code> variables in <code>ENVINIT</code> and <code>SYS</code> variables in <code>SYSINIT</code>.</li>
+</ul>
+<ul>
+<li><code>ONE_SIDE_INIT</code> : At most one of <code>ENVINIT</code> and <code>SYSINIT</code> is nonempty. Both being empty is equivalent to <code>ENVINIT: True;</code>. Let <code>f</code> be a (nonempty) boolean formula in terms of environment (ENV) and system (SYS) variables. If <code>ENVINIT: f;</code>, then the strategy must regard <em>any</em> state that satisfies <code>f</code> as possible initially. If <code>SYSINIT: f;</code>, then the strategy need only choose one initial state satisfying <code>f</code>.</li>
+</ul>
 <h2>Incomplete summary of the grammar</h2>
 <p>C-like, infix syntax. Comments begin with <code>#</code> and continue until the end of line. The grammar below is not complete (nor normative), but should be enough for you to compose specifications. Cf. the <code>examples</code> directory. NUMBER must be a nonnegative integer. </p>
 <pre class="fragment">/* Define which variables are controlled and uncontrolled. */
@@ -116,10 +128,26 @@ propformula ::= "False" | "True" | VARIABLE
 tpropformula ::= "False" | "True" | VARIABLE | VARIABLE '\'' | ...
 
 transformula ::= "[]" tpropformula | transformula '&amp;' transformula
-goalformula ::= "[]&lt;&gt;" propformula | goalformua '&amp;' goalformula</pre> </div></div><!-- contents -->
+goalformula ::= "[]&lt;&gt;" propformula | goalformua '&amp;' goalformula
+</pre><h2 id="reachgames">Specifying reachability games</h2>
+<p>gr1c also treats reachability games, which can be solved from the command-line using the program <code>rg</code>. We take a <em>reachability game</em> to be formulated in a manner similar to that of GR(1) synthesis except that there is only one system goal and it need only be reached once. Accordingly, the above description of the specification input format holds also for <code>rg</code> with the following modifications.</p>
+<ul>
+<li>The specification can have at most one single system goal, and if present, it is preceded by <code>&lt;&gt;</code> (as the "eventually" operator).</li>
+</ul>
+<ul>
+<li>If there is no system goal, i.e., the <code>SYSGOAL</code> section is omitted, then the environment must be blocked.</li>
+</ul>
+<p>Concerning the form of automata providing strategies:</p>
+<ul>
+<li>Since there is only one set of states to reach, the notion of <code>mode</code> as in the <a class="el" href="structanode__t.html" title="Strategy automaton nodes.">anode_t</a> structure (cf. <a class="el" href="automaton_8h.html" title="Routines for working with a strategy, as a finite automaton.">automaton.h</a>) is not pertinent. In the case of successful synthesis, all nodes in the output of <code>rg</code> will have <code>mode</code> <code>-1</code>.</li>
+</ul>
+<ul>
+<li>There may be nodes that have no outgoing edges, even when the corresponding state reached is not a dead-end for the environment. (Hint: a system goal state must have been reached!) </li>
+</ul>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 19 2014 11:36:09 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 11 2014 11:49:53 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.6.5</span>
+   &#160;<span id="projectnumber">0.7.3</span>
    </div>
   </td>
  </tr>
@@ -103,27 +103,27 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 Functions</h2></td></tr>
 <tr class="memitem:adcf1ffa87c3b1f057a37e2467fb4776e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gr1c__util_8h.html#adcf1ffa87c3b1f057a37e2467fb4776e">bitvec_to_int</a> (vartype *vec, int vec_len)</td></tr>
 <tr class="separator:adcf1ffa87c3b1f057a37e2467fb4776e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa0fb81b3c85096540f2d5dcdfe0a009"><td class="memItemLeft" align="right" valign="top">vartype *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gr1c__util_8h.html#afa0fb81b3c85096540f2d5dcdfe0a009">int_to_bitvec</a> (int x, int vec_len)</td></tr>
-<tr class="separator:afa0fb81b3c85096540f2d5dcdfe0a009"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a808176d60fadb9220e5816cf96aa6070"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gr1c__util_8h.html#a808176d60fadb9220e5816cf96aa6070">expand_nonbool_variables</a> (<a class="el" href="structptree__t.html">ptree_t</a> **evar_list, <a class="el" href="structptree__t.html">ptree_t</a> **svar_list, unsigned char verbose)</td></tr>
-<tr class="separator:a808176d60fadb9220e5816cf96aa6070"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33639c82573d6bf8a189625c955ea764"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a33639c82573d6bf8a189625c955ea764"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>check_gr1c_form</b> (<a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, <a class="el" href="structptree__t.html">ptree_t</a> *env_init, <a class="el" href="structptree__t.html">ptree_t</a> *sys_init, <a class="el" href="structptree__t.html">ptree_t</a> **env_trans_array, int et_array_len, <a class="el" href="structptree__t.html">ptree_t</a> **sys_trans_array, int st_array_len, <a class="el" href="structptree__t.html">ptree_t</a> **env_goals, int num_env_goals, <a class="el" href="structptree__t.html">ptree_t</a> **sys_goals, int num_sys_goals, unsigned char init_flags)</td></tr>
+<tr class="separator:a33639c82573d6bf8a189625c955ea764"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add0f023d5601bd0733eccb68e6d47b97"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="add0f023d5601bd0733eccb68e6d47b97"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>expand_nonbool_GR1</b> (<a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, <a class="el" href="structptree__t.html">ptree_t</a> **env_init, <a class="el" href="structptree__t.html">ptree_t</a> **sys_init, <a class="el" href="structptree__t.html">ptree_t</a> ***env_trans_array, int *et_array_len, <a class="el" href="structptree__t.html">ptree_t</a> ***sys_trans_array, int *st_array_len, <a class="el" href="structptree__t.html">ptree_t</a> ***env_goals, int num_env_goals, <a class="el" href="structptree__t.html">ptree_t</a> ***sys_goals, int num_sys_goals, unsigned char init_flags, unsigned char verbose)</td></tr>
+<tr class="separator:add0f023d5601bd0733eccb68e6d47b97"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59025d6f1b505fda41558f1c474f4eaf"><td class="memItemLeft" align="right" valign="top">vartype *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gr1c__util_8h.html#a59025d6f1b505fda41558f1c474f4eaf">expand_nonbool_state</a> (vartype *state, int *offw, int num_nonbool, int mapped_len)</td></tr>
 <tr class="separator:a59025d6f1b505fda41558f1c474f4eaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a808176d60fadb9220e5816cf96aa6070"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structptree__t.html">ptree_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gr1c__util_8h.html#a808176d60fadb9220e5816cf96aa6070">expand_nonbool_variables</a> (<a class="el" href="structptree__t.html">ptree_t</a> **evar_list, <a class="el" href="structptree__t.html">ptree_t</a> **svar_list, unsigned char verbose)</td></tr>
+<tr class="separator:a808176d60fadb9220e5816cf96aa6070"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae44dea86f4aa64f84adecb64841a5e09"><td class="memItemLeft" align="right" valign="top">int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gr1c__util_8h.html#ae44dea86f4aa64f84adecb64841a5e09">get_offsets_list</a> (<a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, <a class="el" href="structptree__t.html">ptree_t</a> *nonbool_var_list)</td></tr>
 <tr class="separator:ae44dea86f4aa64f84adecb64841a5e09"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c957afad86e766f438eb7f8c2ef6601"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3c957afad86e766f438eb7f8c2ef6601"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>expand_nonbool_GR1</b> (<a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, <a class="el" href="structptree__t.html">ptree_t</a> **env_init, <a class="el" href="structptree__t.html">ptree_t</a> **sys_init, <a class="el" href="structptree__t.html">ptree_t</a> ***env_trans_array, int *et_array_len, <a class="el" href="structptree__t.html">ptree_t</a> ***sys_trans_array, int *st_array_len, <a class="el" href="structptree__t.html">ptree_t</a> ***env_goals, int num_env_goals, <a class="el" href="structptree__t.html">ptree_t</a> ***sys_goals, int num_sys_goals, unsigned char verbose)</td></tr>
-<tr class="separator:a3c957afad86e766f438eb7f8c2ef6601"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa0fb81b3c85096540f2d5dcdfe0a009"><td class="memItemLeft" align="right" valign="top">vartype *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gr1c__util_8h.html#afa0fb81b3c85096540f2d5dcdfe0a009">int_to_bitvec</a> (int x, int vec_len)</td></tr>
+<tr class="separator:afa0fb81b3c85096540f2d5dcdfe0a009"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae7a10ef5f8ad48fd4911b85113130642"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae7a10ef5f8ad48fd4911b85113130642"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>print_GR1_spec</b> (<a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, <a class="el" href="structptree__t.html">ptree_t</a> *env_init, <a class="el" href="structptree__t.html">ptree_t</a> *sys_init, <a class="el" href="structptree__t.html">ptree_t</a> **env_trans_array, int et_array_len, <a class="el" href="structptree__t.html">ptree_t</a> **sys_trans_array, int st_array_len, <a class="el" href="structptree__t.html">ptree_t</a> **env_goals, int num_env_goals, <a class="el" href="structptree__t.html">ptree_t</a> **sys_goals, int num_sys_goals, FILE *outf)</td></tr>
 <tr class="separator:ae7a10ef5f8ad48fd4911b85113130642"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a293813eff28c67481a20602966258142"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a293813eff28c67481a20602966258142"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>check_gr1c_form</b> (<a class="el" href="structptree__t.html">ptree_t</a> *evar_list, <a class="el" href="structptree__t.html">ptree_t</a> *svar_list, <a class="el" href="structptree__t.html">ptree_t</a> *env_init, <a class="el" href="structptree__t.html">ptree_t</a> *sys_init, <a class="el" href="structptree__t.html">ptree_t</a> **env_trans_array, int et_array_len, <a class="el" href="structptree__t.html">ptree_t</a> **sys_trans_array, int st_array_len, <a class="el" href="structptree__t.html">ptree_t</a> **env_goals, int num_env_goals, <a class="el" href="structptree__t.html">ptree_t</a> **sys_goals, int num_sys_goals)</td></tr>
-<tr class="separator:a293813eff28c67481a20602966258142"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Small handy routines not otherwise sorted. </p>
-<p>SCL; 2013. </p>
+<p>SCL; 2013, 2014. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="adcf1ffa87c3b1f057a37e2467fb4776e"></a>
 <div class="memitem">
@@ -287,7 +287,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>check_gr1c_form</b> (<
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 19 2014 11:36:09 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 11 2014 11:49:53 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>
