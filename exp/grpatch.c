@@ -52,6 +52,7 @@ extern ptree_t *gen_tree_ptr;
 #define OUTPUT_FORMAT_TULIP 1
 #define OUTPUT_FORMAT_DOT 2
 #define OUTPUT_FORMAT_AUT 3
+#define OUTPUT_FORMAT_JSON 5
 
 /* Runtime modes */
 #define GR1C_MODE_UNSET 0
@@ -131,6 +132,8 @@ int main( int argc, char **argv )
 					format_option = OUTPUT_FORMAT_DOT;
 				} else if (!strncmp( argv[i+1], "aut", strlen( "aut" ) )) {
 					format_option = OUTPUT_FORMAT_AUT;
+				} else if (!strncmp( argv[i+1], "json", strlen( "json" ) )) {
+					format_option = OUTPUT_FORMAT_JSON;
 				} else {
 					fprintf( stderr,
 							 "Unrecognized output format. Try \"-h\".\n" );
@@ -198,7 +201,7 @@ int main( int argc, char **argv )
 				"  -v          be verbose; use -vv to be more verbose\n"
 				"  -l          enable logging\n"
 				"  -t TYPE     strategy output format; default is \"tulip\";\n"
-				"              supported formats: txt, dot, aut, tulip\n"
+				"              supported formats: txt, dot, aut, json, tulip\n"
 				"  -p          dump parse trees to DOT files, and echo formulas to screen\n", argv[0] );
 		printf( "  -m VARS     VARS is a space-separated list of metric variables\n"
 				"  -a FILE     automaton input file, in gr1c \"aut\" format;\n"
@@ -585,6 +588,8 @@ int main( int argc, char **argv )
 			}
 		} else if (format_option == OUTPUT_FORMAT_AUT) {
 			aut_aut_dump( strategy, num_env+num_sys, fp );
+		} else if (format_option == OUTPUT_FORMAT_JSON) {
+			json_aut_dump( strategy, evar_list, svar_list, fp );
 		} else { /* OUTPUT_FORMAT_TULIP */
 			tulip_aut_dump( strategy, evar_list, svar_list, fp );
 		}
