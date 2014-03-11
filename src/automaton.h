@@ -9,7 +9,7 @@
  * particular automaton (strategy).
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -160,15 +160,33 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
    list of IDs of nodes reachable in one step. */
 void list_aut_dump( anode_t *head, int state_len, FILE *fp );
 
-/** Dump strategy using "gr1c automaton" file format.  See
-   [external_notes](md_formats.html) for details.  If fp = NULL, then
-   write to stdout. */
+/** Dump strategy using the current version of the "gr1c automaton"
+   file format.  See [external_notes](md_formats.html) for details.
+   If fp = NULL, then write to stdout. */
 void aut_aut_dump( anode_t *head, int state_len, FILE *fp );
+
+/** Dump strategy using the specified version of the "gr1c automaton"
+   file format.  This function is wrapped by aut_aut_dump().  Return 0
+   on success.  If the given version number is not supported, then
+   return -1. */
+int aut_aut_dumpver( anode_t *head, int state_len, FILE *fp, int version );
 
 /** Load strategy given in "gr1c automaton" format from file fp.  See
    [external_notes](md_formats.html) for details.  If fp = NULL, then
-   read from stdin.  Return resulting head pointer, or NULL if
-   error. */
+   read from stdin.  Return resulting head pointer, or NULL if error.
+   If version is not NULL, then the detected format version number is
+   placed in *version.
+
+   Note that attempting to load a gr1c automaton file for a version
+   that includes fields not present in this build of gr1c results in a
+   warning message while all supported fields are used.  If expected
+   fields are missing (e.g., no rgrad number is available), then the
+   appropriate "unset" indicator is set to each such field; typically
+   this is -1, check the definition of anode_t for details. */
+anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version );
+
+/** Legacy wrapper for aut_aut_load().  Equivalent to calling
+   aut_aut_loadver() with version == NULL */
 anode_t *aut_aut_load( int state_len, FILE *fp );
 
 /** Get number of nodes in given automaton. */

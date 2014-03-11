@@ -137,7 +137,7 @@ these are below.
 Running `make`, as described above, will not cause the programs `grpatch` and
 `grjit` to be built.  To achieve this,
 
-    $ make exp
+    $ make all
 
 Alternatively, you can request a specific executable, e.g., `make grpatch`.  To
 install `grpatch` in the same place as `gr1c`,

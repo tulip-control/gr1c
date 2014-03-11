@@ -4,6 +4,7 @@
 
 CORE_PROGRAMS = gr1c rg
 EXP_PROGRAMS = grpatch
+AUX_PROGRAMS = autman
 
 
 prefix = /usr/local
@@ -42,12 +43,16 @@ LDFLAGS = $(CUDD_LIB) -lm $(CUDD_XCFLAGS)
 
 core: $(CORE_PROGRAMS)
 exp: $(EXP_PROGRAMS)
-all: core exp
+aux: $(AUX_PROGRAMS)
+all: core exp aux
 
 gr1c: main.o util.o logging.o interactive.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+autman: util.o logging.o solve_support.o ptree.o autman.o automaton.o automaton_io.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 grpatch: grpatch.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o patching_hotswap.o ptree.o automaton.o automaton_io.o gr1c_parse.o
@@ -56,6 +61,8 @@ grpatch: grpatch.o util.o logging.o interactive.o solve_metric.o solve_support.o
 grjit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
+autman.o: src/autman.c
+	$(CC) $(ALL_CFLAGS) -c $^
 
 grpatch.o: $(EXPDIR)/grpatch.c
 	$(CC) $(ALL_CFLAGS) -c $^
@@ -131,7 +138,7 @@ dclean:
 # Delete only executables and corresponding object code
 .PHONY: eclean
 eclean:
-	-rm -f *~ *.o y.tab.h y.tab.c lex.yy.c $(CORE_PROGRAMS) $(EXP_PROGRAMS)
+	-rm -f *~ *.o y.tab.h y.tab.c lex.yy.c $(CORE_PROGRAMS) $(EXP_PROGRAMS) $(AUX_PROGRAMS)
 
 # Delete testing-related things
 .PHONY: tclean

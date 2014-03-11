@@ -28,7 +28,19 @@ formats](http://slivingston.github.io/nTLP/doc/data_formats.html#tulipcon-xml).
 <h2 id="gr1cautformat">gr1c automaton</h2>
 
 This format is occasionally referred to as "gr1c aut format".  The relevant
-command-line argument is "-a FILE".
+command-line argument is "-a FILE".  Note that version numbers of this format
+are independent (for most practical purposes) from the version of gr1c itself.
+For all versions, the version number is given as a single nonnegative integer on
+the first non-comment, non-blank line.  In the case of a missing version number,
+[0 is assumed](#gr1cautformatv0) (also known as the [legacy
+format](#gr1cautformatv0)).  Unless explicitly stated to the contrary in the
+format version description below, blank lines and lines beginning with ``#``
+(known as "comments") are always ignored.
+
+For this format, the API includes functions aut_aut_load() and aut_aut_dump()
+for reading and writing, respectively.  Signatures are in automaton.h.
+
+<h3 id="gr1cautformatv0">version 0 (legacy)</h2>
 
 The order of the state vector matches that from the specification (as in most
 other places in the source code).  Each line is of the form
@@ -42,9 +54,6 @@ outgoing transition set of this node.
 
 The list of IDs is assumed to be tight, meaning if there are N nodes, then the
 file must contain indices 0 through N-1 (not necessarily in order).
-
-For this format, the API includes functions aut_aut_load() and aut_aut_dump()
-for reading and writing, respectively.  Signatures are in automaton.h.
 
 
 <h2 id="edgechangeset">game edge set changes</h2>
