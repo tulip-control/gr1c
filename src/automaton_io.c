@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "ptree.h"
 #include "automaton.h"
@@ -772,5 +773,94 @@ int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	fprintf( fp, "  <extra>strategy synthesized with gr1c, version "
 			 GR1C_VERSION "</extra>\n</tulipcon>\n" );
 
+	return 0;
+}
+
+
+#define TIMESTAMP_LEN 32
+int json_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+				   FILE *fp )
+{
+	int num_env, num_sys;
+
+	struct tm *timeptr;
+	time_t clock;
+	char timestamp[TIMESTAMP_LEN];
+	int i;
+	ptree_t *var;
+
+	if (fp == NULL)
+		fp = stdout;
+
+	num_env = tree_size( evar_list );
+	num_sys = tree_size( svar_list );
+
+	clock = time( NULL );
+	timeptr = gmtime( &clock );  /* UTC */
+	if (strftime( timestamp, TIMESTAMP_LEN,
+				  "%Y-%m-%d %H:%M:%S", timeptr ) == 0) {
+		fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
+		return -1;
+	}
+
+	fprintf( fp, "{\"version\": 0,\n" );  /* gr1c JSON format version */
+	fprintf( fp, " \"gr1c\": \"" GR1C_VERSION "\",\n" );
+	fprintf( fp, " \"date\": \"%s\",\n", timestamp );
+	fprintf( fp, " \"extra\": \"\",\n\n" );
+
+	fprintf( fp, " \"ENV\": [" );
+	for (i = 0; i < num_env; i++) {
+		var = get_list_item( evar_list, i );
+		fprintf( fp, "{\"%s\": ", var->name );
+		if (var->value >= 0) {
+			fprintf( fp, "[0,%d]}", var->value );
+		} else {
+			fprintf( fp, "\"boolean\"}" );
+		}
+		if (i < num_env-1)
+			fprintf( fp, ", " );
+	}
+	fprintf( fp, "],\n \"SYS\": [" );
+	for (i = 0; i < num_sys; i++) {
+		var = get_list_item( svar_list, i );
+		fprintf( fp, "{\"%s\": ", var->name );
+		if (var->value >= 0) {
+			fprintf( fp, "[0, %d]}", var->value );
+		} else {
+			fprintf( fp, "\"boolean\"}" );
+		}
+		if (i < num_sys-1)
+			fprintf( fp, ", " );
+	}
+	fprintf( fp, "],\n\n" );
+
+	fprintf( fp, " \"nodes\": {\n" );
+	while (head) {
+		fprintf( fp, "\"0x%X\": {\n", head );
+		fprintf( fp, "    \"state\": [" );
+		for (i = 0; i < num_env+num_sys; i++) {
+			fprintf( fp, "%d", *(head->state+i) );
+			if (i < num_env+num_sys-1)
+				fprintf( fp, ", " );
+		}
+
+		fprintf( fp,
+				 "],\n    \"mode\": %d,\n    \"rgrad\": %d,\n",
+				 head->mode, head->rgrad );
+
+		fprintf( fp, "    \"trans\": [" );
+		for (i = 0; i < head->trans_len; i++) {
+			fprintf( fp, "\"0x%X\"", *(head->trans+i) );
+			if (i < head->trans_len-1)
+				fprintf( fp, ", " );
+		}
+		fprintf( fp, "] }" );
+
+		head = head->next;
+		if (head != NULL)
+			fprintf( fp, "," );
+		fprintf( fp, "\n" );
+	}
+	fprintf( fp, "}}\n" );
 	return 0;
 }

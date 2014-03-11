@@ -189,6 +189,11 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version );
    aut_aut_loadver() with version == NULL */
 anode_t *aut_aut_load( int state_len, FILE *fp );
 
+/** Dump strategy using the current version of the gr1c-JSON file
+   format.  Consult [external_notes](md_formats.html) for details. */
+int json_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+				   FILE *fp );
+
 /** Get number of nodes in given automaton. */
 int aut_size( anode_t *head );
 

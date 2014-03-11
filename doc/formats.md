@@ -10,12 +10,57 @@ it, is:
 - `txt` : simple plaintext format (not standard); list_aut_dump()
 - `dot` : [Graphviz dot](http://www.graphviz.org/); dot_aut_dump()
 - `aut` : [gr1c automaton format](#gr1cautformat); aut_aut_dump()
+- `json` : [strategy in JSON](#gr1cjson); json_aut_dump()
 - `tulip` : [tulipcon XML](#tulipconxml); tulip_aut_dump()
 - `tulip0` : for legacy support; *do not* use this in new applications.
 
 Several of the patching routines need to be given a description of changes to
 the game edge set.  This is achieved using the [edge changes file
 format](#edgechangeset).  The relevant command-line argument is "-e FILE".
+
+
+<h2 id="gr1cjson">strategy in JSON</h2>
+
+The gross file formatting is [JSON](http://json.org/).  The details of what gr1c
+provides are versioned.  The current and only version is zero.  A key to entries
+is:
+
+- `version` : format version number
+- `gr1c` : version of gr1c that generated the output
+- `date` : timestamp in UTC; e.g., invocation time of json_aut_dump()
+- `extra` : an arbitrary, printable string
+- `nodes` : object of automaton nodes, each of which is uniquely named and has
+  as value an object organized by the various members of anode_t
+  (cf. automaton.h).
+
+Note that the notion of "object" in JSON maps to `dict` (i.e., "dictionary
+objects") in Python.  An example is the following.
+
+    {"version": 0,
+     "gr1c": "0.7.2",
+     "date": "2014-03-11 15:13:28",
+     "extra": "Experiment trial number 1.",
+
+     "ENV": [{"x": "boolean"}],
+     "SYS": [{"y": "boolean"}],
+
+     "nodes": {
+    "0x101090": {
+        "state": [0, 0],
+        "mode": 0,
+        "rgrad": 1,
+        "trans": ["0x101040"] },
+    "0x101040": {
+        "state": [1, 1],
+        "mode": 1,
+        "rgrad": 1,
+        "trans": ["0x101090"] },
+    "0x101010": {
+        "state": [0, 1],
+        "mode": 0,
+        "rgrad": 1,
+        "trans": ["0x101040"] }
+    }}
 
 
 <h2 id="tulipconxml">tulipcon XML</h2>
