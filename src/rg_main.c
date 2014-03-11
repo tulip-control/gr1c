@@ -46,7 +46,6 @@ extern int st_array_len;
 #define OUTPUT_FORMAT_TULIP 1
 #define OUTPUT_FORMAT_DOT 2
 #define OUTPUT_FORMAT_AUT 3
-#define OUTPUT_FORMAT_TULIP0 4
 
 /* Runtime modes */
 #define RG_MODE_SYNTAX 0
@@ -125,9 +124,6 @@ int main( int argc, char **argv )
 				}
 				if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
 					format_option = OUTPUT_FORMAT_TEXT;
-				} else if (!strncmp( argv[i+1], "tulip0",
-									 strlen( "tulip0" ) )) {
-					format_option = OUTPUT_FORMAT_TULIP0;
 				} else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
 					format_option = OUTPUT_FORMAT_TULIP;
 				} else if (!strncmp( argv[i+1], "dot", strlen( "dot" ) )) {
@@ -182,7 +178,7 @@ int main( int argc, char **argv )
 				"  -v        be verbose\n"
 				"  -l        enable logging\n"
 				"  -t TYPE   strategy output format; default is \"tulip\";\n"
-				"            supported formats: txt, dot, aut, tulip, tulip0\n", argv[0] );
+				"            supported formats: txt, dot, aut, tulip\n", argv[0] );
 		printf( "  -n INIT     initial condition interpretation; (not case sensitive)\n"
 				"              one of\n"
 				"                  ALL_INIT (default)\n"
@@ -577,8 +573,6 @@ int main( int argc, char **argv )
 			}
 		} else if (format_option == OUTPUT_FORMAT_AUT) {
 			aut_aut_dump( strategy, num_env+num_sys, fp );
-		} else if (format_option == OUTPUT_FORMAT_TULIP0) {
-			tulip0_aut_dump( strategy, evar_list, svar_list, fp );
 		} else { /* OUTPUT_FORMAT_TULIP */
 			tulip_aut_dump( strategy, evar_list, svar_list, fp );
 		}

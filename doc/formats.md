@@ -12,7 +12,6 @@ it, is:
 - `aut` : [gr1c automaton format](#gr1cautformat); aut_aut_dump()
 - `json` : [strategy in JSON](#gr1cjson); json_aut_dump()
 - `tulip` : [tulipcon XML](#tulipconxml); tulip_aut_dump()
-- `tulip0` : for legacy support; *do not* use this in new applications.
 
 Several of the patching routines need to be given a description of changes to
 the game edge set.  This is achieved using the [edge changes file

@@ -52,7 +52,6 @@ extern int st_array_len;
 #define OUTPUT_FORMAT_TULIP 1
 #define OUTPUT_FORMAT_DOT 2
 #define OUTPUT_FORMAT_AUT 3
-#define OUTPUT_FORMAT_TULIP0 4
 #define OUTPUT_FORMAT_JSON 5
 
 /* Runtime modes */
@@ -118,9 +117,6 @@ int main( int argc, char **argv )
 				}
 				if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
 					format_option = OUTPUT_FORMAT_TEXT;
-				} else if (!strncmp( argv[i+1], "tulip0",
-									 strlen( "tulip0" ) )) {
-					format_option = OUTPUT_FORMAT_TULIP0;
 				} else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
 					format_option = OUTPUT_FORMAT_TULIP;
 				} else if (!strncmp( argv[i+1], "dot", strlen( "dot" ) )) {
@@ -183,7 +179,7 @@ int main( int argc, char **argv )
 				"  -v          be verbose; use -vv to be more verbose\n"
 				"  -l          enable logging\n"
 				"  -t TYPE     strategy output format; default is \"tulip\";\n"
-				"              supported formats: txt, dot, aut, json, tulip, tulip0\n", argv[0] );
+				"              supported formats: txt, dot, aut, json, tulip\n", argv[0] );
 		printf( "  -n INIT     initial condition interpretation; (not case sensitive)\n"
 				"              one of\n"
 				"                  ALL_ENV_EXIST_SYS_INIT (default)\n"
@@ -520,8 +516,6 @@ int main( int argc, char **argv )
 			aut_aut_dump( strategy, num_env+num_sys, fp );
 		} else if (format_option == OUTPUT_FORMAT_JSON) {
 			json_aut_dump( strategy, evar_list, svar_list, fp );
-		} else if (format_option == OUTPUT_FORMAT_TULIP0) {
-			tulip0_aut_dump( strategy, evar_list, svar_list, fp );
 		} else { /* OUTPUT_FORMAT_TULIP */
 			tulip_aut_dump( strategy, evar_list, svar_list, fp );
 		}
