@@ -182,7 +182,7 @@ int main( int argc, char **argv )
 				"  -l        enable logging\n"
 				"  -t TYPE   strategy output format; default is \"tulip\";\n"
 				"            supported formats: txt, dot, aut, json, tulip\n", argv[0] );
-		printf( "  -n INIT     initial condition interpretation; (not case sensitive)\n"
+		printf( "  -n INIT   initial condition interpretation; (not case sensitive)\n"
 				"              one of\n"
 				"                  ALL_INIT (default)\n"
 				"  -s        only check specification syntax (return -1 on error)\n"
