@@ -85,7 +85,7 @@ done
 for q in ALL_INIT; do
     for k in count_onestep.spc; do
         if test $VERBOSE -eq 1; then
-            echo "\tComparing  gr1c -n ${k} -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.${q}.listdump.out"
+            echo "\tComparing  gr1c -n ${q} -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.${q}.listdump.out"
         fi
         if ! ($BUILD_ROOT/gr1c -n ${q} -t txt specs/$k | cmp -s expected_outputs/${k}.${q}.listdump.out -); then
             echo $PREFACE "synthesis regression test failed for specs/${k} with init_flags ${q}\n"
