@@ -139,8 +139,9 @@ anode_t *aut_prune_deadends( anode_t *head );
 int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					FILE *fp );
 
-/** Dump using tulipcon version 0.
-   tulip0_aut_dump() is provided only for legacy code. */
+/** Dump using tulipcon version 0.  DEPRECATED!  Please use
+   tulip_aut_dump() instead.  tulip0_aut_dump() is provided only for
+   legacy code and will soon be removed. */
 int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					 FILE *fp );
 
@@ -188,6 +189,11 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version );
 /** Legacy wrapper for aut_aut_load().  Equivalent to calling
    aut_aut_loadver() with version == NULL */
 anode_t *aut_aut_load( int state_len, FILE *fp );
+
+/** Dump strategy using the current version of the gr1c-JSON file
+   format.  Consult [external_notes](md_formats.html) for details. */
+int json_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+				   FILE *fp );
 
 /** Get number of nodes in given automaton. */
 int aut_size( anode_t *head );

@@ -52,7 +52,7 @@ extern ptree_t *gen_tree_ptr;
 #define OUTPUT_FORMAT_TULIP 1
 #define OUTPUT_FORMAT_DOT 2
 #define OUTPUT_FORMAT_AUT 3
-#define OUTPUT_FORMAT_TULIP0 4
+#define OUTPUT_FORMAT_JSON 5
 
 /* Runtime modes */
 #define GR1C_MODE_UNSET 0
@@ -131,15 +131,14 @@ int main( int argc, char **argv )
 				}
 				if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
 					format_option = OUTPUT_FORMAT_TEXT;
-				} else if (!strncmp( argv[i+1], "tulip0",
-									 strlen( "tulip0" ) )) {
-					format_option = OUTPUT_FORMAT_TULIP0;
 				} else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
 					format_option = OUTPUT_FORMAT_TULIP;
 				} else if (!strncmp( argv[i+1], "dot", strlen( "dot" ) )) {
 					format_option = OUTPUT_FORMAT_DOT;
 				} else if (!strncmp( argv[i+1], "aut", strlen( "aut" ) )) {
 					format_option = OUTPUT_FORMAT_AUT;
+				} else if (!strncmp( argv[i+1], "json", strlen( "json" ) )) {
+					format_option = OUTPUT_FORMAT_JSON;
 				} else {
 					fprintf( stderr,
 							 "Unrecognized output format. Try \"-h\".\n" );
@@ -223,7 +222,7 @@ int main( int argc, char **argv )
 				"  -v          be verbose; use -vv to be more verbose\n"
 				"  -l          enable logging\n"
 				"  -t TYPE     strategy output format; default is \"tulip\";\n"
-				"              supported formats: txt, dot, aut, tulip, tulip0\n"
+				"              supported formats: txt, dot, aut, json, tulip\n"
 				"  -p          dump parse trees to DOT files, and echo formulas to screen\n", argv[0] );
 		printf( "  -m VARS     VARS is a space-separated list of metric variables\n"
 				"  -a FILE     automaton input file, in gr1c \"aut\" format;\n"
@@ -330,19 +329,33 @@ int main( int argc, char **argv )
 	if (input_index > 0)
 		fclose( fp );
 
-	/* Treat deterministic problem in which ETRANS or EINIT is omitted. */
-	if (evar_list == NULL) {
-		if (et_array_len == 0) {
-			et_array_len = 1;
-			env_trans_array = malloc( sizeof(ptree_t *) );
-			if (env_trans_array == NULL) {
-				perror( "gr1c, malloc" );
-				return -1;
-			}
-			*env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+	/* Omission implies empty. */
+	if (et_array_len == 0) {
+		et_array_len = 1;
+		env_trans_array = malloc( sizeof(ptree_t *) );
+		if (env_trans_array == NULL) {
+			perror( "gr1c, malloc" );
+			return -1;
 		}
-		if (env_init == NULL)
-			env_init = init_ptree( PT_CONSTANT, NULL, 1 );
+		*env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
+	if (st_array_len == 0) {
+		st_array_len = 1;
+		sys_trans_array = malloc( sizeof(ptree_t *) );
+		if (sys_trans_array == NULL) {
+			perror( "gr1c, malloc" );
+			return -1;
+		}
+		*sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+	}
+	if (num_sgoals == 0) {
+		num_sgoals = 1;
+		sys_goals = malloc( sizeof(ptree_t *) );
+		if (sys_goals == NULL) {
+			perror( "gr1c, malloc" );
+			return -1;
+		}
+		*sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );
 	}
 
 	/* Number of variables, before expansion of those that are nonboolean */
@@ -445,7 +458,7 @@ int main( int argc, char **argv )
 							&env_trans_array, &et_array_len,
 							&sys_trans_array, &st_array_len,
 							&env_goals, num_egoals, &sys_goals, num_sgoals,
-							verbose ) < 0)
+							ALL_ENV_EXIST_SYS_INIT, verbose ) < 0)
 		return -1;
 	nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list,
 												 verbose );
@@ -637,8 +650,8 @@ int main( int argc, char **argv )
 			}
 		} else if (format_option == OUTPUT_FORMAT_AUT) {
 			aut_aut_dump( strategy, num_env+num_sys, fp );
-		} else if (format_option == OUTPUT_FORMAT_TULIP0) {
-			tulip0_aut_dump( strategy, evar_list, svar_list, fp );
+		} else if (format_option == OUTPUT_FORMAT_JSON) {
+			json_aut_dump( strategy, evar_list, svar_list, fp );
 		} else { /* OUTPUT_FORMAT_TULIP */
 			tulip_aut_dump( strategy, evar_list, svar_list, fp );
 		}
@@ -671,7 +684,7 @@ int main( int argc, char **argv )
 		Cudd_RecursiveDeref( manager, T );
 	if (strategy)
 		delete_aut( strategy );
-	if (verbose)
+	if (verbose > 1)
 		logprint( "Cudd_CheckZeroRef -> %d", Cudd_CheckZeroRef( manager ) );
 	Cudd_Quit(manager);
 	if (logging_flag)

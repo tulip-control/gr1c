@@ -87,10 +87,9 @@ gr1c differs somewhat.
 
 <dt>rg</dt>
 <dd>a tool for solving "reachability games," which are similar to GR(1) formulae
-except with at most one system goal and where that system goal must be reached
-once (not necessarily infinitely often).  The accepted input specifications are
-slightly different; the single system goal is preceded by "<>" (as the
-"eventually" operator).
+except with at most one system goal and where that system goal need only be
+reached once (not necessarily infinitely often).  The input specifications are
+[slightly different](md_spc_format.html#reachgames).
 </dd>
 
 <dt>grpatch</dt>

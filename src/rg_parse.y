@@ -82,14 +82,12 @@ input: /* empty */
 
 exp: evar_list ';'
    | svar_list ';'
-   | E_INIT ';' {
+   | E_INIT ';'  {
          if (env_init != NULL) {
-             printf( "Error detected on line %d.  Duplicate ENVINIT.\n",
+             printf( "Error detected on line %d.  Duplicate ENVINIT\n",
                      @1.last_line );
              YYABORT;
          }
-         /* Handle empty initial conditions, i.e., no restrictions. */
-         env_init = init_ptree( PT_CONSTANT, NULL, 1 );
      }
    | E_INIT propformula ';' {
          if (env_init != NULL) {
@@ -120,8 +118,6 @@ exp: evar_list ';'
                      @1.last_line );
              YYABORT;
          }
-         /* Handle empty initial conditions, i.e., no restrictions. */
-         sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
      }
    | S_INIT propformula ';' {
          if (sys_init != NULL) {

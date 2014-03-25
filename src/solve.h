@@ -2,7 +2,7 @@
  * \brief Compute realizability and a strategy for a GR(1) game.
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2014.
  */
 
 
@@ -14,8 +14,20 @@
 #include "automaton.h"
 
 /* Flags concerning initial conditions. (See comments for check_realizable.) */
-#define EXIST_SYS_INIT 1
-#define ALL_SYS_INIT 2
+#define ALL_ENV_EXIST_SYS_INIT 1
+#define ALL_INIT 2
+#define ONE_SIDE_INIT 3
+
+#define LOGPRINT_INIT_FLAGS(X) \
+	if ((X) == ALL_ENV_EXIST_SYS_INIT) { \
+	    logprint_raw( "ALL_ENV_EXIST_SYS_INIT" ); \
+	} else if ((X) == ALL_INIT) { \
+	    logprint_raw( "ALL_INIT" ); \
+	} else if ((X) == ONE_SIDE_INIT) {	\
+	    logprint_raw( "ONE_SIDE_INIT" ); \
+	} else { \
+	    logprint_raw( "(unrecognized)" ); \
+	}
 
 
 /** If realizable, then returns (a pointer to) the characteristic
@@ -31,16 +43,41 @@
    returned.  Depending on when and what provoked the error, there may
    be memory leaks.
 
-   init_flags can be
+   init_flags can be one of
 
-       EXIST_SYS_INIT : realizable if for each possible environment
-                        initialization, there exists a system
-                        initialization such that the corresponding
-                        state is in the winning set.
+     - ALL_ENV_EXIST_SYS_INIT : realizable if for each possible
+                       environment initialization, there exists a
+                       system initialization such that the
+                       corresponding state is in the winning set.
+                       Empty ...INIT:; clauses are equivalent to
+                       ...INIT:True;
 
-       ALL_SYS_INIT   : realizable if every state satisfying both
-                        environment and system initial conditions is
-                        in the winning set.
+     - ALL_INIT :      realizable if every state satisfying both
+                       environment and system initial conditions is in
+                       the winning set.  Empty ...INIT:; clauses are
+                       equivalent to ...INIT:True;
+
+     - ONE_SIDE_INIT : At most one of ENVINIT or SYSINIT can be
+                       nonempty.  If ENVINIT is nonempty, and let
+                       ENVINIT: f;, then f is an arbitrary state
+                       formula in terms of environment and system
+                       variables and the system strategy must allow
+                       for any initial state that satisfies f.  If
+                       SYSINIT is nonempty, and let SYSINIT: f;, then
+                       f is an arbitrary state formula in terms of
+                       environment and system variables and the system
+                       strategy must find a strategy for some state
+                       that satisfies f.  If both of the ...INIT:;
+                       clauses are empty, then it is equivalent to
+                       having ENVINIT:True;
+
+   Let ENVINIT: f; and SYSINIT: g;, where it may be that f or g is the
+   empty string.  If init_flags is ALL_ENV_EXIST_SYS_INIT, then f must
+   only be in terms of ENV variables, and g only in terms of SYS
+   variables.  For other init_flags settings, f and g are not over
+   constrained variable sets.  However, a common convention for
+   init_flags of ALL_INIT is to only have ENV variables in f, etc.,
+   like for ALL_ENV_EXIST_SYS_INIT.
 */
 DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 						  unsigned char verbose );

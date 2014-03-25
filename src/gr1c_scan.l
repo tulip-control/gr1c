@@ -6,9 +6,9 @@
 %{
   #include "y.tab.h"
   #define YY_USER_ACTION yylloc->last_column += yyleng;
+  #define YY_DECL int yylex( YYSTYPE *yylval, YYLTYPE *yylloc )
 %}
 
-%option bison-bridge bison-locations
 %option noyywrap
 %option warn nodefault
 

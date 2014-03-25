@@ -85,12 +85,10 @@ exp: evar_list ';'
    | svar_list ';'
    | E_INIT ';' {
          if (env_init != NULL) {
-             printf( "Error detected on line %d.  Duplicate ENVINIT.\n",
+             printf( "Error detected on line %d.  Duplicate ENVINIT\n",
                      @1.last_line );
              YYABORT;
          }
-         /* Handle empty initial conditions, i.e., no restrictions. */
-         env_init = init_ptree( PT_CONSTANT, NULL, 1 );
      }
    | E_INIT propformula ';' {
          if (env_init != NULL) {
@@ -121,8 +119,6 @@ exp: evar_list ';'
                      @1.last_line );
              YYABORT;
          }
-         /* Handle empty initial conditions, i.e., no restrictions. */
-         sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
      }
    | S_INIT propformula ';' {
          if (sys_init != NULL) {
@@ -145,7 +141,16 @@ exp: evar_list ';'
          }
      }
    | S_TRANS stransformula ';'
-   | S_GOAL ';'
+   | S_GOAL ';' {
+         num_sgoals = 1;
+         sys_goals = malloc( sizeof(ptree_t *) );
+         if (sys_goals == NULL) {
+                 perror( "gr1c_parse.y, S_GOAL ';', malloc" );
+                 YYABORT;
+         }
+         /* Equivalent to []<>True */
+         *sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+     }
    | S_GOAL sgoalformula ';'
    | error  { printf( "Error detected on line %d.\n", @1.last_line ); YYABORT; }
 ;

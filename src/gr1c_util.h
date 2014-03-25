@@ -2,7 +2,7 @@
  * \brief Small handy routines not otherwise sorted.
  *
  *
- * SCL; 2013.
+ * SCL; 2013, 2014.
  */
 
 
@@ -41,13 +41,20 @@ int *get_offsets_list( ptree_t *evar_list, ptree_t *svar_list,
 					   ptree_t *nonbool_var_list );
 
 /* Expand any variables with integral domains in parse trees of the
-   GR(1) specification components */
+   GR(1) specification components.
+
+   init_flags as used with check_realizable() and synthesize()
+   (cf. solve.h) is necessary to decide how restrictions of
+   unreachable values that result from nonbool expansion should be
+   incorporated into initial conditions.  The _init trees are assumed
+   to be well-formed given init_flags, as verified by check_gr1c_form() */
 int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 						ptree_t **env_init, ptree_t **sys_init,
 						ptree_t ***env_trans_array, int *et_array_len,
 						ptree_t ***sys_trans_array, int *st_array_len,
 						ptree_t ***env_goals, int num_env_goals,
 						ptree_t ***sys_goals, int num_sys_goals,
+						unsigned char init_flags,
 						unsigned char verbose );
 
 /* Print to outf if it is not NULL.  Otherwise, dump to the log. */
@@ -59,12 +66,18 @@ void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
 					 ptree_t **sys_goals, int num_sys_goals,
 					 FILE *outf );
 
-/* Verify well-formedness (as much as gr1c demands) of GR(1) specification. */
+/* Verify well-formedness (as much as gr1c demands) of GR(1)
+   specification.  Whether the initial conditions (i.e., ENVINIT and
+   SYSINIT) are in acceptable form depends on init_flags, which
+   corresponds to the argument by the same name used with
+   check_realizable() and synthesize() (cf. solve.h). */
 int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
 					 ptree_t *env_init, ptree_t *sys_init,
 					 ptree_t **env_trans_array, int et_array_len,
 					 ptree_t **sys_trans_array, int st_array_len,
 					 ptree_t **env_goals, int num_env_goals,
-					 ptree_t **sys_goals, int num_sys_goals );
+					 ptree_t **sys_goals, int num_sys_goals,
+					 unsigned char init_flags );
+
 
 #endif

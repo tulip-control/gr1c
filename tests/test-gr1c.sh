@@ -1,6 +1,10 @@
 #!/bin/sh
 # Tests not targeted at particular units.
 #
+# Unless the "-n" switch is explicitly given, tests involving command-line tools
+# rely on the assumption that the default init_flags is ALL_ENV_EXIST_SYS_INIT
+#
+#
 # SCL; 2012-2014.
 
 set -e
@@ -17,7 +21,7 @@ fi
 ################################################################
 # Test realizability
 
-REFSPECS="gridworld_bool.spc gridworld_env.spc arbiter4.spc trivial_2var.spc free_counter.spc"
+REFSPECS="gridworld_bool.spc gridworld_env.spc arbiter4.spc trivial_2var.spc free_counter.spc empty.spc"
 UNREALIZABLE_REFSPECS="trivial_un.spc"
 
 if test $VERBOSE -eq 1; then
@@ -47,8 +51,19 @@ for k in `echo $UNREALIZABLE_REFSPECS`; do
 done
 
 
+# Testing init_flags besides ALL_ENV_EXIST_SYS_INIT
+if test $VERBOSE -eq 1; then
+    echo "\t gr1c -r -n ALL_INIT $TESTDIR/specs/trivial_partwin.spc"
+fi
+if $BUILD_ROOT/gr1c -r -n ALL_INIT specs/trivial_partwin.spc > /dev/null; then
+    echo $PREFACE "unrealizable specs/trivial_partwin.spc with init_flags ALL_INIT detected as realizable\n"
+    exit -1
+fi
+
+
 ################################################################
 # Synthesis regression tests
+
 
 REFSPECS="trivial_2var.spc free_counter.spc count_onestep.spc"
 
@@ -63,6 +78,20 @@ for k in `echo $REFSPECS`; do
 	echo $PREFACE "synthesis regression test failed for specs/${k}\n"
 	exit -1
     fi
+done
+
+
+# Testing init_flags besides ALL_ENV_EXIST_SYS_INIT
+for q in ALL_INIT; do
+    for k in count_onestep.spc; do
+        if test $VERBOSE -eq 1; then
+            echo "\tComparing  gr1c -n ${q} -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.${q}.listdump.out"
+        fi
+        if ! ($BUILD_ROOT/gr1c -n ${q} -t txt specs/$k | cmp -s expected_outputs/${k}.${q}.listdump.out -); then
+            echo $PREFACE "synthesis regression test failed for specs/${k} with init_flags ${q}\n"
+            exit -1
+        fi
+    done
 done
 
 
