@@ -137,7 +137,7 @@ anode_t *aut_prune_deadends( anode_t *head );
    each automaton node.
 
    For each node, the goal mode and reach annotation value are
-   placed in a <name> tag in that order.
+   placed in a <anno> tag in that order.
 
    If fp = NULL, then write to stdout.  Return nonzero if error. */
 int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
