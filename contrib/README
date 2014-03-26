@@ -1,0 +1,12 @@
+This ``contrib`` directory is a place for things that are not a part of gr1c
+
+per se but are still closely dependent and generally useful.  Some of the
+material here is under separate copyright and licenses (but always open source)
+from that of gr1c.  Below is a summary of contents.
+
+readjson.py
+  Python script reading JSON output from gr1c.  Notable dependencies are
+  NetworkX (http://networkx.lanl.gov) and matplotlib (http://matplotlib.org).
+
+gen4g.py
+  Generate specification fragments modeling gridworlds.
