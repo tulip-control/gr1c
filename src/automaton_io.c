@@ -678,7 +678,10 @@ void list_aut_dump( anode_t *head, int state_len, FILE *fp )
 		fp = stdout;
 	while (node) {
 		width_count = 0;
-		fprintf( fp, "%4d : ", node_counter );
+		fprintf( fp, "%4d ", node_counter );
+		if (node->initial)
+			fprintf( fp, "(init) " );
+		fprintf( fp, ": " );
 		for (i = 0; i < state_len; i++) {
 			fprintf( fp, "%d", *(node->state+i) );
 			width_count++;

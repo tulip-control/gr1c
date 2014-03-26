@@ -25,6 +25,10 @@
 /** \brief Strategy automaton nodes. */
 typedef struct anode_t
 {
+	bool initial;  /** Indicates if this node corresponds to a state
+					  that satisfies an initial condition.  Note that
+					  it may be False even when this node could be
+					  used for initialization. */
 	vartype *state;
 	int mode;  /**<\brief Goal mode; indicates which system goal is
 				  currently being pursued. */
@@ -69,7 +73,7 @@ typedef struct anode_t
 
    Return new head on success, NULL on error. */
 anode_t *insert_anode( anode_t *head, int mode, int rgrad,
-					   vartype *state, int state_len );
+					   bool initial, vartype *state, int state_len );
 
 /** Delete topmost (head) node from list.  Return pointer to new head. */
 anode_t *pop_anode( anode_t *head );
@@ -153,12 +157,13 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 /** Dump list of nodes; mostly useful for debugging.
    If fp = NULL, then write to stdout.  The basic format is
 
-       i : S - m - r - [t0 t1 ...]
+       i [(init)] : S - m - r - [t0 t1 ...]
 
    where i is the node ID (used only as a means to uniquely refer to
    nodes), S is the state (as a bitvector) at that node, m is the goal
-   mode, r is the reach annotation value, and [t0 t1 ...] is the
-   list of IDs of nodes reachable in one step. */
+   mode, r is the reach annotation value, and [t0 t1 ...] is the list
+   of IDs of nodes reachable in one step.  The node ID is followed by
+   "(init)" if its initial field is marked True.  */
 void list_aut_dump( anode_t *head, int state_len, FILE *fp );
 
 /** Dump strategy using the current version of the "gr1c automaton"
@@ -226,5 +231,9 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	Return zero on success, nonzero on error. */
 int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					 ptree_t *nonbool_var_list );
+
+/** Dump strategy as Spin Promela model. */
+int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+				   FILE *fp );
 
 #endif

@@ -1,7 +1,7 @@
 /* automaton.c -- Definitions for core routines on automaton objects.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -16,7 +16,7 @@
 
 
 anode_t *insert_anode( anode_t *head, int mode, int rgrad,
-					   vartype *state, int state_len )
+					   bool initial, vartype *state, int state_len )
 {
 	int i;
 	anode_t *new_head = malloc( sizeof(anode_t) );
@@ -33,6 +33,7 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad,
 	}
 	for (i = 0; i < state_len; i++)
 		*(new_head->state + i) = *(state+i);
+	new_head->initial = initial;
 	new_head->mode = mode;
 	new_head->rgrad = rgrad;
 	new_head->trans = NULL;

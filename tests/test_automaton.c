@@ -1,6 +1,6 @@
 /* Unit tests for automaton (strategy) objects.
  *
- * SCL; April 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 #include <stdlib.h>
@@ -52,7 +52,7 @@ int main( int argc, char **argv )
 	}
 
 	/* Insertion */
-	head = insert_anode( NULL, -1, -1, NULL, 0 );
+	head = insert_anode( NULL, -1, -1, False, NULL, 0 );
 	if (head == NULL) {
 		ERRPRINT( "node insertion into empty automaton failed." );
 		abort();
@@ -74,7 +74,7 @@ int main( int argc, char **argv )
 	head = NULL;  /* head pointer should be NULL by now, but to be explicit. */
 	for (i = 0; i < num_nodes; i++) {
 		backup_head = head;
-		head = insert_anode( head, *(modes+i), -1, *(nodes_states+i), state_len );
+		head = insert_anode( head, *(modes+i), -1, False, *(nodes_states+i), state_len );
 		if (head == NULL) {
 			ERRPRINT( "node insertion failed; attempting to print automaton..." );
 			fflush( stderr );

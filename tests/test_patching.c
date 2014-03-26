@@ -1,6 +1,6 @@
 /* Unit tests for patching algorithm implementations.
  *
- * SCL; July 2012, Apr 2013.
+ * SCL; 2012-2014.
  */
 
 #include <stdlib.h>
@@ -134,14 +134,14 @@ int main( int argc, char **argv )
 	}
 
 	state[0] = state[1] = 0;
-	*Entry = insert_anode( NULL, 0, -1, state, num_env+num_sys );
+	*Entry = insert_anode( NULL, 0, -1, False, state, num_env+num_sys );
 	if (*Entry == NULL) {
 		ERRPRINT2( "failed to create orphan node with state [%d, %d].", state[0], state[1] );
 		abort();
 	}
 
 	state[0] = state[1] = 1;
-	*Exit = insert_anode( NULL, 0, -1, state, num_env+num_sys );
+	*Exit = insert_anode( NULL, 0, -1, False, state, num_env+num_sys );
 	if (*Exit == NULL) {
 		ERRPRINT2( "failed to create orphan node with state [%d, %d].", state[0], state[1] );
 		abort();

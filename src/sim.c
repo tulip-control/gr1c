@@ -1,7 +1,7 @@
 /* sim.c -- Definitions for signatures appearing in sim.h.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -122,7 +122,8 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 	Cudd_Ref( strans_into_W );
 	Cudd_RecursiveDeref( manager, tmp );
 
-	play = insert_anode( NULL, current_it, -1, init_state, num_env+num_sys );
+	play = insert_anode( NULL, current_it, -1, False,
+						 init_state, num_env+num_sys );
 	while (current_it < num_it) {
 		if (verbose)
 			logprint( "Beginning simulation iteration %d...", current_it );
@@ -147,7 +148,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 			MEM_len++;
 			MEM_index = MEM_len-1;
 			MEM = realloc( MEM, MEM_len*sizeof(anode_t *) );
-			*(MEM+MEM_index) = insert_anode( NULL, 0, -1,
+			*(MEM+MEM_index) = insert_anode( NULL, 0, -1, False,
 											 init_state, num_env+num_sys );
 		}
 
@@ -178,7 +179,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 									gcube+num_sys+2*num_env, num_sys )) {
 				if (find_anode( *hstacks, 0,
 								candidate_state, num_env+num_sys ) == NULL) {
-					*hstacks = insert_anode( *hstacks, 0, -1,
+					*hstacks = insert_anode( *hstacks, 0, -1, False,
 											 candidate_state, num_env+num_sys );
 
 					node = (*(MEM+MEM_index))->next;
@@ -204,7 +205,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 			}
 			if (find_anode( *hstacks, 0,
 							candidate_state, num_env+num_sys ) == NULL) {
-				*hstacks = insert_anode( *hstacks, 0, -1,
+				*hstacks = insert_anode( *hstacks, 0, -1, False,
 										 candidate_state, num_env+num_sys );
 				
 				node = (*(MEM+MEM_index))->next;
@@ -280,6 +281,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 								/* First time to find this state */
 								*(hstacks+hdepth)
 									= insert_anode( *(hstacks+hdepth), 0, -1,
+													False,
 													fnext_state,
 													num_env+num_sys );
 
@@ -313,7 +315,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 						}
 						if (j > hdepth) {
 							*(hstacks+hdepth)
-								= insert_anode( *(hstacks+hdepth), 0, -1,
+								= insert_anode( *(hstacks+hdepth), 0, -1, False,
 												fnext_state, num_env+num_sys );
 
 							prev_node = (*(MEM+MEM_index))->next;
@@ -354,7 +356,8 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 		node = *(MEM+MEM_index);
 		while (node->next)
 			node = node->next;
-		node->next = insert_anode( NULL, 0, -1, next_state, num_env+num_sys );
+		node->next = insert_anode( NULL, 0, -1, False,
+								   next_state, num_env+num_sys );
 
 		if (horizon > 1 && find_anode( *hstacks, 0,
 									   next_state, num_env+num_sys ) == NULL) {
@@ -400,7 +403,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 			Cudd_RecursiveDeref( manager, tmp );
 		}
 
-		play = insert_anode( play, current_it, -1,
+		play = insert_anode( play, current_it, -1, False,
 							 next_state, num_env+num_sys );
 		play = append_anode_trans( play, current_it-1, init_state,
 								   num_env+num_sys, current_it, next_state );

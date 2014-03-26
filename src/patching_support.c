@@ -1,7 +1,7 @@
 /* patching_support.c -- More definitions for signatures in patching.h.
  *
  *
- * SCL; 2012.
+ * SCL; 2012, 2014.
  */
 
 
@@ -228,7 +228,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 	Cudd_ForeachCube( manager, Entry, gen, gcube, gvalue ) {
 		initialize_cube( state, gcube, num_env+num_sys );
 		while (!saturated_cube( state, gcube, num_env+num_sys )) {
-			this_node_stack = insert_anode( this_node_stack, -1, -1,
+			this_node_stack = insert_anode( this_node_stack, -1, -1, False,
 											state, num_env+num_sys );
 			if (this_node_stack == NULL) {
 				fprintf( stderr,
@@ -238,7 +238,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 			}
 			increment_cube( state, gcube, num_env+num_sys );
 		}
-		this_node_stack = insert_anode( this_node_stack, -1, -1,
+		this_node_stack = insert_anode( this_node_stack, -1, -1, False,
 										state, num_env+num_sys );
 		if (this_node_stack == NULL) {
 			fprintf( stderr,
@@ -252,7 +252,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 	/* Insert all stacked, initial nodes into strategy. */
 	node = this_node_stack;
 	while (node) {
-		strategy = insert_anode( strategy, -1, node->rgrad,
+		strategy = insert_anode( strategy, -1, node->rgrad, False,
 								 node->state, num_env+num_sys );
 		if (strategy == NULL) {
 			fprintf( stderr,
@@ -428,7 +428,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 
 			new_node = find_anode( strategy, -1, state, num_env+num_sys );
 			if (new_node == NULL) {
-				strategy = insert_anode( strategy, -1, -1,
+				strategy = insert_anode( strategy, -1, -1, False,
 										 state, num_env+num_sys );
 				if (strategy == NULL) {
 					fprintf( stderr,
@@ -436,7 +436,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 							 " node into strategy.\n" );
 					return NULL;
 				}
-				this_node_stack = insert_anode( this_node_stack, -1, -1,
+				this_node_stack = insert_anode( this_node_stack, -1, -1, False,
 												state, num_env+num_sys );
 				if (this_node_stack == NULL) {
 					fprintf( stderr,

@@ -1,6 +1,6 @@
 /* Unit tests for input and output routines of automaton (strategy) objects.
  *
- * SCL; July 2012, April 2013.
+ * SCL; 2012-2014.
  */
 
 #include <string.h>
@@ -105,7 +105,7 @@ int main( int argc, char **argv )
 	*(node->trans+1) = node;
 	state[0] = 0;
 	state[1] = 1;
-	head = insert_anode( head, 0, -1, state, 2 );
+	head = insert_anode( head, 0, -1, False, state, 2 );
 	if (head == NULL) {
 		ERRPRINT( "failed to insert new node into automaton." );
 		abort();
