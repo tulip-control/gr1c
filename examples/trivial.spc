@@ -9,8 +9,8 @@ ENVINIT: !x;
 ENVTRANS: [](x <-> !x');
 ENVGOAL: []<>x;
 
-# Blank lines are optional and can placed between sections or parts of
-# formulae.
+# Blank lines are optional and can be placed between sections or parts
+# of formulae.
 
 SYSINIT: y;
 SYSTRANS:;  # Empty mean "True"; hence any transition is possible.
