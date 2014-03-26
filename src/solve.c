@@ -410,7 +410,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	/* Insert all stacked, initial nodes into strategy. */
 	node = this_node_stack;
 	while (node) {
-		strategy = insert_anode( strategy, node->mode, node->rgrad, False,
+		strategy = insert_anode( strategy, node->mode, node->rgrad, True,
 								 node->state, num_env+num_sys );
 		if (strategy == NULL) {
 			fprintf( stderr,

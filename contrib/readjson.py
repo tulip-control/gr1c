@@ -39,7 +39,7 @@ name given, then read from stdin.  E.g., try
   $ ./gr1c -t json examples/trivial.spc | ./readjson.py
 
 
-SCL; 11 Mar 2014
+SCL; 26 Mar 2014
 """
 
 import sys
@@ -57,11 +57,16 @@ if __name__ == "__main__":
     assert json_aut["version"] == 0
 
     G = nx.DiGraph()
-    G.add_nodes_from(json_aut["nodes"].iterkeys())
+    for node_ID in json_aut["nodes"].iterkeys():
+        node_label = dict([(k, json_aut["nodes"][node_ID][k]) \
+                           for k in ("state", "initial", "mode", "rgrad")])
+        G.add_node(node_ID, node_label)
     for node_id in json_aut["nodes"].iterkeys():
         for to_node in json_aut["nodes"][node_id]["trans"]:
             G.add_edge(node_id, to_node)
 
+    for (node_ID, node_d) in G.nodes_iter(data=True):
+        print(node_ID, node_d)
+
     nx.draw(G)
     plt.show()
-        

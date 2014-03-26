@@ -276,6 +276,8 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	int node_counter = 0;
 	ptree_t *var;
 	int num_env, num_sys;
+	char this_node_str[INPUT_STRING_LEN];
+	int nb = 0;
 
 	if (fp == NULL)
 		fp = stdout;
@@ -286,13 +288,19 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	fprintf( fp,
 			 "/* strategy synthesized with gr1c, version "
 			 GR1C_VERSION " */\n" );
-	fprintf( fp, "digraph A {\n" );
+	fprintf( fp, "digraph A {\n    \"\" [shape=none]\n" );
 	node = head;
 	while (node) {
-		/* First print the node, alone */
-		fprintf( fp, "    \"%d;\\n", node_counter );
+		/* Buffer node string */
+		nb = snprintf( this_node_str, INPUT_STRING_LEN,
+					   "\"%d;\\n", node_counter );
+		if (nb >= INPUT_STRING_LEN)
+			return -1;
 		if (format_flags & DOT_AUT_ATTRIB) {
-			fprintf( fp, "(%d, %d)\\n", node->mode, node->rgrad );
+			nb += snprintf( this_node_str+nb, INPUT_STRING_LEN-nb,
+							"(%d, %d)\\n", node->mode, node->rgrad );
+			if (nb >= INPUT_STRING_LEN)
+				return -1;
 		}
 		if ((format_flags & 0x1) == DOT_AUT_ALL) {
 			last_nonzero_env = num_env-1;
@@ -306,7 +314,10 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 				 last_nonzero_sys--) ;
 		}
 		if (last_nonzero_env < 0 && last_nonzero_sys < 0) {
-			fprintf( fp, "{}" );
+			nb += snprintf( this_node_str+nb, INPUT_STRING_LEN-nb,
+							"{}" );
+			if (nb >= INPUT_STRING_LEN)
+				return -1;
 		} else {
 			if (!(format_flags & DOT_AUT_EDGEINPUT)) {
 				for (j = 0; j < num_env; j++) {
@@ -316,26 +327,52 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					var = get_list_item( evar_list, j );
 					if (j == last_nonzero_env) {
 						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s", var->name );
+							nb += snprintf( this_node_str+nb,
+											INPUT_STRING_LEN-nb,
+											"%s", var->name );
+							if (nb >= INPUT_STRING_LEN)
+								return -1;
 						} else {
-							fprintf( fp, "%s=%d", var->name, *(node->state+j) );
+							nb += snprintf( this_node_str+nb,
+											INPUT_STRING_LEN-nb,
+											"%s=%d",
+											var->name, *(node->state+j) );
+							if (nb >= INPUT_STRING_LEN)
+								return -1;
 						}
 						if ((last_nonzero_sys >= 0
 							 || (format_flags & DOT_AUT_ALL))
-							&& !(format_flags & DOT_AUT_EDGEINPUT))
-							fprintf( fp, ", " );
+							&& !(format_flags & DOT_AUT_EDGEINPUT)) {
+							nb += snprintf( this_node_str+nb,
+											INPUT_STRING_LEN-nb,
+											", " );
+							if (nb >= INPUT_STRING_LEN)
+								return -1;
+						}
 					} else {
 						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s, ", var->name );
+							nb += snprintf( this_node_str+nb,
+											INPUT_STRING_LEN-nb,
+											"%s, ", var->name );
+							if (nb >= INPUT_STRING_LEN)
+								return -1;
 						} else {
-							fprintf( fp,
-									 "%s=%d, ", var->name, *(node->state+j) );
+							nb += snprintf( this_node_str+nb,
+											INPUT_STRING_LEN-nb,
+											"%s=%d, ",
+											var->name, *(node->state+j) );
+							if (nb >= INPUT_STRING_LEN)
+								return -1;
 						}
 					}
 				}
 			}
 			if (last_nonzero_sys < 0 && (format_flags & DOT_AUT_EDGEINPUT)) {
-				fprintf( fp, "{}" );
+				nb += snprintf( this_node_str+nb,
+								INPUT_STRING_LEN-nb,
+								"{}" );
+				if (nb >= INPUT_STRING_LEN)
+					return -1;
 			} else {
 				for (j = 0; j < num_sys; j++) {
 					if ((format_flags & DOT_AUT_BINARY)
@@ -344,104 +381,53 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					var = get_list_item( svar_list, j );
 					if (j == last_nonzero_sys) {
 						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s", var->name );
+							nb += snprintf( this_node_str+nb,
+											INPUT_STRING_LEN-nb,
+											"%s", var->name );
+							if (nb >= INPUT_STRING_LEN)
+								return -1;
 						} else {
-							fprintf( fp,
-									 "%s=%d",
-									 var->name, *(node->state+num_env+j) );
+							nb += snprintf( this_node_str+nb,
+											INPUT_STRING_LEN-nb,
+											"%s=%d",
+											var->name,
+											*(node->state+num_env+j) );
+							if (nb >= INPUT_STRING_LEN)
+								return -1;
 						}
 					} else {
 						if (format_flags & DOT_AUT_BINARY) {
-							fprintf( fp, "%s, ", var->name );
+							nb += snprintf( this_node_str+nb,
+											INPUT_STRING_LEN-nb,
+											"%s, ", var->name );
+							if (nb >= INPUT_STRING_LEN)
+								return -1;
 						} else {
-							fprintf( fp,
-									 "%s=%d, ",
-									 var->name, *(node->state+num_env+j) );
+							nb += snprintf( this_node_str+nb,
+											INPUT_STRING_LEN-nb,
+											"%s=%d, ",
+											var->name,
+											*(node->state+num_env+j) );
+							if (nb >= INPUT_STRING_LEN)
+								return -1;
 						}
 					}
 				}
 			}
 		}
-		fprintf( fp, "\"\n" );
+		nb += snprintf( this_node_str+nb, INPUT_STRING_LEN-nb, "\"" );
+		if (nb >= INPUT_STRING_LEN)
+			return -1;
 
-		/* Next print all outgoing edges from the current node */
+		fprintf( fp, "    %s\n", this_node_str );
+
+		/* Next print all outgoing edges from the current node, and a
+		   special incoming edge if this node is initial. */
+		if (node->initial)
+			fprintf( fp, "    \"\" -> %s\n", this_node_str );
 		for (i = 0; i < node->trans_len; i++) {
-			fprintf( fp, "    \"%d;\\n", node_counter );
-			if (format_flags & DOT_AUT_ATTRIB) {
-				fprintf( fp, "(%d, %d)\\n", node->mode, node->rgrad );
-			}
-			if ((format_flags & 0x1) == DOT_AUT_ALL) {
-				last_nonzero_env = num_env-1;
-				last_nonzero_sys = num_sys-1;
-			} else {
-				for (last_nonzero_env = num_env-1; last_nonzero_env >= 0
-						 && *(node->state+last_nonzero_env) == 0;
-					 last_nonzero_env--) ;
-				for (last_nonzero_sys = num_sys-1; last_nonzero_sys >= 0
-						 && *(node->state+num_env+last_nonzero_sys) == 0;
-					 last_nonzero_sys--) ;
-			}
-			if (last_nonzero_env < 0 && last_nonzero_sys < 0) {
-				fprintf( fp, "{}" );
-			} else {
-				if (!(format_flags & DOT_AUT_EDGEINPUT)) {
-					for (j = 0; j < num_env; j++) {
-						if ((format_flags & DOT_AUT_BINARY)
-							&& *(node->state+j) == 0)
-							continue;
-						var = get_list_item( evar_list, j );
-						if (j == last_nonzero_env) {
-							if (format_flags & DOT_AUT_BINARY) {
-								fprintf( fp, "%s", var->name );
-							} else {
-								fprintf( fp,
-										 "%s=%d", var->name, *(node->state+j) );
-							}
-							if ((last_nonzero_sys >= 0
-								 || (format_flags & DOT_AUT_ALL))
-								&& !(format_flags & DOT_AUT_EDGEINPUT))
-								fprintf( fp, ", " );
-						} else {
-							if (format_flags & DOT_AUT_BINARY) {
-								fprintf( fp, "%s, ", var->name );
-							} else {
-								fprintf( fp,
-										 "%s=%d, ",
-										 var->name, *(node->state+j) );
-							}
-						}
-					}
-				}
-				if (last_nonzero_sys < 0
-					&& (format_flags & DOT_AUT_EDGEINPUT)) {
-					fprintf( fp, "{}" );
-				} else {
-					for (j = 0; j < num_sys; j++) {
-						if ((format_flags & DOT_AUT_BINARY)
-							&& *(node->state+num_env+j) == 0)
-							continue;
-						var = get_list_item( svar_list, j );
-						if (j == last_nonzero_sys) {
-							if (format_flags & DOT_AUT_BINARY) {
-								fprintf( fp, "%s", var->name );
-							} else {
-								fprintf( fp,
-										 "%s=%d",
-										 var->name, *(node->state+num_env+j) );
-							}
-						} else {
-							if (format_flags & DOT_AUT_BINARY) {
-								fprintf( fp, "%s, ", var->name );
-							} else {
-								fprintf( fp,
-										 "%s=%d, ",
-										 var->name, *(node->state+num_env+j) );
-							}
-						}
-					}
-				}
-			}
-			fprintf( fp, "\" -> \"%d;\\n",
+			fprintf( fp, "    %s -> ", this_node_str );
+			fprintf( fp, "\"%d;\\n",
 					 find_anode_index( head,
 									   (*(node->trans+i))->mode,
 									   (*(node->trans+i))->state,
@@ -850,6 +836,11 @@ int json_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 		fprintf( fp,
 				 "],\n    \"mode\": %d,\n    \"rgrad\": %d,\n",
 				 head->mode, head->rgrad );
+		if (head->initial) {
+			fprintf( fp, "    \"initial\": true,\n" );
+		} else {
+			fprintf( fp, "    \"initial\": false,\n" );
+		}
 
 		fprintf( fp, "    \"trans\": [" );
 		for (i = 0; i < head->trans_len; i++) {
