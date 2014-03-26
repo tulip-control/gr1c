@@ -163,7 +163,7 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
    nodes), S is the state (as a bitvector) at that node, m is the goal
    mode, r is the reach annotation value, and [t0 t1 ...] is the list
    of IDs of nodes reachable in one step.  The node ID is followed by
-   "(init)" if its initial field is marked True.  */
+   "(init)" if the initial field is marked True.  */
 void list_aut_dump( anode_t *head, int state_len, FILE *fp );
 
 /** Dump strategy using the current version of the "gr1c automaton"
