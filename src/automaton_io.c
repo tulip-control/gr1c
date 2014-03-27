@@ -906,6 +906,7 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	fprintf( fp, "[] (!checkstrans || systrans)" );
 	for (i = 0; i < num_sys_goals; i++)
 		fprintf( fp, " && []<> sysgoal%04d", i );
+	fprintf( fp, " && [] !pmlfault" );
 	if (num_env > 0)
 		fprintf( fp, ")" );
 	fprintf( fp, "\n*/\n\n" );
@@ -985,7 +986,8 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 				 "  /* Check env transition rule? */" );
 	fprintf( fp,
 			 "\nbool checkstrans = false;"
-			 "  /* Check sys transition rule? */\n\n" );
+			 "  /* Check sys transition rule? */\n"
+			 "bool pmlfault = false;\n\n" );
 	fprintf( fp, "init\n{\nint current_node;\n\n" );
 	
 	/* Initial nodes */
@@ -1061,7 +1063,8 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 		fprintf( fp, "\nfi;\nchecketrans = true; checketrans = false;\n\n" );
 	}
 
-	/* Take move according to strategy (FSM) */
+	/* Take move according to strategy (FSM), or fault if there is no
+	   consistent edge. */
 	fprintf( fp, "SYS_MOVE:\nif" );
 	node = head;
 	node_counter = 0;
@@ -1110,6 +1113,7 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 		node_counter++;
 		node = node->next;
 	}
+	fprintf( fp, "\n:: else -> pmlfault=true" );
 	fprintf( fp, "\nfi;\ncheckstrans = true; checkstrans = false;\n\n" );
 
 	/* Actually apply the moves */

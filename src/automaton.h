@@ -238,7 +238,7 @@ int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
      - more than 10000 environment goals;
      - more than 10000 system goals;
      - none of the variables has the following names: checketrans,
-       checkstrans, envinit, envtrans, envgoal0, envgoal1, ...,
+       checkstrans, pmlfault, envinit, envtrans, envgoal0, envgoal1, ...
        sysinit, systrans, sysgoal0, sysgoal1, ...
 
    If fp = NULL, then write to stdout.  Return nonzero if error. */
