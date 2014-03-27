@@ -13,7 +13,7 @@ ENVGOAL: []<>x;
 # of formulae.
 
 SYSINIT: y;
-SYSTRANS:;  # Empty mean "True"; hence any transition is possible.
+SYSTRANS:;  # Empty means "True"; hence any transition is possible.
 SYSGOAL:  # Notice the liveness formulae span two lines.
   []<>(y&x)
 & []<>(!y);
