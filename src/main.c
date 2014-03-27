@@ -54,6 +54,9 @@ extern int st_array_len;
 #define OUTPUT_FORMAT_AUT 3
 #define OUTPUT_FORMAT_JSON 5
 
+/* Verification model targets */
+#define VERMODEL_TARGET_SPIN 1
+
 /* Runtime modes */
 #define GR1C_MODE_SYNTAX 0
 #define GR1C_MODE_REALIZABLE 1
@@ -74,6 +77,18 @@ int main( int argc, char **argv )
 	int input_index = -1;
 	int output_file_index = -1;  /* For command-line flag "-o". */
 	char dumpfilename[64];
+
+	byte verification_model = 0;  /* For command-line flag "-P". */
+	ptree_t *original_env_init;
+	ptree_t *original_sys_init;
+	ptree_t **original_env_goals;
+	ptree_t **original_sys_goals;
+	int original_num_egoals;
+	int original_num_sgoals;
+	ptree_t **original_env_trans_array;
+	ptree_t **original_sys_trans_array;
+	int original_et_array_len;
+	int original_st_array_len;
 
 	int i, j, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
@@ -160,6 +175,8 @@ int main( int argc, char **argv )
 				}
 				output_file_index = i+1;
 				i++;
+			} else if (argv[i][1] == 'P') {
+				verification_model = VERMODEL_TARGET_SPIN;
 			} else {
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 				return 1;
@@ -173,7 +190,7 @@ int main( int argc, char **argv )
 
 	if (help_flag) {
 		/* Split among printf() calls to conform with ISO C90 string length */
-		printf( "Usage: %s [-hVvlspri] [-n INIT] [-t TYPE] [-o FILE] [FILE]\n\n"
+		printf( "Usage: %s [-hVvlspriP] [-n INIT] [-t TYPE] [-o FILE] [FILE]\n\n"
 				"  -h          this help message\n"
 				"  -V          print version and exit\n"
 				"  -v          be verbose; use -vv to be more verbose\n"
@@ -190,13 +207,20 @@ int main( int argc, char **argv )
 				"  -r          only check realizability; do not synthesize strategy\n"
 				"              (return 0 if realizable, -1 if not)\n"
 				"  -i          interactive mode\n"
-				"  -o FILE     output strategy to FILE, rather than stdout (default)\n" );
+				"  -o FILE     output strategy to FILE, rather than stdout (default)\n"
+				"  -P          create Spin Promela model of strategy;\n"
+				"              output to stdout, so requires -o flag to also be used\n" );
 		return 1;
 	}
 
 	if (input_index < 0 && (run_option == GR1C_MODE_INTERACTIVE)) {
 		printf( "Reading spec from stdin in interactive mode is not yet"
 				" implemented.\n" );
+		return 1;
+	}
+	if (verification_model > 0 && output_file_index < 0) {
+		printf( "-P flag can only be used with -o flag because the"
+				" verification model is\noutput to stdout.\n" );
 		return 1;
 	}
 
@@ -372,6 +396,34 @@ int main( int argc, char **argv )
 						env_goals, num_egoals, sys_goals, num_sgoals, stdout );
 	}
 
+	/* If verification model will be created, then save copy of
+	   pristine ptrees, before nonbool expansion. */
+	if (verification_model > 0) {
+		original_num_egoals = num_egoals;
+		original_num_sgoals = num_sgoals;
+		original_et_array_len = et_array_len;
+		original_st_array_len = st_array_len;
+		original_env_goals = malloc( original_num_egoals*sizeof(ptree_t *) );
+		original_sys_goals = malloc( original_num_sgoals*sizeof(ptree_t *) );
+		original_env_trans_array = malloc( original_et_array_len*sizeof(ptree_t *) );
+		original_sys_trans_array = malloc( original_st_array_len*sizeof(ptree_t *) );
+		if (original_env_goals == NULL || original_sys_goals == NULL
+			|| original_env_trans_array == NULL || original_sys_trans_array == NULL) {
+			perror( "gr1c, malloc" );
+			return -1;
+		}
+		original_env_init = copy_ptree( env_init );
+		original_sys_init = copy_ptree( sys_init );
+		for (i = 0; i < original_num_egoals; i++)
+			*(original_env_goals+i) = copy_ptree( *(env_goals+i) );
+		for (i = 0; i < original_num_sgoals; i++)
+			*(original_sys_goals+i) = copy_ptree( *(sys_goals+i) );
+		for (i = 0; i < original_et_array_len; i++)
+			*(original_env_trans_array+i) = copy_ptree( *(env_trans_array+i) );
+		for (i = 0; i < original_st_array_len; i++)
+			*(original_sys_trans_array+i) = copy_ptree( *(sys_trans_array+i) );
+	}
+
 	if (expand_nonbool_GR1( evar_list, svar_list, &env_init, &sys_init,
 							&env_trans_array, &et_array_len,
 							&sys_trans_array, &st_array_len,
@@ -522,6 +574,17 @@ int main( int argc, char **argv )
 
 		if (fp != stdout)
 			fclose( fp );
+
+		if (verification_model > 0) {
+			/* Currently, only target supported is Spin Promela */
+			spin_aut_dump( strategy, evar_list, svar_list,
+						   original_env_init, original_sys_init,
+						   original_env_trans_array, original_et_array_len,
+						   original_sys_trans_array, original_st_array_len,
+						   original_env_goals, original_num_egoals,
+						   original_sys_goals, original_num_sgoals,
+						   stdout );
+		}
 	}
 
 	/* Clean-up */

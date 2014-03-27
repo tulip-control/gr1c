@@ -462,11 +462,11 @@ void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
 	logprint_raw( ";" ); logprint_endline();
 
 	logprint_startline(); logprint_raw( "ENV INIT:  " );
-	print_formula( env_init, getlogstream() );
+	print_formula( env_init, getlogstream(), FORMULA_SYNTAX_GR1C );
 	logprint_raw( ";" ); logprint_endline();
 
 	logprint_startline(); logprint_raw( "SYS INIT:  " );
-	print_formula( sys_init, getlogstream() );
+	print_formula( sys_init, getlogstream(), FORMULA_SYNTAX_GR1C );
 	logprint_raw( ";" ); logprint_endline();
 
 	logprint_startline(); logprint_raw( "ENV TRANS:  " );
@@ -474,10 +474,11 @@ void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
 		logprint_raw( "(none)" );
 	} else {
 		logprint_raw( "[] " );
-		print_formula( *env_trans_array, getlogstream() );
+		print_formula( *env_trans_array, getlogstream(), FORMULA_SYNTAX_GR1C );
 		for (i = 1; i < et_array_len; i++) {
 			logprint_raw( " & [] " );
-			print_formula( *(env_trans_array+i), getlogstream() );
+			print_formula( *(env_trans_array+i), getlogstream(),
+						   FORMULA_SYNTAX_GR1C);
 		}
 	}
 	logprint_raw( ";" ); logprint_endline();
@@ -487,10 +488,11 @@ void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
 		logprint_raw( "(none)" );
 	} else {
 		logprint_raw( "[] " );
-		print_formula( *sys_trans_array, getlogstream() );
+		print_formula( *sys_trans_array, getlogstream(), FORMULA_SYNTAX_GR1C );
 		for (i = 1; i < st_array_len; i++) {
 			logprint_raw( " & [] " );
-			print_formula( *(sys_trans_array+i), getlogstream() );
+			print_formula( *(sys_trans_array+i), getlogstream(),
+						   FORMULA_SYNTAX_GR1C );
 		}
 	}
 	logprint_raw( ";" ); logprint_endline();
@@ -500,10 +502,11 @@ void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
 		logprint_raw( "(none)" );
 	} else {
 		logprint_raw( "[]<> " );
-		print_formula( *env_goals, getlogstream() );
+		print_formula( *env_goals, getlogstream(), FORMULA_SYNTAX_GR1C );
 		for (i = 1; i < num_env_goals; i++) {
 			logprint_raw( " & []<> " );
-			print_formula( *(env_goals+i), getlogstream() );
+			print_formula( *(env_goals+i), getlogstream(),
+						   FORMULA_SYNTAX_GR1C );
 		}
 	}
 	logprint_raw( ";" ); logprint_endline();
@@ -513,10 +516,11 @@ void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
 		logprint_raw( "(none)" );
 	} else {
 		logprint_raw( "[]<> " );
-		print_formula( *sys_goals, getlogstream() );
+		print_formula( *sys_goals, getlogstream(), FORMULA_SYNTAX_GR1C );
 		for (i = 1; i < num_sys_goals; i++) {
 			logprint_raw( " & []<> " );
-			print_formula( *(sys_goals+i), getlogstream() );
+			print_formula( *(sys_goals+i), getlogstream(),
+						   FORMULA_SYNTAX_GR1C );
 		}
 	}
 	logprint_raw( ";" ); logprint_endline();

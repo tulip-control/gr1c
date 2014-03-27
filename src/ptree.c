@@ -46,6 +46,28 @@ ptree_t *init_ptree( int type, char *name, int value )
 }
 
 
+ptree_t *copy_ptree( ptree_t *head )
+{
+	ptree_t *new_head;
+	if (head == NULL)
+		return NULL;
+
+	new_head = init_ptree( head->type, head->name, head->value );
+	if (new_head == NULL)
+		return NULL;
+
+	new_head->left = copy_ptree( head->left );
+	if (new_head->left == NULL && head->left != NULL)
+		return NULL;
+
+	new_head->right = copy_ptree( head->right );
+	if (new_head->right == NULL && head->right != NULL)
+		return NULL;
+
+	return new_head;
+}
+
+
 void delete_tree( ptree_t *head )
 {
 	if (head == NULL)
@@ -769,7 +791,7 @@ int tree_dot_dump( ptree_t *head, char *filename )
 }
 
 
-void print_formula( ptree_t *head, FILE *fp )
+void print_formula( ptree_t *head, FILE *fp, unsigned char format_flags )
 {
 	if (head == NULL) {
 		fprintf( stderr, "WARNING: print_formula called with NULL node." );
@@ -778,6 +800,32 @@ void print_formula( ptree_t *head, FILE *fp )
 
 	if (fp == NULL)
 		fp = stdout;
+
+	/* Special cases */
+	if (format_flags == FORMULA_SYNTAX_SPIN) {
+		switch (head->type) {
+		case PT_IMPLIES:
+			fprintf( fp, "(!" );
+			print_formula( head->left, fp, format_flags );
+			fprintf( fp, "||" );
+			print_formula( head->right, fp, format_flags );
+			fprintf( fp, ")" );
+			return;
+		case PT_EQUIV:
+			/* Naively compute subtrees twice, to avoid space
+			   requirements of caching. */
+			fprintf( fp, "((" );
+			print_formula( head->left, fp, format_flags );
+			fprintf( fp, "&&" );
+			print_formula( head->right, fp, format_flags );
+			fprintf( fp, ")||(!" );
+			print_formula( head->left, fp, format_flags );
+			fprintf( fp, "&&!" );
+			print_formula( head->right, fp, format_flags );
+			fprintf( fp, "))" );
+			return;
+		}
+	}
 
 	switch (head->type) {
 	case PT_AND:
@@ -791,12 +839,19 @@ void print_formula( ptree_t *head, FILE *fp )
 	case PT_GE:  /* ...or equal to*/
 	case PT_LE:
 		fprintf( fp, "(" );
-		print_formula( head->left, fp );
+		if (head->left != NULL && head->right != NULL
+			&& ((head->right->type == PT_VARIABLE
+				 || head->right->type == PT_NEXT_VARIABLE)
+				&& head->left->type == PT_CONSTANT && head->right->value >= 0)) {
+			fprintf( fp, "%d", head->left->value );
+		} else {
+			print_formula( head->left, fp, format_flags );
+		}
 		break;
 
 	case PT_NEG:
 		fprintf( fp, "(!" );
-		print_formula( head->right, fp );
+		print_formula( head->right, fp, format_flags );
 		fprintf( fp, ")" );
 		return;
 
@@ -805,14 +860,26 @@ void print_formula( ptree_t *head, FILE *fp )
 		return;
 
 	case PT_NEXT_VARIABLE:
-		fprintf( fp, "%s'", head->name );
+		if (format_flags == FORMULA_SYNTAX_SPIN) {
+			fprintf( fp, "%s_next", head->name );
+		} else {
+			fprintf( fp, "%s'", head->name );
+		}
 		return;
 		
 	case PT_CONSTANT:
 		if (head->value == 0) {
-			fprintf( fp, "False" );
+			if (format_flags == FORMULA_SYNTAX_SPIN) {
+				fprintf( fp, "false" );
+			} else {
+				fprintf( fp, "False" );
+			}
 		} else if (head->value == 1) {
-			fprintf( fp, "True" );
+			if (format_flags == FORMULA_SYNTAX_SPIN) {
+				fprintf( fp, "true" );
+			} else {
+				fprintf( fp, "True" );
+			}
 		} else {
 			fprintf( fp, "%d", head->value );
 		}
@@ -826,10 +893,18 @@ void print_formula( ptree_t *head, FILE *fp )
 
 	switch (head->type) {
 	case PT_AND:
-		fprintf( fp, "&" );
+		if (format_flags == FORMULA_SYNTAX_SPIN) {
+			fprintf( fp, "&&" );
+		} else {
+			fprintf( fp, "&" );
+		}
 		break;
 	case PT_OR:
-		fprintf( fp, "|" );
+		if (format_flags == FORMULA_SYNTAX_SPIN) {
+			fprintf( fp, "||" );
+		} else {
+			fprintf( fp, "|" );
+		}
 		break;
 	case PT_IMPLIES:
 		fprintf( fp, "->" );
@@ -838,7 +913,11 @@ void print_formula( ptree_t *head, FILE *fp )
 		fprintf( fp, "<->" );
 		break;
 	case PT_EQUALS:
-		fprintf( fp, "=" );
+		if (format_flags == FORMULA_SYNTAX_SPIN) {
+			fprintf( fp, "==" );
+		} else {
+			fprintf( fp, "=" );
+		}
 		break;
 	case PT_NOTEQ:
 		fprintf( fp, "!=" );
@@ -856,7 +935,14 @@ void print_formula( ptree_t *head, FILE *fp )
 		fprintf( fp, "<=" );
 		break;
 	}
-	print_formula( head->right, fp );
+	if (head->left != NULL && head->right != NULL
+		&& ((head->left->type == PT_VARIABLE
+			 || head->left->type == PT_NEXT_VARIABLE)
+			&& head->right->type == PT_CONSTANT && head->left->value >= 0)) {
+		fprintf( fp, "%d", head->right->value );
+	} else {
+		print_formula( head->right, fp, format_flags );
+	}
 	fprintf( fp, ")" );
 	return;
 }

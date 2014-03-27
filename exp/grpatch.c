@@ -296,7 +296,7 @@ int main( int argc, char **argv )
 		if (verbose > 1) {
 			logprint_startline();
 			logprint_raw( "Command-line formula, printed from ptree: " );
-			print_formula( clformula, getlogstream() );
+			print_formula( clformula, getlogstream(), FORMULA_SYNTAX_GR1C );
 			logprint_endline();
 		}
 	}

@@ -78,8 +78,21 @@ typedef struct ptree_t
 } ptree_t;
 
 
+/**
+ * \defgroup PTreeFormulaSyntax Formula syntax in which to print a ptree.
+ *
+ * @{
+ */
+#define FORMULA_SYNTAX_GR1C 0
+#define FORMULA_SYNTAX_SPIN 1
+/**@}*/
+
+
 /** Create root node with given type.  Return NULL on error. */
 ptree_t *init_ptree( int type, char *name, int value );
+
+/* Return (deep) copy of given ptree.  Return NULL on error. */
+ptree_t *copy_ptree( ptree_t *head );
 
 /** Return number of nodes in tree. */
 int tree_size( ptree_t *head );
@@ -92,8 +105,8 @@ void print_node( ptree_t *node, FILE *fp );
 void inorder_trav( ptree_t *head,
 				   void (* node_fn)(ptree_t *, void *), void *arg );
 
-/** If f is NULL, then use stdout. */
-void print_formula( ptree_t *head, FILE *fp );
+/** If f is NULL, then use stdout. Cf table of \ref PTreeFormulaSyntax. */
+void print_formula( ptree_t *head, FILE *fp, unsigned char format_flags );
 
 /** Create a new tree in which all of the given trees are included by
    the specified binary operator.  len is the length of heads.  Return

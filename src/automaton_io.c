@@ -858,3 +858,281 @@ int json_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	fprintf( fp, "}}\n" );
 	return 0;
 }
+
+
+int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+				   ptree_t *env_init, ptree_t *sys_init,
+				   ptree_t **env_trans_array, int et_array_len,
+				   ptree_t **sys_trans_array, int st_array_len,
+				   ptree_t **env_goals, int num_env_goals,
+				   ptree_t **sys_goals, int num_sys_goals,
+				   FILE *fp )
+{
+	anode_t *node, *next_node;
+	int num_env, num_sys;
+	int node_counter, next_node_counter;
+	vartype *env_counter;
+	ptree_t *tmppt, *var_separator;
+	int i, j;
+
+	if (fp == NULL)
+		fp = stdout;
+
+	num_env = tree_size( evar_list );
+	num_sys = tree_size( svar_list );
+
+	env_counter = malloc( num_env*sizeof(int) );
+	if (env_counter == NULL) {
+		perror( "spin_aut_dump, malloc" );
+		return -1;
+	}
+
+	fprintf( fp,
+			 "/* Spin Promela model created by gr1c, version "
+			 GR1C_VERSION " */\n\n" );
+
+	fprintf( fp, "/* LTL formula\n" );
+	if (num_env > 0) {
+		fprintf( fp, "(" );
+		if (env_init != NULL)
+			fprintf( fp, "X envinit && " );
+		fprintf( fp, "[] (!checketrans || envtrans)" );
+		for (i = 0; i < num_env_goals; i++)
+			fprintf( fp, " && []<> envgoal%04d", i );
+		fprintf( fp, ") -> (" );
+	}
+	if (sys_init != NULL)
+		fprintf( fp, "X sysinit && " );
+	fprintf( fp, "[] (!checkstrans || systrans)" );
+	for (i = 0; i < num_sys_goals; i++)
+		fprintf( fp, " && []<> sysgoal%04d", i );
+	if (num_env > 0)
+		fprintf( fp, ")" );
+	fprintf( fp, "\n*/\n\n" );
+
+	if (num_env > 0) {
+		if (env_init != NULL) {
+			fprintf( fp, "\n#define envinit " );
+			print_formula( env_init, fp, FORMULA_SYNTAX_SPIN );
+		}
+		fprintf( fp, "\n#define envtrans " );
+		for (i = 0; i < et_array_len; i++) {
+			print_formula( *(env_trans_array+i), fp, FORMULA_SYNTAX_SPIN );
+			if (i < et_array_len-1)
+				fprintf( fp, " && " );
+		}
+		if (num_env_goals > 0) {
+			for (i = 0; i < num_env_goals; i++) {
+				fprintf( fp, "\n#define envgoal%04d ", i );
+				print_formula( *(env_goals+i), fp, FORMULA_SYNTAX_SPIN );
+			}
+		}
+	}
+	if (sys_init != NULL) {
+		fprintf( fp, "\n#define sysinit " );
+		print_formula( sys_init, fp, FORMULA_SYNTAX_SPIN );
+	}
+	fprintf( fp, "\n#define systrans " );
+	for (i = 0; i < st_array_len; i++) {
+		print_formula( *(sys_trans_array+i), fp, FORMULA_SYNTAX_SPIN );
+		if (i < st_array_len-1)
+			fprintf( fp, " && " );
+	}
+	if (num_sys_goals > 0) {
+		for (i = 0; i < num_sys_goals; i++) {
+			fprintf( fp, "\n#define sysgoal%04d ", i );
+			print_formula( *(sys_goals+i), fp, FORMULA_SYNTAX_SPIN );
+		}
+	}
+	fprintf( fp, "\n\n" );
+
+	if (num_env == 0) {
+		var_separator = NULL;
+		evar_list = svar_list;
+	} else {
+		var_separator = get_list_item( evar_list, -1 );
+		if (var_separator == NULL) {
+			fprintf( stderr,
+					 "Error: get_list_item failed on environment variables"
+					 " list.\n" );
+			return -1;
+		}
+		var_separator->left = svar_list;
+	}
+
+	tmppt = evar_list;
+	while (tmppt) {
+		if (tmppt->value == -1) {
+			fprintf( fp, "bool " );
+		} else {
+			fprintf( fp, "int " );
+		}
+		fprintf( fp, "%s;\n", tmppt->name );
+
+		if (tmppt->value == -1) {
+			fprintf( fp, "bool " );
+		} else {
+			fprintf( fp, "int " );
+		}
+		fprintf( fp, "%s_next;\n", tmppt->name );
+
+		tmppt = tmppt->left;
+	}
+
+	if (num_env > 0)
+		fprintf( fp,
+				 "\nbool checketrans = false;"
+				 "  /* Check env transition rule? */" );
+	fprintf( fp,
+			 "\nbool checkstrans = false;"
+			 "  /* Check sys transition rule? */\n\n" );
+	fprintf( fp, "init\n{\nint current_node;\n\n" );
+	
+	/* Initial nodes */
+	fprintf( fp, "d_step {\nif" );
+	node = head;
+	node_counter = 0;
+	while (node) {
+		if (node->initial) {
+			fprintf( fp, "\n:: (1) -> current_node=%d",
+					 node_counter );
+
+			tmppt = evar_list;
+			for (i = 0; i < num_env+num_sys; i++) {
+				fprintf( fp, "; %s=", tmppt->name );
+				if (tmppt->value == -1) {
+					if (*(node->state+i)) {
+						fprintf( fp, "true" );
+					} else {
+						fprintf( fp, "false" );
+					}
+				} else {
+					fprintf( fp, "%d", *(node->state+i) );
+				}
+				tmppt = tmppt->left;
+			}
+		}
+
+		node = node->next;
+		node_counter++;
+	}
+	fprintf( fp, "\nfi\n};\n\n" );
+
+	/* Random environment move */
+	if (num_env > 0) {
+		for (i = 0; i < num_env; i++)
+			*(env_counter+i) = 0;
+		fprintf( fp, "ENV_MOVE:\nif" );
+		while (True) {
+			fprintf( fp, "\n:: (1) ->" );
+			tmppt = evar_list;
+			for (i = 0; i < num_env; i++) {
+				fprintf( fp, " %s_next=", tmppt->name );
+				if (tmppt->value == -1) {
+					if (*(env_counter+i)) {
+						fprintf( fp, "true" );
+					} else {
+						fprintf( fp, "false" );
+					}
+				} else {
+					fprintf( fp, "%d", *(env_counter+i) );
+				}
+				if (i < num_env-1)
+					fprintf( fp, ";" );
+				tmppt = tmppt->left;
+			}
+
+			/* Attempt to increment env_counter; break out of loop if done. */
+			tmppt = evar_list;
+			for (i = 0; i < num_env; i++) {
+				if ((*(env_counter+i) > 0 && tmppt->value == -1)  /* Bool */
+					|| (*(env_counter+i) >= tmppt->value
+						&& tmppt->value >= 0)) {  /* Int */
+					*(env_counter+i) = 0;
+				} else {
+					*(env_counter+i) += 1;
+					break;
+				}
+				tmppt = tmppt->left;
+			}
+			if (i == num_env)  /* Overflow, i.e., done enumerating? */
+				break;
+		}
+		fprintf( fp, "\nfi;\nchecketrans = true; checketrans = false;\n\n" );
+	}
+
+	/* Take move according to strategy (FSM) */
+	fprintf( fp, "SYS_MOVE:\nif" );
+	node = head;
+	node_counter = 0;
+	while (node) {
+		for (j = 0; j < node->trans_len; j++) {
+			fprintf( fp, "\n:: (current_node == %d", node_counter );
+
+			tmppt = evar_list;
+			for (i = 0; i < num_env; i++) {
+				fprintf( fp, " && " );
+				if (tmppt->value == -1) {
+					if (!(*((*(node->trans+j))->state+i))) {
+						fprintf( fp, "!" );
+					} 
+					fprintf( fp, "%s_next", tmppt->name );
+				} else {
+					fprintf( fp, "%s_next == %d",
+							 tmppt->name, *((*(node->trans+j))->state+i) );
+				}
+				tmppt = tmppt->left;
+			}
+
+			next_node_counter = 0;
+			next_node = head;
+			while (next_node != *(node->trans+j)) {
+				next_node = next_node->next;
+				next_node_counter++;
+			}
+			fprintf( fp, ") -> current_node=%d", next_node_counter );
+			tmppt = svar_list;
+			for (i = num_env; i < num_env+num_sys; i++) {
+				fprintf( fp, "; %s_next=", tmppt->name );
+				if (tmppt->value == -1) {
+					if (*((*(node->trans+j))->state+i)) {
+						fprintf( fp, "true" );
+					} else {
+						fprintf( fp, "false" );
+					}
+				} else {
+					fprintf( fp, "%d", *((*(node->trans+j))->state+i) );
+				}
+				tmppt = tmppt->left;
+			}
+		}
+		
+		node_counter++;
+		node = node->next;
+	}
+	fprintf( fp, "\nfi;\ncheckstrans = true; checkstrans = false;\n\n" );
+
+	/* Actually apply the moves */
+	fprintf( fp, "atomic { " );
+	tmppt = evar_list;
+	while (tmppt) {
+		fprintf( fp, "%s = %s_next", tmppt->name, tmppt->name );
+		tmppt = tmppt->left;
+		if (tmppt)
+			fprintf( fp, "; " );
+	}
+	if (num_env > 0) {
+		fprintf( fp, " };\n\ngoto ENV_MOVE\n}\n\n" );
+	} else {
+		fprintf( fp, " };\n\ngoto SYS_MOVE\n}\n\n" );
+	}
+
+	if (var_separator == NULL) {
+		evar_list = NULL;
+	} else {
+		var_separator->left = NULL;
+	}
+
+	free( env_counter );
+	return 0;
+}

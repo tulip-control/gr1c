@@ -214,7 +214,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 				if (*intcom_state < 0 || *intcom_state > num_sgoals-1) {
 					fprintf( outfp, "Invalid mode: %d", *intcom_state );
 				} else {
-					print_formula( *(sys_goals+*intcom_state), stdout );
+					print_formula( *(sys_goals+*intcom_state), stdout,
+								   FORMULA_SYNTAX_GR1C );
 				}
 				free( intcom_state );
 			}
@@ -222,7 +223,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 		} else if (!strncmp( input, "printegoals", strlen( "printegoals" ) )) {
 
 			for (var_index = 0; var_index < num_egoals; var_index++) {
-				print_formula( *(env_goals+var_index), stdout );
+				print_formula( *(env_goals+var_index), stdout,
+							   FORMULA_SYNTAX_GR1C );
 				fprintf( outfp, "\n" );
 			}
 			fprintf( outfp, "---" );

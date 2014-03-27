@@ -1,7 +1,7 @@
 /* patching.c -- Definitions for signatures appearing in patching.h.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2014.
  */
 
 
@@ -585,7 +585,8 @@ anode_t *patch_localfixpoint( DdManager *manager,
 		}
 		if (j < N_len) {
 			if (verbose) {
-				print_formula( *(env_trans_array+i), getlogstream() );
+				print_formula( *(env_trans_array+i), getlogstream(),
+							   FORMULA_SYNTAX_GR1C );
 			}
 			tmp = Cudd_bddAnd( manager, etrans, etrans_part );
 			Cudd_Ref( tmp );
@@ -640,7 +641,8 @@ anode_t *patch_localfixpoint( DdManager *manager,
 		}
 		if (j < N_len) {
 			if (verbose) {
-				print_formula( *(sys_trans_array+i), getlogstream() );
+				print_formula( *(sys_trans_array+i), getlogstream(),
+							   FORMULA_SYNTAX_GR1C );
 			}
 			tmp = Cudd_bddAnd( manager, strans, strans_part );
 			Cudd_Ref( tmp );

@@ -232,8 +232,22 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					 ptree_t *nonbool_var_list );
 
-/** Dump strategy as Spin Promela model. */
+/** Dump strategy as Spin Promela model.
+
+   Assumptions:
+     - more than 10000 environment goals;
+     - more than 10000 system goals;
+     - none of the variables has the following names: checketrans,
+       checkstrans, envinit, envtrans, envgoal0, envgoal1, ...,
+       sysinit, systrans, sysgoal0, sysgoal1, ...
+
+   If fp = NULL, then write to stdout.  Return nonzero if error. */
 int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+				   ptree_t *env_init, ptree_t *sys_init,
+				   ptree_t **env_trans_array, int et_array_len,
+				   ptree_t **sys_trans_array, int st_array_len,
+				   ptree_t **env_goals, int num_env_goals,
+				   ptree_t **sys_goals, int num_sys_goals,
 				   FILE *fp );
 
 #endif

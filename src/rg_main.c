@@ -350,19 +350,19 @@ int main( int argc, char **argv )
 		printf( "\n\n" );
 
 		printf( "ENV INIT:  " );
-		print_formula( env_init, stdout );
+		print_formula( env_init, stdout, FORMULA_SYNTAX_GR1C );
 		printf( "\n" );
 
 		printf( "SYS INIT:  " );
-		print_formula( sys_init, stdout );
+		print_formula( sys_init, stdout, FORMULA_SYNTAX_GR1C );
 		printf( "\n" );
 
 		printf( "ENV TRANS:  [] " );
-		print_formula( env_trans, stdout );
+		print_formula( env_trans, stdout, FORMULA_SYNTAX_GR1C );
 		printf( "\n" );
 
 		printf( "SYS TRANS:  [] " );
-		print_formula( sys_trans, stdout );
+		print_formula( sys_trans, stdout, FORMULA_SYNTAX_GR1C );
 		printf( "\n" );
 
 		printf( "ENV GOALS:  " );
@@ -370,10 +370,10 @@ int main( int argc, char **argv )
 			printf( "(none)" );
 		} else {
 			printf( "[]<> " );
-			print_formula( *env_goals, stdout );
+			print_formula( *env_goals, stdout, FORMULA_SYNTAX_GR1C );
 			for (i = 1; i < num_egoals; i++) {
 				printf( " & []<> " );
-				print_formula( *(env_goals+i), stdout );
+				print_formula( *(env_goals+i), stdout, FORMULA_SYNTAX_GR1C );
 			}
 		}
 		printf( "\n" );
@@ -383,7 +383,7 @@ int main( int argc, char **argv )
 			printf( "(none)" );
 		} else {
 			printf( "<> " );
-			print_formula( *sys_goals, stdout );
+			print_formula( *sys_goals, stdout, FORMULA_SYNTAX_GR1C );
 		}
 		printf( "\n" );
 	}
