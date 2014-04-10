@@ -30,7 +30,7 @@ the form `[0,n]` where `n` is a nonnegative integer.  E.g.,
 declares three variables: `a`, `b`, and `c`.  `a` and `c` have Boolean domains
 (i.e., can only be `True` or `False`), while `b` can take any integer value in
 the set `{0,1,2,3,4,5}`.  There must be at least one variable; i.e., at least
-+one of `ENV` or `SYS` must be nonempty.
+one of `ENV` or `SYS` must be nonempty.
 
 For both the environment and system sections, an empty transition rule section,
 e.g., `SYSTRANS:;`, is equivalent to `SYSTRANS:[]True;`, thus imposing no
