@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.7.3</span>
+   &#160;<span id="projectnumber">0.7.4</span>
    </div>
   </td>
  </tr>
@@ -114,6 +114,9 @@ Macros</h2></td></tr>
 <tr class="memitem:a2d0d837a1d99d4edd3eea7c9e4410e0a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2d0d837a1d99d4edd3eea7c9e4410e0a"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>ONE_SIDE_INIT</b>&#160;&#160;&#160;3</td></tr>
 <tr class="separator:a2d0d837a1d99d4edd3eea7c9e4410e0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01808bd7c9b6b3cd8eb3fa28906fb7be"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a01808bd7c9b6b3cd8eb3fa28906fb7be"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>UNDEFINED_INIT</b>&#160;&#160;&#160;0</td></tr>
+<tr class="separator:a01808bd7c9b6b3cd8eb3fa28906fb7be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -153,6 +156,8 @@ Functions</h2></td></tr>
 <div class="line">        logprint_raw( <span class="stringliteral">&quot;ALL_INIT&quot;</span> ); \</div>
 <div class="line">    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> ((X) == ONE_SIDE_INIT) {  \</div>
 <div class="line">        logprint_raw( <span class="stringliteral">&quot;ONE_SIDE_INIT&quot;</span> ); \</div>
+<div class="line">    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> ((X) == UNDEFINED_INIT) { \</div>
+<div class="line">        logprint_raw( <span class="stringliteral">&quot;UNDEFINED_INIT (not interpreted)&quot;</span> ); \</div>
 <div class="line">    } <span class="keywordflow">else</span> { \</div>
 <div class="line">        logprint_raw( <span class="stringliteral">&quot;(unrecognized)&quot;</span> ); \</div>
 <div class="line">    }</div>
@@ -448,7 +453,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 11 2014 11:49:53 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 10 2014 11:58:27 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>
