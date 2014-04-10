@@ -70,7 +70,9 @@ void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
    specification.  Whether the initial conditions (i.e., ENVINIT and
    SYSINIT) are in acceptable form depends on init_flags, which
    corresponds to the argument by the same name used with
-   check_realizable() and synthesize() (cf. solve.h). */
+   check_realizable() and synthesize() (cf. solve.h).  Use
+   UNDEFINED_INIT in init_flags to avoid checking particular
+   interpretations of initial conditions. */
 int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
 					 ptree_t *env_init, ptree_t *sys_init,
 					 ptree_t **env_trans_array, int et_array_len,
