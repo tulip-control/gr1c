@@ -544,6 +544,11 @@ int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
 	char *tmpstr;
 	int i;
 
+	if (tree_size( evar_list ) == 0 && tree_size( svar_list ) == 0) {
+		fprintf( stderr, "Error: No variables declared.\n" );
+		return -1;
+	}
+
 	if (init_flags == ALL_ENV_EXIST_SYS_INIT) {
 		if (env_init != NULL) {
 			if ((tmpstr = check_vars( env_init, evar_list, NULL )) != NULL) {

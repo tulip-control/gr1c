@@ -325,6 +325,13 @@ int main( int argc, char **argv )
 	if (verbose)
 		logprint( "Done." );
 
+	if (check_gr1c_form( evar_list, svar_list, env_init, sys_init,
+						 env_trans_array, et_array_len,
+						 sys_trans_array, st_array_len,
+						 env_goals, num_egoals, sys_goals, num_sgoals,
+						 UNDEFINED_INIT ) < 0)
+		return -1;
+
 	/* Close input file, if opened. */
 	if (input_index > 0)
 		fclose( fp );

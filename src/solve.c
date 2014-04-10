@@ -376,7 +376,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			node = node->next;
 		}
 
-	} else { /* ONE_SIDE_INIT; N.B., case of sys_init==NULL is treated above */
+	} else if (init_flags == ONE_SIDE_INIT) {
+		/* N.B., case of sys_init==NULL is treated above */
 		if (verbose > 1)
 			logprint( "Enumerating initial states, given init_flags ="
 					  " ONE_SIDE_INIT and empty ENVINIT" );
@@ -405,6 +406,9 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		Cudd_GenFree( gen );
 		Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 		Cudd_RecursiveDeref( manager, tmp );
+	} else {
+		fprintf( stderr, "Error: Unrecognized init_flags %d", init_flags );
+		return NULL;
 	}
 
 	/* Insert all stacked, initial nodes into strategy. */
@@ -879,7 +883,7 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 		Cudd_RecursiveDeref( manager, tmp );
 		Cudd_RecursiveDeref( manager, tmp2 );
 
-	} else { /* ONE_SIDE_INIT */
+	} else if (init_flags == ONE_SIDE_INIT) {
 		if (sys_init == NULL) {
 
 			tmp = Cudd_bddAnd( manager, einit, W );
@@ -909,6 +913,9 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 			Cudd_RecursiveDeref( manager, tmp );
 		}
 
+	} else {
+		fprintf( stderr, "Error: Unrecognized init_flags %d", init_flags );
+		return NULL;
 	}
 
 	Cudd_RecursiveDeref( manager, einit );

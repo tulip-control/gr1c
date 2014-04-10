@@ -14,6 +14,7 @@
 #include "automaton.h"
 
 /* Flags concerning initial conditions. (See comments for check_realizable.) */
+#define UNDEFINED_INIT 0
 #define ALL_ENV_EXIST_SYS_INIT 1
 #define ALL_INIT 2
 #define ONE_SIDE_INIT 3
@@ -25,6 +26,8 @@
 	    logprint_raw( "ALL_INIT" ); \
 	} else if ((X) == ONE_SIDE_INIT) {	\
 	    logprint_raw( "ONE_SIDE_INIT" ); \
+	} else if ((X) == UNDEFINED_INIT) {	\
+	    logprint_raw( "UNDEFINED_INIT (not interpreted)" ); \
 	} else { \
 	    logprint_raw( "(unrecognized)" ); \
 	}
