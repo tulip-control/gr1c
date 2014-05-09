@@ -189,11 +189,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	for (i = 0; i < num_sgoals; i++) {
 		Cudd_RecursiveDeref( manager, *(*(Y+i)) );
 		Cudd_RecursiveDeref( manager, *(*(Y+i)+1) );
-		for (r = 0; r < num_egoals; r++) {
+		for (r = 0; r < num_egoals; r++)
 			Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i))+r) );
-			Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i)+1)+r) );
-			*(*(*(X_ijr+i)+1)+r) = Cudd_Not( Cudd_ReadOne( manager ) );
-		}
 		free( *(*(X_ijr+i)) );
 
 		*(*(Y+i)+1) = Cudd_bddAnd( manager, *(sgoals+i), W );

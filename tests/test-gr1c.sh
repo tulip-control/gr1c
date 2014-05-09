@@ -21,7 +21,7 @@ fi
 ################################################################
 # Test realizability
 
-REFSPECS="gridworld_bool.spc gridworld_env.spc arbiter4.spc trivial_2var.spc free_counter.spc empty.spc"
+REFSPECS="gridworld_bool.spc gridworld_env.spc arbiter4.spc trivial_2var.spc free_counter.spc empty.spc trivial_mustblock.spc"
 UNREALIZABLE_REFSPECS="trivial_un.spc"
 
 if test $VERBOSE -eq 1; then
@@ -65,7 +65,7 @@ fi
 # Synthesis regression tests
 
 
-REFSPECS="trivial_2var.spc free_counter.spc count_onestep.spc"
+REFSPECS="trivial_2var.spc free_counter.spc count_onestep.spc trivial_mustblock.spc"
 
 if test $VERBOSE -eq 1; then
     echo "\nPerforming regression tests for vanilla GR(1) synthesis..."
