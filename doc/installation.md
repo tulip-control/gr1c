@@ -126,10 +126,10 @@ administrative privileges, one solution is
 
 which will copy `gr1c` and `rg` to `/usr/local/bin`, a commonly used location
 for "local" installations.  This is based on a default installation prefix of
-`/usr/local`.  Adjust it by invoking `make` with something like
-`prefix=/your/new/path`.  The programs `grpatch` and `grjit` are *not* included
-in as an effect of `make install`.  [Extra instructions](#extras) concerning
-these are below.
+`/usr/local`.  Adjust it to the desired path by setting the environment variable
+`GR1C_PREFIX` before invoking `make`. For example `export GR1C_PREFIX=~/local` will
+install to `~/local/bin`. The programs `grpatch` and `grjit` are *not* included in as
+an effect of `make install`. [Extra instructions](#extras) concerning these are below.
 
 
 <h2 id="extras">Extras</h2>
