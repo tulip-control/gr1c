@@ -6,10 +6,13 @@ CORE_PROGRAMS = gr1c rg
 EXP_PROGRAMS = grpatch
 AUX_PROGRAMS = autman
 
-
-prefix = /usr/local
-exec_prefix = $(prefix)
-bindir = $(exec_prefix)/bin
+ifdef GR1C_PREFIX
+  bindir = $(GR1C_PREFIX)
+else
+  prefix = /usr/local
+  exec_prefix = $(prefix)
+  bindir = $(exec_prefix)/bin
+endif
 
 # Possibly change to `cp' when `install' is unavailable
 INSTALL = install
