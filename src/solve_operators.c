@@ -25,8 +25,6 @@ extern int num_egoals;
 extern int num_sgoals;
 
 
-/* N.B., we assume there is at least one system goal.  This assumption
-   will be removed in a future version (soon). */
 DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 {
 	int i;

@@ -33,8 +33,6 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 								   unsigned char verbose );
 
 
-/* N.B., we assume there is at least one system goal.  This assumption
-   will be removed in a future version (soon). */
 anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 					 unsigned char verbose )
 {
