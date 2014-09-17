@@ -9,4 +9,7 @@ ENVGOAL: ;
 
 SYSINIT: ;
 SYSTRANS: ;
-SYSGOAL: []<>(y = 1);
+
+# The subformula y != 0 is included as a regression test for erroneous
+# != operator expansion (cf. https://github.com/slivingston/gr1c/issues/17)
+SYSGOAL: []<>(y = 1 & y != 0);

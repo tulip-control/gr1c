@@ -349,18 +349,22 @@ ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
 		return init_ptree( PT_CONSTANT, NULL, 1 );  /* constant True */
 
 	if (op_type == PT_NOTEQ) {
-		heads = malloc( (maxval-1)*sizeof(ptree_t *) );
+		heads = malloc( maxval*sizeof(ptree_t *) );
 		if (heads == NULL) {
 			perror( "expand_nonbool_varnum, malloc" );
 			return NULL;
 		}
+		min = 0;
 		for (i = 0; i <= maxval; i++) {
-			if (i == this_val)
+			if (i == this_val) {
+				min = 1;
 				continue;
+			}
 			*(heads+i-min) = init_ptree( PT_EQUALS, NULL, 0 );
 			(*(heads+i-min))->left = init_ptree( var_tense, name, 0 );
 			(*(heads+i-min))->right = init_ptree( PT_CONSTANT, NULL, i );
 		}
+		head = merge_ptrees( heads, maxval, PT_OR );
 	} else {
 		if (op_type == PT_LT) {
 			min = 0;
@@ -386,8 +390,8 @@ ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
 			(*(heads+i-min))->left = init_ptree( var_tense, name, 0 );
 			(*(heads+i-min))->right = init_ptree( PT_CONSTANT, NULL, i );
 		}
+		head = merge_ptrees( heads, max-min+1, PT_OR );
 	}
-	head = merge_ptrees( heads, max-min+1, PT_OR );
 	free( heads );
 	return head;
 }
