@@ -453,6 +453,10 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 			return NULL;
 		}
 
+		/* Enforce inability to reach values outside the expanded domain */
+		if (this_val > (int)(pow( 2, num_bits ) )-1 || this_val < 0)
+			return init_ptree( PT_CONSTANT, NULL, 0 );
+
 		for (i = num_bits-1; i >= 0; i--) {
 			if ((this_val >> i)&1) {
 				*(heads+i) = get_list_item( expanded_varlist, i );
