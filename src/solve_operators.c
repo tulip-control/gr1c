@@ -348,7 +348,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 								 DdNode *****X_ijr,
 								 unsigned char verbose )
 {
-	DdNode ***Y = NULL, *Y_exmod;
+	DdNode ***Y = NULL, *Y_exmod = NULL;
 	DdNode *X = NULL, *X_prev = NULL;
 
 	DdNode **vars, **pvars;
@@ -540,6 +540,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 			}
 			Cudd_RecursiveDeref( manager, Y_exmod );
 		}
+		Cudd_RecursiveDeref( manager, Y_exmod );
 	}
 
 	return Y;

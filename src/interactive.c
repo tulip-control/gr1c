@@ -976,11 +976,6 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 		free( sgoals );
 	free( cube );
 	free( state );
-	if (env_nogoal_flag) {
-		num_egoals = 0;
-		delete_tree( *env_goals );
-		free( env_goals );
-	}
 	for (i = 0; i < num_sgoals; i++) {
 		for (j = 0; j < *(num_sublevels+i); j++) {
 			Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
@@ -993,6 +988,11 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			free( *(Y+i) );
 			free( *(X_ijr+i) );
 		}
+	}
+	if (env_nogoal_flag) {
+		num_egoals = 0;
+		delete_tree( *env_goals );
+		free( env_goals );
 	}
 	if (num_sgoals > 0) {
 		free( Y );

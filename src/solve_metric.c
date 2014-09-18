@@ -446,11 +446,6 @@ int compute_minmax( DdManager *manager,DdNode **W,
 		Cudd_RecursiveDeref( manager, *(egoals+i) );
 	if (num_egoals > 0)
 		free( egoals );
-	if (env_nogoal_flag) {
-		num_egoals = 0;
-		delete_tree( *env_goals );
-		free( env_goals );
-	}
 
 	for (i = 0; i < num_sgoals; i++) {
 		for (j = 0; j < *(*num_sublevels+i); j++) {
@@ -465,6 +460,12 @@ int compute_minmax( DdManager *manager,DdNode **W,
 			free( *(X_ijr+i) );
 		}
 	}
+	if (env_nogoal_flag) {
+		num_egoals = 0;
+		delete_tree( *env_goals );
+		free( env_goals );
+	}
+
 	if (num_sgoals > 0) {
 		free( Y );
 		free( X_ijr );
