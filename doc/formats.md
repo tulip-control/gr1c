@@ -31,7 +31,8 @@ is:
 - `ENV`, `SYS` : ordered lists of environment and system variables,
   respectively, including domains.  Possible domains are the same as accepted in
   the [specification input](md_spc_format.html):
-  * `"boolean"` : `True` or `False`
+  * `"boolean"` : 1 (`True`) or 0 (`False`).  Note that JSON includes `true` and
+    `false` values, but we do not use them here.
   * `[0,n]` : integers `0, 1, ..., n`, where `n` is a nonnegative integer.
 - `nodes` : object of automaton nodes, each of which is uniquely named and has
   as value an object organized by the various members of anode_t
