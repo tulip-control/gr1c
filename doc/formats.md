@@ -28,6 +28,11 @@ is:
 - `gr1c` : version of gr1c that generated the output
 - `date` : timestamp in UTC; e.g., invocation time of json_aut_dump()
 - `extra` : an arbitrary, printable string
+- `ENV`, `SYS` : ordered lists of environment and system variables,
+  respectively, including domains.  Possible domains are the same as accepted in
+  the [specification input](md_spc_format.html):
+  * `"boolean"` : `True` or `False`
+  * `[0,n]` : integers `0, 1, ..., n`, where `n` is a nonnegative integer.
 - `nodes` : object of automaton nodes, each of which is uniquely named and has
   as value an object organized by the various members of anode_t
   (cf. automaton.h).
