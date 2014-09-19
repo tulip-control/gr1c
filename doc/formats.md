@@ -21,8 +21,8 @@ format](#edgechangeset).  The relevant command-line argument is "-e FILE".
 <h2 id="gr1cjson">strategy in JSON</h2>
 
 The gross file formatting is [JSON](http://json.org/).  The details of what gr1c
-provides are versioned.  The current and only version is zero.  A key to entries
-is:
+provides are versioned.  The current version is 1.  The only difference with
+version 0 is the addition of the node field "initial".  A key to entries is:
 
 - `version` : format version number
 - `gr1c` : version of gr1c that generated the output
@@ -36,15 +36,16 @@ is:
   * `[0,n]` : integers `0, 1, ..., n`, where `n` is a nonnegative integer.
 - `nodes` : object of automaton nodes, each of which is uniquely named and has
   as value an object organized by the various members of anode_t
-  (cf. automaton.h).
+  (cf. automaton.h).  Released changes to the members of anode_t will cause this
+  format version number to increment.
 
 Note that the notion of "object" in JSON maps to `dict` (i.e., "dictionary
 objects") in Python.  An example is the following.
 
-    {"version": 0,
-     "gr1c": "0.7.2",
-     "date": "2014-03-11 15:13:28",
-     "extra": "Experiment trial number 1.",
+    {"version": 1,
+     "gr1c": "0.8.4",
+     "date": "2014-09-19 18:06:49",
+     "extra": "",
 
      "ENV": [{"x": "boolean"}],
      "SYS": [{"y": "boolean"}],
@@ -54,16 +55,19 @@ objects") in Python.  An example is the following.
         "state": [0, 0],
         "mode": 0,
         "rgrad": 1,
+        "initial": false,
         "trans": ["0x101040"] },
     "0x101040": {
         "state": [1, 1],
         "mode": 1,
         "rgrad": 1,
+        "initial": false,
         "trans": ["0x101090"] },
     "0x101010": {
         "state": [0, 1],
         "mode": 0,
         "rgrad": 1,
+        "initial": true,
         "trans": ["0x101040"] }
     }}
 

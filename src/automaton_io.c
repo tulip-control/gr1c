@@ -792,7 +792,7 @@ int json_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 		return -1;
 	}
 
-	fprintf( fp, "{\"version\": 0,\n" );  /* gr1c JSON format version */
+	fprintf( fp, "{\"version\": 1,\n" );  /* gr1c JSON format version */
 	fprintf( fp, " \"gr1c\": \"" GR1C_VERSION "\",\n" );
 	fprintf( fp, " \"date\": \"%s\",\n", timestamp );
 	fprintf( fp, " \"extra\": \"\",\n\n" );
