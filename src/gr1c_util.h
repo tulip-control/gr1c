@@ -81,5 +81,11 @@ int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
 					 ptree_t **sys_goals, int num_sys_goals,
 					 unsigned char init_flags );
 
+/** Print the set of bitvectors (states) on which the given BDD X
+   evaluates to true.  Formatting is one state per line and on each
+   line, space between every four bits.  Write to outf if it is not
+   NULL.  Otherwise, dump to the log. */
+void print_support( DdManager *manager, int state_len, DdNode *X, FILE *outf );
+
 
 #endif

@@ -724,3 +724,59 @@ int *get_offsets_list( ptree_t *evar_list, ptree_t *svar_list,
 
 	return offw;
 }
+
+
+void print_support( DdManager *manager, int state_len, DdNode *X, FILE *outf )
+{
+	FILE *prev_logf;
+	int prev_logoptions;
+	vartype *state;
+	int i;
+	DdGen *gen;
+	CUDD_VALUE_TYPE gvalue;
+	int *gcube;
+
+	if (outf != NULL) {
+		prev_logf = getlogstream();
+		prev_logoptions = getlogopt();
+		setlogstream( outf );
+		setlogopt( LOGOPT_NOTIME );
+	}
+
+	/* State vector (i.e., valuation of the variables) */
+	state = malloc( sizeof(vartype)*(state_len) );
+	if (state == NULL) {
+		perror( "print_support, malloc" );
+		return NULL;
+	}
+
+	Cudd_AutodynDisable( manager );
+	Cudd_ForeachCube( manager, X, gen, gcube, gvalue ) {
+		initialize_cube( state, gcube, state_len );
+		while (!saturated_cube( state, gcube, state_len )) {
+			logprint_startline();
+			for (i = 0; i < state_len; i++) {
+				if (i > 0 && i % 4 == 0)
+					logprint_raw( " " );
+				logprint_raw( "%d", *(state+i) );
+			}
+			logprint_endline();
+			increment_cube( state, gcube, state_len );
+		}
+		logprint_startline();
+		for (i = 0; i < state_len; i++) {
+			if (i > 0 && i % 4 == 0)
+				logprint_raw( " " );
+			logprint_raw( "%d", *(state+i) );
+		}
+		logprint_endline();
+	}
+	Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+
+	free( state );
+
+	if (outf != NULL) {
+		setlogstream( prev_logf );
+		setlogopt( prev_logoptions );
+	}
+}
