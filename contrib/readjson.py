@@ -36,10 +36,10 @@
 Reads from file with name given as command-line argument, or if no
 name given, then read from stdin.  E.g., try
 
-  $ ./gr1c -t json examples/trivial.spc | ./readjson.py
+  $ ./gr1c -t json examples/counter.spc | ./readjson.py
 
 
-SCL; 26 Mar 2014
+SCL; 19 Sep 2014
 """
 
 import sys
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     else:
         json_aut = json.load(open(sys.argv[1]))
 
-    assert json_aut["version"] == 0
+    assert json_aut["version"] == 1
 
     G = nx.DiGraph()
     for node_ID in json_aut["nodes"].iterkeys():
