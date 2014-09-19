@@ -2,3 +2,4 @@
 /extern/
 /doc/build/
 /build/
+*.pyc
