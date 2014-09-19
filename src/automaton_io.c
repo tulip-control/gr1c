@@ -125,6 +125,8 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 		}
 		start = end;
 
+		(*(node_array+ia_len-1))->initial = False;
+
 		(*(node_array+ia_len-1))->state = state;
 		(*(node_array+ia_len-1))->trans_len = 0;
 		(*(node_array+ia_len-1))->next = NULL;
