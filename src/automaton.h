@@ -235,8 +235,8 @@ int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 /** Dump strategy as Spin Promela model.
 
    Assumptions:
-     - more than 10000 environment goals;
-     - more than 10000 system goals;
+     - no more than 10000 environment goals;
+     - no more than 10000 system goals;
      - none of the variables has the following names: checketrans,
        checkstrans, pmlfault, envinit, envtrans, envgoal0, envgoal1, ...
        sysinit, systrans, sysgoal0, sysgoal1, ...
