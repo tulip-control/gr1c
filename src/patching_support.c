@@ -39,6 +39,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 
 	DdNode *tmp, *tmp2;
 	int i, j, r, k;  /* Generic counters */
+	int offset;
 	DdNode *ddval;  /* Store result of evaluating a BDD */
 	
 	/* Variables used during CUDD generation (state enumeration). */
@@ -333,10 +334,11 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 				Cudd_GenFree( gen );
 				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 				if (j > 0) {
+					for (offset = 1; offset >= 0; offset--) {
 					for (r = 0; r < num_egoals; r++) {
 						Cudd_RecursiveDeref( manager, tmp );
 						Cudd_RecursiveDeref( manager, Y_i_primed );
-						Y_i_primed = Cudd_bddVarMap( manager, *(*(X_jr+j)+r) );
+						Y_i_primed = Cudd_bddVarMap( manager, *(*(X_jr+j - offset)+r) );
 						if (Y_i_primed == NULL) {
 							fprintf( stderr,
 									 "Error synthesize_reachgame_BDD: Error"
@@ -367,6 +369,9 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 											Cudd_Not( Cudd_ReadOne( manager ) ),
 											tmp )))
 							break;
+					}
+					if (r < num_egoals)
+						break;
 					}
 					if (r >= num_egoals) {
 						fprintf( stderr,

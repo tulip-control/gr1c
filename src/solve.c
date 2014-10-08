@@ -57,6 +57,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 
 	DdNode *tmp, *tmp2;
 	int i, j, r, k;  /* Generic counters */
+	int offset;
 	bool env_nogoal_flag = False;  /* Indicate environment has no goals */
 	int loop_mode;
 	int next_mode;
@@ -547,12 +548,13 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				Cudd_GenFree( gen );
 				Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 				if (j > 0) {
+					for (offset = 1; offset >= 0; offset--) {
 					for (r = 0; r < num_egoals; r++) {
 						Cudd_RecursiveDeref( manager, tmp );
 						Cudd_RecursiveDeref( manager, Y_i_primed );
 						Y_i_primed
 							= Cudd_bddVarMap( manager,
-											  *(*(*(X_ijr+node->mode)+j)+r) );
+											  *(*(*(X_ijr+node->mode)+j - offset)+r) );
 						if (Y_i_primed == NULL) {
 							fprintf( stderr,
 									 "Error synthesize: Error in swapping"
@@ -581,6 +583,9 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 											Cudd_Not( Cudd_ReadOne( manager ) ),
 											tmp )))
 							break;
+					}
+					if (r < num_egoals)
+						break;
 					}
 					if (r >= num_egoals) {
 						fprintf( stderr,
