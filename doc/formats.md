@@ -94,7 +94,7 @@ format version description below, blank lines and lines beginning with ``#``
 For this format, the API includes functions aut_aut_load() and aut_aut_dump()
 for reading and writing, respectively.  Signatures are in automaton.h.
 
-<h3 id="gr1cautformatv0">version 0 (legacy)</h2>
+<h3 id="gr1cautformatv0">version 0 (legacy)</h3>
 
 The order of the state vector matches that from the specification (as in most
 other places in the source code).  Each line is of the form
