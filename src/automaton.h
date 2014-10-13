@@ -25,10 +25,11 @@
 /** \brief Strategy automaton nodes. */
 typedef struct anode_t
 {
-	bool initial;  /**<\brief Indicates if this node corresponds to a
-					  state that satisfies an initial condition.  Note
-					  that it may be False even when this node could
-					  be used for initialization. */
+	bool initial;  /**<\brief Indicates if this node corresponds to a state that
+					  satisfies an initial condition.  Note that it may be False
+					  even when this node could be used for initialization.
+					  Possible interpretations of initial conditions are
+					  described in the documentation for check_realizable(). */
 	vartype *state;
 	int mode;  /**<\brief Goal mode; indicates which system goal is
 				  currently being pursued. */

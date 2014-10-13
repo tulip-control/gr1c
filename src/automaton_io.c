@@ -83,9 +83,9 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 				detected_version = 0;
 			}
 
-			if (detected_version != 0) {
+			if (detected_version != 0 && detected_version != 1) {
 				fprintf( stderr,
-						 "Only gr1c automaton format version 0 is supported." );
+						 "Only gr1c automaton format versions 0 and 1 are supported." );
 				return NULL;
 			}
 		}
@@ -109,6 +109,22 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 			return NULL;
 		}
 
+		if (detected_version == 1) {
+			(*(node_array+ia_len-1))->initial = strtol( start, &end, 10 );
+			if (start == end || *end == '\0') {
+				fprintf( stderr,
+						 "Error parsing gr1c automaton line %d.\n", line_num );
+				return NULL;
+			}
+			if ((*(node_array+ia_len-1))->initial != 0
+				&& (*(node_array+ia_len-1))->initial != 1) {
+				fprintf( stderr,
+						 "Invalid value for node field \"initial\" on line %d.\n", line_num );
+				return NULL;
+			}
+			start = end;
+		}
+
 		(*(node_array+ia_len-1))->mode = strtol( start, &end, 10 );
 		if (start == end || *end == '\0') {
 			fprintf( stderr,
@@ -125,7 +141,8 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 		}
 		start = end;
 
-		(*(node_array+ia_len-1))->initial = False;
+		if (detected_version == 0)
+			(*(node_array+ia_len-1))->initial = False;
 
 		(*(node_array+ia_len-1))->state = state;
 		(*(node_array+ia_len-1))->trans_len = 0;
@@ -256,6 +273,24 @@ int aut_aut_dumpver( anode_t *head, int state_len, FILE *fp, int version )
 		}
 		break;
 
+	case 1:
+		while (node) {
+			fprintf( fp, "%d", node_counter );
+			for (i = 0; i < state_len; i++)
+				fprintf( fp, " %d", *(node->state+i) );
+			fprintf( fp, " %d %d %d", node->initial, node->mode, node->rgrad );
+			for (i = 0; i < node->trans_len; i++)
+				fprintf( fp, " %d",
+						 find_anode_index( head,
+										   (*(node->trans+i))->mode,
+										   (*(node->trans+i))->state,
+										   state_len ) );
+			fprintf( fp, "\n" );
+			node = node->next;
+			node_counter++;
+		}
+		break;
+
 	default:
 		return -1;  /* Unrecognized gr1c automaton format version */
 	}
@@ -266,7 +301,7 @@ int aut_aut_dumpver( anode_t *head, int state_len, FILE *fp, int version )
 
 void aut_aut_dump( anode_t *head, int state_len, FILE *fp )
 {
-	aut_aut_dumpver( head, state_len, fp, 0 );
+	aut_aut_dumpver( head, state_len, fp, 1 );
 }
 
 

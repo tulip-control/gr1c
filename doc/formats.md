@@ -94,6 +94,19 @@ format version description below, blank lines and lines beginning with ``#``
 For this format, the API includes functions aut_aut_load() and aut_aut_dump()
 for reading and writing, respectively.  Signatures are in automaton.h.
 
+<h3 id="gr1cautformatv1">version 1</h3>
+
+Each line is of the form
+
+    i S I m r t0 t1 ...
+
+where `I` is `1` if the node is initial and `0` otherwise, corresponding
+respectively to `True` and `False` of the `initial` field of the anode_t
+structure (defined in automaton.h).  There is a [brief introduction to
+interpretations of initial conditions](md_spc_format.html#initconditions) in the
+documentation of the specification input format. The other elements are as in
+the [aut format v0](#gr1cautformatv0).
+
 <h3 id="gr1cautformatv0">version 0 (legacy)</h3>
 
 The order of the state vector matches that from the specification (as in most
