@@ -79,11 +79,11 @@ number greater than that of the tag.  For example, the first commit after that
 tagged "v0.6.1" has version 0.6.2.
 
 For C, I mostly prefer the [Linux](https://www.kernel.org/) kernel style (as
-expounded in Documentation/CodingStyle in the Linux source tree),
-except that tab width should be 4 spaces.  Documentation in source code should
-usually be line-wrapped at 70 characters (default in Emacs), but more
-importantly, lines of code or comments should rarely exceed 80 characters in
-length.  README or other plain text files describing nearby stuff are written in
+expounded in Documentation/CodingStyle in the Linux source tree), except that
+tab width should be 4 spaces.  Documentation in source code should usually be
+line-wrapped at 70 characters (default in Emacs), but more importantly, lines of
+code or comments should rarely exceed 80 characters in length.  README or other
+plain text files describing nearby stuff are written in
 [reStructuredText](http://docutils.sourceforge.net/rst.html) and line-wrapped at
 80 characters.  Many comments in the code (e.g., if beginning with `/**`) and
 `.md` files under the `doc` directory are processed by
