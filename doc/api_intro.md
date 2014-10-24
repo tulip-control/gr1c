@@ -55,7 +55,7 @@ assumed that the environment will flip the variable `x` at each step, as
 indicated by the transition rule `ENVTRANS`.  Finally, there is no restriction
 on transitions by the system, as indicated by the empty
 `SYSTRANS:;`. Equivalently, the safety component of the guarantee is `True`.  To
-check whether the spec is realizable,
+check whether the specification is realizable,
 
     $ gr1c -r  examples/trivial.spc
 
