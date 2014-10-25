@@ -323,7 +323,7 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	num_sys = tree_size( svar_list );
 
 	fprintf( fp,
-			 "/* strategy synthesized with gr1c, version "
+			 "/* created using gr1c, version "
 			 GR1C_VERSION " */\n" );
 	fprintf( fp, "digraph A {\n    \"\" [shape=none]\n" );
 	node = head;
@@ -684,7 +684,7 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 
 	fprintf( fp, "  </aut>\n" );
 	fprintf( fp,
-			 "  <extra>strategy synthesized with gr1c, version "
+			 "  <extra>created using gr1c, version "
 			 GR1C_VERSION "</extra>\n</tulipcon>\n" );
 
 	return 0;
@@ -796,7 +796,7 @@ int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	}
 
 	fprintf( fp, "  </aut>\n" );
-	fprintf( fp, "  <extra>strategy synthesized with gr1c, version "
+	fprintf( fp, "  <extra>created using gr1c, version "
 			 GR1C_VERSION "</extra>\n</tulipcon>\n" );
 
 	return 0;
