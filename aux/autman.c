@@ -45,7 +45,7 @@ extern int st_array_len;
 /* Runtime modes */
 #define AUTMAN_SYNTAX 1
 #define AUTMAN_VARTYPES 2
-#define AUTMAN_VERMODEL 2
+#define AUTMAN_VERMODEL 3
 
 /* Verification model targets */
 #define VERMODEL_TARGET_SPIN 1
