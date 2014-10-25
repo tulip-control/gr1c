@@ -42,10 +42,18 @@ extern int st_array_len;
 /**************************/
 
 
+/* Output formats */
+#define OUTPUT_FORMAT_TEXT 0
+#define OUTPUT_FORMAT_TULIP 1
+#define OUTPUT_FORMAT_DOT 2
+#define OUTPUT_FORMAT_AUT 3
+#define OUTPUT_FORMAT_JSON 5
+
 /* Runtime modes */
 #define AUTMAN_SYNTAX 1
 #define AUTMAN_VARTYPES 2
 #define AUTMAN_VERMODEL 3
+#define AUTMAN_CONVERT 4
 
 /* Verification model targets */
 #define VERMODEL_TARGET_SPIN 1
@@ -59,6 +67,7 @@ int main( int argc, char **argv )
 	anode_t *head;
 	int version;
 	int state_len = -1;
+	byte format_option = OUTPUT_FORMAT_JSON;
 	byte verification_model = 0;  /* For command-line flag "-P". */
 
 	unsigned char verbose = 0;
@@ -70,7 +79,7 @@ int main( int argc, char **argv )
 	for (i = 1; i < argc; i++) {
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 'h') {
-				printf( "Usage: %s [-hVvlsP] [-i FILE] [FILE]\n\n"
+				printf( "Usage: %s [-hVvlsP] [-t TYPE] [-i FILE] [FILE]\n\n"
 						"If no input file is given, or if FILE is -, read from stdin.  If no action\n"
 						"is requested, then assume -s.\n\n"
 						"  -h          this help message\n"
@@ -81,6 +90,8 @@ int main( int argc, char **argv )
 						"              return version number, or -1 if error.\n"
 /*						"  -ss         extends -s to also check the number of and values\n"
 						"              assigned to variables, given specification.\n" */
+						"  -t TYPE     convert to format: txt, dot, aut, json, tulip\n"
+						"              some of these require a reference specification.\n"
 						"  -P          create Spin Promela model of strategy\n"
 						"  -L N        declare that state vector size is N\n"
 						"  -i FILE     process strategy with respect to specification FILE\n",
@@ -105,6 +116,28 @@ int main( int argc, char **argv )
 					run_option = AUTMAN_VARTYPES;
 				else
 					run_option = AUTMAN_SYNTAX;
+			} else if (argv[i][1] == 't') {
+				run_option = AUTMAN_CONVERT;
+				if (i == argc-1) {
+					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+					return 1;
+				}
+				if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
+					format_option = OUTPUT_FORMAT_TEXT;
+				} else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
+					format_option = OUTPUT_FORMAT_TULIP;
+				} else if (!strncmp( argv[i+1], "dot", strlen( "dot" ) )) {
+					format_option = OUTPUT_FORMAT_DOT;
+				} else if (!strncmp( argv[i+1], "aut", strlen( "aut" ) )) {
+					format_option = OUTPUT_FORMAT_AUT;
+				} else if (!strncmp( argv[i+1], "json", strlen( "json" ) )) {
+					format_option = OUTPUT_FORMAT_JSON;
+				} else {
+					fprintf( stderr,
+							 "Unrecognized output format. Try \"-h\".\n" );
+					return 1;
+				}
+				i++;
 			} else if (argv[i][1] == 'i') {
 				if (i == argc-1) {
 					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
@@ -135,6 +168,16 @@ int main( int argc, char **argv )
 		fprintf( stderr,
 				 "-P flag requires a reference specification to be given"
 				 " (-i switch).\n" );
+		return -1;
+	}
+
+	if (run_option == AUTMAN_CONVERT && spc_file_index < 0
+		&& (format_option == OUTPUT_FORMAT_DOT
+			|| format_option == OUTPUT_FORMAT_JSON
+			|| format_option == OUTPUT_FORMAT_TULIP)) {
+		fprintf( stderr,
+				 "Conversion of output to selected format requires a"
+				 " reference\nspecification to be given (-i switch).\n" );
 		return -1;
 	}
 
@@ -217,8 +260,10 @@ int main( int argc, char **argv )
 	}
 	if (verbose > 1)
 		logprint( "Done." );
-	if (verbose)
+	if (verbose) {
 		logprint( "Detected format version %d.", version );
+		logprint( "Given automaton has size %d.", aut_size( head ) );
+	}
 
 	switch (run_option) {
 	case AUTMAN_SYNTAX:
@@ -233,6 +278,26 @@ int main( int argc, char **argv )
 					   env_goals, num_egoals,
 					   sys_goals, num_sgoals,
 					   stdout );
+		break;
+
+	case AUTMAN_CONVERT:
+		if (format_option == OUTPUT_FORMAT_TEXT) {
+			list_aut_dump( head, state_len, stdout );
+		} else if (format_option == OUTPUT_FORMAT_DOT) {
+			if (nonbool_var_list != NULL) {
+				dot_aut_dump( head, evar_list, svar_list,
+							  DOT_AUT_ATTRIB, stdout );
+			} else {
+				dot_aut_dump( head, evar_list, svar_list,
+							  DOT_AUT_BINARY | DOT_AUT_ATTRIB, stdout );
+			}
+		} else if (format_option == OUTPUT_FORMAT_AUT) {
+			aut_aut_dump( head, state_len, stdout );
+		} else if (format_option == OUTPUT_FORMAT_JSON) {
+			json_aut_dump( head, evar_list, svar_list, stdout );
+		} else { /* OUTPUT_FORMAT_TULIP */
+			tulip_aut_dump( head, evar_list, svar_list, stdout );
+		}
 		break;
 
 	default:
