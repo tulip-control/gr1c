@@ -21,8 +21,6 @@ extern void yyrestart( FILE *new_file );
 /**************************
  **** Global variables ****/
 
-ptree_t *nonbool_var_list = NULL;
-
 extern ptree_t *evar_list;
 extern ptree_t *svar_list;
 extern ptree_t *env_init;
@@ -284,13 +282,8 @@ int main( int argc, char **argv )
 		if (format_option == OUTPUT_FORMAT_TEXT) {
 			list_aut_dump( head, state_len, stdout );
 		} else if (format_option == OUTPUT_FORMAT_DOT) {
-			if (nonbool_var_list != NULL) {
-				dot_aut_dump( head, evar_list, svar_list,
-							  DOT_AUT_ATTRIB, stdout );
-			} else {
-				dot_aut_dump( head, evar_list, svar_list,
-							  DOT_AUT_BINARY | DOT_AUT_ATTRIB, stdout );
-			}
+			dot_aut_dump( head, evar_list, svar_list,
+						  DOT_AUT_ATTRIB, stdout );
 		} else if (format_option == OUTPUT_FORMAT_AUT) {
 			aut_aut_dump( head, state_len, stdout );
 		} else if (format_option == OUTPUT_FORMAT_JSON) {
