@@ -547,8 +547,10 @@ anode_t *patch_localfixpoint( DdManager *manager,
 		logprint( "Building local environment transition BDD..." );
 	etrans = Cudd_ReadOne( manager );
 	Cudd_Ref( etrans );
-	if (verbose)
-		logprint( "Relevant env trans:" );
+	if (verbose) {
+		logprint_startline();
+		logprint_raw( "Relevant env trans (one per line):" );
+	}
 	for (i = 0; i < et_array_len; i++) {
 		etrans_part = ptree_BDD( *(env_trans_array+i), evar_list, manager );
 		for (j = 0; j < N_len; j++) {
@@ -585,6 +587,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
 		}
 		if (j < N_len) {
 			if (verbose) {
+				logprint_raw( "\n" );
 				print_formula( *(env_trans_array+i), getlogstream(),
 							   FORMULA_SYNTAX_GR1C );
 			}
@@ -597,14 +600,17 @@ anode_t *patch_localfixpoint( DdManager *manager,
 		
 	}
 	if (verbose) {
+		logprint_endline();
 		logprint( "Done." );
 		logprint( "Building local system transition BDD..." );
 	}
 
 	strans = Cudd_ReadOne( manager );
 	Cudd_Ref( strans );
-	if (verbose)
-		logprint( "\nRelevant sys trans:" );
+	if (verbose) {
+		logprint_startline();
+		logprint_raw( "Relevant sys trans (one per line):" );
+	}
 	for (i = 0; i < st_array_len; i++) {
 		strans_part = ptree_BDD( *(sys_trans_array+i), evar_list, manager );
 		for (j = 0; j < N_len; j++) {
@@ -641,6 +647,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
 		}
 		if (j < N_len) {
 			if (verbose) {
+				logprint_raw( "\n" );
 				print_formula( *(sys_trans_array+i), getlogstream(),
 							   FORMULA_SYNTAX_GR1C );
 			}
@@ -652,8 +659,10 @@ anode_t *patch_localfixpoint( DdManager *manager,
 		Cudd_RecursiveDeref( manager, strans_part );
 		
 	}
-	if (verbose)
+	if (verbose) {
+		logprint_endline();
 		logprint( "Done." );
+	}
 
 	/* Build goal BDDs, if present. */
 	if (num_egoals > 0) {
