@@ -261,7 +261,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 			if ((*(Exit+i))->rgrad > Exit_rgrad)
 				Exit_rgrad = (*(Exit+i))->rgrad;
 
-			if (forward_modereach( strategy, *(Exit+i), goal_mode, N, N_len,
+			if (forward_modereach( *(Exit+i), goal_mode, N, N_len,
 								   -1, num_env+num_sys )) {
 				fprintf( stderr,
 						 "Error localfixpoint_goalmode: forward graph"
@@ -271,10 +271,10 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 				return NULL;
 			}
 
-			node->trans = (*(Exit+i))->trans;
-			node->trans_len = (*(Exit+i))->trans_len;
-			(*(Exit+i))->trans = NULL;
-			(*(Exit+i))->trans_len = 0;
+			(*(Exit+i))->mode = -1;
+			node->mode = -2;  /* Mark as to-be-deleted */
+
+			replace_anode_trans( local_strategy, node, *(Exit+i) );
 		}
 		node = node->next;
 	}
@@ -302,6 +302,15 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 			replace_anode_trans( strategy, node, NULL );
 			strategy = delete_anode( strategy, node );
 			node = strategy;
+		} else {
+			node = node->next;
+		}
+	}
+	node = local_strategy;
+	while (node) {
+		if (node->mode == -2) {
+			local_strategy = delete_anode( local_strategy, node );
+			node = local_strategy;
 		} else {
 			node = node->next;
 		}

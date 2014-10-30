@@ -306,8 +306,8 @@ int aut_size( anode_t *head )
 }
 
 
-int forward_modereach( anode_t *head, anode_t *node, int mode,
-					   vartype **N, int N_len, int magic_mode, int state_len )
+int forward_modereach( anode_t *node, int mode, vartype **N, int N_len,
+					   int magic_mode, int state_len )
 {
 	int i, j;
 	for (i = 0; i < node->trans_len; i++) {
@@ -317,8 +317,8 @@ int forward_modereach( anode_t *head, anode_t *node, int mode,
 					break;
 			if (j < N_len) {
 				(*(node->trans+i))->mode = magic_mode;
-				if (forward_modereach( head, *(node->trans+i), mode,
-									   N, N_len, magic_mode, state_len ))
+				if (forward_modereach( *(node->trans+i), mode, N, N_len,
+									   magic_mode, state_len ))
 					return -1;
 			}
 		}

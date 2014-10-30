@@ -212,12 +212,12 @@ int aut_size( anode_t *head );
 void delete_aut( anode_t *head );
 
 
-/** Compute forward reachable set from node in automaton pointed to by
-   head, restricting attention to nodes with state in N and goal mode
-   of mode, and setting the mode field of each reached node to
+/** Compute forward reachable set from given node in automaton,
+   restricting attention to nodes with state in N and goal mode of
+   mode, and setting the mode field of each reached node to
    magic_mode.  Return zero on success, nonzero on error. */
-int forward_modereach( anode_t *head, anode_t *node, int mode,
-					   vartype **N, int N_len, int magic_mode, int state_len );
+int forward_modereach( anode_t *node, int mode, vartype **N, int N_len,
+					   int magic_mode, int state_len );
 
 
 /** Convert binary-expanded form of a variable back into nonboolean.
