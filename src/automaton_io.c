@@ -700,18 +700,17 @@ void list_aut_dump( anode_t *head, int state_len, FILE *fp )
 	if (fp == NULL)
 		fp = stdout;
 	while (node) {
-		width_count = 0;
 		fprintf( fp, "%4d ", node_counter );
 		if (node->initial)
 			fprintf( fp, "(init) " );
 		fprintf( fp, ": " );
-		for (i = 0; i < state_len; i++) {
-			fprintf( fp, "%d", *(node->state+i) );
-			width_count++;
-			if (width_count == 4) {
-				fprintf( fp, " " );
-				width_count = 0;
+		if (state_len > 0) {
+			for (i = 0; i < state_len-1; i++) {
+				fprintf( fp, "%d,", *(node->state+i) );
 			}
+			fprintf( fp, "%d", *(node->state+state_len-1) );
+		} else {
+			fprintf( fp, "(nil)" );
 		}
 		fprintf( fp, " - %2d - %2d - [", node->mode, node->rgrad );
 		for (i = 0; i < node->trans_len; i++)
