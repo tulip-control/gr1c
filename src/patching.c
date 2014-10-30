@@ -265,7 +265,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 								   -1, num_env+num_sys )) {
 				fprintf( stderr,
 						 "Error localfixpoint_goalmode: forward graph"
-						 " reachability computation failed\nfrom Entry node"
+						 " reachability computation failed\nfrom Exit node"
 						 " in goal mode %d\n",
 						 goal_mode );
 				return NULL;
