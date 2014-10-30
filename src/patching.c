@@ -213,6 +213,14 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 		return NULL;
 	}
 
+	if (verbose > 1) {
+		logprint( "Local strategy for goal mode %d:", goal_mode );
+		logprint_startline();
+		dot_aut_dump( local_strategy, evar_list, svar_list, DOT_AUT_ATTRIB,
+					  getlogstream() );
+		logprint_endline();
+	}
+
 	node = local_strategy;
 	local_min_rgrad = local_max_rgrad = -1;
 	while (node) {
