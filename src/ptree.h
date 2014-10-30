@@ -91,7 +91,7 @@ typedef struct ptree_t
 /** Create root node with given type.  Return NULL on error. */
 ptree_t *init_ptree( int type, char *name, int value );
 
-/* Return (deep) copy of given ptree.  Return NULL on error. */
+/** Return (deep) copy of given ptree.  Return NULL on error. */
 ptree_t *copy_ptree( ptree_t *head );
 
 /** Return number of nodes in tree. */
