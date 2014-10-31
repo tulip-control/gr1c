@@ -45,7 +45,15 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 							   DdNode *etrans, DdNode *strans, DdNode **egoals,
 							   DdNode *N_BDD, unsigned char verbose );
 
-/* new_sysgoal is assumed to have had nonboolean variables expanded.
+/** Implementation of algorithm from [[LM14]](md_papers.html#LM14) for adding sys goals
+
+	 S.C. Livingston, R.M. Murray.
+     Hot-swapping robot task goals in reactive formal synthesis.
+	 to be presented at CDC in Dec 2014.
+     (Extended version available as Caltech CDS tech report at
+      http://resolver.caltech.edu/CaltechCDSTR:2014.001)
+
+   new_sysgoal is assumed to have had nonboolean variables expanded.
    If no metric variables are given (i.e., num_metric_vars = 0 or offw
    is NULL), then the new system goal is appended at the end of the
    existing goal visitation sequence.
@@ -56,11 +64,22 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 							 int *offw, int num_metric_vars,
 							 ptree_t *new_sysgoal, unsigned char verbose );
 
-/* rm_sysgoal assumes that the given strategy is of a particular form.
-   System goals are sought in order, so that upon reaching an
-   \psi_i-state, the next system goal sought is \psi_{i+1}.  Thus,
-   upon deleting nodes with "goal mode" (part of "reach annotation")
-   i, it suffices to label the new substrategy with "goal mode" (i+1) mod n. */
+/** Implementation of algorithm from [[LM14]](md_papers.html#LM14) for removing sys goals
+
+	 S.C. Livingston, R.M. Murray.
+     Hot-swapping robot task goals in reactive formal synthesis.
+	 to be presented at CDC in Dec 2014.
+     (Extended version available as Caltech CDS tech report at
+      http://resolver.caltech.edu/CaltechCDSTR:2014.001)
+
+   The given strategy is assumed to have the following form.  System
+   goals are sought in order, so that upon reaching a psi_i-state, the
+   next system goal sought is psi_{i+1}, where subscript arithmetic is
+   modulo n, the number of system goals.  We say that goal i is sought
+   from node n if n->mode = i (treating n as having type anode_t*).
+   Thus, upon deleting nodes with "goal mode" (part of "reach
+   annotation") i, it suffices to label the new substrategy with "goal
+   mode" (i+1) mod n. */
 anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 					 int original_num_env, int original_num_sys,
 					 int delete_i, unsigned char verbose );
