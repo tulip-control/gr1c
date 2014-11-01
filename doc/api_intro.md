@@ -112,6 +112,7 @@ Further reading
 - [format of input specifications](md_spc_format.html)
 - [interactive sessions](md_interaction.html)
 - [file formats](md_formats.html)
+- [verifying output](md_verification.html)
 - [the developer's introduction](md_start_dev.html)
 
 
