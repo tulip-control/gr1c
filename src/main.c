@@ -72,7 +72,7 @@ int main( int argc, char **argv )
 	bool ptdump_flag = False;
 	bool logging_flag = False;
 	unsigned char init_flags = ALL_ENV_EXIST_SYS_INIT;
-	byte format_option = OUTPUT_FORMAT_TULIP;
+	byte format_option = OUTPUT_FORMAT_JSON;
 	unsigned char verbose = 0;
 	int input_index = -1;
 	int output_file_index = -1;  /* For command-line flag "-o". */
@@ -195,7 +195,7 @@ int main( int argc, char **argv )
 				"  -V          print version and exit\n"
 				"  -v          be verbose; use -vv to be more verbose\n"
 				"  -l          enable logging\n"
-				"  -t TYPE     strategy output format; default is \"tulip\";\n"
+				"  -t TYPE     strategy output format; default is \"json\";\n"
 				"              supported formats: txt, dot, aut, json, tulip\n", argv[0] );
 		printf( "  -n INIT     initial condition interpretation; (not case sensitive)\n"
 				"              one of\n"
