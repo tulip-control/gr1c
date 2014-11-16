@@ -66,7 +66,7 @@ int main( int argc, char **argv )
 	bool help_flag = False;
 	bool ptdump_flag = False;
 	bool logging_flag = False;
-	byte format_option = OUTPUT_FORMAT_TULIP;
+	byte format_option = OUTPUT_FORMAT_JSON;
 	unsigned char verbose = 0;
 	int input_index = -1;
 	int edges_input_index = -1;  /* If patching, command-line flag "-e". */
@@ -221,7 +221,7 @@ int main( int argc, char **argv )
 				"  -V          print version and exit\n"
 				"  -v          be verbose; use -vv to be more verbose\n"
 				"  -l          enable logging\n"
-				"  -t TYPE     strategy output format; default is \"tulip\";\n"
+				"  -t TYPE     strategy output format; default is \"json\";\n"
 				"              supported formats: txt, dot, aut, json, tulip\n"
 				"  -p          dump parse trees to DOT files, and echo formulas to screen\n", argv[0] );
 		printf( "  -m VARS     VARS is a space-separated list of metric variables\n"
