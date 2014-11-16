@@ -14,6 +14,7 @@
 #include "common.h"
 #include "ptree.h"
 #include "solve.h"
+#include "solve_support.h"
 #include "gr1c_util.h"
 #include "logging.h"
 
@@ -747,7 +748,7 @@ void print_support( DdManager *manager, int state_len, DdNode *X, FILE *outf )
 	state = malloc( sizeof(vartype)*(state_len) );
 	if (state == NULL) {
 		perror( "print_support, malloc" );
-		return NULL;
+		return;
 	}
 
 	Cudd_AutodynDisable( manager );
