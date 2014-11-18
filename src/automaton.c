@@ -479,7 +479,8 @@ anode_t *forward_prune( anode_t *head, anode_t **U, int U_len )
 					break;
 				node = node->next;
 			}
-			if (node == NULL) {  /* No Pred found */
+			if (node == NULL && !((*(U+i))->initial)) {
+				/* No predecessor found and not initial */
 				touched = True;
 				U = realloc( U,
 							 (U_len + (*(U+i))->trans_len)*sizeof(anode_t *) );
