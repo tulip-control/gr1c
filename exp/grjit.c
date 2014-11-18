@@ -1,5 +1,10 @@
 /* grjit.c -- run experiments for "just in time" synthesis and related work.
  *
+ * Some core functions for working with strategy automata have changed
+ * recently, and sim_rhc(), which is invoked by grjit, has not yet
+ * been carefully checked following those changes.  As such, grjit
+ * should be considered as possibly temporarily defunct.
+ *
  *
  * SCL; 2012, 2013.
  */

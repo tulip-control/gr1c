@@ -1,12 +1,9 @@
 /** \file automaton.h
  * \brief Routines for working with a strategy, as a finite automaton.
  *
- * A node is uniquely determined by its state and goal mode.  Thus
- * other attributes such as values for a reach annotation are not
- * required when invoking some functions.  Note that the length of the
- * state vector in each node is not stored anywhere in this data
- * structure.  It is assumed to be positive and constant for a
- * particular automaton (strategy).
+ * Note that the length of the state vector in each node is not stored
+ * anywhere in this data structure.  It is assumed to be positive and
+ * constant for a particular automaton (strategy).
  *
  *
  * SCL; 2012-2014.
@@ -79,11 +76,12 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad,
 /** Delete topmost (head) node from list.  Return pointer to new head. */
 anode_t *pop_anode( anode_t *head );
 
-/** Build the transition array for the node with given state and mode.
+/** Build the transition array for the first node with given state and mode.
 
    next_states is an array of state vectors, with length next_len,
    used to build transitions for this node. All of these states have
-   mode next_mode.
+   mode next_mode, and the actual transitions are to the first nodes
+   found with these states and mode.
 
    If the base node already has a transition array, then it is not
    replaced until the new array has been successfully built. (That is,
@@ -95,18 +93,23 @@ anode_t *build_anode_trans( anode_t *head, int mode,
 							vartype *state, int state_len, int next_mode,
 							vartype **next_states, int next_len );
 
-/** Append transition to array for the node with given state and mode.
+/** Append transition to array for the first node with given state and mode.
    Return new head on success, NULL on error. */
 anode_t *append_anode_trans( anode_t *head,
 							 int mode, vartype *state, int state_len,
 							 int next_mode, vartype *next_state );
 
-/** Return pointer to node with given state and mode, or NULL if not found. */
+/** Return pointer to the first node with given state and mode,
+   or NULL if not found. */
 anode_t *find_anode( anode_t *head, int mode, vartype *state, int state_len );
 
-/** Return the position of the node with given state and mode, or -1 if
-   not found.  0-based indexing. */
+/** Return the position of the first node with given state and mode,
+   or -1 if not found.  0-based indexing. */
 int find_anode_index( anode_t *head, int mode, vartype *state, int state_len );
+
+/** Return the position of the given node, or -1 if not found.
+   0-based indexing. */
+int anode_index( anode_t *head, anode_t *node );
 
 /** Return (possibly new) head pointer.  Transition arrays are not
    altered by this function. */

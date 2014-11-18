@@ -39,12 +39,6 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad,
 	new_head->trans = NULL;
 	new_head->trans_len = 0;
 
-	if (find_anode( head, mode, state, state_len )) {
-		fprintf( stderr,
-				 "WARNING: inserting indistinguishable nodes into"
-				 " automaton.\n" );
-	}
-
 	if (head == NULL) {
 		new_head->next = NULL;
 		return new_head;
@@ -172,6 +166,20 @@ int find_anode_index( anode_t *head, int mode, vartype *state, int state_len )
 	} else {
 		return -1;
 	}
+}
+
+
+int anode_index( anode_t *head, anode_t *node )
+{
+	int counter = 0;
+	while (head) {
+		if (head == node)
+			return counter;
+
+		head = head->next;
+		counter++;
+	}
+	return -1;
 }
 
 

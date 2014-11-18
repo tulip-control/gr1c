@@ -262,11 +262,7 @@ int aut_aut_dumpver( anode_t *head, int state_len, FILE *fp, int version )
 				fprintf( fp, " %d", *(node->state+i) );
 			fprintf( fp, " %d %d", node->mode, node->rgrad );
 			for (i = 0; i < node->trans_len; i++)
-				fprintf( fp, " %d",
-						 find_anode_index( head,
-										   (*(node->trans+i))->mode,
-										   (*(node->trans+i))->state,
-										   state_len ) );
+				fprintf( fp, " %d", anode_index( head, *(node->trans+i) ) );
 			fprintf( fp, "\n" );
 			node = node->next;
 			node_counter++;
@@ -280,11 +276,7 @@ int aut_aut_dumpver( anode_t *head, int state_len, FILE *fp, int version )
 				fprintf( fp, " %d", *(node->state+i) );
 			fprintf( fp, " %d %d %d", node->initial, node->mode, node->rgrad );
 			for (i = 0; i < node->trans_len; i++)
-				fprintf( fp, " %d",
-						 find_anode_index( head,
-										   (*(node->trans+i))->mode,
-										   (*(node->trans+i))->state,
-										   state_len ) );
+				fprintf( fp, " %d", anode_index( head, *(node->trans+i) ) );
 			fprintf( fp, "\n" );
 			node = node->next;
 			node_counter++;
@@ -464,11 +456,7 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 			fprintf( fp, "    \"\" -> %s\n", this_node_str );
 		for (i = 0; i < node->trans_len; i++) {
 			fprintf( fp, "    %s -> ", this_node_str );
-			fprintf( fp, "\"%d;\\n",
-					 find_anode_index( head,
-									   (*(node->trans+i))->mode,
-									   (*(node->trans+i))->state,
-									   num_env+num_sys ) );
+			fprintf( fp, "\"%d;\\n", anode_index( head, *(node->trans+i) ) );
 			if (format_flags & DOT_AUT_ATTRIB) {
 				fprintf( fp,
 						 "(%d, %d)\\n",
@@ -661,11 +649,7 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 			fprintf( fp, "%d %d", node->mode, node->rgrad );
 		fprintf( fp, "</anno>\n      <child_list>" );
 		for (i = 0; i < node->trans_len; i++)
-			fprintf( fp, " %d",
-					 find_anode_index( head,
-									   (*(node->trans+i))->mode,
-									   (*(node->trans+i))->state,
-									   num_env+num_sys ) );
+			fprintf( fp, " %d", anode_index( head, *(node->trans+i) ) );
 		fprintf( fp, "</child_list>\n      <state>\n" );
 		for (i = 0; i < num_env; i++) {
 			var = get_list_item( evar_list, i );
@@ -714,10 +698,7 @@ void list_aut_dump( anode_t *head, int state_len, FILE *fp )
 		}
 		fprintf( fp, " - %2d - %2d - [", node->mode, node->rgrad );
 		for (i = 0; i < node->trans_len; i++)
-			fprintf( fp, " %d",
-					 find_anode_index( head,
-									   (*(node->trans+i))->mode,
-									   (*(node->trans+i))->state, state_len ) );
+			fprintf( fp, " %d", anode_index( head, *(node->trans+i) ) );
 		fprintf( fp, "]\n" );
 		node = node->next;
 		node_counter++;
@@ -773,11 +754,7 @@ int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 			fprintf( fp, "%d %d", node->mode, node->rgrad );
 		fprintf( fp, "</name>\n      <child_list>" );
 		for (i = 0; i < node->trans_len; i++)
-			fprintf( fp, " %d",
-					 find_anode_index( head,
-									   (*(node->trans+i))->mode,
-									   (*(node->trans+i))->state,
-									   num_env+num_sys ) );
+			fprintf( fp, " %d", anode_index( head, *(node->trans+i) ) );
 		fprintf( fp, "</child_list>\n      <state>\n" );
 		for (i = 0; i < num_env; i++) {
 			var = get_list_item( evar_list, i );

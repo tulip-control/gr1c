@@ -784,7 +784,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
 				/* Find nodes in strategy that are affected by this change */
 				for (j = 0; j < num_sgoals; j++) {
 					node = find_anode( strategy, j, state, num_env+num_sys );
-					if (node != NULL) {
+					while (node != NULL) {
 						if (!strncmp( line, "restrict ", strlen( "restrict " ) )
 							&& (num_read
 								== 2*(original_num_env+original_num_sys))) {
@@ -859,6 +859,8 @@ anode_t *patch_localfixpoint( DdManager *manager,
 								  + *(affected_len + node->mode)-1) = node;
 							}
 						}
+
+						node = find_anode( node->next, j, state, num_env+num_sys );
 					}
 				}
 				
