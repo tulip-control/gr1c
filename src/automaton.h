@@ -112,14 +112,17 @@ int find_anode_index( anode_t *head, int mode, vartype *state, int state_len );
    altered by this function. */
 anode_t *delete_anode( anode_t *head, anode_t *target );
 
-/* Delete nodes in U that are not reachable in the graph from outside
-   U, and then repeat.  Note that initial conditions (i.e., nodes at
-   which execution is allowed to begin and hence do not need ingoing
-   edges) are ignored.
+/** Delete nodes in U that are not reachable in the graph from outside
+   U, and then repeat.  Nodes marked as initial are ignored; such
+   nodes are supposed to satisfy initial conditions, i.e., from which
+   execution is allowed to begin and hence do not need ingoing edges.
 
    The given array U is altered and freed during execution of
    forward_prune(), so the caller should not attempt to use it
    afterward.
+
+   U may be redundant, i.e., the implementation is tolerant to U
+   having multiple pointers to the same node.
 
    Return (possibly new) head pointer, or NULL on error. */
 anode_t *forward_prune( anode_t *head, anode_t **U, int U_len );
