@@ -101,7 +101,6 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 	if (verbose > 1) {
 		logprint( "Given strategy after variable expansion:" );
 		logprint_startline();
-		/* list_aut_dump( strategy, num_env+num_sys, getlogstream() ); */
 		dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_ATTRIB,
 					  getlogstream() );
 		logprint_endline();
@@ -200,6 +199,9 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 	} else {
 		Min = Max = NULL;
 		istar[0] = num_sgoals-1;
+
+		if (verbose)
+			logprint( "No metric variables given, so using sys goal mode i* = %d", istar[0] );
 	}
 
 	if (istar[0] == num_sgoals-1) {
@@ -304,7 +306,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 	}
 	if (verbose > 1) {
 		logprint( "Component strategy to reach the new system goal from"
-				  "  G_{i*}:" );
+				  " G_{i*}:" );
 		logprint_startline();
 		dot_aut_dump( component_strategy, evar_list, svar_list,
 					  DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
@@ -390,7 +392,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 			return NULL;
 		}
 
-		/* Delete the obviated node */
+		/* Delete the replaced node */
 		replace_anode_trans( strategy, node1, *(Gi[0]+i) );
 		replace_anode_trans( component_strategy, node1, *(Gi[0]+i) );
 		component_strategy = delete_anode( component_strategy, node1 );
@@ -502,7 +504,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 
 	strategy = forward_prune( strategy, Gi_succ, Gi_succ_len );
 	if (strategy == NULL) {
-		fprintf( stderr, "Error add_metric_sysgoal: pruning failed." );
+		fprintf( stderr, "Error add_metric_sysgoal: pruning failed.\n" );
 		return NULL;
 	}
 	Gi_succ = NULL; Gi_succ_len = 0;
