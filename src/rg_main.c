@@ -483,15 +483,15 @@ int main( int argc, char **argv )
 		sinit = Cudd_ReadOne( manager );
 		Cudd_Ref( sinit );
 	}
-	if (verbose)
+	if (verbose > 1)
 		logprint( "Building environment transition BDD..." );
 	etrans = ptree_BDD( env_trans, evar_list, manager );
-	if (verbose) {
+	if (verbose > 1) {
 		logprint( "Done." );
 		logprint( "Building system transition BDD..." );
 	}
 	strans = ptree_BDD( sys_trans, evar_list, manager );
-	if (verbose)
+	if (verbose > 1)
 		logprint( "Done." );
 	if (num_egoals > 0) {
 		egoals = malloc( num_egoals*sizeof(DdNode *) );

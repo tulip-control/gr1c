@@ -332,15 +332,15 @@ DdNode *compute_winning_set_saveBDDs( DdManager *manager,
 		var_separator->left = svar_list;
 	}
 
-	if (verbose)
+	if (verbose > 1)
 		logprint( "Building environment transition BDD..." );
 	(*etrans) = ptree_BDD( env_trans, evar_list, manager );
-	if (verbose) {
+	if (verbose > 1) {
 		logprint( "Done." );
 		logprint( "Building system transition BDD..." );
 	}
 	(*strans) = ptree_BDD( sys_trans, evar_list, manager );
-	if (verbose)
+	if (verbose > 1)
 		logprint( "Done." );
 
 	/* Build goal BDDs, if present. */

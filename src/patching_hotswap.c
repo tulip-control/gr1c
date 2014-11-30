@@ -133,15 +133,15 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 	}
 
 	/* Generate BDDs for the various parse trees from the problem spec. */
-	if (verbose)
+	if (verbose > 1)
 		logprint( "Building environment transition BDD..." );
 	etrans = ptree_BDD( env_trans, evar_list, manager );
-	if (verbose) {
+	if (verbose > 1) {
 		logprint( "Done." );
 		logprint( "Building system transition BDD..." );
 	}
 	strans = ptree_BDD( sys_trans, evar_list, manager );
-	if (verbose)
+	if (verbose > 1)
 		logprint( "Done." );
 
 	/* Build goal BDDs, if present. */
@@ -660,15 +660,15 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 	}
 
 	/* Generate BDDs for the various parse trees from the problem spec. */
-	if (verbose)
+	if (verbose > 1)
 		logprint( "Building environment transition BDD..." );
 	etrans = ptree_BDD( env_trans, evar_list, manager );
-	if (verbose) {
+	if (verbose > 1) {
 		logprint( "Done." );
 		logprint( "Building system transition BDD..." );
 	}
 	strans = ptree_BDD( sys_trans, evar_list, manager );
-	if (verbose)
+	if (verbose > 1)
 		logprint( "Done." );
 
 	/* Build goal BDDs, if present. */
