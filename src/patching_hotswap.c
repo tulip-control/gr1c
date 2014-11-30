@@ -70,7 +70,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 	anode_t **Gi_succ = NULL;
 	int Gi_succ_len = 0;
 
-	int i, j;  /* Generic counters */
+	int i, j, k;  /* Generic counters */
 	bool found_flag;
 	int node_counter;
 	DdNode *tmp, *tmp2;
@@ -334,11 +334,6 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 	}
 
 	
-	node1 = strategy;
-	while (node1->next)
-		node1 = node1->next;
-	node1->next = component_strategy;
-
 	node1 = component_strategy;
 	while (node1) {
 		/* Temporary mode label for this component. */
@@ -356,9 +351,16 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 				perror( "add_metric_sysgoal, realloc" );
 				return NULL;
 			}
-			for (j = 0; j < (*(Gi[0]+i))->trans_len; j++)
-				*(Gi_succ+Gi_succ_len+j) = *((*(Gi[0]+i))->trans+j);
-			Gi_succ_len += (*(Gi[0]+i))->trans_len;
+			for (j = 0; j < (*(Gi[0]+i))->trans_len; j++) {
+				for (k = 0; k < Gi_len[0]; k++) {
+					if (*((*(Gi[0]+i))->trans+j) == *(Gi[0]+k))
+						break;
+				}
+				if (k < Gi_len[0])
+					continue;  /* Do not prune members of Gi */
+				*(Gi_succ+Gi_succ_len) = *((*(Gi[0]+i))->trans+j);
+				Gi_succ_len++;
+			}
 		}
 
 		(*(Gi[0]+i))->trans_len = 0;
@@ -373,14 +375,9 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 			if (statecmp( node1->state, (*(Gi[0]+i))->state,
 						  num_env+num_sys )) {
 				(*(Gi[0]+i))->trans_len = node1->trans_len;
-				(*(Gi[0]+i))->trans = malloc( (node1->trans_len)
-											  *sizeof(anode_t *) );
-				if ((*(Gi[0]+i))->trans == NULL) {
-					perror( "add_metric_sysgoal, malloc" );
-					return NULL;
-				}
-				for (j = 0; j < node1->trans_len; j++)
-					*((*(Gi[0]+i))->trans+j) = *(node1->trans+j);
+				(*(Gi[0]+i))->trans = node1->trans;
+				node1->trans = NULL;
+				node1->trans_len = 0;
 				break;
 			}
 			node1 = node1->next;
@@ -395,8 +392,14 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 
 		/* Delete the obviated node */
 		replace_anode_trans( strategy, node1, *(Gi[0]+i) );
-		strategy = delete_anode( strategy, node1 );
+		replace_anode_trans( component_strategy, node1, *(Gi[0]+i) );
+		component_strategy = delete_anode( component_strategy, node1 );
 	}
+
+	node1 = strategy;
+	while (node1->next)
+		node1 = node1->next;
+	node1->next = component_strategy;
 
 	if (verbose > 1) {
 		logprint( "Partially patched strategy before de-expanding variables:" );
@@ -428,12 +431,6 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 		logprint_endline();
 	}
 
-	/* Attach remaining pieces */
-	node1 = strategy;
-	while (node1->next)
-		node1 = node1->next;
-	node1->next = component_strategy;
-
 	/* From first component to second component... */
 	for (i = 0; i < new_reached_len; i++) {
 		/* Temporary mode label for this component. */
@@ -443,14 +440,9 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 			if (statecmp( node1->state, (*(new_reached+i))->state,
 						  num_env+num_sys )) {
 				(*(new_reached+i))->trans_len = node1->trans_len;
-				(*(new_reached+i))->trans = malloc( (node1->trans_len)
-													*sizeof(anode_t *) );
-				if ((*(new_reached+i))->trans == NULL) {
-					perror( "add_metric_sysgoal, malloc" );
-					return NULL;
-				}
-				for (j = 0; j < node1->trans_len; j++)
-					*((*(new_reached+i))->trans+j) = *(node1->trans+j);
+				(*(new_reached+i))->trans = node1->trans;
+				node1->trans = NULL;
+				node1->trans_len = 0;
 				(*(new_reached+i))->rgrad = node1->rgrad;
 				break;
 			}
@@ -465,7 +457,8 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 		}
 
 		replace_anode_trans( strategy, node1, *(new_reached+i) );
-		strategy = delete_anode( strategy, node1 );
+		replace_anode_trans( component_strategy, node1, *(new_reached+i) );
+		component_strategy = delete_anode( component_strategy, node1 );
 	}
 
 	/* From second component into original... */
@@ -476,15 +469,11 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 			for (i = 0; i < Gi_len[1]; i++) {
 				if (statecmp( (*(Gi[1]+i))->state, node1->state,
 							  num_env+num_sys )) {
+
 					node1->trans_len = (*(Gi[1]+i))->trans_len;
-					node1->trans = malloc( (node1->trans_len)
-										   *sizeof(anode_t *) );
-					if (node1->trans == NULL) {
-						perror( "add_metric_sysgoal, malloc" );
-						return NULL;
-					}
-					for (j = 0; j < node1->trans_len; j++)
-						*(node1->trans+j) = *((*(Gi[1]+i))->trans+j);
+					node1->trans = (*(Gi[1]+i))->trans;
+					(*(Gi[1]+i))->trans_len = 0;
+					(*(Gi[1]+i))->trans = NULL;
 					node1->rgrad = (*(Gi[1]+i))->rgrad;
 					node1->mode = (*(Gi[1]+i))->mode;
 					break;
@@ -498,9 +487,18 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 				return NULL;
 			}
 
+			replace_anode_trans( strategy, *(Gi[1]+i), node1 );
+			replace_anode_trans( component_strategy, *(Gi[1]+i), node1 );
+			strategy = delete_anode( strategy, *(Gi[1]+i) );
+
 		}
 		node1 = node1->next;
 	}
+
+	node1 = strategy;
+	while (node1->next)
+		node1 = node1->next;
+	node1->next = component_strategy;
 
 	strategy = forward_prune( strategy, Gi_succ, Gi_succ_len );
 	if (strategy == NULL) {

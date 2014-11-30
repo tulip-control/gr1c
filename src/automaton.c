@@ -473,7 +473,7 @@ anode_t *forward_prune( anode_t *head, anode_t **U, int U_len )
 	do {
 		touched = False;
 		for (i = 0; i < U_len; i++) {
-			if (*(U+i) == NULL)
+			if (*(U+i) == NULL || (*(U+i))->initial)
 				continue;
 
 			/* Look for a predecessor */
@@ -487,7 +487,7 @@ anode_t *forward_prune( anode_t *head, anode_t **U, int U_len )
 					break;
 				node = node->next;
 			}
-			if (node == NULL && !((*(U+i))->initial)) {
+			if (node == NULL) {
 				/* No predecessor found and not initial */
 				touched = True;
 				U = realloc( U,
@@ -512,7 +512,7 @@ anode_t *forward_prune( anode_t *head, anode_t **U, int U_len )
 			}
 
 		}
-	} while (touched);
+	} while (touched && (head != NULL));
 
 	free( U );
 	return head;
