@@ -77,7 +77,7 @@ int main( int argc, char **argv )
 	for (i = 1; i < argc; i++) {
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 'h') {
-				printf( "Usage: %s [-hVvlsP] [-t TYPE] [-i FILE] [FILE]\n\n"
+				printf( "Usage: %s [-hVvlsP] [-t TYPE] [-L N] [-i FILE] [FILE]\n\n"
 						"If no input file is given, or if FILE is -, read from stdin.  If no action\n"
 						"is requested, then assume -s.\n\n"
 						"  -h          this help message\n"
@@ -85,15 +85,14 @@ int main( int argc, char **argv )
 						"  -v          be verbose; use -vv to be more verbose\n"
 						"  -l          enable logging\n"
 						"  -s          check syntax and get version;\n"
-						"              return version number, or -1 if error.\n"
+						"              return version number, or -1 if error.\n", argv[0] );
 /*						"  -ss         extends -s to also check the number of and values\n"
 						"              assigned to variables, given specification.\n" */
-						"  -t TYPE     convert to format: txt, dot, aut, json, tulip\n"
+				printf( "  -t TYPE     convert to format: txt, dot, aut, json, tulip\n"
 						"              some of these require a reference specification.\n"
 						"  -P          create Spin Promela model of strategy\n"
 						"  -L N        declare that state vector size is N\n"
-						"  -i FILE     process strategy with respect to specification FILE\n",
-						argv[0] );
+						"  -i FILE     process strategy with respect to specification FILE\n" );
 				return -1;
 			} else if (argv[i][1] == 'V') {
 				printf( "autman (automaton file manipulator, distributed with"
