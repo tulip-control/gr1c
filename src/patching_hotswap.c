@@ -825,6 +825,7 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 			return NULL;
 		}
 
+		node->initial = (*(Entry+i))->initial;
 		replace_anode_trans( strategy, *(Entry+i), node );
 	}
 
@@ -847,6 +848,7 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 
 			node->mode = (*(Exit+i))->mode;
 			node->rgrad = (*(Exit+i))->rgrad;
+			node->initial = (*(Exit+i))->initial;
 			node->trans = (*(Exit+i))->trans;
 			node->trans_len = (*(Exit+i))->trans_len;
 			(*(Exit+i))->trans = NULL;
