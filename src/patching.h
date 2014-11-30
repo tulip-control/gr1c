@@ -79,7 +79,16 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
    from node n if n->mode = i (treating n as having type anode_t*).
    Thus, upon deleting nodes with "goal mode" (part of "reach
    annotation") i, it suffices to label the new substrategy with "goal
-   mode" (i+1) mod n. */
+   mode" (i+1) mod n.
+
+   delete_i is the index of the system goal (also known as "goal
+   mode") that is to be removed.  The "index" is determined by order
+   in the SYSGOAL section of the given specification.
+
+   Two special cases are not currently treated: given strategies in
+   which there is less than three system goals or in which nodes
+   providing initial conditions have goal mode corresponding to
+   delete_i or delete_i+1 mod n. */
 anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 					 int original_num_env, int original_num_sys,
 					 int delete_i, unsigned char verbose );
