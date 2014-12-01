@@ -64,7 +64,7 @@ Many examples are provided.  Begin by reading `examples/README.md`.
 
 Documentation is available under the `doc` directory and is built using
 [Doxygen](http://www.doxygen.org); version 1.8.0 or later required for Markdown
-support.  To build it, try ::
+support.  To build it, try
 
     $ make doc
 
