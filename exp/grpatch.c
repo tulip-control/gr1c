@@ -86,6 +86,7 @@ int main( int argc, char **argv )
 
 	int i, j, var_index;
 	ptree_t *tmppt;  /* General purpose temporary ptree pointer */
+	char *tmpstr = NULL;
 
 	DdManager *manager;
 	DdNode *T = NULL;
@@ -335,6 +336,26 @@ int main( int argc, char **argv )
 	/* Close input file, if opened. */
 	if (input_index > 0)
 		fclose( fp );
+
+	/* Check clformula for clandestine variables */
+	tmppt = NULL;
+	if (svar_list == NULL) {
+		svar_list = evar_list;
+	} else {
+		tmppt = get_list_item( svar_list, -1 );
+		tmppt->left = evar_list;
+	}
+	if ((tmpstr = check_vars( clformula, svar_list, NULL )) != NULL) {
+		fprintf( stderr, "Unrecognized variable in -f formula: %s\n", tmpstr );
+		return -1;
+	}
+	if (tmppt != NULL) {
+		tmppt->left = NULL;
+		tmppt = NULL;
+	} else {
+		svar_list = NULL;
+	}
+
 
 	/* Omission implies empty. */
 	if (et_array_len == 0) {
