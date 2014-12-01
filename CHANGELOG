@@ -1,0 +1,27 @@
+gr1c (0.9.0)
+
+  * Begin including a CHANGELOG, mostly following the style of Debian packages.
+    Changes here are relative to the release version 0.7.4
+
+  * The deprecated output format tulip0 is not available from the command-line
+    tools.  This may break compatibility with old versions of TuLiP.
+
+  * The default output format is now "json" rather than "tulip".  This may break
+    compatibility with old versions of TuLiP.
+
+  * Introduction of tool "autman" for working with gr1c aut files.
+
+  * Capability to generate models in Spin Promela.
+
+  * More documentation, including how to verify a strategy with Spin.
+
+  * README and other plaintext files now use Markdown formatting rather than
+    reStructuredText.
+
+  * Various bugfixes, notably #14 "System liveness fails when environment has
+    forced transition leading out of env liveness"
+    <https://github.com/slivingston/gr1c/issues/14>.  Please consult the
+    discussion on that issue page for instructions about checking whether it
+    affects you.
+
+ -- Scott C. Livingston <slivingston@cds.caltech.edu>  Sun, 30 Nov 2014
