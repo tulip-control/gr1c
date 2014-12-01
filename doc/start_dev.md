@@ -35,7 +35,7 @@ in `aux/autman.c`.</dd></dd>
 <dd>Example specifications, edge change files, etc.  Some files are intended for
 use with the program `gr1c`, others with `rg`, and still others with `grpatch`
 and `grjit`, or some combination thereof.  Documentation for examples is
-provided in `examples/README.txt` or in comments at the top of the respective
+provided in `examples/README.md` or in comments at the top of the respective
 file.</dd>
 
 <dt>`tests/`</dt>
@@ -84,14 +84,12 @@ tab width should be 4 spaces.  Documentation in source code should usually be
 line-wrapped at 70 characters (default in Emacs), but more importantly, lines of
 code or comments should rarely exceed 80 characters in length.  README or other
 plain text files describing nearby stuff are written in
-[reStructuredText](http://docutils.sourceforge.net/rst.html) and line-wrapped at
-80 characters.  Many comments in the code (e.g., if beginning with `/**`) and
-`.md` files under the `doc` directory are processed by
-[Doxygen](http://www.doxygen.org).  So in particular, `.md` files under `doc`
-are written in [Markdown](http://daringfireball.net/projects/markdown/).  If you
-use [Emacs](http://www.gnu.org/software/emacs/), then you may be able to achieve
-the correct line width and tab conventions by adding the following to your
-`.emacs` configuration file.
+[Markdown](http://daringfireball.net/projects/markdown/) and line-wrapped at 80
+characters.  Many comments in the code (e.g., if beginning with `/**`) and `.md`
+files under the `doc` directory are processed by [Doxygen]
+(http://www.doxygen.org).  With [Emacs](http://www.gnu.org/software/emacs/) it
+may be possible to achieve the correct line width and tab conventions by adding
+the following to your `.emacs` configuration file.
 
     (add-hook 'rst-mode-hook
       '(lambda ()
