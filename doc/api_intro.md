@@ -11,12 +11,14 @@ Its core functionality is checking realizability of and synthesizing strategies
 for GR(1) specifications, though it does much more.  Relevant papers can be
 found in the [bibliography](md_papers.html).
 
-Releases are posted at http://vehicles.caltech.edu/snapshots/.  See the
-[installation page](md_installation.html) for instructions about installing gr1c
-from source code.  Beware the code is still experimental. If you find a possible
-bug or have comments, suggestions, or feature requests, then please open an
-[issue on GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott
-Livingston at <slivingston@cds.caltech.edu>
+Releases are posted at http://vehicles.caltech.edu/snapshots/.  Pre-built
+binaries for several platforms are available, though the preferred distribution
+form is as a source bundle.  See the [installation page](md_installation.html)
+for instructions about installing gr1c from source code.  Beware the code is
+still experimental. If you find a possible bug or have comments, suggestions, or
+feature requests, then please open an [issue on
+GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott Livingston
+at <slivingston@cds.caltech.edu>
 
 In the documentation below, we assume that gr1c is on the shell path. To see a
 summary of possible command-line arguments,
