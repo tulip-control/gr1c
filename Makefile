@@ -126,6 +126,10 @@ uninstall:
 check: $(CORE_PROGRAMS) $(EXP_PROGRAMS)
 	$(MAKE) -C tests CC=$(CC)
 
+.PHONY: cudd
+cudd:
+	$(MAKE) -C $(CUDD_ROOT) XCFLAGS='$(CUDD_XCFLAGS)' CC=$(CC)
+
 .PHONY: doc
 doc:
 	@(cd doc; doxygen; cd ..)
