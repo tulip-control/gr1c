@@ -1,5 +1,10 @@
 language: c
 compiler:
   - gcc
-  - clang
-script: make all && make check
+
+install:
+  - ./get-deps.sh
+  - make cudd
+script:
+  - make all
+  - make check
