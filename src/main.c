@@ -74,6 +74,7 @@ int main( int argc, char **argv )
 	unsigned char init_flags = ALL_ENV_EXIST_SYS_INIT;
 	byte format_option = OUTPUT_FORMAT_JSON;
 	unsigned char verbose = 0;
+	bool reading_options = True;  /* For disabling option parsing using "--" */
 	int input_index = -1;
 	int output_file_index = -1;  /* For command-line flag "-o". */
 	char dumpfilename[64];
@@ -100,7 +101,7 @@ int main( int argc, char **argv )
 
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
-		if (argv[i][0] == '-') {
+		if (reading_options && argv[i][0] == '-' && argv[i][1] != '-') {
 			if (argv[i][1] == 'h') {
 				help_flag = True;
 			} else if (argv[i][1] == 'V') {
@@ -180,6 +181,9 @@ int main( int argc, char **argv )
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
 				return 1;
 			}
+		} else if (reading_options && argv[i][0] == '-' && argv[i][1] == '-') {
+			if (argv[i][2] == '\0')
+				reading_options = False;
 		} else if (input_index < 0) {
 			/* Use first non-flag argument as filename whence to read
 			   specification. */
