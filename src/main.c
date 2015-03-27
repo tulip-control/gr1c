@@ -182,8 +182,11 @@ int main( int argc, char **argv )
 				return 1;
 			}
 		} else if (reading_options && argv[i][0] == '-' && argv[i][1] == '-') {
-			if (argv[i][2] == '\0')
+			if (argv[i][2] == '\0') {
 				reading_options = False;
+			} else if (!strncmp( argv[i]+2, "help", strlen( "help" ) )) {
+				help_flag = True;
+			}
 		} else if (input_index < 0) {
 			/* Use first non-flag argument as filename whence to read
 			   specification. */
