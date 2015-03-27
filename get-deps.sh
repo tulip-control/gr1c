@@ -18,3 +18,4 @@ else
     echo "Fetched file ($URI) has unexpected SHA-1 checksum."
     false
 fi
+echo "Successfully fetched CUDD; ready to build!"
