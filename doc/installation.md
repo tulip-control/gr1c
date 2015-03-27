@@ -31,11 +31,19 @@ untar the file (name may vary) and change into the source directory.
 
 We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/).
 Alternatives, e.g., if you have a shared library of CUDD installed, are
-described later as [additional build options](#altlib).  Let's make a directory
-called `extern` for this purpose. At the time of writing, the latest version is
-2.5.0. Below we use `wget` to download it from the command-line. You might also
-try directing your Web browser at <ftp://vlsi.colorado.edu/pub/>, or read CUDD
-documentation for instructions.
+described later as [additional build options](#altlib).
+
+<h3>Automatic</h3>
+
+    $ ./get-deps.sh
+    $ make cudd
+
+<h3>Manual</h3>
+
+Let's make a directory called `extern` for this purpose. At the time of writing,
+the latest version is 2.5.0. Below we use `wget` to download it from the
+command-line. You might also try directing your Web browser at
+<ftp://vlsi.colorado.edu/pub/>, or read CUDD documentation for instructions.
 
     $ mkdir extern
     $ cd extern
@@ -64,8 +72,10 @@ With success building CUDD, we may now build gr1c. Change back to the gr1c root
 source directory and open the `Makefile`. There are two items to check. First,
 be sure that CUDD_ROOT matches where you just built CUDD; for the version used
 above, that would be `extern/cudd-2.5.0`. Second, be sure that CUDD_XCFLAGS
-matches XCFLAGS that you used to build CUDD.  Finally, run `make`. If no errors
-were reported, you should be able to get the version with
+matches XCFLAGS that you used to build CUDD.
+
+Finally, run `make`. If no errors were reported, you should be able to get the
+version with
 
     $ ./gr1c -V
 
