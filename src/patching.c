@@ -132,7 +132,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
 				*(Exit+Exit_len-1) = head;
 			} else {
 				/* Test for nominal membership in Entry set; i.e.,
-				   current node is not in N, see if it leads into N. */
+				   current node is not in N, check if it leads into N. */
 				for (j = 0; j < head->trans_len; j++) {
 					for (k = 0; k < N_len; k++)
 						if ((*(head->trans+j))->mode == goal_mode

@@ -40,7 +40,7 @@ void cube_prime_sys( int *cube, int num_env, int num_sys );
        POSTCONDITION: cube = [0,1,0,0]. */
 void increment_cube( vartype *cube, int *gcube, int len );
 
-/** Will cube overflow upon next increment? (See documentation for
+/** Will cube overflow upon next increment? (Consult documentation for
    increment_cube().) */
 bool saturated_cube( vartype *cube, int *gcube, int len );
 

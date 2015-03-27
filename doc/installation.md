@@ -10,7 +10,7 @@ executable is built,
 Aside from standard C libraries and a basic development environment (gcc, etc.),
 **gr1c** depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/), the CU
 Decision Diagram package by Fabio Somenzi and others.  Also, gr1c interactive
-mode optionally uses GNU Readline (disabled by default; see `USE_READLINE`
+mode optionally uses GNU Readline (disabled by default; selected via `USE_READLINE`
 definition in Makefile).  The parser generator
 [Bison](http://www.gnu.org/software/bison/) and the lexical analyzer
 [flex](http://flex.sourceforge.net/) are required to build gr1c.  Other Yacc and
@@ -34,7 +34,7 @@ Alternatives, e.g., if you have a shared library of CUDD installed, are
 described later as [additional build options](#altlib).  Let's make a directory
 called `extern` for this purpose. At the time of writing, the latest version is
 2.5.0. Below we use `wget` to download it from the command-line. You might also
-try directing your Web browser at <ftp://vlsi.colorado.edu/pub/>, or see CUDD
+try directing your Web browser at <ftp://vlsi.colorado.edu/pub/>, or read CUDD
 documentation for instructions.
 
     $ mkdir extern
@@ -65,7 +65,7 @@ source directory and open the `Makefile`. There are two items to check. First,
 be sure that CUDD_ROOT matches where you just built CUDD; for the version used
 above, that would be `extern/cudd-2.5.0`. Second, be sure that CUDD_XCFLAGS
 matches XCFLAGS that you used to build CUDD.  Finally, run `make`. If no errors
-were reported, you should be able to see the version with
+were reported, you should be able to get the version with
 
     $ ./gr1c -V
 
@@ -92,7 +92,7 @@ in a plain text file, say called `testsize.c`, and then
     $ ./testsize
 
 The output will give the number of bytes for each type.  For example, in the
-case of 64-bit, you may see
+case of 64-bit, you may get
 
     void *: 8
     long: 8

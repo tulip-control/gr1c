@@ -13,7 +13,7 @@
 #include "ptree.h"
 #include "automaton.h"
 
-/* Flags concerning initial conditions. (See comments for check_realizable.) */
+/* Flags concerning initial conditions. (Consult comments for check_realizable.) */
 #define UNDEFINED_INIT 0
 #define ALL_ENV_EXIST_SYS_INIT 1
 #define ALL_INIT 2
@@ -87,7 +87,7 @@ DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
 
 /** Synthesize a strategy.  The specification is assumed to be
    realizable when this function is invoked.  Return pointer to
-   automaton representing the strategy, or NULL if error. Also see
+   automaton representing the strategy, or NULL if error. Also read
    documentation for check_realizable(). */
 anode_t *synthesize( DdManager *manager, unsigned char init_flags,
 					 unsigned char verbose );

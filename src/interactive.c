@@ -1,5 +1,5 @@
 /* interactive.c -- Functions to interact with gr1c (sub)level sets.
- *                  Also see solve.c and solve_operators.c
+ *                  Also consider solve.c and solve_operators.c
  *
  * N.B., interaction gives access to the "sublevel" sets from the
  * vanilla fixed point formula, as returned by compute_sublevel_sets().

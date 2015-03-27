@@ -1,5 +1,5 @@
 /* solve_operators.c -- Functions for several mu-calculus operations.
- *                      Also see solve.c
+ *                      Also consider solve.c
  *
  *
  * SCL; 2012-2014.

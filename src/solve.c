@@ -1,5 +1,5 @@
 /* solve.c -- Definitions for signatures appearing in solve.h.
- *            Also see solve_operators.c
+ *            Also consider solve_operators.c
  *
  *
  * SCL; 2012-2014.

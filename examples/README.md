@@ -12,8 +12,8 @@ Examples in the `patching` directory are intended to demonstrate routines for
 incremental synthesis and relevant activities.  Informally, these concern
 situations in which a given strategy must be modified.  Files with the same base
 name go together, where `*.spc` (name ending in "spc") gives the nominal
-specification and `*.edc` is the game edge change set.  See comments in these
-files for example descriptions.  Subsections below are organized by function of
+specification and `*.edc` is the game edge change set.  Comments in these files
+provide example descriptions.  Subsections below are organized by function of
 the gr1c API, and when applicable, each begins with a description of how to
 access the functionality from the command-line tools.
 

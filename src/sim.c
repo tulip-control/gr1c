@@ -129,7 +129,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 			logprint( "Beginning simulation iteration %d...", current_it );
 		current_it++;
 
-		/* See if time to switch attention to next goal. */
+		/* Check if time to switch attention to next goal. */
 		state2cube( init_state, cube, num_env+num_sys );
 		ddval = Cudd_Eval( manager, *(sgoals+current_goal), cube );
 		if (ddval->type.value > .9) {

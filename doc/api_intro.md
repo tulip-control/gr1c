@@ -13,14 +13,14 @@ found in the [bibliography](md_papers.html).
 
 Releases are posted at http://vehicles.caltech.edu/snapshots/.  Pre-built
 binaries for several platforms are available, though the preferred distribution
-form is as a source bundle.  See the [installation page](md_installation.html)
+form is as a source bundle.  Read the [installation page](md_installation.html)
 for instructions about installing gr1c from source code.  Beware the code is
 still experimental. If you find a possible bug or have comments, suggestions, or
 feature requests, then please open an [issue on
 GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott Livingston
 at <slivingston@cds.caltech.edu>
 
-In the documentation below, we assume that gr1c is on the shell path. To see a
+In the documentation below, we assume that gr1c is on the shell path. To get a
 summary of possible command-line arguments,
 
     $ gr1c -h
@@ -61,7 +61,7 @@ check whether the specification is realizable,
 
     $ gr1c -r  examples/trivial.spc
 
-You should see a message indicating realizability, such as "Realizable." Now, to
+A message indicating realizability, such as "Realizable," will be printed. Now, to
 synthesize a strategy for it, output the result into a
 [DOT](http://www.graphviz.org/) file, and create a PNG called `temp.dot.png`
 from that output, try
@@ -124,4 +124,4 @@ License
 This is free software released under the terms of [the BSD 3-Clause
 License](http://opensource.org/licenses/BSD-3-Clause).  There is no
 warranty; not even for merchantability or fitness for a particular
-purpose.  See `LICENSE.txt` for copying conditions.
+purpose.  Consult `LICENSE.txt` for copying conditions.

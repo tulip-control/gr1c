@@ -53,7 +53,7 @@
 /** \brief Parse tree nodes. */
 typedef struct ptree_t
 {
-	int type;  /**<\brief See table of \ref PTreeNodeTypes. */
+	int type;  /**<\brief Consult table of \ref PTreeNodeTypes. */
 	char *name;  /**<\brief Name of the variable, if applicable. */
 
 	/** \brief Value of a constant, or domain of a variable.
@@ -145,7 +145,7 @@ int min_tree_value( ptree_t *head );
 
 /** Return the maximum value among PT_CONSTANT nodes in given tree.
 
-   Also see documentation for min_tree_value(). */
+   Also read documentation for min_tree_value(). */
 int max_tree_value( ptree_t *head );
 
 /** Same as min_tree_value() but restrict attention to specified variable. */

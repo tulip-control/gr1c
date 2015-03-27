@@ -156,8 +156,9 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 					 FILE *fp );
 
-/** Dump DOT file describing the automaton (strategy).  See \ref
-   DotDumpFlags.  Also see comments for tulip_aut_dump().   */
+/** Dump DOT file describing the automaton (strategy).  The appearance can be
+   configured using \ref DotDumpFlags.  Also read comments for
+   tulip_aut_dump().  */
 int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 				  unsigned char format_flags, FILE *fp );
 
@@ -174,7 +175,7 @@ int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 void list_aut_dump( anode_t *head, int state_len, FILE *fp );
 
 /** Dump strategy using the current version of the "gr1c automaton"
-   file format.  See [external_notes](md_formats.html) for details.
+   file format.  Read [external_notes](md_formats.html) for details.
    If fp = NULL, then write to stdout. */
 void aut_aut_dump( anode_t *head, int state_len, FILE *fp );
 
@@ -184,7 +185,7 @@ void aut_aut_dump( anode_t *head, int state_len, FILE *fp );
    return -1. */
 int aut_aut_dumpver( anode_t *head, int state_len, FILE *fp, int version );
 
-/** Load strategy given in "gr1c automaton" format from file fp.  See
+/** Load strategy given in "gr1c automaton" format from file fp.  Read
    [external_notes](md_formats.html) for details.  If fp = NULL, then
    read from stdin.  Return resulting head pointer, or NULL if error.
    If version is not NULL, then the detected format version number is

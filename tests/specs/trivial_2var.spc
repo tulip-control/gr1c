@@ -1,4 +1,4 @@
-# For expected output after synthesis and calling list_aut_dump(), see
+# Expected output after synthesis and calling list_aut_dump() is in
 # tests/expected_outputs/trivial_2var.spc.listdump.out
 #
 # SCL; 18 Mar 2013.

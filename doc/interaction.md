@@ -61,7 +61,7 @@ below is example interaction.
 Recognized commands
 -------------------
 
-Use **help** to see the list of commands without descriptions.
+Use **help** to get the list of commands without descriptions.
 
 * **winning STATE**
 
@@ -98,7 +98,7 @@ Use **help** to see the list of commands without descriptions.
 
 * **relax STATE1 STATE2**
 
-  add an edge from STATE1 to STATE2. See description of "restrict" command
+  add an edge from STATE1 to STATE2. Consult the description of "restrict" command
   regarding how the length of STATE2 affects interpretation of this command.
 
 * **clear**
@@ -167,5 +167,5 @@ Use **help** to see the list of commands without descriptions.
 
 * **realizable {existsys,allsys}** [NOT IMPLEMENTED]
 
-  is specification realizable?  See documentation in solve.h for interpretation
+  is specification realizable?  Consult documentation in solve.h for interpretation
   of init_flags "existsys" (EXIST_SYS_INIT) and "allsys" (ALL_SYS_INIT).

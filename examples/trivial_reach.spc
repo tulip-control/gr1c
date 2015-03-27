@@ -1,4 +1,4 @@
-# Change which SYSGOAL is commented-out below in order to see a
+# Change which SYSGOAL is commented-out below in order to get a
 # strategy winning with finite play vs. only with infinite plays.
 # Note that SYSGOAL may be entirely omitted, instead of writing
 # "SYSGOAL:;"
