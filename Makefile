@@ -1,8 +1,8 @@
 # Build executables and documentation; run tests.
 #
-# SCL; 2012-2014.
+# SCL; 2012-2015.
 
-CORE_PROGRAMS = gr1c rg
+CORE_PROGRAMS = gr1c gr1c-rg
 EXP_PROGRAMS = grpatch
 AUX_PROGRAMS = autman
 
@@ -49,7 +49,7 @@ all: core exp aux
 gr1c: main.o util.o logging.o interactive.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o
+gr1c-rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 autman: util.o logging.o solve_support.o ptree.o autman.o automaton.o automaton_io.o gr1c_parse.o
@@ -121,7 +121,7 @@ expinstall:
 	$(INSTALL) grpatch $(DESTDIR)$(bindir)
 
 uninstall:
-	rm -f $(DESTDIR)$(bindir)/gr1c $(DESTDIR)$(bindir)/rg $(DESTDIR)$(bindir)/grpatch
+	rm -f $(DESTDIR)$(bindir)/gr1c $(DESTDIR)$(bindir)/gr1c-rg $(DESTDIR)$(bindir)/grpatch
 
 check: $(CORE_PROGRAMS) $(EXP_PROGRAMS)
 	$(MAKE) -C tests CC=$(CC)

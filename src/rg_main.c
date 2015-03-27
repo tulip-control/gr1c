@@ -1,4 +1,4 @@
-/* rg_main.c -- main entry point for execution of rg.
+/* rg_main.c -- main entry point for execution of gr1c-rg.
  *
  *
  * SCL; 2012-2014.
@@ -209,7 +209,7 @@ int main( int argc, char **argv )
 	if (input_index > 0) {
 		fp = fopen( argv[input_index], "r" );
 		if (fp == NULL) {
-			perror( "rg, fopen" );
+			perror( "gr1c-rg, fopen" );
 			return -1;
 		}
 		stdin_backup = stdin;
@@ -561,7 +561,7 @@ int main( int argc, char **argv )
 		if (output_file_index >= 0) {
 			fp = fopen( argv[output_file_index], "w" );
 			if (fp == NULL) {
-				perror( "rg, fopen" );
+				perror( "gr1c-rg, fopen" );
 				return -1;
 			}
 		} else {

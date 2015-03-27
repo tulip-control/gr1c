@@ -105,9 +105,9 @@ if test $VERBOSE -eq 1; then
 fi
 for k in `echo $REFSPECS`; do
     if test $VERBOSE -eq 1; then
-	echo "\tComparing  rg -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.listdump.out"
+	echo "\tComparing  gr1c-rg -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.listdump.out"
     fi
-    if ! ($BUILD_ROOT/rg -t txt specs/$k | cmp -s expected_outputs/${k}.listdump.out -); then
+    if ! ($BUILD_ROOT/gr1c-rg -t txt specs/$k | cmp -s expected_outputs/${k}.listdump.out -); then
 	echo $PREFACE "Reachability game synthesis regression test failed for specs/${k}\n"
 	exit -1
     fi
@@ -160,7 +160,7 @@ for k in `ls flawed_reach_specs/*.spc`; do
     if test $VERBOSE -eq 1; then
 	echo "\t gr1c -s $k"
     fi
-    if $BUILD_ROOT/rg -s $k > /dev/null 2>&1; then
+    if $BUILD_ROOT/gr1c-rg -s $k > /dev/null 2>&1; then
 	echo $PREFACE "Flawed reachability game spec ${k} detected as OK\n"
 	exit -1
     fi

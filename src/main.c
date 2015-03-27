@@ -8,6 +8,7 @@
  */
 
 
+#include <unistd.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,6 +79,7 @@ int main( int argc, char **argv )
 	int input_index = -1;
 	int output_file_index = -1;  /* For command-line flag "-o". */
 	char dumpfilename[64];
+	char **command_argv = NULL;
 
 	byte verification_model = 0;  /* For command-line flag "-P". */
 	ptree_t *original_env_init;
@@ -98,6 +100,25 @@ int main( int argc, char **argv )
 	DdNode *T = NULL;
 	anode_t *strategy = NULL;
 	int num_env, num_sys;
+
+	/* Try to handle sub-commands first */
+	if (argc >= 2) {
+		if (!strncmp( argv[1], "rg", strlen( "rg" ) )) {
+
+			/* Pass arguments after rg */
+			command_argv = malloc( sizeof(char *)*argc );
+			command_argv[0] = strdup( "gr1c-rg" );
+			command_argv[argc] = NULL;
+			for (i = 1; i < argc-1; i++)
+				command_argv[i] = argv[i+1];
+
+			if (execv( "gr1c-rg", command_argv ) < 0) {
+				perror( "gr1c, execv" );
+				return -1;
+			}
+
+		}
+	}
 
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
@@ -196,7 +217,7 @@ int main( int argc, char **argv )
 
 	if (help_flag) {
 		/* Split among printf() calls to conform with ISO C90 string length */
-		printf( "Usage: %s [-hVvlspriP] [-n INIT] [-t TYPE] [-o FILE] [FILE]\n\n"
+		printf( "Usage: %s [COMMAND] [-hVvlspriP] [-n INIT] [-t TYPE] [-o FILE] [FILE]\n\n"
 				"  -h          this help message\n"
 				"  -V          print version and exit\n"
 				"  -v          be verbose; use -vv to be more verbose\n"
@@ -216,6 +237,8 @@ int main( int argc, char **argv )
 				"  -o FILE     output strategy to FILE, rather than stdout (default)\n"
 				"  -P          create Spin Promela model of strategy;\n"
 				"              output to stdout, so requires -o flag to also be used\n" );
+		printf( "\nCOMMAND:\n\n"
+				"  rg          solve reachability game\n" );
 		return 1;
 	}
 
