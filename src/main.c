@@ -113,7 +113,7 @@ int main( int argc, char **argv )
 				command_argv[i] = argv[i+1];
 
 			if (execvp( "gr1c-rg", command_argv ) < 0) {
-				perror( "gr1c, execv" );
+				perror( "gr1c, execvp" );
 				return -1;
 			}
 
