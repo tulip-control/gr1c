@@ -39,34 +39,25 @@ Building from Source
 --------------------
 
 Detailed installation instructions are in the repository at doc/installation.md
-This section provides an outline.
+For the most recent release, a copy of these instructions is on the Web at
+http://slivingston.github.io/gr1c/md_installation.html
 
-For building entirely from source code, CUDD (cf. "Depedencies" section above)
-should be placed in a directory called "extern".  The variable CUDD_ROOT in
-`Makefile` should indicate this directory and may need to be adjusted.  Be sure
-that similar flags are used for compiling both gr1c and CUDD.  In particular,
-SIZEOF_VOID_P and SIZEOF_LONG need to be set to the sizes (in bytes) of void
-pointer (`void *`) and `long int` on your system.  gr1c ships with a Makefile
-that has these set for Intel x86 64-bit, which will likely succeed for Linux
-x86_64 and Mac OS X.  More generally, it should suffice to copy your setting of
-XCFLAGS in the `Makefile` of CUDD to the variable CUDD_XCFLAGS in the `Makefile`
-of gr1c.
+For Linux x86_64 and Mac OSX, try the following.
 
-Once CUDD is built, all gr1c programs may be built and installed
-
+    $ ./get-deps.sh
+    $ make cudd
     $ make all
+    $ make check
+
+The last command runs a test suite. Each testing step is reported if the
+environment variable VERBOSE is set to 1.  E.g., try `VERBOSE=1 make check`.
+Finally,
+
     $ make install expinstall
 
 The latter `expinstall` installs experimental tools, like `grpatch`.  The
 default installation prefix is /usr/local.  Adjust it by invoking `make` with
 something like `prefix=/your/new/path`.
-
-A test suite is available.  To run it, after building gr1c,
-
-    $ make check
-
-Each testing step is reported if the environment variable VERBOSE is set to 1.
-E.g., try `VERBOSE=1 make check`.
 
 
 Examples and Documentation
