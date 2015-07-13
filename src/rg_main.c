@@ -99,7 +99,7 @@ int main( int argc, char **argv )
 			if (argv[i][1] == 'h') {
 				help_flag = True;
 			} else if (argv[i][1] == 'V') {
-				printf( "rg (part of gr1c) " GR1C_VERSION "\n\n"
+				printf( "gr1c-rg (part of gr1c) " GR1C_VERSION "\n\n"
 						GR1C_COPYRIGHT "\n" );
 				return 0;
 			} else if (argv[i][1] == 'v') {

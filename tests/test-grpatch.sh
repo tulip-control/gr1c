@@ -1,5 +1,5 @@
 #!/bin/sh
-# Tests for the program grpatch and not targeted at particular units.
+# Tests for the program gr1c-patch and not targeted at particular units.
 #
 # SCL; 2013.
 
@@ -27,14 +27,14 @@ for k in `echo $REFSPECS`; do
 	echo "\tComparing  gr1c -t aut $TESTDIR/specs/patching/${k}.spc \n\t\tagainst $TESTDIR/expected_outputs/patching/${k}.spc.autdump.out"
     fi
     if ! ($BUILD_ROOT/gr1c -t aut specs/patching/${k}.spc | cmp -s expected_outputs/patching/${k}.spc.autdump.out -); then
-	echo $PREFACE "grpatch, patch_localfixpoint() regression test failed for specs/${k}\n"
+	echo $PREFACE "gr1c-patch, patch_localfixpoint() regression test failed for specs/${k}\n"
 	exit -1
     fi
     if test $VERBOSE -eq 1; then
-	echo "\tComparing  grpatch -t aut -a $TESTDIR/expected_outputs/patching/${k}.spc.autdump.out -e $TESTDIR/specs/patching/${k}.edc $TESTDIR/specs/patching/${k}.spc \n\t\tagainst $TESTDIR/expected_outputs/patching/${k}.edc.autdump.out"
+	echo "\tComparing  gr1c-patch -t aut -a $TESTDIR/expected_outputs/patching/${k}.spc.autdump.out -e $TESTDIR/specs/patching/${k}.edc $TESTDIR/specs/patching/${k}.spc \n\t\tagainst $TESTDIR/expected_outputs/patching/${k}.edc.autdump.out"
     fi
-    if ! ($BUILD_ROOT/grpatch -t aut -a expected_outputs/patching/${k}.spc.autdump.out -e specs/patching/${k}.edc specs/patching/${k}.spc | cmp -s expected_outputs/patching/${k}.edc.autdump.out -); then
-	echo $PREFACE "grpatch, patch_localfixpoint() regression test failed for specs/${k}\n"
+    if ! ($BUILD_ROOT/gr1c-patch -t aut -a expected_outputs/patching/${k}.spc.autdump.out -e specs/patching/${k}.edc specs/patching/${k}.spc | cmp -s expected_outputs/patching/${k}.edc.autdump.out -); then
+	echo $PREFACE "gr1c-patch, patch_localfixpoint() regression test failed for specs/${k}\n"
 	exit -1
     fi
 done

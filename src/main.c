@@ -117,6 +117,19 @@ int main( int argc, char **argv )
 				return -1;
 			}
 
+		} else if (!strncmp( argv[1], "patch", strlen( "patch" ) )) {
+
+			command_argv = malloc( sizeof(char *)*argc );
+			command_argv[0] = strdup( "gr1c patch" );
+			command_argv[argc] = NULL;
+			for (i = 1; i < argc-1; i++)
+				command_argv[i] = argv[i+1];
+
+			if (execvp( "gr1c-patch", command_argv ) < 0) {
+				perror( "gr1c, execvp" );
+				return -1;
+			}
+
 		}
 	}
 
@@ -238,7 +251,8 @@ int main( int argc, char **argv )
 				"  -P          create Spin Promela model of strategy;\n"
 				"              output to stdout, so requires -o flag to also be used\n" );
 		printf( "\nCOMMAND:\n\n"
-				"  rg          solve reachability game\n" );
+				"  rg          solve reachability game\n"
+				"  patch       patch or modify a given strategy (incremental synthesis)\n" );
 		return 1;
 	}
 

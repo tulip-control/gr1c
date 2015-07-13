@@ -3,7 +3,7 @@
 # SCL; 2012-2015.
 
 CORE_PROGRAMS = gr1c gr1c-rg
-EXP_PROGRAMS = grpatch
+EXP_PROGRAMS = gr1c-patch
 AUX_PROGRAMS = autman
 
 
@@ -55,7 +55,7 @@ gr1c-rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_ope
 autman: util.o logging.o solve_support.o ptree.o autman.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-grpatch: grpatch.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o patching_hotswap.o ptree.o automaton.o automaton_io.o gr1c_parse.o
+gr1c-patch: grpatch.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o patching_hotswap.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 grjit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
@@ -118,10 +118,10 @@ install:
 
 .PHONY: expinstall
 expinstall:
-	$(INSTALL) grpatch $(DESTDIR)$(bindir)
+	$(INSTALL) $(EXP_PROGRAMS) $(DESTDIR)$(bindir)
 
 uninstall:
-	rm -f $(DESTDIR)$(bindir)/gr1c $(DESTDIR)$(bindir)/gr1c-rg $(DESTDIR)$(bindir)/grpatch
+	rm -f $(DESTDIR)$(bindir)/gr1c $(DESTDIR)$(bindir)/gr1c-rg $(DESTDIR)$(bindir)/gr1c-patch
 
 check: $(CORE_PROGRAMS) $(EXP_PROGRAMS)
 	$(MAKE) -C tests CC=$(CC)

@@ -104,8 +104,8 @@ int main( int argc, char **argv )
 			if (argv[i][1] == 'h') {
 				help_flag = True;
 			} else if (argv[i][1] == 'V') {
-				printf( "grpatch (experiment-related program, distributed with"
-						" gr1c v" GR1C_VERSION ")\n\n" GR1C_COPYRIGHT "\n" );
+				printf( "gr1c-patch (part of gr1c v" GR1C_VERSION ")\n\n"
+						GR1C_COPYRIGHT "\n" );
 				return 0;
 			} else if (argv[i][1] == 'v') {
 				verbose = 1;
