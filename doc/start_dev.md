@@ -69,6 +69,14 @@ happens at boundaries of powers of two, e.g., so that an integer variable domain
 of `[0,513]` incurs the same number of states as `[0,1023]`.
 
 
+Making releases
+---------------
+
+Scripts and other files useful for creating release distributions are under
+`packaging/`. Currently these are Git-agnostic, so you must explicitly declare
+the version by setting the environment variable `GR1C_VERSION`.
+
+
 Code style
 ----------
 
