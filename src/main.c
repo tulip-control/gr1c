@@ -131,6 +131,11 @@ int main( int argc, char **argv )
 			}
 
 		}
+
+		else if (!strncmp( argv[1], "help", strlen( "help" ) )) {
+			reading_options = False;
+			help_flag = True;
+		}
 	}
 
 	/* Look for flags in command-line arguments. */
@@ -252,7 +257,8 @@ int main( int argc, char **argv )
 				"              output to stdout, so requires -o flag to also be used\n" );
 		printf( "\nCOMMAND:\n\n"
 				"  rg          solve reachability game\n"
-				"  patch       patch or modify a given strategy (incremental synthesis)\n" );
+				"  patch       patch or modify a given strategy (incremental synthesis)\n"
+				"  help        this help message (equivalent to -h)\n" );
 		return 1;
 	}
 
