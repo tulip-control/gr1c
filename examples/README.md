@@ -27,13 +27,13 @@ dot, is available from http://www.graphviz.org
 
 ### patch_localfixpoint()
 
-This function is invoked when the `-e` switch is passed to `grpatch`.
+This function is invoked when the `-e` switch is passed to `gr1c patch`.
 
 To run the example `dgridworld_2x10` (no environment, 2 by 10 gridworld using
 integer-valued variables), try
 
     $ gr1c -t aut examples/patching/dgridworld_2x10.spc > nominal.aut
-    $ grpatch -t dot -a nominal.aut -e examples/patching/dgridworld_2x10.edc examples/patching/dgridworld_2x10.spc > patched-image.dot
+    $ gr1c patch -t dot -a nominal.aut -e examples/patching/dgridworld_2x10.edc examples/patching/dgridworld_2x10.spc > patched-image.dot
 
 The first command synthesizes a nominal strategy and outputs it in the "gr1c
 automaton" format and redirects it to a file named "nominal.aut".  The second
@@ -44,7 +44,7 @@ domain, try `dgridworld_2x10_bool`.
 
 ### add_metric_sysgoal()
 
-This function is invoked when the `-f` switch is passed to `grpatch`.
+This function is invoked when the `-f` switch is passed to `gr1c patch`.
 
 We begin with the same deterministic gridworld from the previous subsection:
 
@@ -52,7 +52,7 @@ We begin with the same deterministic gridworld from the previous subsection:
 
 To add a new system goal of the grid cell (0,6), try
 
-    $ grpatch -t dot -a nominal.aut -f 'Y_r=0 & Y_c=6' examples/patching/dgridworld_2x10.spc > patched-image.dot
+    $ gr1c patch -t dot -a nominal.aut -f 'Y_r=0 & Y_c=6' examples/patching/dgridworld_2x10.spc > patched-image.dot
 
 where intuitively the variable `Y_r` represents the current row and `Y_c`
 represents the current column.  An informal depiction of the setting is provided
