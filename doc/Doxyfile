@@ -13,3 +13,5 @@ VERBATIM_HEADERS       = NO
 SORT_BRIEF_DOCS        = YES
 SORT_MEMBER_DOCS       = YES
 HTML_EXTRA_STYLESHEET  = gr1cdoc.css
+FORMULA_FONTSIZE       = 14
+EXTRA_PACKAGES         = amsmath amssymb

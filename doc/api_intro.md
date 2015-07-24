@@ -46,6 +46,12 @@ removing comments.
     SYSTRANS:;
     SYSGOAL: []<>(y&x) & []<>(!y);
 
+which is represented by the LTL formula
+\f[
+
+\left( \neg x \wedge \Box \left( x \leftrightarrow \neg x' \right) \wedge \Box \rotatebox[origin=c]{45}{$\Box$} x \right) \implies \left( y \wedge \Box \rotatebox[origin=c]{45}{$\Box$} (y \wedge x) \wedge \Box \rotatebox[origin=c]{45}{$\Box$} \neg y \right).
+
+\f]
 The only environment variable is `x`, and the only system variable is `y`; both
 are Boolean-valued.  We require that initially `x` is `False` and `y` is `True`.
 Given the assumption that the environment will infinitely often set `x` to
