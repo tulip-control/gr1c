@@ -9,9 +9,9 @@ This example appears in N. Piterman, A. Pnueli, and Y. Sa'ar (2006).
 Synthesis of Reactive(1) Designs. *In Proc. 7th International
 Conference on Verification, Model Checking and Abstract Interpretation*.
 
-SCL; 25 April 2012.
+SCL; 2012, 2015
 """
-
+from __future__ import print_function
 import sys
 import itertools
 
@@ -46,12 +46,12 @@ def dump_lift_spec(N):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print "Usage: %s N [FILE|-]" % sys.argv[0]
+        print("Usage: "+sys.argv[0]+" N [FILE|-]")
         exit(1)
 
     N = int(sys.argv[1])
     if N < 1:
-        print "Number of floors must be positive integer."
+        print("Number of floors must be positive integer.")
         exit(1)
     if len(sys.argv) >= 3:
         fname = sys.argv[2]
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         fname = "liftconN.spc"
 
     if fname == "-":
-        print dump_lift_spec(N)
+        print(dump_lift_spec(N))
     else:
         with open(fname, "w") as f:
             f.write(dump_lift_spec(N))
