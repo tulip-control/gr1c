@@ -235,7 +235,7 @@ int main( int argc, char **argv )
 
 	if (help_flag) {
 		/* Split among printf() calls to conform with ISO C90 string length */
-		printf( "Usage: %s [COMMAND] [-hVvlspriP] [-n INIT] [-t TYPE] [-o FILE] [FILE]\n\n"
+		printf( "Usage: %s [-hVvlspriP] [-n INIT] [-t TYPE] [-o FILE] [FILE]\n\n"
 				"  -h          this help message\n"
 				"  -V          print version and exit\n"
 				"  -v          be verbose; use -vv to be more verbose\n"
@@ -255,10 +255,12 @@ int main( int argc, char **argv )
 				"  -o FILE     output strategy to FILE, rather than stdout (default)\n"
 				"  -P          create Spin Promela model of strategy;\n"
 				"              output to stdout, so requires -o flag to also be used\n" );
-		printf( "\nCOMMAND:\n\n"
+		printf( "\nFor other commands, use: %s COMMAND [...]\n\n"
 				"  rg          solve reachability game\n"
 				"  patch       patch or modify a given strategy (incremental synthesis)\n"
-				"  help        this help message (equivalent to -h)\n" );
+				"  help        this help message (equivalent to -h)\n\n"
+				"When applicable, any arguments after COMMAND are passed on to the\n"
+				"appropriate program. Use -h to get the corresponding help message.\n", argv[0] );
 		return 1;
 	}
 
