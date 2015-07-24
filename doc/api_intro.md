@@ -70,8 +70,8 @@ from that output, try
     $ dot -Tpng -O temp.dot
 
 
-Components
-----------
+Organization
+------------
 
 Besides using the API directly and linking to relevant source files (cf. [the
 developer's introduction](md_start_dev.html)), several executable programs are
@@ -85,16 +85,19 @@ in [[KPP05]](md_papers.html#KPP05) (GR(1) is referred to as "generalized
 Streett[1]" in that paper).  An original motivating algorithm was implemented by
 Yaniv Sa'ar [[BJPPS12]](md_papers.html#BJPPS12), though the implementation in
 gr1c differs somewhat.
+
+When the invocation of `gr1c` is of the form `gr1c COMMAND [...]`, it acts as a
+base program for using other commands, which are described below.
 </dd>
 
-<dt>rg</dt>
+<dt>gr1c&nbsp;rg</dt>
 <dd>a tool for solving "reachability games," which are similar to GR(1) formulae
 except with at most one system goal and where that system goal need only be
 reached once (not necessarily infinitely often).  The input specifications are
 [slightly different](md_spc_format.html#reachgames).
 </dd>
 
-<dt>grpatch</dt>
+<dt>gr1c&nbsp;patch</dt>
 <dd>(experimental.)  a command-line tool for using implementations of
 incremental synthesis (or "patching") algorithms, mostly from recent research
 publications.  E.g., patch_localfixpoint() (cf. patching.h) concerns the method

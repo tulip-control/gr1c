@@ -4,6 +4,14 @@ Developer's introduction
 This page describes how to navigate the code in a way useful to those who wish
 to modify it, link against, etc.
 
+The main program for users is `gr1c`. Besides access to the basic GR(1)
+synthesis routine, `gr1c` handles commands like `gr1c rg` that cause separate
+programs to be invoked, e.g., `gr1c-rg`. These programs must be on the system
+path, so `./gr1c rg` may fail if the local directory is not on the path. To add
+it, try
+
+    $ export PATH=`pwd`:$PATH
+
 
 Layout of the sources
 ---------------------
@@ -20,11 +28,11 @@ gr1c include:
 <ul>
   <li>`common.h`, which defines the version number.</li>
   <li>`main.c`, main entry point for the program `gr1c`.</li>
-  <li>`rg_main.c`, main entry point for the program `rg`.</li>
+  <li>`rg_main.c`, main entry point for the program `gr1c-rg`.</li>
 </ul></dd>
 
 <dt>`exp/`</dt>
-<dd>Consult `exp/README.txt`.  The main entry point for the program `grpatch` is
+<dd>Consult `exp/README.txt`.  The main entry point for the program `gr1c-patch` is
 in `exp/grpatch.c`.</dd>
 
 <dt>`aux/`</dt>
@@ -73,8 +81,11 @@ Making releases
 ---------------
 
 Scripts and other files useful for creating release distributions are under
-`packaging/`. Currently these are Git-agnostic, so you must explicitly declare
-the version by setting the environment variable `GR1C_VERSION`.
+`packaging/`. Currently these are Git-agnostic, so the version must be
+explicitly declared by setting the environment variable `GR1C_VERSION`. If Git
+is installed and a release commit is checked-out, then try
+
+    $ export GR1C_VERSION=`git describe --tags --candidates=0 HEAD|cut -c 2-`
 
 
 Code style
