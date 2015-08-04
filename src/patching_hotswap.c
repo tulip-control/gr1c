@@ -284,7 +284,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 	Gi_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
 	Cudd_Ref( Gi_BDD );
 	for (i = 0; i < Gi_len[0]; i++) {
-		tmp2 = state2BDD( manager, (*(Gi[0]+i))->state, 0, num_env+num_sys );
+		tmp2 = state_to_BDD( manager, (*(Gi[0]+i))->state, 0, num_env+num_sys );
 		tmp = Cudd_bddOr( manager, Gi_BDD, tmp2 );
 		Cudd_Ref( tmp );
 		Cudd_RecursiveDeref( manager, Gi_BDD );

@@ -130,7 +130,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 		current_it++;
 
 		/* Check if time to switch attention to next goal. */
-		state2cube( init_state, cube, num_env+num_sys );
+		state_to_cube( init_state, cube, num_env+num_sys );
 		ddval = Cudd_Eval( manager, *(sgoals+current_goal), cube );
 		if (ddval->type.value > .9) {
 			current_goal = (current_goal+1) % num_sgoals;
@@ -158,9 +158,9 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 								   &emoves_len );
 		emove_index = rand() % emoves_len;
 
-		tmp = state2cof( manager, cube, 2*(num_env+num_sys), init_state,
+		tmp = state_to_cof( manager, cube, 2*(num_env+num_sys), init_state,
 						 strans_into_W, 0, num_env+num_sys );
-		tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+		tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
 						  *(env_moves+emove_index), tmp,
 						  num_env+num_sys, num_env );
 		Cudd_RecursiveDeref( manager, tmp );
@@ -251,10 +251,10 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 										   &emoves_len );
 				for (emove_index = 0; emove_index < emoves_len; emove_index++) {
 				
-					tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+					tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
 									 finit_state, strans_into_W,
 									 0, num_env+num_sys );
-					tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+					tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
 									  *(env_moves+emove_index), tmp,
 									  num_env+num_sys, num_env );
 					Cudd_RecursiveDeref( manager, tmp );

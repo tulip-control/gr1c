@@ -632,7 +632,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			Cudd_Ref( strans_into_W );
 			Cudd_RecursiveDeref( manager, tmp );
 
-			state2cube( intcom_state, cube, num_env+num_sys );
+			state_to_cube( intcom_state, cube, num_env+num_sys );
 			j = *(num_sublevels+intcom_index);
 			do {
 				j--;
@@ -659,11 +659,11 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
 			tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
 			Cudd_Ref( tmp );
-			tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+			tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
 							  intcom_state, tmp, 0, num_env+num_sys );
 			Cudd_RecursiveDeref( manager, tmp );
 			if (num_env > 0) {
-				tmp = state2cof( manager, cube, 2*(num_sys+num_env),
+				tmp = state_to_cof( manager, cube, 2*(num_sys+num_env),
 								 intcom_state+num_env+num_sys,
 								 tmp2, num_env+num_sys, num_env );
 				Cudd_RecursiveDeref( manager, tmp2 );
@@ -719,11 +719,11 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				Cudd_Ref( Y_i_primed );
 				tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
 				Cudd_Ref( tmp );
-				tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+				tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
 								  intcom_state, tmp, 0, num_env+num_sys );
 				Cudd_RecursiveDeref( manager, tmp );
 				if (num_env > 0) {
-					tmp = state2cof( manager, cube, 2*(num_sys+num_env),
+					tmp = state_to_cof( manager, cube, 2*(num_sys+num_env),
 									 intcom_state+num_env+num_sys,
 									 tmp2, num_env+num_sys, num_env );
 					Cudd_RecursiveDeref( manager, tmp2 );
@@ -759,10 +759,10 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			break;
 
 		case INTCOM_SYSNEXTA:
-			tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+			tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
 							 intcom_state, strans_patched, 0, num_env+num_sys );
 			if (num_env > 0) {
-				tmp2 = state2cof( manager, cube, 2*(num_sys+num_env),
+				tmp2 = state_to_cof( manager, cube, 2*(num_sys+num_env),
 								  intcom_state+num_env+num_sys,
 								  tmp, num_env+num_sys, num_env );
 				Cudd_RecursiveDeref( manager, tmp );
@@ -799,7 +799,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				for (i = 0; i < num_env+num_sys; i++)
 					logprint( " %d", *(intcom_state+i) );
 			}
-			state2cube( intcom_state, cube, num_env+num_sys );
+			state_to_cube( intcom_state, cube, num_env+num_sys );
 			free( intcom_state );
 			ddval = Cudd_Eval( manager, W, cube );
 			if (ddval->type.value < .1) {
@@ -818,7 +818,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			}
 
 			/* Check whether state is in winning set. */
-			state2cube( intcom_state, cube, num_env+num_sys );
+			state_to_cube( intcom_state, cube, num_env+num_sys );
 			free( intcom_state );
 			ddval = Cudd_Eval( manager, W, cube );
 			if (ddval->type.value < .1) {
@@ -862,8 +862,8 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 					logprint( " %d", *(intcom_state+i) );
 			}
 			
-			vertex1 = state2BDD( manager, intcom_state, 0, num_env+num_sys );
-			vertex2 = state2BDD( manager,
+			vertex1 = state_to_BDD( manager, intcom_state, 0, num_env+num_sys );
+			vertex2 = state_to_BDD( manager,
 								 intcom_state+num_env+num_sys, num_env+num_sys,
 								 intcom_index-(num_env+num_sys) );
 			if (command == INTCOM_RESTRICT) {
@@ -908,7 +908,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 				for (i = 0; i < num_env; i++)
 					logprint( " %d", *(intcom_state+i) );
 			}
-			vertex2 = state2BDD( manager,
+			vertex2 = state_to_BDD( manager,
 								 intcom_state, num_env+num_sys, num_env );
 			tmp = Cudd_Not( vertex2 );
 			Cudd_Ref( tmp );
@@ -931,7 +931,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 					logprint( " %d", *(intcom_state+i) );
 			}
 
-			vertex2 = state2BDD( manager,
+			vertex2 = state_to_BDD( manager,
 								 intcom_state, 2*num_env+num_sys, num_sys );
 			tmp = Cudd_Not( vertex2 );
 			Cudd_Ref( tmp );

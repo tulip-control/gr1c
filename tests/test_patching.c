@@ -151,14 +151,14 @@ int main( int argc, char **argv )
 	N_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
 	Cudd_Ref( N_BDD );
 	state[0] = state[1] = 0;
-	tmp2 = state2BDD( manager, state, 0, num_env+num_sys );
+	tmp2 = state_to_BDD( manager, state, 0, num_env+num_sys );
 	tmp = Cudd_bddOr( manager, N_BDD, tmp2 );
 	Cudd_Ref( tmp );
 	Cudd_RecursiveDeref( manager, N_BDD );
 	Cudd_RecursiveDeref( manager, tmp2 );
 	N_BDD = tmp;
 	state[0] = state[1] = 1;
-	tmp2 = state2BDD( manager, state, 0, num_env+num_sys );
+	tmp2 = state_to_BDD( manager, state, 0, num_env+num_sys );
 	tmp = Cudd_bddOr( manager, N_BDD, tmp2 );
 	Cudd_Ref( tmp );
 	Cudd_RecursiveDeref( manager, N_BDD );

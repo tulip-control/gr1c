@@ -268,7 +268,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 		/* Find smallest Y_j set containing node. */
 		for (k = num_env+num_sys; k < 2*(num_env+num_sys); k++)
 			*(cube+k) = 2;
-		state2cube( this_node_stack->state, cube, num_env+num_sys );
+		state_to_cube( this_node_stack->state, cube, num_env+num_sys );
 		j = num_sublevels;
 		do {
 			j--;
@@ -307,12 +307,12 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 		for (k = 0; k < emoves_len; k++) {
 			tmp = Cudd_bddAnd( manager, strans_into_N, Y_i_primed );
 			Cudd_Ref( tmp );
-			tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+			tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
 							  node->state,
 							  tmp, 0, num_env+num_sys );
 			Cudd_RecursiveDeref( manager, tmp );
 			if (num_env > 0) {
-				tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+				tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
 								 *(env_moves+k),
 								 tmp2, num_env+num_sys, num_env );
 				Cudd_RecursiveDeref( manager, tmp2 );
@@ -349,12 +349,12 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 						Cudd_Ref( Y_i_primed );
 						tmp = Cudd_bddAnd( manager, strans_into_N, Y_i_primed );
 						Cudd_Ref( tmp );
-						tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+						tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
 										  node->state,
 										  tmp, 0, num_sys+num_env );
 						Cudd_RecursiveDeref( manager, tmp );
 						if (num_env > 0) {
-							tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+							tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
 											 *(env_moves+k),
 											 tmp2, num_sys+num_env, num_env );
 							Cudd_RecursiveDeref( manager, tmp2 );
@@ -386,12 +386,12 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 					Cudd_Ref( Y_i_primed );
 					tmp = Cudd_bddAnd( manager, strans_into_N, Y_i_primed );
 					Cudd_Ref( tmp );
-					tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+					tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
 									  node->state,
 									  tmp, 0, num_sys+num_env );
 					Cudd_RecursiveDeref( manager, tmp );
 					if (num_env > 0) {
-						tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+						tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
 										 *(env_moves+k),
 										 tmp2, num_sys+num_env, num_env );
 						Cudd_RecursiveDeref( manager, tmp2 );
@@ -507,7 +507,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 	Entry_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
 	Cudd_Ref( Entry_BDD );
 	for (i = 0; i < Entry_len; i++) {
-		tmp2 = state2BDD( manager, (*(Entry+i))->state, 0, num_env+num_sys );
+		tmp2 = state_to_BDD( manager, (*(Entry+i))->state, 0, num_env+num_sys );
 		tmp = Cudd_bddOr( manager, Entry_BDD, tmp2 );
 		Cudd_Ref( tmp );
 		Cudd_RecursiveDeref( manager, Entry_BDD );
@@ -519,7 +519,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 	Exit_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
 	Cudd_Ref( Exit_BDD );
 	for (i = 0; i < Exit_len; i++) {
-		tmp2 = state2BDD( manager, (*(Exit+i))->state, 0, num_env+num_sys );
+		tmp2 = state_to_BDD( manager, (*(Exit+i))->state, 0, num_env+num_sys );
 		tmp = Cudd_bddOr( manager, Exit_BDD, tmp2 );
 		Cudd_Ref( tmp );
 		Cudd_RecursiveDeref( manager, Exit_BDD );

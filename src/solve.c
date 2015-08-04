@@ -425,7 +425,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 		/* Find smallest Y_j set containing node. */
 		for (k = num_env+num_sys; k < 2*(num_env+num_sys); k++)
 			*(cube+k) = 2;
-		state2cube( this_node_stack->state, cube, num_env+num_sys );
+		state_to_cube( this_node_stack->state, cube, num_env+num_sys );
 		loop_mode = this_node_stack->mode;
 		do {
 			j = *(num_sublevels+this_node_stack->mode);
@@ -523,12 +523,12 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 
 			tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
 			Cudd_Ref( tmp );
-			tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+			tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
 							  node->state,
 							  tmp, 0, num_env+num_sys );
 			Cudd_RecursiveDeref( manager, tmp );
 			if (num_env > 0) {
-				tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+				tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
 								 *(env_moves+k),
 								 tmp2, num_env+num_sys, num_env );
 				Cudd_RecursiveDeref( manager, tmp2 );
@@ -564,12 +564,12 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 						Cudd_Ref( Y_i_primed );
 						tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
 						Cudd_Ref( tmp );
-						tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+						tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
 										  node->state,
 										  tmp, 0, num_sys+num_env );
 						Cudd_RecursiveDeref( manager, tmp );
 						if (num_env > 0) {
-							tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+							tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
 											 *(env_moves+k),
 											 tmp2, num_sys+num_env, num_env );
 							Cudd_RecursiveDeref( manager, tmp2 );
@@ -600,12 +600,12 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 					Cudd_Ref( Y_i_primed );
 					tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
 					Cudd_Ref( tmp );
-					tmp2 = state2cof( manager, cube, 2*(num_env+num_sys),
+					tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
 									  node->state,
 									  tmp, 0, num_sys+num_env );
 					Cudd_RecursiveDeref( manager, tmp );
 					if (num_env > 0) {
-						tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+						tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
 										 *(env_moves+k),
 										 tmp2, num_sys+num_env, num_env );
 						Cudd_RecursiveDeref( manager, tmp2 );
@@ -644,7 +644,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 			for (i = 0; i < num_env; i++)
 				*(state+i) = *(*(env_moves+k)+i);
 
-			state2cube( state, cube, num_env+num_sys );
+			state_to_cube( state, cube, num_env+num_sys );
 			ddval = Cudd_Eval( manager, **(Y+node->mode), cube );
 			if (ddval->type.value < .1) {
 				next_mode = node->mode;

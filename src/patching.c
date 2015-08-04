@@ -532,7 +532,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
 	N_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
 	Cudd_Ref( N_BDD );
 	for (i = 0; i < N_len; i++) {
-		ddval = state2BDD( manager, *(N+i), 0, num_env+num_sys );
+		ddval = state_to_BDD( manager, *(N+i), 0, num_env+num_sys );
 		tmp = Cudd_bddOr( manager, N_BDD, ddval );
 		Cudd_Ref( tmp );
 		Cudd_RecursiveDeref( manager, N_BDD );
@@ -864,8 +864,8 @@ anode_t *patch_localfixpoint( DdManager *manager,
 					}
 				}
 				
-				vertex1 = state2BDD( manager, state, 0, num_env+num_sys );
-				vertex2 = state2BDD( manager, state+num_env+num_sys,
+				vertex1 = state_to_BDD( manager, state, 0, num_env+num_sys );
+				vertex2 = state_to_BDD( manager, state+num_env+num_sys,
 									 num_env+num_sys,
 									 num_read-(num_env+num_sys) );
 				if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
@@ -976,7 +976,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
 					node_counter++;
 				}
 
-				vertex2 = state2BDD( manager, state,
+				vertex2 = state_to_BDD( manager, state,
 									 2*num_env+num_sys, num_sys );
 				tmp = Cudd_Not( vertex2 );
 				Cudd_Ref( tmp );

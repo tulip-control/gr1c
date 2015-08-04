@@ -97,7 +97,7 @@ bool saturated_cube( vartype *cube, int *gcube, int len )
 	return True;
 }
 
-void state2cube( vartype *state, int *cube, int len )
+void state_to_cube( vartype *state, int *cube, int len )
 {
 	int i;
 	for (i = 0; i < len; i++)
@@ -159,7 +159,7 @@ bool statecmp( vartype *state1, vartype *state2, int state_len )
 }
 
 
-DdNode *state2cof( DdManager *manager, int *cube, int cube_len,
+DdNode *state_to_cof( DdManager *manager, int *cube, int cube_len,
 				   vartype *state, DdNode *trans, int offset, int len )
 {
 	int i;
@@ -189,7 +189,7 @@ DdNode *state2cof( DdManager *manager, int *cube, int cube_len,
 }
 
 
-DdNode *state2BDD( DdManager *manager, vartype *state, int offset, int len )
+DdNode *state_to_BDD( DdManager *manager, vartype *state, int offset, int len )
 {
 	DdNode *v, *tmp;
 	int i;
@@ -222,7 +222,7 @@ vartype **get_env_moves( DdManager *manager, int *cube,
 	int *gcube;
 	int i;
 
-	tmp = state2cof( manager, cube, 2*(num_env+num_sys),
+	tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
 					 state, etrans, 0, num_env+num_sys );
 	cube_prime_sys( cube, num_env, num_sys );
 	ddcube = Cudd_CubeArrayToBdd( manager, cube );

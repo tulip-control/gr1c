@@ -48,18 +48,18 @@ void initialize_cube( vartype *cube, int *gcube, int len );
 
 /* Assume that full cube would include primed variables, thus all
    values in cube array at index len onward are set to 2. */
-void state2cube( vartype *state, int *cube, int len );
+void state_to_cube( vartype *state, int *cube, int len );
 
 /* Compare state vectors; return True if equal. */
 bool statecmp( vartype *state1, vartype *state2, int state_len );
 
 /** Construct cofactor of trans BDD from state vector to get possible
    next states (via cube generation). */
-DdNode *state2cof( DdManager *manager, int *cube, int cube_len,
+DdNode *state_to_cof( DdManager *manager, int *cube, int cube_len,
 				   vartype *state, DdNode *trans, int offset, int len );
 
 /** Compute characteristic function for a single state. */
-DdNode *state2BDD( DdManager *manager, vartype *state, int offset, int len );
+DdNode *state_to_BDD( DdManager *manager, vartype *state, int offset, int len );
 
 
 vartype **get_env_moves( DdManager *manager, int *cube,
