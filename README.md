@@ -13,6 +13,20 @@ The public Git repo can be cloned from https://github.com/slivingston/gr1c.git
 Documentation for the latest release is at http://slivingston.github.io/gr1c
 
 
+Examples and Documentation
+==========================
+
+Many examples are provided.  Begin by reading `examples/README.md`.
+
+The main documentation is built from `.md` files under the `doc` directory and
+API comments in the source code. It is possible to read these files directly,
+i.e., without building and browsing HTML files.
+
+    $ make doc
+
+will run [Doxygen](http://www.doxygen.org) and place the result in `doc/build`.
+
+
 Building and installation
 =========================
 
@@ -58,20 +72,6 @@ Finally,
 The latter `expinstall` installs experimental tools, like `grpatch`.  The
 default installation prefix is /usr/local.  Adjust it by invoking `make` with
 something like `prefix=/your/new/path`.
-
-
-Examples and Documentation
-==========================
-
-Many examples are provided.  Begin by reading `examples/README.md`.
-
-The main documentation is built from `.md` files under the `doc` directory and
-API comments in the source code. It is possible to read these files directly,
-i.e., without building and browsing HTML files.
-
-    $ make doc
-
-will run [Doxygen](http://www.doxygen.org) and place the result in `doc/build`.
 
 
 License
