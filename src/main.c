@@ -235,7 +235,7 @@ int main( int argc, char **argv )
 
 	if (help_flag) {
 		/* Split among printf() calls to conform with ISO C90 string length */
-		printf( "Usage: %s [-hVvlspriP] [-n INIT] [-t TYPE] [-o FILE] [FILE]\n\n"
+		printf( "Usage: %s [-hVvlspriP] [-n INIT] [-t TYPE] [-o FILE] [[--] FILE]\n\n"
 				"  -h          this help message\n"
 				"  -V          print version and exit\n"
 				"  -v          be verbose; use -vv to be more verbose\n"
