@@ -13,7 +13,7 @@
 %option warn nodefault
 
 
-identifier  [a-zA-Z][a-zA-Z0-9_\.]*
+identifier  [a-zA-Z_][a-zA-Z0-9_\.]*
 number  [0-9]+([.][0-9]+)?
 
 %%
