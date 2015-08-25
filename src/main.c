@@ -103,7 +103,8 @@ int main( int argc, char **argv )
 
 	/* Try to handle sub-commands first */
 	if (argc >= 2) {
-		if (!strncmp( argv[1], "rg", strlen( "rg" ) )) {
+		if (!strncmp( argv[1], "rg", strlen( "rg" ) )
+			&& argv[1][strlen("rg")] == '\0') {
 
 			/* Pass arguments after rg */
 			command_argv = malloc( sizeof(char *)*argc );
@@ -117,7 +118,8 @@ int main( int argc, char **argv )
 				return -1;
 			}
 
-		} else if (!strncmp( argv[1], "patch", strlen( "patch" ) )) {
+		} else if (!strncmp( argv[1], "patch", strlen( "patch" ) )
+				   && argv[1][strlen("patch")] == '\0') {
 
 			command_argv = malloc( sizeof(char *)*argc );
 			command_argv[0] = strdup( "gr1c patch" );
@@ -132,7 +134,8 @@ int main( int argc, char **argv )
 
 		}
 
-		else if (!strncmp( argv[1], "help", strlen( "help" ) )) {
+		else if (!strncmp( argv[1], "help", strlen( "help" ) )
+				 && argv[1][strlen("help")] == '\0') {
 			reading_options = False;
 			help_flag = True;
 		}
