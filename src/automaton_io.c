@@ -681,7 +681,6 @@ void list_aut_dump( anode_t *head, int state_len, FILE *fp )
 	anode_t *node = head;
 	int node_counter = 0;
 	int i;
-	int width_count;
 	if (fp == NULL)
 		fp = stdout;
 	while (node) {
