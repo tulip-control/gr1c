@@ -5,6 +5,7 @@
  */
 
 
+#define _POSIX_C_SOURCE 200809L
 #define _ISOC99_SOURCE
 #include <math.h>
 #include <stdio.h>
