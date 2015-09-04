@@ -267,7 +267,8 @@ int main( int argc, char **argv )
 		return version;
 
 	case AUTMAN_VERMODEL:
-		/* Currently, only target supported is Spin Promela */
+		/* Currently, only target supported is Spin Promela,
+		   so the variable verification_model is not checked. */
 		spin_aut_dump( head, evar_list, svar_list,
 					   env_init, sys_init,
 					   env_trans_array, et_array_len,

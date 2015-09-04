@@ -87,7 +87,6 @@ int main( int argc, char **argv )
 	DdManager *manager;
 	anode_t *strategy = NULL;
 	int num_env, num_sys;
-	int original_num_env, original_num_sys;
 	ptree_t *nonbool_var_list = NULL;
 
 	DdNode *Entry, *Exit;
@@ -267,10 +266,6 @@ int main( int argc, char **argv )
 		}
 		*sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
 	}
-
-	/* Number of variables, before expansion of those that are nonboolean */
-	original_num_env = tree_size( evar_list );
-	original_num_sys = tree_size( svar_list );
 
 
 	if (ptdump_flag) {
