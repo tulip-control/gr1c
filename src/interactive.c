@@ -123,9 +123,9 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 	num_sys = tree_size( svar_list );
 
 #ifdef USE_READLINE
-	while (input = readline( GR1C_INTERACTIVE_PROMPT )) {
+	while ((input = readline( GR1C_INTERACTIVE_PROMPT ))) {
 #else
-	while (input = fgets_wrap( GR1C_INTERACTIVE_PROMPT, 256, infp, outfp)) {
+	while ((input = fgets_wrap( GR1C_INTERACTIVE_PROMPT, 256, infp, outfp))) {
 #endif
 		if (*input == '\0') {
 			free( input );
