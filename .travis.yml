@@ -9,3 +9,6 @@ install:
 script:
   - make all
   - make check
+
+notifications:
+  email: false
