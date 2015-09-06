@@ -117,6 +117,33 @@ only supports [gr1c automaton format](md_formats.html#gr1cautformat).
 </dl>
 
 
+Exit codes
+----------
+
+The exit code is also known as "return code" or "status code." It is the integer
+returned at the end of execution.  While the particular meaning of an exit code
+depends on the activity being performed, in all cases an exit code of zero is
+interpreted as success. We reserve negative exit codes for indication of
+internal errors and positive exit codes for activity-specific non-success. An
+example of an internal error is a failed call to the standard library malloc()
+because no more memory is available. (Notice that an "internal error" may be due
+to an external event.) Currently all internal errors are indicated by -1, but
+other negative values may be used in the future.  Below is a list of invocation
+summaries and interpretations of exit codes.
+
+`gr1c -s` (check syntax)
+- 0 : correct syntax
+- 1 : syntax error
+
+`gr1c -r` (check realizability)
+- 0 : realizable
+- 1 : unrealizable
+
+`gr1c` (perform basic GR(1) synthesis)
+- 0 : success
+- 1 : unrealizable
+
+
 Further reading
 ---------------
 
