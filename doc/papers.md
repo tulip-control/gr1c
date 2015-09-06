@@ -3,7 +3,7 @@ Bibliography
 
 <dl>
 
-<dt id="LM14">LM14<dt><dd>S.C. Livingston, R.M. Murray. Hot-swapping robot task goals in reactive formal synthesis. <em>to appear</em> in Proceedings of IEEE Conf. on Decision and Control (CDC), Dec 2014. [[Caltech CDS tech report](http://resolver.caltech.edu/CaltechCDSTR:2014.001)]</dd>
+<dt id="LM14">LM14<dt><dd>S.C. Livingston, R.M. Murray. Hot-swapping robot task goals in reactive formal synthesis. in Proceedings of IEEE Conf. on Decision and Control (CDC), pp. 101--107, Dec 2014. [[Caltech CDS tech report](http://resolver.caltech.edu/CaltechCDSTR:2014.001)]. DOI:[10.1109/CDC.2014.7039366](http://dx.doi.org/10.1109/CDC.2014.7039366)</dd>
 
 <dt id="LPJM13">LPJM13</dt><dd>S.C. Livingston, P. Prabhakar, A.B. Jose, and R.M. Murray. Patching task-level robot controllers based on a local μ-calculus formula. in Proceedings of IEEE Int'l Conf. on Robotics and Automation (ICRA), pp. 4573--4580, May 2013. DOI:[10.1109/ICRA.2013.6631229](http://dx.doi.org/10.1109/ICRA.2013.6631229)</dd>
 
