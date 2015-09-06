@@ -33,8 +33,6 @@
 %}
 
 %error-verbose
-/* %define api.pure */
-%pure_parser
 %locations
 
 
