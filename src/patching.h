@@ -49,7 +49,7 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 
 	 S.C. Livingston, R.M. Murray.
      Hot-swapping robot task goals in reactive formal synthesis.
-	 to be presented at CDC in Dec 2014.
+	 presented at CDC in Dec 2014.
      Extended version available as Caltech CDS tech report at
      http://resolver.caltech.edu/CaltechCDSTR:2014.001
 
@@ -68,7 +68,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 
 	 S.C. Livingston, R.M. Murray.
      Hot-swapping robot task goals in reactive formal synthesis.
-	 to be presented at CDC in Dec 2014.
+	 presented at CDC in Dec 2014.
      Extended version available as Caltech CDS tech report at
      http://resolver.caltech.edu/CaltechCDSTR:2014.001
 
