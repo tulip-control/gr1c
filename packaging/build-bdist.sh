@@ -20,7 +20,7 @@ else
     echo Unrecognized platform \"$KERNEL $ARCH\"
 fi
 
-DNAME=gr1c-${GR1C_VERSION}-$KERNEL
+DNAME=gr1c-${GR1C_VERSION}-$ARCHNAME
 
 if [ -d $DNAME ]; then
     echo ERROR: Directory \"$DNAME\" already exists.
