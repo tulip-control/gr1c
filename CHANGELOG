@@ -1,3 +1,23 @@
+gr1c (0.10.0)
+
+  * Stop permitting letters [\]^` after first letter in variable names. This was
+    an unintended and undocumented feature of the input syntax.
+
+  * Move programs rg and grpatch to `gr1c rg` and `gr1c patch`, respectively.
+    The sub-command-oriented style thus begins in the gr1c suite.
+
+  * Create shell script get-deps.sh to automate fetching CUDD.
+
+  * Offer command-line argument -- to stop reading options.
+
+  * Allow for non-reentrant parser. This improves standard lex,yacc conformance.
+    However, reentrant parsers may be introduced again later.
+
+  * Refactor several functions in API to use "_to_" instead "2".
+
+ -- Scott C. Livingston <slivingston@cds.caltech.edu>  Mon, 07 Sep 2015 09:41:31 -0700
+
+
 gr1c (0.9.0)
 
   * Begin including a CHANGELOG, mostly following the style of Debian packages.
