@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.9.0</span>
+   &#160;<span id="projectnumber">0.10.0</span>
    </div>
   </td>
  </tr>
@@ -84,8 +84,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="textblock"><p>The citable URL is <a href="http://scottman.net/2012/gr1c">http://scottman.net/2012/gr1c</a>. The public Git repo can be cloned from </p>
 <pre class="fragment">https://github.com/slivingston/gr1c.git
 </pre><p><b>gr1c</b> is a collection of tools for GR(1) synthesis and related activities. Its core functionality is checking realizability of and synthesizing strategies for GR(1) specifications, though it does much more. Relevant papers can be found in the <a href="md_papers.html">bibliography</a>.</p>
-<p>Releases are posted at <a href="http://vehicles.caltech.edu/snapshots/">http://vehicles.caltech.edu/snapshots/</a>. See the <a href="md_installation.html">installation page</a> for instructions about installing gr1c from source code. Beware the code is still experimental. If you find a possible bug or have comments, suggestions, or feature requests, then please open an <a href="https://github.com/slivingston/gr1c/issues">issue on GitHub</a> or contact Scott Livingston at <a href="#" onclick="location.href='mai'+'lto:'+'sli'+'vi'+'ngs'+'to'+'n@c'+'ds'+'.ca'+'lt'+'ech'+'.e'+'du'; return false;">slivi<span style="display: none;">.nosp@m.</span>ngst<span style="display: none;">.nosp@m.</span>on@cd<span style="display: none;">.nosp@m.</span>s.ca<span style="display: none;">.nosp@m.</span>ltech<span style="display: none;">.nosp@m.</span>.edu</a></p>
-<p>In the documentation below, we assume that gr1c is on the shell path. To see a summary of possible command-line arguments, </p>
+<p>Releases are posted at <a href="http://vehicles.caltech.edu/snapshots/">http://vehicles.caltech.edu/snapshots/</a>. Pre-built binaries for several platforms are available, though the preferred distribution form is as a source bundle. Read the <a href="md_installation.html">installation page</a> for instructions about installing gr1c from source code. Beware the code is still experimental. If you find a possible bug or have comments, recommendations, or feature requests, then please open an <a href="https://github.com/slivingston/gr1c/issues">issue on GitHub</a> or contact Scott Livingston at <a href="#" onclick="location.href='mai'+'lto:'+'sli'+'vi'+'ngs'+'to'+'n@c'+'ds'+'.ca'+'lt'+'ech'+'.e'+'du'; return false;">slivi<span style="display: none;">.nosp@m.</span>ngst<span style="display: none;">.nosp@m.</span>on@cd<span style="display: none;">.nosp@m.</span>s.ca<span style="display: none;">.nosp@m.</span>ltech<span style="display: none;">.nosp@m.</span>.edu</a></p>
+<p>In the documentation below, we assume that gr1c is on the shell path. To get a summary of possible command-line arguments, </p>
 <pre class="fragment">$ gr1c -h
 </pre><h2>Examples </h2>
 <p>Many specification files are provided under the <code>examples</code> directory. Begin by reading <code>examples/README.txt</code>. Then read the <a href="md_formats.html">file formats</a> and <a href="md_spc_format.html">specification input</a> pages. As a simple first step, consider the following specification, which is <code>examples/trivial.spc</code> after removing comments. </p>
@@ -99,30 +99,69 @@ ENVGOAL: []&lt;&gt;x;
 SYSINIT: y;
 SYSTRANS:;
 SYSGOAL: []&lt;&gt;(y&amp;x) &amp; []&lt;&gt;(!y);
-</pre><p>The only environment variable is <code>x</code>, and the only system variable is <code>y</code>; both are Boolean-valued. We require that initially <code>x</code> is <code>False</code> and <code>y</code> is <code>True</code>. Given the assumption that the environment will infinitely often set <code>x</code> to <code>True</code>, we must ensure that there are infinitely many states visited such that both <code>y</code> and <code>x</code> are <code>True</code>, and such that <code>y</code> is <code>False</code>. Obviously there must be at least two states in any play winning for the system because the two guaranteed formulas (<code>y&amp;x</code> and <code>!y</code>) cannot simultaneously be <code>True</code>. It is assumed that the environment will flip the variable <code>x</code> at each step, as indicated by the transition rule <code>ENVTRANS</code>. Finally, there is no restriction on transitions by the system, as indicated by the empty <code>SYSTRANS:;</code>. Equivalently, the safety component of the guarantee is <code>True</code>. To check whether the specification is realizable, </p>
+</pre><p>which is represented by the LTL formula </p>
+<p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \left( \neg x \wedge \Box \left( x \leftrightarrow \neg x' \right) \wedge \Box \rotatebox[origin=c]{45}{$\Box$} x \right) \implies \left( y \wedge \Box \rotatebox[origin=c]{45}{$\Box$} (y \wedge x) \wedge \Box \rotatebox[origin=c]{45}{$\Box$} \neg y \right). \]" src="form_0.png"/>
+</p>
+<p> The only environment variable is <code>x</code>, and the only system variable is <code>y</code>; both are Boolean-valued. We require that initially <code>x</code> is <code>False</code> and <code>y</code> is <code>True</code>. Given the assumption that the environment will infinitely often set <code>x</code> to <code>True</code>, we must ensure that there are infinitely many states visited such that both <code>y</code> and <code>x</code> are <code>True</code>, and such that <code>y</code> is <code>False</code>. Obviously there must be at least two states in any play winning for the system because the two guaranteed formulas (<code>y&amp;x</code> and <code>!y</code>) cannot simultaneously be <code>True</code>. It is assumed that the environment will flip the variable <code>x</code> at each step, as indicated by the transition rule <code>ENVTRANS</code>. Finally, there is no restriction on transitions by the system, as indicated by the empty <code>SYSTRANS:;</code>. Equivalently, the safety component of the guarantee is <code>True</code>. To check whether the specification is realizable, </p>
 <pre class="fragment">$ gr1c -r  examples/trivial.spc
-</pre><p>You should see a message indicating realizability, such as "Realizable." Now, to synthesize a strategy for it, output the result into a <a href="http://www.graphviz.org/">DOT</a> file, and create a PNG called <code>temp.dot.png</code> from that output, try </p>
+</pre><p>A message indicating realizability, such as "Realizable," will be printed. Now, to synthesize a strategy for it, output the result into a <a href="http://www.graphviz.org/">DOT</a> file, and create a PNG called <code>temp.dot.png</code> from that output, try </p>
 <pre class="fragment">$ gr1c -t dot examples/trivial.spc &gt; temp.dot
 $ dot -Tpng -O temp.dot
-</pre><h2>Components </h2>
+</pre><h2>Organization </h2>
 <p>Besides using the API directly and linking to relevant source files (cf. <a href="md_start_dev.html">the developer's introduction</a>), several executable programs are built, some of which are considered experimental due to inclusion of methods involving active research. A summary of these programs follows:</p>
 <dl>
 <dt>gr1c </dt>
 <dd><p class="startdd">the basic program for synthesis of strategies for GR(1) formulae as defined in <a href="md_papers.html#KPP05">[KPP05]</a> (GR(1) is referred to as "generalized
-Streett[1]" in that paper). An original motivating algorithm was implemented by Yaniv Sa'ar <a href="md_papers.html#BJPPS12">[BJPPS12]</a>, though the implementation in gr1c differs somewhat. </p>
+Streett[1]" in that paper). An original motivating algorithm was implemented by Yaniv Sa'ar <a href="md_papers.html#BJPPS12">[BJPPS12]</a>, though the implementation in gr1c differs somewhat.</p>
+<p>When the invocation of <code>gr1c</code> is of the form <code>gr1c COMMAND [...]</code>, it acts as a base program for using other commands, which are described below. </p>
 <p class="enddd"></p>
 </dd>
-<dt>rg </dt>
+<dt>gr1c&#160;rg </dt>
 <dd><p class="startdd">a tool for solving "reachability games," which are similar to GR(1) formulae except with at most one system goal and where that system goal need only be reached once (not necessarily infinitely often). The input specifications are <a href="md_spc_format.html#reachgames">slightly different</a>. </p>
 <p class="enddd"></p>
 </dd>
-<dt>grpatch </dt>
+<dt>gr1c&#160;patch </dt>
 <dd><p class="startdd">(experimental.) a command-line tool for using implementations of incremental synthesis (or "patching") algorithms, mostly from recent research publications. E.g., <a class="el" href="patching_8h.html#a5b1f20bc6e524f1dc449b242875fc280">patch_localfixpoint()</a> (cf. <a class="el" href="patching_8h.html" title="Implementation of patching and incremental synthesis algorithms. ">patching.h</a>) concerns the method in <a href="md_papers.html#LPJM13">[LPJM13]</a>. </p>
 <p class="enddd"></p>
 </dd>
 <dt>autman </dt>
 <dd>(auxiliary.) a command-line tool for manipulating automata. Currently it only supports <a href="md_formats.html#gr1cautformat">gr1c automaton format</a>.  </dd>
 </dl>
+<h2>Exit codes </h2>
+<p>The exit code is also known as "return code" or "status code." It is the integer returned at the end of execution. While the particular meaning of an exit code depends on the activity being performed, in all cases an exit code of zero is interpreted as success. We reserve negative exit codes for indication of internal errors and positive exit codes for activity-specific non-success. An example of an internal error is a failed call to the standard library malloc() because no more memory is available. (Notice that an "internal error" may be due to an external event.) Currently all internal errors are indicated by -1, but other negative values may be used in the future. Below is a list of invocation summaries and interpretations of exit codes.</p>
+<p>Common exit codes for all activities:</p>
+<ul>
+<li>1 : invalid command-line usage</li>
+<li>2 : syntax error</li>
+</ul>
+<p><code>gr1c -s</code> (check syntax)</p>
+<ul>
+<li>0 : correct syntax</li>
+</ul>
+<p><code>gr1c -r</code> (check realizability)</p>
+<ul>
+<li>0 : realizable</li>
+<li>3 : unrealizable</li>
+</ul>
+<p><code>gr1c</code> (perform basic GR(1) synthesis)</p>
+<ul>
+<li>0 : success</li>
+<li>3 : unrealizable</li>
+</ul>
+<p><code>gr1c -i</code> (interactive)</p>
+<ul>
+<li>3 : unrealizable</li>
+</ul>
+<p><code>rg -s</code> (check syntax)</p>
+<ul>
+<li>0 : correct syntax</li>
+</ul>
+<p><code>autman</code></p>
+<ul>
+<li>2 : syntax error in the reference specification (not necessarily given)</li>
+<li>3 : syntax error in the automaton description</li>
+</ul>
 <h2>Further reading </h2>
 <ul>
 <li><a href="md_spc_format.html">format of input specifications</a></li>
@@ -132,11 +171,11 @@ Streett[1]" in that paper). An original motivating algorithm was implemented by 
 <li><a href="md_start_dev.html">the developer's introduction</a></li>
 </ul>
 <h2>License </h2>
-<p>This is free software released under the terms of <a href="http://opensource.org/licenses/BSD-3-Clause">the BSD 3-Clause License</a>. There is no warranty; not even for merchantability or fitness for a particular purpose. See <code>LICENSE.txt</code> for copying conditions. </p>
+<p>This is free software released under the terms of <a href="http://opensource.org/licenses/BSD-3-Clause">the BSD 3-Clause License</a>. There is no warranty; not even for merchantability or fitness for a particular purpose. Consult <code>LICENSE.txt</code> for copying conditions. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Nov 30 2014 23:57:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Sep 7 2015 10:03:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

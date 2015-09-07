@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.9.0</span>
+   &#160;<span id="projectnumber">0.10.0</span>
    </div>
   </td>
  </tr>
@@ -86,12 +86,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>GNU/Linux: i386, x86_64</li>
 <li>Mac OS X: x86_64</li>
 </ul>
-<p>Aside from standard C libraries and a basic development environment (gcc, etc.), <b>gr1c</b> depends on <a href="http://vlsi.colorado.edu/~fabio/CUDD/">CUDD</a>, the CU Decision Diagram package by Fabio Somenzi and others. Also, gr1c interactive mode optionally uses GNU Readline (disabled by default; see <code>USE_READLINE</code> definition in Makefile). The parser generator <a href="http://www.gnu.org/software/bison/">Bison</a> and the lexical analyzer <a href="http://flex.sourceforge.net/">flex</a> are required to build gr1c. Other Yacc and lex compatible tools may suffice, but this has not been tested.</p>
+<p>Aside from standard C libraries and a basic development environment (gcc, etc.), <b>gr1c</b> depends on <a href="http://vlsi.colorado.edu/~fabio/CUDD/">CUDD</a>, the CU Decision Diagram package by Fabio Somenzi and others. Also, gr1c interactive mode optionally uses GNU Readline (disabled by default; selected via <code>USE_READLINE</code> definition in Makefile). The parser generator <a href="http://www.gnu.org/software/bison/">Bison</a> and the lexical analyzer <a href="http://flex.sourceforge.net/">flex</a> are required to build gr1c. Other Yacc and lex compatible tools may suffice, but this has not been tested.</p>
 <h2>Building </h2>
 <p>For the latest development snapshot, either <a href="https://github.com/slivingston/gr1c">clone the repo</a> (at <a href="https://github.com/slivingston/gr1c.git">https://github.com/slivingston/gr1c.git</a>) or <a href="https://github.com/slivingston/gr1c/tarball/master">download a tarball</a>. For the latter, untar the file (name may vary) and change into the source directory. </p>
 <pre class="fragment">$ tar -xzf slivingston-gr1c-658f32b.tar.gz
 $ cd slivingston-gr1c-658f32b
-</pre><p>We will first build <a href="http://vlsi.colorado.edu/~fabio/CUDD/">CUDD</a>. Alternatives, e.g., if you have a shared library of CUDD installed, are described later as <a href="#altlib">additional build options</a>. Let's make a directory called <code>extern</code> for this purpose. At the time of writing, the latest version is 2.5.0. Below we use <code>wget</code> to download it from the command-line. You might also try directing your Web browser at <a href="ftp://vlsi.colorado.edu/pub/">ftp://vlsi.colorado.edu/pub/</a>, or see CUDD documentation for instructions. </p>
+</pre><p>We will first build <a href="http://vlsi.colorado.edu/~fabio/CUDD/">CUDD</a>. Alternatives, e.g., if you have a shared library of CUDD installed, are described later as <a href="#altlib">additional build options</a>.</p>
+<h3>Automatic</h3>
+<pre class="fragment">$ ./get-deps.sh
+$ make cudd
+</pre><h3>Manual</h3>
+<p>Let's make a directory called <code>extern</code> for this purpose. At the time of writing, the latest version is 2.5.0. Below we use <code>wget</code> to download it from the command-line. You might also try directing your Web browser at <a href="ftp://vlsi.colorado.edu/pub/">ftp://vlsi.colorado.edu/pub/</a>, or read CUDD documentation for instructions. </p>
 <pre class="fragment">$ mkdir extern
 $ cd extern
 $ wget ftp://vlsi.colorado.edu/pub/cudd-2.5.0.tar.gz
@@ -101,7 +106,8 @@ $ cd cudd-2.5.0
 <pre class="fragment">XCFLAGS = -mtune=native -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=N -DSIZEOF_LONG=M
 </pre><p>where <code>SIZEOF_VOID_P</code> and <code>SIZEOF_LONG</code> refer to the number of bytes used for <code>void</code> pointers and <code>long int</code> on your computer. One method for finding appropriate <code>N</code> and <code>M</code> is <a href="#determinewsize">described below</a>. Finally, </p>
 <pre class="fragment">$ make
-</pre><p>With success building CUDD, we may now build gr1c. Change back to the gr1c root source directory and open the <code>Makefile</code>. There are two items to check. First, be sure that CUDD_ROOT matches where you just built CUDD; for the version used above, that would be <code>extern/cudd-2.5.0</code>. Second, be sure that CUDD_XCFLAGS matches XCFLAGS that you used to build CUDD. Finally, run <code>make</code>. If no errors were reported, you should be able to see the version with </p>
+</pre><p>With success building CUDD, we may now build gr1c. Change back to the gr1c root source directory and open the <code>Makefile</code>. There are two items to check. First, be sure that CUDD_ROOT matches where you just built CUDD; for the version used above, that would be <code>extern/cudd-2.5.0</code>. Second, be sure that CUDD_XCFLAGS matches XCFLAGS that you used to build CUDD.</p>
+<p>Finally, run <code>make</code>. If no errors were reported, you should be able to get the version with </p>
 <pre class="fragment">$ ./gr1c -V
 </pre><p>Later parts of this document describe <a href="#testing">testing gr1c</a> and <a href="#extras">additional build options</a>.</p>
 <h3 id="determinewsize">Determining word size on your computer</h3>
@@ -115,7 +121,7 @@ int main()
 </pre><p>in a plain text file, say called <code>testsize.c</code>, and then </p>
 <pre class="fragment">$ gcc -o testsize testsize.c
 $ ./testsize
-</pre><p>The output will give the number of bytes for each type. For example, in the case of 64-bit, you may see </p>
+</pre><p>The output will give the number of bytes for each type. For example, in the case of 64-bit, you may get </p>
 <pre class="fragment">void *: 8
 long: 8
 </pre><h2 id="testing">Testing</h2>
@@ -143,7 +149,7 @@ long: 8
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Nov 30 2014 23:57:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Sep 7 2015 10:03:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

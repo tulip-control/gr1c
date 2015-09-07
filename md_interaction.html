@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.9.0</span>
+   &#160;<span id="projectnumber">0.10.0</span>
    </div>
   </td>
  </tr>
@@ -127,7 +127,7 @@ True
 1 0
 ---
 </pre><h2>Recognized commands </h2>
-<p>Use <b>help</b> to see the list of commands without descriptions.</p>
+<p>Use <b>help</b> to get the list of commands without descriptions.</p>
 <ul>
 <li><p class="startli"><b>winning STATE</b></p>
 <p class="startli">is STATE in winning set?</p>
@@ -145,7 +145,7 @@ True
 <p class="startli">remove edge from STATE1 to STATE2, if present. The behavior of this command depends on the length of the second argument. If STATE2 has length equal to the number of environment variables, then it is treated as an environment move from STATE1, hence this command removes the corresponding uncontrolled edge. If STATE2 is a complete state vector, i.e., it has length equal to the total number of environment and system variables, then it is treated as a system move, hence this command removes the corresponding controlled edge.</p>
 </li>
 <li><p class="startli"><b>relax STATE1 STATE2</b></p>
-<p class="startli">add an edge from STATE1 to STATE2. See description of "restrict" command regarding how the length of STATE2 affects interpretation of this command.</p>
+<p class="startli">add an edge from STATE1 to STATE2. Consult the description of "restrict" command regarding how the length of STATE2 affects interpretation of this command.</p>
 </li>
 <li><p class="startli"><b>clear</b></p>
 <p class="startli">clear all restrictions and relaxations thus far.</p>
@@ -190,13 +190,13 @@ True
 <p class="startli">terminate gr1c.</p>
 </li>
 <li><p class="startli"><b>realizable {existsys,allsys}</b> [NOT IMPLEMENTED]</p>
-<p class="startli">is specification realizable? See documentation in <a class="el" href="solve_8h.html" title="Compute realizability and a strategy for a GR(1) game. ">solve.h</a> for interpretation of init_flags "existsys" (EXIST_SYS_INIT) and "allsys" (ALL_SYS_INIT). </p>
+<p class="startli">is specification realizable? Consult documentation in <a class="el" href="solve_8h.html" title="Compute realizability and a strategy for a GR(1) game. ">solve.h</a> for interpretation of init_flags "existsys" (EXIST_SYS_INIT) and "allsys" (ALL_SYS_INIT). </p>
 </li>
 </ul>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Nov 30 2014 23:57:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Sep 7 2015 10:03:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

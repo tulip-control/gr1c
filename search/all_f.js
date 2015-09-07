@@ -9,8 +9,8 @@ var searchData=
   ['solve_5fmetric_2eh',['solve_metric.h',['../solve__metric_8h.html',1,'']]],
   ['solve_5fsupport_2eh',['solve_support.h',['../solve__support_8h.html',1,'']]],
   ['spin_5faut_5fdump',['spin_aut_dump',['../automaton_8h.html#ae85baecde070f1027d3e581df5e74010',1,'automaton_io.c']]],
-  ['state2bdd',['state2BDD',['../solve__support_8h.html#a5aa2b5bc2e5090d61e8739dd568eccf7',1,'solve_support.c']]],
-  ['state2cof',['state2cof',['../solve__support_8h.html#a680eb3d6a53ba996b4c02f4100bc040f',1,'solve_support.c']]],
+  ['state_5fto_5fbdd',['state_to_BDD',['../solve__support_8h.html#a02b20eab914c1355f8a41707c59eb49b',1,'solve_support.c']]],
+  ['state_5fto_5fcof',['state_to_cof',['../solve__support_8h.html#a1c1291f3f8def39145fbb7ad2a174d9d',1,'solve_support.c']]],
   ['synthesize',['synthesize',['../solve_8h.html#a95874103a14d0ab9b3b28c23331e0521',1,'solve.c']]],
   ['synthesize_5freachgame',['synthesize_reachgame',['../patching_8h.html#a10c6a1f506834a2a328afe6a287595ad',1,'patching_support.c']]]
 ];

@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.9.0</span>
+   &#160;<span id="projectnumber">0.10.0</span>
    </div>
   </td>
  </tr>
@@ -112,7 +112,7 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Implementation of patching and incremental synthesis algorithms. </p>
-<p>SCL; 2012-2014. </p>
+<p>SCL; 2012-2015 </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="a64b69505e9f5695d6e2439d98c2f8836"></a>
 <div class="memitem">
@@ -174,7 +174,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Implementation of algorithm from <a href="md_papers.html#LM14">[LM14]</a> for adding sys goals</p>
-<p>S.C. Livingston, R.M. Murray. Hot-swapping robot task goals in reactive formal synthesis. to be presented at CDC in Dec 2014. Extended version available as Caltech CDS tech report at <a href="http://resolver.caltech.edu/CaltechCDSTR:2014.001">http://resolver.caltech.edu/CaltechCDSTR:2014.001</a></p>
+<p>S.C. Livingston, R.M. Murray. Hot-swapping robot task goals in reactive formal synthesis. presented at CDC in Dec 2014. Extended version available as Caltech CDS tech report at <a href="http://resolver.caltech.edu/CaltechCDSTR:2014.001">http://resolver.caltech.edu/CaltechCDSTR:2014.001</a></p>
 <p>new_sysgoal is assumed to have had nonboolean variables expanded. If no metric variables are given (i.e., num_metric_vars = 0 or offw is NULL), then the new system goal is appended at the end of the existing goal visitation sequence.</p>
 <p>Return the head pointer of the augmented strategy, or NULL if error. </p>
 
@@ -241,7 +241,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Implementation of algorithm from <a href="md_papers.html#LPJM13">[LPJM13]</a></p>
 <p>S.C. Livingston, P. Prabhakar, A.B. Jose, R.M. Murray. Patching task-level robot controllers based on a local mu-calculus formula. presented at ICRA in May 2013. (The original Caltech CDS technical report is <a href="http://resolver.caltech.edu/CaltechCDSTR:2012.003">http://resolver.caltech.edu/CaltechCDSTR:2012.003</a>)</p>
-<p>Read given strategy in "gr1c automaton" format from stream strategy_fp, using edge set changes to the game graph listed in stream change_fp. See <a href="md_formats.html">external_notes</a> for format details. If strategy_fp = NULL, then read from stdin.</p>
+<p>Read given strategy in "gr1c automaton" format from stream strategy_fp, using edge set changes to the game graph listed in stream change_fp. Read <a href="md_formats.html">external_notes</a> for format details. If strategy_fp = NULL, then read from stdin.</p>
 <p>Return the head pointer of the patched strategy, or NULL if error.</p>
 <p>As usual, this function will not try to close given streams when finished. </p>
 
@@ -295,7 +295,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Implementation of algorithm from <a href="md_papers.html#LM14">[LM14]</a> for removing sys goals</p>
-<p>S.C. Livingston, R.M. Murray. Hot-swapping robot task goals in reactive formal synthesis. to be presented at CDC in Dec 2014. Extended version available as Caltech CDS tech report at <a href="http://resolver.caltech.edu/CaltechCDSTR:2014.001">http://resolver.caltech.edu/CaltechCDSTR:2014.001</a></p>
+<p>S.C. Livingston, R.M. Murray. Hot-swapping robot task goals in reactive formal synthesis. presented at CDC in Dec 2014. Extended version available as Caltech CDS tech report at <a href="http://resolver.caltech.edu/CaltechCDSTR:2014.001">http://resolver.caltech.edu/CaltechCDSTR:2014.001</a></p>
 <p>The given strategy is assumed to have the following form. System goals are sought in order, so that upon reaching a psi_i-state, the next system goal sought is psi_{i+1}, where subscript arithmetic is modulo n, the number of system goals. We say that goal i is sought from node n if n-&gt;mode = i (treating n as having type anode_t*). Thus, upon deleting nodes with "goal mode" (part of "reach
 annotation") i, it suffices to label the new substrategy with "goal
 mode" (i+1) mod n.</p>
@@ -395,7 +395,7 @@ mode") that is to be removed. The "index" is determined by order in the SYSGOAL 
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Nov 30 2014 23:57:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Sep 7 2015 10:03:21 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

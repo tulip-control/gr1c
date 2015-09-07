@@ -1,0 +1,1 @@
+\form#0:\[ \left( \neg x \wedge \Box \left( x \leftrightarrow \neg x' \right) \wedge \Box \rotatebox[origin=c]{45}{$\Box$} x \right) \implies \left( y \wedge \Box \rotatebox[origin=c]{45}{$\Box$} (y \wedge x) \wedge \Box \rotatebox[origin=c]{45}{$\Box$} \neg y \right). \]
