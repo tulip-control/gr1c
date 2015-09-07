@@ -94,7 +94,7 @@ int *get_offsets( char *metric_vars, int *num_vars )
 
 		*(offw+2*((*num_vars)-1)) = start_index;
 		*(offw+2*((*num_vars)-1)+1) = stop_index-start_index+1;
-	} while (tok = strtok( NULL, " " ));
+	} while ((tok = strtok( NULL, " " )));
 
 	free( var_str );
 	return offw;
