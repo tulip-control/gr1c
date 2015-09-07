@@ -87,6 +87,10 @@ is installed and a release commit is checked-out, then try
 
     $ export GR1C_VERSION=`git describe --tags --candidates=0 HEAD|cut -c 2-`
 
+### The checklist
+
+- Update the CHANGELOG.
+
 
 Code style
 ----------
