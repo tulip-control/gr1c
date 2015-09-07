@@ -5,8 +5,7 @@
 
 %{
   #include "y.tab.h"
-  #define YY_USER_ACTION yylloc->last_column += yyleng;
-  #define YY_DECL int yylex( YYSTYPE *yylval, YYLTYPE *yylloc )
+  #define YY_USER_ACTION yylloc.last_column += yyleng;
 %}
 
 %option noyywrap
@@ -34,10 +33,10 @@ number  [0-9]+([.][0-9]+)?
 [()&|!=';,<>]  { return yytext[0]; }
 
 \n  {
-        yylloc->first_column = yylloc->last_column;
-	yylloc->last_column = 0;
-        yylloc->first_line = yylloc->last_line;
-        ++(yylloc->last_line);
+        yylloc.first_column = yylloc.last_column;
+	yylloc.last_column = 0;
+        yylloc.first_line = yylloc.last_line;
+        ++(yylloc.last_line);
     }
 
 "True"  { return TRUE_CONSTANT; }
@@ -54,8 +53,8 @@ number  [0-9]+([.][0-9]+)?
 ^("SYSTRANS:")  { return S_TRANS; }
 ^("SYSGOAL:")  { return S_GOAL; }
 
-{identifier}  { yylval->str = strdup( yytext ); return VARIABLE; }
-{number}  { yylval->num = strtol( yytext, NULL, 10 ); return NUMBER; }
+{identifier}  { yylval.str = strdup( yytext ); return VARIABLE; }
+{number}  { yylval.num = strtol( yytext, NULL, 10 ); return NUMBER; }
 
 "#".*"\n"  { unput( '\n' ); }  /* Comments.
                                   unput is used to preserve line count. */
