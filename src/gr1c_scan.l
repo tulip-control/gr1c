@@ -3,6 +3,11 @@
  * SCL; 2012-2014.
  */
 
+%top{
+  #define _POSIX_C_SOURCE 200809L
+  #include <string.h>
+  #include <stdlib.h>
+}
 %{
   #include "y.tab.h"
   #define YY_USER_ACTION yylloc.last_column += yyleng;
