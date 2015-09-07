@@ -251,10 +251,10 @@ int main( int argc, char **argv )
 				"                  ALL_ENV_EXIST_SYS_INIT (default)\n"
 				"                  ALL_INIT\n"
 				"                  ONE_SIDE_INIT\n"
-				"  -s          only check specification syntax (return -1 on error)\n" );
+				"  -s          only check specification syntax (return 2 on error)\n" );
 		printf( "  -p          dump parse trees to DOT files, and echo formulas to screen\n"
 				"  -r          only check realizability; do not synthesize strategy\n"
-				"              (return 0 if realizable, -1 if not)\n"
+				"              (return 0 if realizable, 3 if not)\n"
 				"  -i          interactive mode\n"
 				"  -o FILE     output strategy to FILE, rather than stdout (default)\n"
 				"  -P          create Spin Promela model of strategy;\n"
@@ -265,7 +265,7 @@ int main( int argc, char **argv )
 				"  help        this help message (equivalent to -h)\n\n"
 				"When applicable, any arguments after COMMAND are passed on to the\n"
 				"appropriate program. Use -h to get the corresponding help message.\n", argv[0] );
-		return 1;
+		return 0;
 	}
 
 	if (input_index < 0 && (run_option == GR1C_MODE_INTERACTIVE)) {
@@ -308,7 +308,7 @@ int main( int argc, char **argv )
 	if (verbose)
 		logprint( "Parsing input..." );
 	if (yyparse())
-		return -1;
+		return 2;
 	if (verbose)
 		logprint( "Done." );
 
@@ -317,7 +317,7 @@ int main( int argc, char **argv )
 						 sys_trans_array, st_array_len,
 						 env_goals, num_egoals, sys_goals, num_sgoals,
 						 init_flags ) < 0)
-		return -1;
+		return 2;
 
 	if (run_option == GR1C_MODE_SYNTAX)
 		return 0;
@@ -493,7 +493,7 @@ int main( int argc, char **argv )
 		fprintf( stderr,
 				 "Syntax error: GR(1) specification is missing environment"
 				 " transition rules.\n" );
-		return -1;
+		return 2;
 	}
 	if (st_array_len > 1) {
 		sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
@@ -503,7 +503,7 @@ int main( int argc, char **argv )
 		fprintf( stderr,
 				 "Syntax error: GR(1) specification is missing system"
 				 " transition rules.\n" );
-		return -1;
+		return 2;
 	}
 
 	if (verbose > 1)
@@ -535,7 +535,7 @@ int main( int argc, char **argv )
 		i = levelset_interactive( manager, init_flags, stdin, stdout, verbose );
 		if (i == 0) {
 			printf( "Not realizable.\n" );
-			return -1;
+			return 3;
 		} else if (i < 0) {
 			printf( "Failure during interaction.\n" );
 			return -1;
@@ -663,11 +663,11 @@ int main( int argc, char **argv )
 	if (logging_flag)
 		closelogfile();
 
-    /* Return 0 if realizable, -1 if not realizable. */
+    /* Return 0 if realizable, 1 if not realizable. */
 	if (run_option == GR1C_MODE_INTERACTIVE || T != NULL) {
 		return 0;
 	} else {
-		return -1;
+		return 3;
 	}
 
 	return 0;

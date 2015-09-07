@@ -239,7 +239,7 @@ int main( int argc, char **argv )
 				"              used for appending a system goal; requires -a flag.\n"
 				"  -r N        remove system goal N (in order, according to given file);\n"
 				"              requires -a flag.\n" );
-		return 1;
+		return 0;
 	}
 
 	if (input_index < 0 && (run_option == GR1C_MODE_PATCH
@@ -327,7 +327,7 @@ int main( int argc, char **argv )
 	if (verbose)
 		logprint( "Parsing input..." );
 	if (yyparse())
-		return -1;
+		return 2;
 	if (verbose)
 		logprint( "Done." );
 
@@ -336,7 +336,7 @@ int main( int argc, char **argv )
 						 sys_trans_array, st_array_len,
 						 env_goals, num_egoals, sys_goals, num_sgoals,
 						 UNDEFINED_INIT ) < 0)
-		return -1;
+		return 2;
 
 	/* Close input file, if opened. */
 	if (input_index > 0)
@@ -352,7 +352,7 @@ int main( int argc, char **argv )
 	}
 	if ((tmpstr = check_vars( clformula, svar_list, NULL )) != NULL) {
 		fprintf( stderr, "Unrecognized variable in -f formula: %s\n", tmpstr );
-		return -1;
+		return 1;
 	}
 	if (tmppt != NULL) {
 		tmppt->left = NULL;
@@ -570,7 +570,7 @@ int main( int argc, char **argv )
 			fprintf( stderr,
 					 "Syntax error: GR(1) specification is missing environment"
 					 " transition rules.\n" );
-			return -1;
+			return 2;
 		}
 		if (st_array_len > 1) {
 			sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
@@ -580,7 +580,7 @@ int main( int argc, char **argv )
 			fprintf( stderr,
 					 "Syntax error: GR(1) specification is missing system"
 					 " transition rules.\n" );
-			return -1;
+			return 2;
 		}
 
 		if (verbose)
@@ -610,7 +610,7 @@ int main( int argc, char **argv )
 			fprintf( stderr,
 					 "Syntax error: GR(1) specification is missing environment"
 					 " transition rules.\n" );
-			return -1;
+			return 2;
 		}
 		if (st_array_len > 1) {
 			sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
@@ -620,7 +620,7 @@ int main( int argc, char **argv )
 			fprintf( stderr,
 					 "Syntax error: GR(1) specification is missing system"
 					 " transition rules.\n" );
-			return -1;
+			return 2;
 		}
 
 		if (verbose)

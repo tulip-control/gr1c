@@ -131,17 +131,30 @@ to an external event.) Currently all internal errors are indicated by -1, but
 other negative values may be used in the future.  Below is a list of invocation
 summaries and interpretations of exit codes.
 
+Common exit codes for all activities:
+- 1 : invalid command-line usage
+- 2 : syntax error
+
 `gr1c -s` (check syntax)
 - 0 : correct syntax
-- 1 : syntax error
 
 `gr1c -r` (check realizability)
 - 0 : realizable
-- 1 : unrealizable
+- 3 : unrealizable
 
 `gr1c` (perform basic GR(1) synthesis)
 - 0 : success
-- 1 : unrealizable
+- 3 : unrealizable
+
+`gr1c -i` (interactive)
+- 3 : unrealizable
+
+`rg -s` (check syntax)
+- 0 : correct syntax
+
+`autman`
+- 2 : syntax error in the reference specification (not necessarily given)
+- 3 : syntax error in the automaton description
 
 
 Further reading

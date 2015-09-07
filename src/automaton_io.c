@@ -16,9 +16,8 @@
 
 #define INPUT_STRING_LEN 1024
 
-/* Memory recovery in the case of error, whether from a system call or
-   while parsing, is almost nil.  Correct this behavior before
-   release.  Also note that sorting of nodes could be made faster. */
+/* Memory recovery in the case of parsing error is almost nil.
+   Also note that sorting of nodes could be made faster. */
 anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 {
 	anode_t *head = NULL, *node;
@@ -42,7 +41,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 	state = malloc( sizeof(vartype)*state_len );
 	if (state == NULL) {
 		perror( "aut_aut_load, malloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	ia_len = 1;
@@ -52,7 +51,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 	if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
 		free( state );
 		perror( "aut_aut_load, malloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	line_num = 0;
@@ -107,7 +106,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 		*(node_array+ia_len-1) = malloc( sizeof(anode_t) );
 		if (*(node_array+ia_len-1) == NULL) {
 			perror( "aut_aut_load, malloc" );
-			return NULL;
+			exit(-1);
 		}
 
 		if (detected_version == 1) {
@@ -158,7 +157,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 						   sizeof(int)*((*(node_array+ia_len-1))->trans_len) );
 			if (*(trans_array+ia_len-1) == NULL) {
 				perror( "aut_aut_load, realloc" );
-				return NULL;
+				exit(-1);
 			}
 			*(*(trans_array+ia_len-1)
 			  + (*(node_array+ia_len-1))->trans_len - 1) = this_trans;
@@ -170,7 +169,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 		state = malloc( sizeof(vartype)*state_len );
 		if (state == NULL) {
 			perror( "aut_aut_load, malloc" );
-			return NULL;
+			exit(-1);
 		}
 		ia_len++;
 		ID_array = realloc( ID_array, sizeof(int)*ia_len );
@@ -178,7 +177,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 		node_array = realloc( node_array, sizeof(anode_t *)*ia_len );
 		if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
 			perror( "aut_aut_load, realloc" );
-			return NULL;
+			exit(-1);
 		}
 	}
 	free( state );
@@ -188,7 +187,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 	node_array = realloc( node_array, sizeof(anode_t *)*ia_len );
 	if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
 		perror( "aut_aut_load, realloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	for (i = 0; i < ia_len; i++) {
@@ -211,7 +210,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 			node->trans = malloc( sizeof(anode_t *)*(node->trans_len) );
 			if (node->trans == NULL) {
 				perror( "aut_aut_load, malloc" );
-				return NULL;
+				exit(-1);
 			}
 			for (j = 0; j < node->trans_len; j++) {
 				for (k = 0;
@@ -897,7 +896,7 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	env_counter = malloc( num_env*sizeof(int) );
 	if (env_counter == NULL) {
 		perror( "spin_aut_dump, malloc" );
-		return -1;
+		exit(-1);
 	}
 
 	fprintf( fp,

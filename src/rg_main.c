@@ -189,11 +189,11 @@ int main( int argc, char **argv )
 		printf( "  -n INIT   initial condition interpretation; (not case sensitive)\n"
 				"              one of\n"
 				"                  ALL_INIT (default)\n"
-				"  -s        only check specification syntax (return -1 on error)\n"
+				"  -s        only check specification syntax (return 2 on error)\n"
 /*				"  -r        only check realizability; do not synthesize strategy\n"
-				"            (return 0 if realizable, -1 if not)\n" */
+				"            (return 0 if realizable, 3 if not)\n" */
 				"  -o FILE   output strategy to FILE, rather than stdout (default)\n" );
-		return 1;
+		return 0;
 	}
 
 	if (logging_flag) {
@@ -220,7 +220,7 @@ int main( int argc, char **argv )
 	if (verbose)
 		logprint( "Parsing input..." );
 	if (yyparse())
-		return -1;
+		return 2;
 	if (verbose)
 		logprint( "Done." );
 	if (stdin_backup != NULL) {
@@ -231,7 +231,7 @@ int main( int argc, char **argv )
 		fprintf( stderr,
 				 "Syntax error: reachability game specification has more"
 				 " than 1 system goal.\n" );
-		return -1;
+		return 2;
 	}
 
 	if (check_gr1c_form( evar_list, svar_list, env_init, sys_init,
@@ -239,7 +239,7 @@ int main( int argc, char **argv )
 						 sys_trans_array, st_array_len,
 						 env_goals, num_egoals, sys_goals, num_sgoals,
 						 init_flags ) < 0)
-		return -1;
+		return 2;
 
 	if (run_option == RG_MODE_SYNTAX)
 		return 0;
@@ -406,7 +406,7 @@ int main( int argc, char **argv )
 		fprintf( stderr,
 				 "Syntax error: GR(1) specification is missing environment"
 				 " transition rules.\n" );
-		return -1;
+		return 2;
 	}
 	if (st_array_len > 1) {
 		sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
@@ -416,7 +416,7 @@ int main( int argc, char **argv )
 		fprintf( stderr,
 				 "Syntax error: GR(1) specification is missing system"
 				 " transition rules.\n" );
-		return -1;
+		return 2;
 	}
 
 	if (verbose > 1)
@@ -465,7 +465,7 @@ int main( int argc, char **argv )
 			fprintf( stderr,
 					 "Error: get_list_item failed on environment variables"
 					 " list.\n" );
-			return -2;
+			return -1;
 		}
 		var_separator->left = svar_list;
 	}
@@ -527,7 +527,7 @@ int main( int argc, char **argv )
 	if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
 		fprintf( stderr,
 				 "Error: failed to define variable map in CUDD manager.\n" );
-		return -2;
+		return -1;
 	}
 	free( vars );
 	free( pvars );
@@ -623,11 +623,11 @@ int main( int argc, char **argv )
 	if (logging_flag)
 		closelogfile();
 
-    /* Return 0 if realizable, -1 if not realizable. */
+    /* Return 0 if realizable, 3 if not realizable. */
 	if (strategy != NULL) {
 		return 0;
 	} else {
-		return -1;
+		return 3;
 	}
 
 	return 0;

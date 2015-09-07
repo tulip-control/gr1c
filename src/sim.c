@@ -89,7 +89,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 	hstacks = malloc( horizon*sizeof(anode_t *) );
 	if (hstacks == NULL) {
 		perror( "sim_rhc, malloc" );
-		return NULL;
+		exit(-1);
 	}
 	for (i = 0; i < horizon; i++)
 		*(hstacks+i) = NULL;
@@ -101,13 +101,13 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 	if (next_state == NULL || candidate_state == NULL || finit_state == NULL
 		|| fnext_state == NULL) {
 		perror( "sim_rhc, malloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	cube = malloc( 2*(num_env+num_sys)*sizeof(int) );
 	if (cube == NULL) {
 		perror( "sim_rhc, malloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	tmp = Cudd_bddVarMap( manager, W );

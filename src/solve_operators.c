@@ -146,7 +146,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
 		perror( "compute_winning_set_BDD, malloc" );
-		return NULL;
+		exit(-1);
 	}
 	
 	/* Define a map in the manager to easily swap variables with their
@@ -364,7 +364,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
 		perror( "compute_sublevel_sets, malloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	/* Define a map in the manager to easily swap variables with their
@@ -388,12 +388,12 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 		*num_sublevels = malloc( num_sys_goals*sizeof(int) );
 		if (Y == NULL || *num_sublevels == NULL) {
 			perror( "compute_sublevel_sets, malloc" );
-			return NULL;
+			exit(-1);
 		}
 		*X_ijr = malloc( num_sys_goals*sizeof(DdNode ***) );
 		if (*X_ijr == NULL) {
 			perror( "compute_sublevel_sets, malloc" );
-			return NULL;
+			exit(-1);
 		}
 
 		for (i = 0; i < num_sys_goals; i++) {
@@ -401,7 +401,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 			*(Y+i) = malloc( *(*num_sublevels+i)*sizeof(DdNode *) );
 			if (*(Y+i) == NULL) {
 				perror( "compute_sublevel_sets, malloc" );
-				return NULL;
+				exit(-1);
 			}
 			**(Y+i) = Cudd_Not( Cudd_ReadOne( manager ) );
 			Cudd_Ref( **(Y+i) );
@@ -409,12 +409,12 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 			*(*X_ijr+i) = malloc( *(*num_sublevels+i)*sizeof(DdNode **) );
 			if (*(*X_ijr+i) == NULL) {
 				perror( "compute_sublevel_sets, malloc" );
-				return NULL;
+				exit(-1);
 			}
 			**(*X_ijr+i) = malloc( num_env_goals*sizeof(DdNode *) );
 			if (**(*X_ijr+i) == NULL) {
 				perror( "compute_sublevel_sets, malloc" );
-				return NULL;
+				exit(-1);
 			}
 			for (r = 0; r < num_env_goals; r++) {
 				*(**(*X_ijr+i) + r) = Cudd_Not( Cudd_ReadOne( manager ) );
@@ -434,14 +434,14 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 								   *(*num_sublevels+i)*sizeof(DdNode **) );
 			if (*(Y+i) == NULL || *(*X_ijr+i) == NULL) {
 				perror( "compute_sublevel_sets, realloc" );
-				return NULL;
+				exit(-1);
 			}
 
 			*(*(*X_ijr+i) + *(*num_sublevels+i)-1)
 				= malloc( num_env_goals*sizeof(DdNode *) );
 			if (*(*(*X_ijr+i) + *(*num_sublevels+i)-1) == NULL) {
 				perror( "compute_sublevel_sets, malloc" );
-				return NULL;
+				exit(-1);
 			}
 
 			Y_exmod = compute_existsmodal( manager,
@@ -534,7 +534,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 									   *(*num_sublevels+i)*sizeof(DdNode **) );
 				if (*(Y+i) == NULL || *(*X_ijr+i) == NULL) {
 					perror( "compute_sublevel_sets, realloc" );
-					return NULL;
+					exit(-1);
 				}
 				break;
 			}

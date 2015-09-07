@@ -87,14 +87,14 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 	state = malloc( sizeof(vartype)*(num_env+num_sys) );
 	if (state == NULL) {
 		perror( "synthesize, malloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	/* Allocate cube array, used later for quantifying over variables. */
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
 		perror( "synthesize, malloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	/* Chain together environment and system variable lists for
@@ -205,7 +205,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 							  (*(num_sublevels+i))*sizeof(DdNode *) );
 		if (*(Y+i) == NULL || *(X_ijr+i) == NULL) {
 			perror( "synthesize, realloc" );
-			return NULL;
+			exit(-1);
 		}
 	}
 
@@ -782,7 +782,7 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
 		perror( "check_realizable_internal, malloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	/* Chain together environment and system variable lists for

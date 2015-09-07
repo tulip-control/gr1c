@@ -104,7 +104,7 @@ exp: evar_list ';'
              env_trans_array = malloc( sizeof(ptree_t *) );
              if (env_trans_array == NULL) {
                  perror( "gr1c_parse.y, etransformula, malloc" );
-                 YYABORT;
+                 exit(-1);
              }
              *env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
          }
@@ -134,7 +134,7 @@ exp: evar_list ';'
              sys_trans_array = malloc( sizeof(ptree_t *) );
              if (sys_trans_array == NULL) {
                  perror( "gr1c_parse.y, stransformula, malloc" );
-                 YYABORT;
+                 exit(-1);
              }
              *sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
          }
@@ -145,7 +145,7 @@ exp: evar_list ';'
          sys_goals = malloc( sizeof(ptree_t *) );
          if (sys_goals == NULL) {
                  perror( "gr1c_parse.y, S_GOAL ';', malloc" );
-                 YYABORT;
+                 exit(-1);
          }
          /* Equivalent to []<>True */
          *sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );
@@ -220,7 +220,7 @@ etransformula: SAFETY_OP tpropformula  {
                                               sizeof(ptree_t *)*et_array_len );
                    if (env_trans_array == NULL) {
                        perror( "gr1c_parse.y, etransformula, realloc" );
-                       YYABORT;
+                       exit(-1);
                    }
                    *(env_trans_array+et_array_len-1) = gen_tree_ptr;
                    gen_tree_ptr = NULL;
@@ -231,7 +231,7 @@ etransformula: SAFETY_OP tpropformula  {
                                               sizeof(ptree_t *)*et_array_len );
                    if (env_trans_array == NULL) {
                        perror( "gr1c_parse.y, etransformula, realloc" );
-                       YYABORT;
+                       exit(-1);
                    }
                    *(env_trans_array+et_array_len-1) = gen_tree_ptr;
                    gen_tree_ptr = NULL;
@@ -244,7 +244,7 @@ stransformula: SAFETY_OP tpropformula  {
                                               sizeof(ptree_t *)*st_array_len );
                    if (sys_trans_array == NULL) {
                        perror( "gr1c_parse.y, stransformula, realloc" );
-                       YYABORT;
+                       exit(-1);
                    }
                    *(sys_trans_array+st_array_len-1) = gen_tree_ptr;
                    gen_tree_ptr = NULL;
@@ -255,7 +255,7 @@ stransformula: SAFETY_OP tpropformula  {
                                               sizeof(ptree_t *)*st_array_len );
                    if (sys_trans_array == NULL) {
                        perror( "gr1c_parse.y, stransformula, realloc" );
-                       YYABORT;
+                       exit(-1);
                    }
                    *(sys_trans_array+st_array_len-1) = gen_tree_ptr;
                    gen_tree_ptr = NULL;
@@ -268,7 +268,7 @@ egoalformula: LIVENESS_OP propformula  {
                                        sizeof(ptree_t *)*num_egoals );
                   if (env_goals == NULL) {
                       perror( "gr1c_parse.y, egoalformula, realloc" );
-                      YYABORT;
+                      exit(-1);
                   }
                   *(env_goals+num_egoals-1) = gen_tree_ptr;
                   gen_tree_ptr = NULL;
@@ -279,7 +279,7 @@ egoalformula: LIVENESS_OP propformula  {
                                        sizeof(ptree_t *)*num_egoals );
                   if (env_goals == NULL) {
                       perror( "gr1c_parse.y, egoalformula, realloc" );
-                      YYABORT;
+                      exit(-1);
                   }
                   *(env_goals+num_egoals-1) = gen_tree_ptr;
                   gen_tree_ptr = NULL;
@@ -292,7 +292,7 @@ sgoalformula: LIVENESS_OP propformula  {
                                        sizeof(ptree_t *)*num_sgoals );
                   if (sys_goals == NULL) {
                       perror( "gr1c_parse.y, sgoalformula, realloc" );
-                      YYABORT;
+                      exit(-1);
                   }
                   *(sys_goals+num_sgoals-1) = gen_tree_ptr;
                   gen_tree_ptr = NULL;
@@ -303,7 +303,7 @@ sgoalformula: LIVENESS_OP propformula  {
                                        sizeof(ptree_t *)*num_sgoals );
                   if (sys_goals == NULL) {
                       perror( "gr1c_parse.y, sgoalformula, realloc" );
-                      YYABORT;
+                      exit(-1);
                   }
                   *(sys_goals+num_sgoals-1) = gen_tree_ptr;
                   gen_tree_ptr = NULL;

@@ -21,7 +21,7 @@ ptree_t *init_ptree( int type, char *name, int value )
 	ptree_t *head = malloc( sizeof(ptree_t) );
 	if (head == NULL) {
 		perror( "init_ptree, malloc" );
-		return NULL;
+		exit(-1);
 	}
 	head->left = head->right = NULL;
 	head->name = NULL;
@@ -33,7 +33,7 @@ ptree_t *init_ptree( int type, char *name, int value )
 			head->name = strdup( name );
 			if (head->name == NULL) {
 				perror( "init_ptree, strdup" );
-				return NULL;
+				exit(-1);
 			}
 		}
 		/* The "value" field is used to specify the domain of an
@@ -263,7 +263,7 @@ char *check_vars( ptree_t *head, ptree_t *var_list, ptree_t *nextvar_list )
 			name = malloc( (strlen( head->name )+2)*sizeof(char) );
 			if (name == NULL) {
 				perror( "check_vars, malloc" );
-				return NULL;
+				exit(-1);
 			}
 			strcpy( name, head->name );
 			if (head->type == PT_NEXT_VARIABLE) {
@@ -353,7 +353,7 @@ ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
 		heads = malloc( maxval*sizeof(ptree_t *) );
 		if (heads == NULL) {
 			perror( "expand_nonbool_varnum, malloc" );
-			return NULL;
+			exit(-1);
 		}
 		min = 0;
 		for (i = 0; i <= maxval; i++) {
@@ -384,7 +384,7 @@ ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
 		heads = malloc( (max-min+1)*sizeof(ptree_t *) );
 		if (heads == NULL) {
 			perror( "expand_nonbool_varnum, malloc" );
-			return NULL;
+			exit(-1);
 		}
 		for (i = min; i <= max; i++) {
 			*(heads+i-min) = init_ptree( PT_EQUALS, NULL, 0 );
@@ -451,7 +451,7 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 		heads = malloc( num_bits*sizeof(ptree_t *) );
 		if (heads == NULL) {
 			perror( "expand_to_bool, malloc" );
-			return NULL;
+			exit(-1);
 		}
 
 		/* Enforce inability to reach values outside the expanded domain */
@@ -779,7 +779,7 @@ int tree_dot_dump( ptree_t *head, char *filename )
 	FILE *fp = fopen( filename, "w" );
 	if (fp == NULL) {
 		perror( "tree_dot_dump, fopen" );
-		return -1;
+		exit(-1);
 	}
 
 	if (fprintf( fp, "digraph PT {\n" ) < -1) {
@@ -793,7 +793,7 @@ int tree_dot_dump( ptree_t *head, char *filename )
 
 	if (fclose( fp )) {
 		perror( "tree_dot_dump, fclose" );
-		return -1;
+		exit(-1);
 	}
 
 	return 0;

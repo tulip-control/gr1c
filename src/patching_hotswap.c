@@ -175,7 +175,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 		Max = malloc( num_sgoals*sizeof(double) );
 		if (Min == NULL || Max == NULL) {
 			perror( "add_metric_sysgoal, malloc" );
-			return NULL;
+			exit(-1);
 		}
 		for (i = 0; i < num_sgoals; i++) {
 			if (bounds_DDset( manager, *(sgoals+i), new_sgoal,
@@ -236,7 +236,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 											 Gi_len[i]*sizeof(anode_t *) );
 							if (Gi[i] == NULL) {
 								perror( "add_metric_sysgoal, realloc" );
-								return NULL;
+								exit(-1);
 							}
 
 							if (verbose > 1) {
@@ -327,7 +327,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 								  new_reached_len*sizeof(anode_t *) );
 			if (new_reached == NULL) {
 				perror( "add_metric_sysgoal, realloc" );
-				return NULL;
+				exit(-1);
 			}
 			*(new_reached+new_reached_len-1) = node1;
 		}
@@ -351,7 +351,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 							   *sizeof(anode_t *) );
 			if (Gi_succ == NULL) {
 				perror( "add_metric_sysgoal, realloc" );
-				return NULL;
+				exit(-1);
 			}
 			for (j = 0; j < (*(Gi[0]+i))->trans_len; j++) {
 				for (k = 0; k < Gi_len[0]; k++) {
@@ -707,13 +707,13 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 	Entry = malloc( sizeof(anode_t *)*num_del_nodes );
 	if (Entry == NULL) {
 		perror( "rm_sysgoal, malloc" );
-		return NULL;
+		exit(-1);
 
 	}
 	Exit = malloc( sizeof(anode_t *)*num_del_nodes );
 	if (Exit == NULL) {
 		perror( "rm_sysgoal, malloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	node = strategy;

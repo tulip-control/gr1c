@@ -42,7 +42,7 @@ int *get_offsets( char *metric_vars, int *num_vars )
 	var_str = strdup( metric_vars );
 	if (var_str == NULL) {
 		perror( "get_offsets, strdup" );
-		return NULL;
+		exit(-1);
 	}
 
 	*num_vars = 0;
@@ -56,7 +56,7 @@ int *get_offsets( char *metric_vars, int *num_vars )
 		offw = realloc( offw, 2*(*num_vars)*sizeof(int) );
 		if (offw == NULL) {
 			perror( "get_offsets, realloc" );
-			return NULL;
+			exit(-1);
 		}
 
 		var = evar_list;
@@ -123,7 +123,7 @@ int bounds_state( DdManager *manager, DdNode *T, vartype *ref_state,
 	state = malloc( sizeof(vartype)*(num_env+num_sys) );
 	if (state == NULL) {
 		perror( "bounds_state, malloc" );
-		return -1;
+		exit(-1);
 	}
 
 	/* Reference and particular integral vectors */
@@ -131,7 +131,7 @@ int bounds_state( DdManager *manager, DdNode *T, vartype *ref_state,
 	this_mapped = malloc( num_metric_vars*sizeof(int) );
 	if (ref_mapped == NULL || this_mapped == NULL) {
 		perror( "bounds_state, malloc" );
-		return -1;
+		exit(-1);
 	}
 
 	for (i = 0; i < num_metric_vars; i++)
@@ -218,7 +218,7 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 	state = malloc( (num_env+num_sys)*sizeof(vartype) );
 	if (state == NULL) {
 		perror( "bounds_DDset, malloc" );
-		return -1;
+		exit(-1);
 	}
 
 	*Min = *Max = -1.;  /* Distance is non-negative; thus use -1 as "unset". */
@@ -232,13 +232,13 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 			states = realloc( states, num_states*sizeof(vartype *) );
 			if (states == NULL) {
 				perror( "bounds_DDset, realloc" );
-				return -1;
+				exit(-1);
 			}
 			*(states+num_states-1) = malloc( (num_env+num_sys)
 											 *sizeof(vartype) );
 			if (*(states+num_states-1) == NULL) {
 				perror( "bounds_DDset, malloc" );
-				return -1;
+				exit(-1);
 			}
 			for (i = 0; i < num_env+num_sys; i++)
 				*(*(states+num_states-1)+i) = *(state+i);
@@ -250,13 +250,13 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 		states = realloc( states, num_states*sizeof(vartype *) );
 		if (states == NULL) {
 			perror( "bounds_DDset, realloc" );
-			return -1;
+			exit(-1);
 		}
 
 		*(states+num_states-1) = malloc( (num_env+num_sys)*sizeof(vartype) );
 		if (*(states+num_states-1) == NULL) {
 			perror( "bounds_DDset, malloc" );
-			return -1;
+			exit(-1);
 		}
 		for (i = 0; i < num_env+num_sys; i++)
 			*(*(states+num_states-1)+i) = *(state+i);
@@ -267,7 +267,7 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
 	mapped_state = malloc( num_metric_vars*sizeof(int) );
 	if (mapped_state == NULL) {
 		perror( "bounds_DDset, malloc" );
-		return -1;
+		exit(-1);
 	}
 	for (k = 0; k < num_states; k++) {
 		bounds_state( manager, G, *(states+k), offw, num_metric_vars,
@@ -412,7 +412,7 @@ int compute_minmax( DdManager *manager,DdNode **W,
 	*Max = malloc( num_sgoals*sizeof(double *) );
 	if (*Min == NULL || *Max == NULL) {
 		perror( "compute_minmax, malloc" );
-		return -1;
+		exit(-1);
 	}
 
 	for (i = 0; i < num_sgoals; i++) {
@@ -420,7 +420,7 @@ int compute_minmax( DdManager *manager,DdNode **W,
 		*(*Max + i) = malloc( (*(*num_sublevels+i)-1)*sizeof(double) );
 		if (*(*Min + i) == NULL || *(*Max + i) == NULL) {
 			perror( "compute_minmax, malloc" );
-			return -1;
+			exit(-1);
 		}
 
 		*(*(*Min+i)) = *(*(*Max+i)) = 0;

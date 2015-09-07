@@ -40,7 +40,7 @@ vartype *int_to_bitvec( int x, int vec_len )
 	vec = malloc( vec_len*sizeof(vartype) );
 	if (vec == NULL) {
 		perror( "int_to_bitvec, malloc" );
-		return NULL;
+		exit(-1);
 	}
 	for (i = 0; i < vec_len; i++) {
 		if (x & (1 << i)) {
@@ -159,7 +159,7 @@ vartype *expand_nonbool_state( vartype *state, int *offw, int num_nonbool,
 	mapped_state = malloc( mapped_len*sizeof(vartype) );
 	if (mapped_state == NULL) {
 		perror( "expand_nonbool_state, malloc" );
-		return NULL;
+		exit(-1);
 	}
 	
 	i = j = k = 0;
@@ -236,7 +236,7 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 										  sizeof(ptree_t *)*(*et_array_len) );
 			if ((*env_trans_array) == NULL ) {
 				perror( "expand_nonbool_GR1, realloc" );
-				return -1;
+				exit(-1);
 			}
 			*((*env_trans_array)+(*et_array_len)-2)
 				= unreach_expanded_bool( tmppt->name, tmppt->value+1,
@@ -289,7 +289,7 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
 										  sizeof(ptree_t *)*(*st_array_len) );
 			if ((*sys_trans_array) == NULL ) {
 				perror( "expand_nonbool_GR1, realloc" );
-				return -1;
+				exit(-1);
 			}
 			*((*sys_trans_array)+(*st_array_len)-2)
 				= unreach_expanded_bool( tmppt->name, tmppt->value+1,
@@ -679,7 +679,7 @@ int *get_offsets_list( ptree_t *evar_list, ptree_t *svar_list,
 		offw = realloc( offw, 2*i*sizeof(int) );
 		if (offw == NULL) {
 			perror( "get_offsets_list, realloc" );
-			return NULL;
+			exit(-1);
 		}
 
 		var = evar_list;
@@ -748,7 +748,7 @@ void print_support( DdManager *manager, int state_len, DdNode *X, FILE *outf )
 	state = malloc( sizeof(vartype)*(state_len) );
 	if (state == NULL) {
 		perror( "print_support, malloc" );
-		return;
+		exit(-1);
 	}
 
 	Cudd_AutodynDisable( manager );

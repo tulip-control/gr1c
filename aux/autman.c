@@ -85,7 +85,8 @@ int main( int argc, char **argv )
 						"  -v          be verbose; use -vv to be more verbose\n"
 						"  -l          enable logging\n"
 						"  -s          check syntax and get version;\n"
-						"              return version number, or -1 if error.\n", argv[0] );
+						"              print format version number, or -1 if error.\n",
+						argv[0] );
 /*						"  -ss         extends -s to also check the number of and values\n"
 						"              assigned to variables, given specification.\n" */
 				printf( "  -t TYPE     convert to format: txt, dot, aut, json, tulip\n"
@@ -93,7 +94,7 @@ int main( int argc, char **argv )
 						"  -P          create Spin Promela model of strategy\n"
 						"  -L N        declare that state vector size is N\n"
 						"  -i FILE     process strategy with respect to specification FILE\n" );
-				return -1;
+				return 0;
 			} else if (argv[i][1] == 'V') {
 				printf( "autman (automaton file manipulator, distributed with"
 						" gr1c v" GR1C_VERSION ")\n\n" GR1C_COPYRIGHT "\n" );
@@ -138,14 +139,14 @@ int main( int argc, char **argv )
 			} else if (argv[i][1] == 'i') {
 				if (i == argc-1) {
 					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
-					return -1;
+					return 1;
 				}
 				spc_file_index = i+1;
 				i++;
 			} else if (argv[i][1] == 'L') {
 				if (i == argc-1) {
 					fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
-					return -1;
+					return 1;
 				}
 				state_len = strtol( argv[i+1], NULL, 10 );
 				i++;
@@ -154,7 +155,7 @@ int main( int argc, char **argv )
 				verification_model = VERMODEL_TARGET_SPIN;
 			} else {
 				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
-				return -1;
+				return 1;
 			}
 		} else {
 			in_filename_index = i;
@@ -165,7 +166,7 @@ int main( int argc, char **argv )
 		fprintf( stderr,
 				 "-P flag requires a reference specification to be given"
 				 " (-i switch).\n" );
-		return -1;
+		return 1;
 	}
 
 	if (run_option == AUTMAN_CONVERT && spc_file_index < 0
@@ -175,7 +176,7 @@ int main( int argc, char **argv )
 		fprintf( stderr,
 				 "Conversion of output to selected format requires a"
 				 " reference\nspecification to be given (-i switch).\n" );
-		return -1;
+		return 1;
 	}
 
 	if (spc_file_index < 0 && state_len < 1) {
@@ -186,14 +187,14 @@ int main( int argc, char **argv )
 		else
 			fprintf( stderr,
 					 "State vector length must be at least 1.  Try \"-h\".\n" );
-		return -1;
+		return 1;
 	}
 
 /*	if (run_option == AUTMAN_VARTYPES && spc_file_index < 0) {
 		fprintf( stderr,
 				 "-ss flag requires a reference specification to be given"
 				 " (-i switch).\n" );
-		return -1;
+		return 1;
 	} */
 
 	if (logging_flag) {
@@ -222,7 +223,7 @@ int main( int argc, char **argv )
 		if (verbose)
 			logprint( "Parsing reference specification file..." );
 		if (yyparse())
-			return -1;
+			return 2;
 		if (verbose)
 			logprint( "Done." );
 		fclose( spc_fp );
@@ -253,7 +254,7 @@ int main( int argc, char **argv )
 	if (head == NULL) {
 		if (verbose)
 			fprintf( stderr, "Error: failed to load aut.\n" );
-		return -1;
+		return 3;
 	}
 	if (verbose > 1)
 		logprint( "Done." );
@@ -264,7 +265,8 @@ int main( int argc, char **argv )
 
 	switch (run_option) {
 	case AUTMAN_SYNTAX:
-		return version;
+		printf( "%d\n", version );
+		return 0;
 
 	case AUTMAN_VERMODEL:
 		/* Currently, only target supported is Spin Promela,
@@ -295,7 +297,7 @@ int main( int argc, char **argv )
 
 	default:
 		fprintf( stderr, "Unrecognized run option.  Try \"-h\".\n" );
-		return -1;
+		return 1;
 	}
 
 	return 0;

@@ -50,19 +50,19 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 	state = malloc( sizeof(vartype)*(num_env+num_sys) );
 	if (state == NULL) {
 		perror( "synthesize_reachgame_BDD, malloc" );
-		return NULL;
+		exit(-1);
 	}
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
 		perror( "synthesize_reachgame_BDD, malloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	num_sublevels = 1;
 	Y = malloc( num_sublevels*sizeof(DdNode *) );
 	if (Y == NULL) {
 		perror( "synthesize_reachgame_BDD, malloc" );
-		return NULL;
+		exit(-1);
 	}
 	*Y = Exit;
 	Cudd_Ref( *Y );
@@ -70,13 +70,13 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 	X_jr = malloc( num_sublevels*sizeof(DdNode **) );
 	if (X_jr == NULL) {
 		perror( "synthesize_reachgame_BDD, malloc" );
-		return NULL;
+		exit(-1);
 	}
 	
 	*X_jr = malloc( num_egoals*sizeof(DdNode *) );
 	if (*X_jr == NULL) {
 		perror( "synthesize_reachgame_BDD, malloc" );
-		return NULL;
+		exit(-1);
 	}
 	for (r = 0; r < num_egoals; r++) {
 		*(*X_jr+r) = Cudd_Not( Cudd_ReadOne( manager ) );
@@ -89,13 +89,13 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 		X_jr = realloc( X_jr, num_sublevels*sizeof(DdNode **) );
 		if (Y == NULL || X_jr == NULL) {
 			perror( "synthesize_reachgame_BDD, realloc" );
-			return NULL;
+			exit(-1);
 		}
 		
 		*(X_jr + num_sublevels-1) = malloc( num_egoals*sizeof(DdNode *) );
 		if (*(X_jr + num_sublevels-1) == NULL) {
 			perror( "synthesize_reachgame_BDD, malloc" );
-			return NULL;
+			exit(-1);
 		}
 
 		Y_exmod = compute_existsmodal( manager, *(Y+num_sublevels-2),
@@ -194,7 +194,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 				X_jr = realloc( X_jr, num_sublevels*sizeof(DdNode **) );
 				if (Y == NULL || X_jr == NULL) {
 					perror( "synthesize_reachgame_BDD, realloc" );
-					return NULL;
+					exit(-1);
 				}
 			}
 			break;

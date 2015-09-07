@@ -74,7 +74,7 @@ FILE *openlogfile( char *prefix )
 	logfp = fopen( logfilename, "a" );
 	if (logfp == NULL) {
 		perror( "openlogfile, fopen" );
-		return NULL;
+		exit(-1);
 	}
 
 	return logfp;
@@ -85,7 +85,7 @@ int closelogfile()
 	if (logfp != NULL && logfp != stdout) {
 		if (fclose( logfp ) == EOF) {
 			perror( "closelogfile, fclose" );
-			return -1;
+			exit(-1);
 		}
 	}
 	return 0;

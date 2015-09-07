@@ -23,14 +23,14 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad,
 	anode_t *new_head = malloc( sizeof(anode_t) );
 	if (new_head == NULL) {
 		perror( "insert_anode, malloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	new_head->state = malloc( state_len*sizeof(vartype) );
 	if (new_head->state == NULL) {
 		perror( "insert_anode, malloc" );
 		free( new_head );
-		return NULL;
+		exit(-1);
 	}
 	for (i = 0; i < state_len; i++)
 		*(new_head->state + i) = *(state+i);
@@ -70,7 +70,7 @@ anode_t *build_anode_trans( anode_t *head, int mode,
 	trans = malloc( next_len*sizeof(anode_t *) );
 	if (trans == NULL) {
 		perror( "build_anode_trans, malloc" );
-		return NULL;
+		exit(-1);
 	}
 	for (i = 0; i < next_len; i++) {
 		*(trans+i) = find_anode( head, next_mode, *(next_states+i), state_len );
@@ -97,7 +97,7 @@ anode_t *append_anode_trans( anode_t *head,
 	trans = realloc( base->trans, (base->trans_len+1)*sizeof(anode_t *) );
 	if (trans == NULL) {
 		perror( "append_anode_trans, realloc" );
-		return NULL;
+		exit(-1);
 	}
 
 	*(trans + base->trans_len) = find_anode( head, next_mode, next_state,
@@ -232,7 +232,7 @@ void replace_anode_trans( anode_t *head, anode_t *old, anode_t *new )
 						trans = malloc( (head->trans_len-1)*sizeof(anode_t *) );
 						if (trans == NULL) {
 							perror( "replace_anode_trans, malloc" );
-							return;
+							exit(-1);
 						}
 						for (j = 0; j < i; j++)
 							*(trans+j) = *(head->trans+j);
@@ -379,7 +379,7 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 	var->name = strdup( name );
 	if (var->name == NULL) {
 		perror( "aut_compact_nonbool, strdup" );
-		return -1;
+		exit(-1);
 	}
 	var->value = maxval;
 	if (var != var_tail) {  /* More than one bit? */
@@ -394,7 +394,7 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 							* sizeof(vartype) );
 		if (new_state == NULL) {
 			perror( "aut_compact_nonbool, malloc" );
-			return -1;
+			exit(-1);
 		}
 
 		for (i = 0; i < start_index; i++)
@@ -495,7 +495,7 @@ anode_t *forward_prune( anode_t *head, anode_t **U, int U_len )
 							 (U_len + (*(U+i))->trans_len)*sizeof(anode_t *) );
 				if (U == NULL) {
 					perror( "forward_prune, realloc" );
-					return NULL;
+					exit(-1);
 				}
 				for (j = 0; j < (*(U+i))->trans_len; j++)
 					*(U+U_len+j) = *((*(U+i))->trans+j);

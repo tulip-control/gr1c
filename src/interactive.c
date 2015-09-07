@@ -96,7 +96,7 @@ char *fgets_wrap( char *prompt, int max_len, FILE *infp, FILE *outfp )
 	input = malloc( max_len*sizeof(char) );
 	if (input == NULL) {
 		perror( "fgets_wrap, malloc" );
-		abort();  /* System error, do not attempt recovery. */
+		exit(-1);
 	}
 
 	if (prompt != NULL && *prompt != '\0')
@@ -282,7 +282,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 										(2*num_env+num_sys)*sizeof(vartype) );
 				if (intcom_state == NULL) {
 					perror( "command_loop, realloc" );
-					return -1;
+					exit(-1);
 				}
 				return INTCOM_SYSNEXT;
 			}
@@ -388,7 +388,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
 										(num_env+num_sys)*sizeof(vartype) );
 				if (intcom_state == NULL) {
 					perror( "command_loop, realloc" );
-					return -1;
+					exit(-1);
 				}
 				return INTCOM_GETINDEX;
 			}
@@ -461,14 +461,14 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 	state = malloc( sizeof(vartype)*(num_env+num_sys) );
 	if (state == NULL) {
 		perror( "levelset_interactive, malloc" );
-		return -1;
+		exit(-1);
 	}
 
 	/* Allocate cube array, used later for quantifying over variables. */
 	cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
 	if (cube == NULL) {
 		perror( "levelset_interactive, malloc" );
-		return -1;
+		exit(-1);
 	}
 
 	/* Chain together environment and system variable lists for
