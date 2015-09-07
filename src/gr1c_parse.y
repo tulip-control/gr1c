@@ -10,6 +10,7 @@
   #include <stdio.h>
   #include "ptree.h"
   void yyerror( char const * );
+  int yylex( void );
 
   ptree_t *evar_list = NULL;
   ptree_t *svar_list = NULL;
