@@ -1,4 +1,4 @@
-/* autman.c -- main entry point for a small "gr1c automaton" manipulator
+/* autman.c -- entry point for a finite-state machine (automaton) manipulator
  *
  * Try invoking it with "-h"...
  *
