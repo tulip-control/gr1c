@@ -2,7 +2,7 @@
  *            Also consider solve_operators.c
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 

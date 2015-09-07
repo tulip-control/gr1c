@@ -1,7 +1,7 @@
 /* rg -- Bison (and Yacc) grammar file for reach game formulae
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 

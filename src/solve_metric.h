@@ -2,7 +2,7 @@
  * \brief Synthesis routines that use a distance between states.
  *
  *
- * SCL; 2013.
+ * SCL; 2013-2014
  */
 
 

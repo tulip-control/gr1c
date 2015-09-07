@@ -3,7 +3,7 @@
  * Try invoking it with "-h"...
  *
  *
- * SCL; 2014.
+ * SCL; 2014-2015
  */
 
 #include <stdlib.h>

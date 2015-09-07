@@ -1,6 +1,6 @@
 /* gr1c -- lexical analyzer (or "scanner")
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 %top{

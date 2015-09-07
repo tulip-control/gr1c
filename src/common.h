@@ -2,7 +2,7 @@
  * \brief Project-wide definitions and macros.
  *
  *
- * SCL; 2012-2015.
+ * SCL; 2012-2015
  */
 
 

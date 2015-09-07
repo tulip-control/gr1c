@@ -1,7 +1,7 @@
 /* patching_hotswap.c -- More definitions for signatures in patching.h.
  *
  *
- * SCL; 2013, 2014.
+ * SCL; 2013-2015
  */
 
 

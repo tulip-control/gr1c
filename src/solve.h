@@ -2,7 +2,7 @@
  * \brief Compute realizability and a strategy for a GR(1) game.
  *
  *
- * SCL; 2012, 2014.
+ * SCL; 2012, 2014-2015
  */
 
 

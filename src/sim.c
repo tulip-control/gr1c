@@ -1,7 +1,7 @@
 /* sim.c -- Definitions for signatures appearing in sim.h.
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 

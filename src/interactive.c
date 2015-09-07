@@ -9,7 +9,7 @@
  * levelset_interactive() behaves more like synthesize().
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 

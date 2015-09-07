@@ -1,7 +1,7 @@
 /* solve_metric.c -- Mostly definitions for signatures in solve_metric.h.
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 

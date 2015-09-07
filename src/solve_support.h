@@ -2,7 +2,7 @@
  * \brief Mostly internal routines for state vector manipulation.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2013, 2015
  */
 
 

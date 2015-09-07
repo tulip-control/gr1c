@@ -1,7 +1,7 @@
 /* util.c -- Small handy routines; declarations appear in gr1c_util.h
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 

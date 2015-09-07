@@ -11,7 +11,7 @@
  * applicable to the given type are ignored.
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 

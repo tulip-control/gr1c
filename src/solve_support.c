@@ -1,7 +1,7 @@
 /* solve_support.c -- Definitions for signatures appearing in solve_support.h.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2015
  */
 
 

@@ -1,7 +1,7 @@
 /* automaton_io.c -- Definitions for input/output routines on automata.
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 

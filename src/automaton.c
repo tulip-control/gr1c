@@ -1,7 +1,7 @@
 /* automaton.c -- Definitions for core routines on automaton objects.
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 

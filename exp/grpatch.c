@@ -1,7 +1,7 @@
 /* grpatch.c -- main entry point for execution of patching routines.
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 

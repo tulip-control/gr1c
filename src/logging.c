@@ -1,7 +1,7 @@
 /* logging.c -- Definitions for signatures appearing in logging.h.
  *
  *
- * SCL; 2012, 2013.
+ * SCL; 2012-2015
  */
 
 

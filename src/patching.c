@@ -1,7 +1,7 @@
 /* patching.c -- Definitions for signatures appearing in patching.h.
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 

@@ -2,7 +2,7 @@
  * \brief Implementation of patching and incremental synthesis algorithms.
  *
  *
- * SCL; 2012-2014.
+ * SCL; 2012-2015
  */
 
 
