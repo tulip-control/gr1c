@@ -3,6 +3,7 @@
  * SCL; April 2012.
  */
 
+#define _POSIX_C_SOURCE 200809L
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -44,6 +45,7 @@ int main( int argc, char **argv )
 	ptree_t **heads;
 	char filename[STRING_MAXLEN];
 	char *result;
+	int fd;
 	FILE *fp;
 
 
@@ -179,14 +181,14 @@ int main( int argc, char **argv )
 
 	/* Dump the manually built tree to a temporary file. */
 	strcpy( filename, "temp_ptree_dumpXXXXXX" );
-	result = mktemp( filename );
-	if (result == NULL) {
-		perror( "test_ptree, mktemp" );
+	fd = mkstemp( filename );
+	if (fd == -1) {
+		perror( "test_ptree, mkstemp" );
 		abort();
 	}
-	fp = fopen( filename, "w+" );
+	fp = fdopen( fd, "w+" );
 	if (fp == NULL) {
-		perror( "test_ptree, fopen" );
+		perror( "test_ptree, fdopen" );
 		abort();
 	}
 	inorder_trav( head, print_node, fp );
@@ -215,11 +217,6 @@ int main( int argc, char **argv )
 	}
 
 	free( result );
-	fclose( fp );
-	if (remove( filename )) {
-		perror( "test_ptree, remove" );
-		abort();
-	}
 
 	/* Manually build another small parse tree and try to merge. */
 	head2 = init_ptree( PT_NEG, NULL, -1 );
@@ -248,15 +245,12 @@ int main( int argc, char **argv )
 	}
 	
 	/* Dump conjunction of manually built trees to a temporary file. */
-	strcpy( filename, "temp_ptree_dumpXXXXXX" );
-	result = mktemp( filename );
-	if (result == NULL) {
-		perror( "test_ptree, mktemp" );
+	if (fseek( fp, 0, SEEK_SET )) {
+		perror( "test_ptree, fseek" );
 		abort();
 	}
-	fp = fopen( filename, "w+" );
-	if (fp == NULL) {
-		perror( "test_ptree, fopen" );
+	if (ftruncate( fd, 0 )) {
+		perror( "test_ptree, ftruncate" );
 		abort();
 	}
 	inorder_trav( head, print_node, fp );
@@ -284,11 +278,6 @@ int main( int argc, char **argv )
 	}
 
 	free( result );
-	fclose( fp );
-	if (remove( filename )) {
-		perror( "test_ptree, remove" );
-		abort();
-	}
 
 	/* Construct parse tree using stack */
 	head2 = NULL;
@@ -308,15 +297,12 @@ int main( int argc, char **argv )
 	}
 
 	/* Dump stack-generated parse tree to a temporary file. */
-	strcpy( filename, "temp_ptree_dumpXXXXXX" );
-	result = mktemp( filename );
-	if (result == NULL) {
-		perror( "test_ptree, mktemp" );
+	if (fseek( fp, 0, SEEK_SET )) {
+		perror( "test_ptree, fseek" );
 		abort();
 	}
-	fp = fopen( filename, "w+" );
-	if (fp == NULL) {
-		perror( "test_ptree, fopen" );
+	if (ftruncate( fd, 0 )) {
+		perror( "test_ptree, ftruncate" );
 		abort();
 	}
 	inorder_trav( head2, print_node, fp );

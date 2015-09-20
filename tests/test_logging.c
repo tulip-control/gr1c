@@ -3,6 +3,7 @@
  * SCL; August 2012.
  */
 
+#define _POSIX_C_SOURCE 200809L
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,19 +18,20 @@
 int main( int argc, char **argv )
 {
 	char *result;
+	int fd;
 	FILE *fp;
 	char filename[STRING_MAXLEN];
 	char data[STRING_MAXLEN];
 
 	strcpy( filename, "temp_logging_dumpXXXXXX" );
-	result = mktemp( filename );
-	if (result == NULL) {
-		perror( "test_logging, mktemp" );
+	fd = mkstemp( filename );
+	if (fd == -1) {
+		perror( "test_logging, mkstemp" );
 		abort();
 	}
-	fp = fopen( filename, "w+" );
+	fp = fdopen( fd, "w+" );
 	if (fp == NULL) {
-		perror( "test_logging, fopen" );
+		perror( "test_logging, fdopen" );
 		abort();
 	}
 

@@ -3,6 +3,7 @@
  * SCL; 2012-2014.
  */
 
+#define _POSIX_C_SOURCE 200809L
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,7 +32,7 @@
 #define STRING_MAXLEN 1024
 int main( int argc, char **argv )
 {
-	char *result;
+	int fd;
 	FILE *fp;
 	char filename[STRING_MAXLEN];
 	char instr[STRING_MAXLEN];
@@ -39,14 +40,14 @@ int main( int argc, char **argv )
 	vartype state[2], next_state[2];
 
 	strcpy( filename, "temp_automaton_io_dumpXXXXXX" );
-	result = mktemp( filename );
-	if (result == NULL) {
-		perror( "test_automaton_io, mktemp" );
+	fd = mkstemp( filename );
+	if (fd == -1) {
+		perror( "test_automaton_io, mkstemp" );
 		abort();
 	}
-	fp = fopen( filename, "w+" );
+	fp = fdopen( fd, "w+" );
 	if (fp == NULL) {
-		perror( "test_automaton_io, fopen" );
+		perror( "test_automaton_io, fdopen" );
 		abort();
 	}
 	fprintf( fp, REF_GR1CAUT_TRIVIAL );
@@ -118,10 +119,12 @@ int main( int argc, char **argv )
 		ERRPRINT( "failed to append transition to new node." );
 		abort();
 	}
-	fclose( fp );
-	fp = fopen( filename, "w+" );
-	if (fp == NULL) {
-		perror( "test_automaton_io, fopen" );
+	if (fseek( fp, 0, SEEK_SET )) {
+		perror( "test_automaton_io, fseek" );
+		abort();
+	}
+	if (ftruncate( fd, 0 )) {
+		perror( "test_automaton_io, ftruncate" );
 		abort();
 	}
 	aut_aut_dump( head, 2, fp );
