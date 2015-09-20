@@ -5,10 +5,10 @@ compiler:
 
 install:
   - ./get-deps.sh
-  - make cudd
+  - make -e cudd
 script:
-  - make all
-  - make check
+  - make -e all
+  - make -e check
 
 notifications:
   email: false
