@@ -543,5 +543,6 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
 		Cudd_RecursiveDeref( manager, Y_exmod );
 	}
 
+	free( cube );
 	return Y;
 }
