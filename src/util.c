@@ -102,6 +102,9 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 			(*evar_list) = expt;
 			prevpt = get_list_item( expt, -1 );
 			prevpt->left = tmppt->left;
+			tmppt->left = NULL;
+			delete_tree( tmppt );
+			tmppt = prevpt;
 		} else {
 			prevpt = tmppt;
 		}
@@ -112,6 +115,9 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 				prevpt->left = expt;
 				prevpt = get_list_item( expt, -1 );
 				prevpt->left = tmppt->left;
+				tmppt->left = NULL;
+				delete_tree( tmppt );
+				tmppt = prevpt;
 			} else {
 				prevpt = tmppt;
 			}
@@ -126,6 +132,9 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 			(*svar_list) = expt;
 			prevpt = get_list_item( expt, -1 );
 			prevpt->left = tmppt->left;
+			tmppt->left = NULL;
+			delete_tree( tmppt );
+			tmppt = prevpt;
 		} else {
 			prevpt = tmppt;
 		}
@@ -136,6 +145,9 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 				prevpt->left = expt;
 				prevpt = get_list_item( expt, -1 );
 				prevpt->left = tmppt->left;
+				tmppt->left = NULL;
+				delete_tree( tmppt );
+				tmppt = prevpt;
 			} else {
 				prevpt = tmppt;
 			}
