@@ -151,6 +151,7 @@ evar_list: E_VARS
 	       } else {
 		   append_list_item( evar_list, PT_VARIABLE, $2, -1 );
 	       }
+	       free( $2 );
            }
          | evar_list VARIABLE '[' NUMBER ',' NUMBER ']'  {
 	       if ($4 != 0) {
@@ -171,6 +172,7 @@ evar_list: E_VARS
 	       } else {
 		   append_list_item( evar_list, PT_VARIABLE, $2, $6 );
 	       }
+	       free( $2 );
            }
 ;
 
@@ -181,6 +183,7 @@ svar_list: S_VARS
 	       } else {
 		   append_list_item( svar_list, PT_VARIABLE, $2, -1 );
 	       }
+	       free( $2 );
            }
          | svar_list VARIABLE '[' NUMBER ',' NUMBER ']'  {
 	       if ($4 != 0) {
@@ -201,6 +204,7 @@ svar_list: S_VARS
 	       } else {
 		   append_list_item( svar_list, PT_VARIABLE, $2, $6 );
 	       }
+	       free( $2 );
            }
 ;
 
@@ -300,6 +304,7 @@ propformula: TRUE_CONSTANT  {
            | VARIABLE  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                 PT_VARIABLE, $1, 0 );
+                 free( $1 );
              }
            | '!' propformula  {
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NEG );
@@ -322,6 +327,7 @@ propformula: TRUE_CONSTANT  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                 PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
+                 free( $1 );
              }
            | VARIABLE '<' NUMBER  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -329,6 +335,7 @@ propformula: TRUE_CONSTANT  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                 PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LT );
+                 free( $1 );
              }
            | VARIABLE '>' NUMBER  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -336,6 +343,7 @@ propformula: TRUE_CONSTANT  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                 PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GT );
+                 free( $1 );
              }
            | VARIABLE LE_OP NUMBER  {  /* less than or equal to */
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -343,6 +351,7 @@ propformula: TRUE_CONSTANT  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                 PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LE );
+                 free( $1 );
              }
            | VARIABLE GE_OP NUMBER  {  /* greater than or equal to */
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -350,6 +359,7 @@ propformula: TRUE_CONSTANT  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                 PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GE );
+                 free( $1 );
              }
            | VARIABLE NOT_EQUALS NUMBER  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -357,6 +367,7 @@ propformula: TRUE_CONSTANT  {
                  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                 PT_CONSTANT, NULL, $3 );
                  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NOTEQ );
+                 free( $1 );
              }
            | '(' propformula ')'
 ;
@@ -372,10 +383,12 @@ tpropformula: TRUE_CONSTANT  {
 	    | VARIABLE  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_VARIABLE, $1, 0 );
+		  free( $1 );
 	      }
 	    | VARIABLE '\''  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_NEXT_VARIABLE, $1, 0 );
+		  free( $1 );
 	      }
 	    | '!' tpropformula  {
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NEG );
@@ -398,6 +411,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
+		  free( $1 );
 	      }
 	    | VARIABLE '\'' '=' NUMBER  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -405,6 +419,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_EQUALS );
+		  free( $1 );
 	      }
 	    | VARIABLE '<' NUMBER  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -412,6 +427,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LT );
+		  free( $1 );
 	      }
 	    | VARIABLE '\'' '<' NUMBER  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -419,6 +435,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LT );
+		  free( $1 );
 	      }
 	    | VARIABLE '>' NUMBER  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -426,6 +443,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GT );
+		  free( $1 );
 	      }
 	    | VARIABLE '\'' '>' NUMBER  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -433,6 +451,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GT );
+		  free( $1 );
 	      }
 	    | VARIABLE LE_OP NUMBER  {  /* less than or equal to */
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -440,6 +459,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LE );
+		  free( $1 );
 	      }
 	    | VARIABLE '\'' LE_OP NUMBER  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -447,6 +467,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_LE );
+		  free( $1 );
 	      }
 	    | VARIABLE GE_OP NUMBER  {  /* greater than or equal to */
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -454,6 +475,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GE );
+		  free( $1 );
 	      }
 	    | VARIABLE '\'' GE_OP NUMBER  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -461,6 +483,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_GE );
+		  free( $1 );
 	      }
 	    | VARIABLE NOT_EQUALS NUMBER  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -468,6 +491,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $3 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NOTEQ );
+		  free( $1 );
 	      }
 	    | VARIABLE '\'' NOT_EQUALS NUMBER  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
@@ -475,6 +499,7 @@ tpropformula: TRUE_CONSTANT  {
 		  gen_tree_ptr = pusht_terminal( gen_tree_ptr,
                                                  PT_CONSTANT, NULL, $4 );
 		  gen_tree_ptr = pusht_operator( gen_tree_ptr, PT_NOTEQ );
+		  free( $1 );
 	      }
 	    | '(' tpropformula ')'
 ;
