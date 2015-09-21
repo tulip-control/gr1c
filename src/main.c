@@ -641,10 +641,13 @@ int main( int argc, char **argv )
 	/* Clean-up */
 	delete_tree( evar_list );
 	delete_tree( svar_list );
+	delete_tree( nonbool_var_list );
 	delete_tree( env_init );
 	delete_tree( sys_init );
 	delete_tree( env_trans );
+	free( env_trans_array );
 	delete_tree( sys_trans );
+	free( sys_trans_array );
 	for (i = 0; i < num_egoals; i++)
 		delete_tree( *(env_goals+i) );
 	if (num_egoals > 0)
