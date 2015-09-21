@@ -415,10 +415,6 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 		num_bits = 1;
 	}
 
-	expanded_varlist = var_to_bool( name, maxval );
-	if (expanded_varlist == NULL)
-		return NULL;
-
 	if (head->type == PT_LT || head->type == PT_GT
 		|| head->type == PT_LE || head->type == PT_GE
 		|| head->type == PT_NOTEQ)
@@ -429,6 +425,11 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
 			 && !strcmp( head->left->name, name ))
 			|| (head->right->type != PT_CONSTANT
 				&& !strcmp( head->right->name, name )))) {
+
+		expanded_varlist = var_to_bool( name, maxval );
+		if (expanded_varlist == NULL)
+			return NULL;
+
 		/* We assume that nonboolean comparison is only between a
 		   variable and a number; will be generalized soon. */
 		if (head->left->type == PT_CONSTANT) {
