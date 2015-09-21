@@ -605,6 +605,7 @@ int main( int argc, char **argv )
 	Cudd_RecursiveDeref( manager, Exit );
 	for (i = 0; i < num_egoals; i++)
 		Cudd_RecursiveDeref( manager, *(egoals+i) );
+	free( egoals );
 	if (env_nogoal_flag) {
 		num_egoals = 0;
 		delete_tree( *env_goals );
