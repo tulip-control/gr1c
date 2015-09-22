@@ -16,7 +16,7 @@ INSTALL = install
 
 SRCDIR = src
 EXPDIR = exp
-export CUDD_ROOT = extern/cudd-2.5.0
+export CUDD_ROOT = extern/cudd-2.5.1
 CUDD_LIB = $(CUDD_ROOT)/cudd/libcudd.a $(CUDD_ROOT)/mtr/libmtr.a $(CUDD_ROOT)/st/libst.a $(CUDD_ROOT)/util/libutil.a $(CUDD_ROOT)/epd/libepd.a
 export CUDD_XCFLAGS = -mtune=native -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8
 CUDD_INC = -I$(CUDD_ROOT)/include

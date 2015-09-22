@@ -2,8 +2,8 @@
 #
 # Fetch dependencies, and place them in location that Makefile expects
 
-CUDDVER=2.5.0
-SHA256SUM=4f3bc49b35564af94b17135d8cb8c4063fb049cfaa442f80dc40ba73c6345a85
+CUDDVER=2.5.1
+SHA256SUM=4b19c34328d8738a839b994c6b9395f3895ff981d2f3495ce62e7ba576ead88b
 URI=ftp://vlsi.colorado.edu/pub/cudd-$CUDDVER.tar.gz
 
 mkdir -p extern
