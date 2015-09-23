@@ -3,7 +3,7 @@
 # Build binary distribution.  Requires environment variable GR1C_VERSION.
 # The target platform is guessed using the uname command.
 
-CUDDVER=2.5.0
+CUDDVER=2.5.1
 
 KERNEL=`uname -s`
 ARCH=`uname -m`
