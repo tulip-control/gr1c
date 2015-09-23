@@ -58,8 +58,8 @@ int main( int argc, char **argv )
 		*(cube+2) = (i >> 2)&1;
 		manual_eval = (((*cube)&(*(cube+1))) | !(*(cube+2)))&1;
 		ddval = Cudd_Eval( manager, f, cube );
-		if (((ddval->type.value < .1) && manual_eval)
-			|| ((ddval->type.value > .9) && !manual_eval)) {
+		if ((Cudd_IsComplement( ddval ) && manual_eval)
+			|| (!Cudd_IsComplement( ddval ) && !manual_eval)) {
 			ERRPRINT( "BDD generated from parse tree of \"(a & b) | !c\" gave incorrect output."  );
 			abort();
 		}

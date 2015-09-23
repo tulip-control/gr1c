@@ -637,7 +637,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			do {
 				j--;
 				ddval = Cudd_Eval( manager, *(*(Y+intcom_index)+j), cube );
-				if (ddval->type.value < .1) {
+				if (Cudd_IsComplement( ddval )) {
 					j++;
 					break;
 				}
@@ -802,7 +802,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			state_to_cube( intcom_state, cube, num_env+num_sys );
 			free( intcom_state );
 			ddval = Cudd_Eval( manager, W, cube );
-			if (ddval->type.value < .1) {
+			if (Cudd_IsComplement( ddval )) {
 				fprintf( outfp, "False\n" );
 			} else {
 				fprintf( outfp, "True\n" );
@@ -821,7 +821,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			state_to_cube( intcom_state, cube, num_env+num_sys );
 			free( intcom_state );
 			ddval = Cudd_Eval( manager, W, cube );
-			if (ddval->type.value < .1) {
+			if (Cudd_IsComplement( ddval )) {
 				fprintf( outfp, "Inf\n" );
 				break;
 			}
@@ -831,7 +831,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 			do {
 				j--;
 				ddval = Cudd_Eval( manager, *(*(Y+intcom_index)+j), cube );
-				if (ddval->type.value < .1) {
+				if (Cudd_IsComplement( ddval )) {
 					j++;
 					break;
 				}

@@ -433,7 +433,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 				j--;
 				ddval = Cudd_Eval( manager,
 								   *(*(Y+this_node_stack->mode)+j), cube );
-				if (ddval->type.value < .1) {
+				if (Cudd_IsComplement( ddval )) {
 					j++;
 					break;
 				}
@@ -646,7 +646,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 
 			state_to_cube( state, cube, num_env+num_sys );
 			ddval = Cudd_Eval( manager, **(Y+node->mode), cube );
-			if (ddval->type.value < .1) {
+			if (Cudd_IsComplement( ddval )) {
 				next_mode = node->mode;
 			} else {
 				if (node->mode == num_sgoals-1) {

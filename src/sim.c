@@ -132,7 +132,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 		/* Check if time to switch attention to next goal. */
 		state_to_cube( init_state, cube, num_env+num_sys );
 		ddval = Cudd_Eval( manager, *(sgoals+current_goal), cube );
-		if (ddval->type.value > .9) {
+		if (!Cudd_IsComplement( ddval )) {
 			current_goal = (current_goal+1) % num_sgoals;
 			free( MEM );
 			MEM = NULL;
@@ -384,7 +384,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 					for (i = 0; i < num_env+num_sys; i++)
 						*(cube+num_env+num_sys+i) = *(node->state+i);
 					ddval = Cudd_Eval( manager, tmp, cube );
-					if (ddval->type.value > .9) {
+					if (!Cudd_IsComplement( ddval )) {
 						node = prev_node;
 						break;
 					}

@@ -273,7 +273,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 		do {
 			j--;
 			ddval = Cudd_Eval( manager, *(Y+j), cube );
-			if (ddval->type.value < .1) {
+			if (Cudd_IsComplement( ddval )) {
 				j++;
 				break;
 			}
