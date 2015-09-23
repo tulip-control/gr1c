@@ -1,3 +1,22 @@
+gr1c (0.10.1)
+
+  * Provide more varied and consistent usage of exit codes.
+    (This change occurred as part of 0.10.0.)
+
+  * The file format version switch (-s) of `autman` causes the version number to
+    be printed to stdout and return of 0 (success), instead of returning the
+    version number as the exit code. (This change occurred as part of 0.10.0.)
+
+  * Default to CUDD 2.5.1
+
+  * Decide BDD constant value from Cudd_Eval() using Cudd_IsComplement(). This
+    only concerns internal usage of CUDD by gr1c.
+
+  * Various plugs of memory leaks. These did not affect correctness of output.
+
+ -- Scott C. Livingston <slivingston@cds.caltech.edu>  Wed, 23 Sep 2015 10:47:03 -0700
+
+
 gr1c (0.10.0)
 
   * Stop permitting letters [\]^` after first letter in variable names. This was
