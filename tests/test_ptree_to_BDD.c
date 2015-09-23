@@ -1,6 +1,6 @@
 /* Unit tests for conversion of formula parse trees to BDDs.
  *
- * SCL; April 2012.
+ * SCL; 2012, 2015
  */
 
 #include <stdlib.h>

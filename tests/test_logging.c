@@ -1,6 +1,6 @@
 /* Unit tests for the logger.
  *
- * SCL; August 2012.
+ * SCL; 2012, 2015
  */
 
 #define _POSIX_C_SOURCE 200809L
