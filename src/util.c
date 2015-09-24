@@ -475,11 +475,13 @@ void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
 	logprint_raw( ";" ); logprint_endline();
 
 	logprint_startline(); logprint_raw( "ENV INIT:  " );
-	print_formula( env_init, getlogstream(), FORMULA_SYNTAX_GR1C );
+	if (env_init)
+		print_formula( env_init, getlogstream(), FORMULA_SYNTAX_GR1C );
 	logprint_raw( ";" ); logprint_endline();
 
 	logprint_startline(); logprint_raw( "SYS INIT:  " );
-	print_formula( sys_init, getlogstream(), FORMULA_SYNTAX_GR1C );
+	if (sys_init)
+		print_formula( sys_init, getlogstream(), FORMULA_SYNTAX_GR1C );
 	logprint_raw( ";" ); logprint_endline();
 
 	logprint_startline(); logprint_raw( "ENV TRANS:  " );
