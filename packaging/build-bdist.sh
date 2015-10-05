@@ -31,7 +31,7 @@ make all
 make check
 mkdir $DNAME
 
-cp -r examples gr1c gr1c-patch autman gr1c-rg README.md LICENSE.txt $DNAME/
+cp -r examples gr1c gr1c-patch autman gr1c-rg README.md CHANGELOG LICENSE.txt $DNAME/
 cp extern/cudd-$CUDDVER/LICENSE $DNAME/LICENSE-cudd-$CUDDVER
 if [ $KERNEL = "MacOS" ]; then
     zip -r $DNAME.zip $DNAME
