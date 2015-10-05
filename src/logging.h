@@ -35,10 +35,10 @@ void setlogopt( int options );
 int getlogopt();
 
 
-/** Open a new log file, automatically name it with the current date
-   and given prefix, and return the resulting stream, or NULL if
-   error.  If the file already exists, then it is appended to.
-   If prefix=NULL, then use "gr1c". Name ends with ".log" */
+/** Open a new log file, automatically name it with the current date and given
+   prefix, and return the resulting stream, or NULL if error.  If the file
+   already exists, then it is appended to.  If prefix=NULL, then use "gr1c-" and
+   the PID of the calling process. Name ends with ".log" */
 FILE *openlogfile( char *prefix );
 
 /** Manually close the current log stream, unless it is stdout.

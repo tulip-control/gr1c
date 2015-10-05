@@ -5,11 +5,14 @@
  */
 
 
+#define _POSIX_C_SOURCE 200809L
 #include "logging.h"
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <stdarg.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 
 #define TIMESTAMP_LEN 32
@@ -55,6 +58,7 @@ FILE *openlogfile( char *prefix )
 		strncpy( logfilename, prefix, FILENAME_LEN );
 	} else {
 		strncpy( logfilename, "gr1c", FILENAME_LEN );
+		snprintf( logfilename+4, FILENAME_LEN-4, "-%d", getpid() );
 	}
 	logfilename[FILENAME_LEN-1] = '\0';
 
