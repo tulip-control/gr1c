@@ -107,7 +107,7 @@ gr1c_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/gr1c_parse.y
 	$(LEX) $<
 	$(CC) $(ALL_CFLAGS) -c lex.yy.c y.tab.c
 	$(LD) lex.yy.o y.tab.o -o $@
-rg_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/rg_parse.y
+rg_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/rg_parse.y gr1c_parse.o
 	$(YACC) $(YFLAGS) $(SRCDIR)/rg_parse.y
 	$(LEX) $<
 	$(CC) $(ALL_CFLAGS) -c lex.yy.c y.tab.c
