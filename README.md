@@ -63,6 +63,7 @@ For Linux x86_64 and Mac OSX, try the following.
     $ make all
     $ make check
 
+Consider using `make -j N` where N is the number of jobs to run simultaneously.
 The last command runs a test suite. Each testing step is reported if the
 environment variable VERBOSE is set to 1.  E.g., try `VERBOSE=1 make check`.
 Finally,
