@@ -1,8 +1,5 @@
 /* main.c -- main entry point for execution.
  *
- * Command-line arguments are processed by hand.  Eventually switch to
- * getopt, once sophistication of usage demands.
- *
  *
  * SCL; 2012-2015
  */
