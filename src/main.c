@@ -63,6 +63,10 @@ extern int st_array_len;
 #define GR1C_MODE_INTERACTIVE 3
 
 
+#define PRINT_VERSION() \
+	printf( "gr1c " GR1C_VERSION "\n\n" GR1C_COPYRIGHT "\n" )
+
+
 int main( int argc, char **argv )
 {
 	FILE *fp;
@@ -145,7 +149,7 @@ int main( int argc, char **argv )
 			if (argv[i][1] == 'h') {
 				help_flag = True;
 			} else if (argv[i][1] == 'V') {
-				printf( "gr1c " GR1C_VERSION "\n\n" GR1C_COPYRIGHT "\n" );
+				PRINT_VERSION();
 				return 0;
 			} else if (argv[i][1] == 'v') {
 				verbose = 1;
@@ -226,6 +230,12 @@ int main( int argc, char **argv )
 				reading_options = False;
 			} else if (!strncmp( argv[i]+2, "help", strlen( "help" ) )) {
 				help_flag = True;
+			} else if (!strncmp( argv[i]+2, "version", strlen( "version" ) )) {
+				PRINT_VERSION();
+				return 0;
+			} else {
+				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+				return 1;
 			}
 		} else if (input_index < 0) {
 			/* Use first non-flag argument as filename whence to read
