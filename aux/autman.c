@@ -76,6 +76,11 @@ int main( int argc, char **argv )
 
 	for (i = 1; i < argc; i++) {
 		if (argv[i][0] == '-') {
+			if (argv[i][2] != '\0') {
+				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+				return 1;
+			}
+
 			if (argv[i][1] == 'h') {
 				printf( "Usage: %s [-hVvlsP] [-t TYPE] [-L N] [-i FILE] [FILE]\n\n"
 						"If no input file is given, or if FILE is -, read from stdin.  If no action\n"

@@ -100,6 +100,11 @@ int main( int argc, char **argv )
 	/* Look for flags in command-line arguments. */
 	for (i = 1; i < argc; i++) {
 		if (reading_options && argv[i][0] == '-' && argv[i][1] != '-') {
+			if (argv[i][2] != '\0') {
+				fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+				return 1;
+			}
+
 			if (argv[i][1] == 'h') {
 				help_flag = True;
 			} else if (argv[i][1] == 'V') {
