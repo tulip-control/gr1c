@@ -112,7 +112,7 @@ int main( int argc, char **argv )
 				PRINT_VERSION();
 				return 0;
 			} else if (argv[i][1] == 'v') {
-				verbose = 1;
+				verbose++;
 				j = 2;
 				/* Only support up to "level 2" of verbosity */
 				while (argv[i][j] == 'v' && j <= 2) {

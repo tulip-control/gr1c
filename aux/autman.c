@@ -106,7 +106,7 @@ int main( int argc, char **argv )
 						" gr1c v" GR1C_VERSION ")\n\n" GR1C_COPYRIGHT "\n" );
 				return 0;
 			} else if (argv[i][1] == 'v') {
-				verbose = 1;
+				verbose++;
 				j = 2;
 				/* Only support up to "level 2" of verbosity */
 				while (argv[i][j] == 'v' && j <= 2) {
