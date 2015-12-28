@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">gr1c
-   &#160;<span id="projectnumber">0.10.1</span>
+   &#160;<span id="projectnumber">0.10.2</span>
    </div>
   </td>
  </tr>
@@ -87,6 +87,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>Mac OS X: x86_64</li>
 </ul>
 <p>Aside from standard C libraries and a basic development environment (gcc, etc.), <b>gr1c</b> depends on <a href="http://vlsi.colorado.edu/~fabio/CUDD/">CUDD</a>, the CU Decision Diagram package by Fabio Somenzi and others. Also, gr1c interactive mode optionally uses GNU Readline (disabled by default; selected via <code>USE_READLINE</code> definition in Makefile). The parser generator <a href="http://www.gnu.org/software/bison/">Bison</a> and the lexical analyzer <a href="http://flex.sourceforge.net/">flex</a> are required to build gr1c. Other Yacc and lex compatible tools may suffice, but this has not been tested.</p>
+<p>If the machine on which you are building has more than one CPU, then building time may be reduced by running more than one Make job simultaneously. To do this, use the switch <code>-j N</code> in <code>make</code> commands in these instructions, where <code>N</code> is the number of jobs. E.g., if there are 8 CPUs available, <code>make -j 8 all</code>.</p>
 <h2>Building </h2>
 <p>For the latest development snapshot, either <a href="https://github.com/slivingston/gr1c">clone the repo</a> (at <a href="https://github.com/slivingston/gr1c.git">https://github.com/slivingston/gr1c.git</a>) or <a href="https://github.com/slivingston/gr1c/tarball/master">download a tarball</a>. For the latter, untar the file (name may vary) and change into the source directory. </p>
 <pre class="fragment">$ tar -xzf slivingston-gr1c-658f32b.tar.gz
@@ -149,7 +150,7 @@ long: 8
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 23 2015 10:49:51 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 27 2015 23:34:50 for gr1c by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
