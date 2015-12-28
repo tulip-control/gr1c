@@ -1,3 +1,15 @@
+gr1c (0.10.2)
+
+  * Include PID in default logging file name prefix.
+
+  * Support `make -j N` for N > 1 (concurrent jobs in Make).
+
+  * Various improvements to parsing of command-line options: `-vv` is equivalent
+    to `-v -v`; report unknown options that begin with `--`; add --version
+
+ -- Scott C. Livingston <slivingston@cds.caltech.edu>  Sun, 27 Dec 2015 23:26:22 -0800
+
+
 gr1c (0.10.1)
 
   * Provide more varied and consistent usage of exit codes.
