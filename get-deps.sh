@@ -9,7 +9,16 @@ URI=ftp://vlsi.colorado.edu/pub/cudd-$CUDDVER.tar.gz
 mkdir -p extern
 curl -sS $URI > extern/cudd-$CUDDVER.tar.gz
 
-FILECHECKSUM=`sha256sum extern/cudd-$CUDDVER.tar.gz| sed 's/ .*//'`
+if hash sha256sum >/dev/null 2>&1; then
+    FILECHECKSUM=`sha256sum extern/cudd-$CUDDVER.tar.gz| sed 's/ .*//'`
+elif hash shasum >/dev/null 2>&1; then
+    FILECHECKSUM=`shasum -a 256 extern/cudd-$CUDDVER.tar.gz| sed 's/ .*//'`
+else
+    echo "neither `sha256sum` nor `shasum` found in the PATH."
+    rm extern/cudd-$CUDDVER.tar.gz
+    exit 1
+fi
+
 if [ "$SHA256SUM" = "$FILECHECKSUM" ]
 then
     cd extern
@@ -19,3 +28,4 @@ else
     false
 fi
 echo "Successfully fetched CUDD; ready to build!"
+
