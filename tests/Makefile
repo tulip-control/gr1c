@@ -2,8 +2,10 @@
 #
 # SCL; 2012, 2013.
 
-CFLAGS += -I../$(deps_prefix)/include -I../src
-LDFLAGS += -L../$(deps_prefix)/lib
+deps_prefix = ../extern
+
+CFLAGS = -g -Wall -pedantic -ansi -I$(deps_prefix)/include -I../src
+LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 
 PROGRAMS = test_logging test_automaton test_automaton_io test_ptree test_ptree_to_BDD test_solve_support test_patching
 

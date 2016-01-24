@@ -10,7 +10,7 @@ AUX_PROGRAMS = autman
 prefix = /usr/local
 exec_prefix = $(prefix)
 bindir = $(exec_prefix)/bin
-export deps_prefix = extern
+deps_prefix = extern
 
 # Possibly change to `cp' when `install' is unavailable
 INSTALL = install
@@ -26,9 +26,8 @@ YFLAGS = -d
 CC = gcc
 LD = ld -r
 
-CFLAGS = -g -Wall -pedantic -ansi -I$(deps_prefix)/include
-export CFLAGS += -Isrc
-export LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
+CFLAGS = -g -Wall -pedantic -ansi -I$(deps_prefix)/include -Isrc
+LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 
 # To use and statically link with GNU Readline
 #CFLAGS += -DUSE_READLINE
