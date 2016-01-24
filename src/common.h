@@ -28,7 +28,6 @@ typedef char bool;
 typedef unsigned char byte;
 
 
-#include "util.h"
 #include "cudd.h"
 
 #endif

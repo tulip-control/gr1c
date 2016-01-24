@@ -7,7 +7,7 @@ compiler:
 
 install:
   - ./get-deps.sh
-  - make -e cudd
+  - ./build-deps.sh
 script:
   - make -e all
   - make -e check

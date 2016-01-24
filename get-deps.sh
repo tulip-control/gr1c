@@ -1,12 +1,12 @@
 #!/bin/sh -e
 #
-# Fetch dependencies, and place them in location that Makefile expects
+# Fetch dependencies, and place them in location that build-deps.sh expects
 
-CUDDVER=2.5.1
-SHA256SUM=4b19c34328d8738a839b994c6b9395f3895ff981d2f3495ce62e7ba576ead88b
+CUDDVER=3.0.0
+SHA256SUM=b8e966b4562c96a03e7fbea239729587d7b395d53cadcc39a7203b49cf7eeb69
 URI=ftp://vlsi.colorado.edu/pub/cudd-$CUDDVER.tar.gz
 
-mkdir -p extern
+mkdir -p extern/src
 curl -sS $URI > extern/cudd-$CUDDVER.tar.gz
 
 if hash sha256sum >/dev/null 2>&1; then
@@ -21,11 +21,10 @@ fi
 
 if [ "$SHA256SUM" = "$FILECHECKSUM" ]
 then
-    cd extern
-    tar -xzf cudd-$CUDDVER.tar.gz
+    cd extern/src
+    tar -xzf ../cudd-$CUDDVER.tar.gz
 else
     echo "Fetched file ($URI) has unexpected SHA checksum."
     false
 fi
-echo "Successfully fetched CUDD; ready to build!"
-
+echo "Successfully fetched CUDD; next run build-deps.sh"

@@ -10,16 +10,13 @@ AUX_PROGRAMS = autman
 prefix = /usr/local
 exec_prefix = $(prefix)
 bindir = $(exec_prefix)/bin
+export deps_prefix = extern
 
 # Possibly change to `cp' when `install' is unavailable
 INSTALL = install
 
 SRCDIR = src
 EXPDIR = exp
-export CUDD_ROOT = extern/cudd-2.5.1
-CUDD_LIB = $(CUDD_ROOT)/cudd/libcudd.a $(CUDD_ROOT)/mtr/libmtr.a $(CUDD_ROOT)/st/libst.a $(CUDD_ROOT)/util/libutil.a $(CUDD_ROOT)/epd/libepd.a
-export CUDD_XCFLAGS = -mtune=native -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8
-CUDD_INC = -I$(CUDD_ROOT)/include
 
 LEX = flex -X
 LFLAGS = 
@@ -29,9 +26,9 @@ YFLAGS = -d
 CC = gcc
 LD = ld -r
 
-CFLAGS = -g -Wall -pedantic -ansi
-ALL_CFLAGS = $(CFLAGS) $(CUDD_XCFLAGS) $(CUDD_INC) -Isrc
-LDFLAGS = $(CUDD_LIB) -lm $(CUDD_XCFLAGS)
+CFLAGS = -g -Wall -pedantic -ansi -I$(deps_prefix)/include
+export CFLAGS += -Isrc
+export LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 
 # To use and statically link with GNU Readline
 #CFLAGS += -DUSE_READLINE
@@ -62,55 +59,55 @@ grjit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 autman.o: aux/autman.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 
 grpatch.o: $(EXPDIR)/grpatch.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 grjit.o: $(EXPDIR)/grjit.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 
 main.o: $(SRCDIR)/main.c $(SRCDIR)/common.h
-	$(CC) $(ALL_CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 rg_main.o: $(SRCDIR)/rg_main.c $(SRCDIR)/common.h
-	$(CC) $(ALL_CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 sim.o: $(SRCDIR)/sim.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 util.o: $(SRCDIR)/util.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 ptree.o: $(SRCDIR)/ptree.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 logging.o: $(SRCDIR)/logging.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 automaton.o: $(SRCDIR)/automaton.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 automaton_io.o: $(SRCDIR)/automaton_io.c $(SRCDIR)/common.h
-	$(CC) $(ALL_CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 interactive.o: $(SRCDIR)/interactive.c $(SRCDIR)/common.h
-	$(CC) $(ALL_CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 solve_metric.o: $(SRCDIR)/solve_metric.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 solve_support.o: $(SRCDIR)/solve_support.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 solve_operators.o: $(SRCDIR)/solve_operators.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 solve.o: $(SRCDIR)/solve.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 patching.o: $(SRCDIR)/patching.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 patching_support.o: $(SRCDIR)/patching_support.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 patching_hotswap.o: $(SRCDIR)/patching_hotswap.c
-	$(CC) $(ALL_CFLAGS) -c $^
+	$(CC) $(CFLAGS) -c $^
 
 gr1c_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/gr1c_parse.y
 	$(YACC) $(YFLAGS) $(SRCDIR)/gr1c_parse.y
 	$(LEX) $<
-	$(CC) $(ALL_CFLAGS) -c lex.yy.c y.tab.c
+	$(CC) $(CFLAGS) -c lex.yy.c y.tab.c
 	$(LD) lex.yy.o y.tab.o -o $@
 rg_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/rg_parse.y gr1c_parse.o
 	$(YACC) $(YFLAGS) $(SRCDIR)/rg_parse.y
 	$(LEX) $<
-	$(CC) $(ALL_CFLAGS) -c lex.yy.c y.tab.c
+	$(CC) $(CFLAGS) -c lex.yy.c y.tab.c
 	$(LD) lex.yy.o y.tab.o -o $@
 
 install:
@@ -125,10 +122,6 @@ uninstall:
 
 check: $(CORE_PROGRAMS) $(EXP_PROGRAMS)
 	$(MAKE) -C tests CC=$(CC)
-
-.PHONY: cudd
-cudd:
-	$(MAKE) -C $(CUDD_ROOT) XCFLAGS='$(CUDD_XCFLAGS)' CC=$(CC)
 
 .PHONY: doc
 doc:
