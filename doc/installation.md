@@ -10,11 +10,11 @@ executable is built,
 Aside from standard C libraries and a basic development environment (gcc, etc.),
 **gr1c** depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/), the CU
 Decision Diagram package by Fabio Somenzi and others.  Also, gr1c interactive
-mode optionally uses GNU Readline (disabled by default; selected via `USE_READLINE`
-definition in Makefile).  The parser generator
-[Bison](http://www.gnu.org/software/bison/) and the lexical analyzer
-[flex](http://flex.sourceforge.net/) are required to build gr1c.  Other Yacc and
-lex compatible tools may suffice, but this has not been tested.
+mode optionally uses [GNU Readline](http://www.gnu.org/software/readline)
+(disabled by default; selected via `USE_READLINE` definition in Makefile).
+The parser generator [Bison](http://www.gnu.org/software/bison/) and the lexical
+analyzer [flex](http://flex.sourceforge.net/) are required to build gr1c.  Other
+Yacc and lex compatible tools may suffice, but this has not been tested.
 
 If the machine on which you are building has more than one CPU, then building
 time may be reduced by running more than one Make job simultaneously. To do
