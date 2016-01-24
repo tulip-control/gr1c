@@ -35,82 +35,42 @@ untar the file (name may vary) and change into the source directory.
     $ cd slivingston-gr1c-658f32b
 
 We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/).
-Alternatives, e.g., if you have a shared library of CUDD installed, are
-described later as [additional build options](#altlib).
 
 <h3>Automatic</h3>
 
     $ ./get-deps.sh
-    $ make cudd
+    $ ./build-deps.sh
 
 <h3>Manual</h3>
 
-Let's make a directory called `extern` for this purpose. At the time of writing,
-the latest version is 2.5.0. Below we use `wget` to download it from the
-command-line. You might also try directing your Web browser at
+We mostly follow the steps as performed by the scripts listed above. To begin,
+make a directory called `extern`. At the time of writing, the latest version is
+3.0.0. Below we use [cURL](http://curl.haxx.se) to download it from the
+command-line. Alternatively, [wget](http://www.gnu.org/software/wget/) can be
+used similarly. You might also try directing your Web browser at
 <ftp://vlsi.colorado.edu/pub/>, or read CUDD documentation for instructions.
 
     $ mkdir extern
     $ cd extern
-    $ wget ftp://vlsi.colorado.edu/pub/cudd-2.5.0.tar.gz
-    $ tar -xzf cudd-2.5.0.tar.gz
-    $ cd cudd-2.5.0
-
-Now you should be in the root of the CUDD source tree. Open the `Makefile` in
-your favorite editor (e.g., [Emacs](http://www.gnu.org/software/emacs/)) and
-make sure the settings look reasonable for your setup.  The comments therein
-should be enough to guide you.  If in doubt, consult the `Makefile` of gr1c, in
-particular CUDD_XCFLAGS, which is known to succeed for x86_64 GNU/Linux and Mac
-OS (64-bit; possibly requiring that the switch `-DBSD` be removed) and thus
-could be copied directly into the setting of the XCFLAGS variable in the
-`Makefile` of CUDD.  More generally, try
-
-    XCFLAGS = -mtune=native -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=N -DSIZEOF_LONG=M
-
-where `SIZEOF_VOID_P` and `SIZEOF_LONG` refer to the number of bytes used for
-`void` pointers and `long int` on your computer.  One method for finding
-appropriate `N` and `M` is [described below](#determinewsize).  Finally,
-
+    $ curl -O ftp://vlsi.colorado.edu/pub/cudd-3.0.0.tar.gz
+    $ tar -xzf cudd-3.0.0.tar.gz
+    $ cd cudd-3.0.0
+    $ ./configure --prefix=`pwd`/..
     $ make
+    $ make install
+
+The last three commands are the usual autotools idiom; we install CUDD locally
+in the extern/ directory, where the gr1c Makefile expects it. Consult the README
+of CUDD about alternatives, e.g., building CUDD as a shared library.
 
 With success building CUDD, we may now build gr1c. Change back to the gr1c root
-source directory and open the `Makefile`. There are two items to check. First,
-be sure that CUDD_ROOT matches where you just built CUDD; for the version used
-above, that would be `extern/cudd-2.5.0`. Second, be sure that CUDD_XCFLAGS
-matches XCFLAGS that you used to build CUDD.
-
-Finally, run `make`. If no errors were reported, you should be able to get the
-version with
+source directory and run `make`. If no errors were reported, you should be able
+to get the version with
 
     $ ./gr1c -V
 
 Later parts of this document describe [testing gr1c](#testing) and [additional
 build options](#extras).
-
-<h3 id="determinewsize">Determining word size on your computer</h3>
-
-If you want to select `N` and `M` for `-DSIZEOF_VOID_P=N -DSIZEOF_LONG=M` as
-suggested above, then you must determine the number of bytes used for `void`
-pointers and `long int` on your computer. These will be provided as compile
-flags when building CUDD and gr1c. An easy way to discover these is to place
-
-    #include <stdio.h>
-    int main()
-    {
-        printf( "void *: %lu\nlong: %lu\n", sizeof(void *), sizeof(long) );
-        return 0;
-    }
-
-in a plain text file, say called `testsize.c`, and then
-
-    $ gcc -o testsize testsize.c
-    $ ./testsize
-
-The output will give the number of bytes for each type.  For example, in the
-case of 64-bit, you may get
-
-    void *: 8
-    long: 8
 
 
 <h2 id="testing">Testing</h2>
@@ -177,16 +137,3 @@ You can clean the sourcetree of all executables and other temporary files by
 running
 
     $ make clean
-
-<h3 id="altlib">Alternatives for linking with CUDD</h3>
-
-If you have CUDD available as a shared library (it is not officially distributed
-this way, but some people have patched it thus), then you can pass alternative
-flags to the gr1c makefile, e.g.,
-
-    $ make all CUDD_INC='-I/opt/local/include/cudd' CUDD_LIB='-L/opt/local/lib/cudd -lcudd'
-
-To make this behavior permanent, change the variables CUDD_INC and CUDD_LIB in
-the ``Makefile`` of gr1c.  To run tests against gr1c in this setting, replace
-"all" with "tests" in the previous command, or change ``tests/Makefile``
-similarly.
