@@ -53,28 +53,28 @@
 /** \brief Parse tree nodes. */
 typedef struct ptree_t
 {
-	int type;  /**<\brief Consult table of \ref PTreeNodeTypes. */
-	char *name;  /**<\brief Name of the variable, if applicable. */
+    int type;  /**<\brief Consult table of \ref PTreeNodeTypes. */
+    char *name;  /**<\brief Name of the variable, if applicable. */
 
-	/** \brief Value of a constant, or domain of a variable.
+    /** \brief Value of a constant, or domain of a variable.
 
-	   For constants (type = PT_CONSTANT) describing valuations of a
-	   Boolean variable, value of 0 means "false", and 1 "true".
+       For constants (type = PT_CONSTANT) describing valuations of a
+       Boolean variable, value of 0 means "false", and 1 "true".
 
-	   For constants (type = PT_CONSTANT) describing valuations of an
-	   integer variable, value has the obvious meaning.
+       For constants (type = PT_CONSTANT) describing valuations of an
+       integer variable, value has the obvious meaning.
 
-	   For variables (type is one of PT_VARIABLE, PT_NEXT_VARIABLE),
-	   value indicates the domain as follows.
+       For variables (type is one of PT_VARIABLE, PT_NEXT_VARIABLE),
+       value indicates the domain as follows.
 
-	   - if value = -1, then variable is of type Boolean.
+       - if value = -1, then variable is of type Boolean.
 
-	   - if value >= 0, then variable is of type integer and may take
+       - if value >= 0, then variable is of type integer and may take
          values in the interval [0,value]. */
-	int value;
+    int value;
 
-	struct ptree_t *left;
-	struct ptree_t *right;
+    struct ptree_t *left;
+    struct ptree_t *right;
 } ptree_t;
 
 
@@ -103,7 +103,7 @@ void print_node( ptree_t *node, FILE *fp );
 /** Traverse the tree in-order, calling *node_fn at each node and
    passing it arg. */
 void inorder_trav( ptree_t *head,
-				   void (* node_fn)(ptree_t *, void *), void *arg );
+                   void (* node_fn)(ptree_t *, void *), void *arg );
 
 /** If f is NULL, then use stdout. Cf table of \ref PTreeFormulaSyntax. */
 void print_formula( ptree_t *head, FILE *fp, unsigned char format_flags );

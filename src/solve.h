@@ -20,17 +20,17 @@
 #define ONE_SIDE_INIT 3
 
 #define LOGPRINT_INIT_FLAGS(X) \
-	if ((X) == ALL_ENV_EXIST_SYS_INIT) { \
-	    logprint_raw( "ALL_ENV_EXIST_SYS_INIT" ); \
-	} else if ((X) == ALL_INIT) { \
-	    logprint_raw( "ALL_INIT" ); \
-	} else if ((X) == ONE_SIDE_INIT) {	\
-	    logprint_raw( "ONE_SIDE_INIT" ); \
-	} else if ((X) == UNDEFINED_INIT) {	\
-	    logprint_raw( "UNDEFINED_INIT (not interpreted)" ); \
-	} else { \
-	    logprint_raw( "(unrecognized)" ); \
-	}
+    if ((X) == ALL_ENV_EXIST_SYS_INIT) { \
+        logprint_raw( "ALL_ENV_EXIST_SYS_INIT" ); \
+    } else if ((X) == ALL_INIT) { \
+        logprint_raw( "ALL_INIT" ); \
+    } else if ((X) == ONE_SIDE_INIT) {    \
+        logprint_raw( "ONE_SIDE_INIT" ); \
+    } else if ((X) == UNDEFINED_INIT) {    \
+        logprint_raw( "UNDEFINED_INIT (not interpreted)" ); \
+    } else { \
+        logprint_raw( "(unrecognized)" ); \
+    }
 
 
 /** If realizable, then returns (a pointer to) the characteristic
@@ -83,14 +83,14 @@
    like for ALL_ENV_EXIST_SYS_INIT.
 */
 DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
-						  unsigned char verbose );
+                          unsigned char verbose );
 
 /** Synthesize a strategy.  The specification is assumed to be
    realizable when this function is invoked.  Return pointer to
    automaton representing the strategy, or NULL if error. Also read
    documentation for check_realizable(). */
 anode_t *synthesize( DdManager *manager, unsigned char init_flags,
-					 unsigned char verbose );
+                     unsigned char verbose );
 
 /** Compute the set of states that are winning for the system, under
    the specification defined by the global parse trees (generated from
@@ -105,9 +105,9 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose );
    environment and system goal formulas are defined by egoals and
    sgoals, respectively. */
 DdNode *compute_winning_set_BDD( DdManager *manager,
-								 DdNode *etrans, DdNode *strans,
-								 DdNode **egoals, DdNode **sgoals,
-								 unsigned char verbose );
+                                 DdNode *etrans, DdNode *strans,
+                                 DdNode **egoals, DdNode **sgoals,
+                                 unsigned char verbose );
 
 /** W is assumed to be (the characteristic function of) the set of
    winning states, e.g., as returned by compute_winning_set().
@@ -121,20 +121,20 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
    set, the number of X sets is equal to the number of environment
    goals. */
 DdNode ***compute_sublevel_sets( DdManager *manager,
-								 DdNode *W,
-								 DdNode *etrans, DdNode *strans,
-								 DdNode **egoals, int num_env_goals,
-								 DdNode **sgoals, int num_sys_goals,
-								 int **num_sublevels,
-								 DdNode *****X_ijr,
-								 unsigned char verbose );
+                                 DdNode *W,
+                                 DdNode *etrans, DdNode *strans,
+                                 DdNode **egoals, int num_env_goals,
+                                 DdNode **sgoals, int num_sys_goals,
+                                 int **num_sublevels,
+                                 DdNode *****X_ijr,
+                                 unsigned char verbose );
 
 /** Read commands from input stream infp and write results to outfp.
    Return 1 on successful completion, 0 if specification unrealizable,
    and -1 if error. */
 int levelset_interactive( DdManager *manager, unsigned char init_flags,
-						  FILE *infp, FILE *outfp,
-						  unsigned char verbose );
+                          FILE *infp, FILE *outfp,
+                          unsigned char verbose );
 
 
 #endif

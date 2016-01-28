@@ -21,7 +21,7 @@ FILE *getlogstream();
 
 
 /** Configure format of log entries.
-	
+    
    Combine non-conflicting options with or.  Options can be
 
        LOGOPT_TIME : Show timestamp (default).

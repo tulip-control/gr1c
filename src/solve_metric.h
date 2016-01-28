@@ -26,16 +26,16 @@ int *get_offsets( char *metric_vars, int *num_vars );
    Result is written into given variables Min and Max;
    return 0 on success, -1 error. */
 int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
-				  int *offw, int num_metric_vars,
-				  double *Min, double *Max, unsigned char verbose );
+                  int *offw, int num_metric_vars,
+                  double *Min, double *Max, unsigned char verbose );
 
 int bounds_state( DdManager *manager, DdNode *T, vartype *ref_state,
-				  int *offw, int num_metric_vars,
-				  double *Min, double *Max, unsigned char verbose );
+                  int *offw, int num_metric_vars,
+                  double *Min, double *Max, unsigned char verbose );
 
 int compute_horizon( DdManager *manager, DdNode **W,
-					 DdNode **etrans, DdNode **strans, DdNode ***sgoals,
-					 char *metric_vars, unsigned char verbose );
+                     DdNode **etrans, DdNode **strans, DdNode ***sgoals,
+                     char *metric_vars, unsigned char verbose );
 
 
 #endif

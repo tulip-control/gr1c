@@ -39,7 +39,7 @@ number  [0-9]+([.][0-9]+)?
 
 \n  {
         yylloc.first_column = yylloc.last_column;
-	yylloc.last_column = 0;
+        yylloc.last_column = 0;
         yylloc.first_line = yylloc.last_line;
         ++(yylloc.last_line);
     }

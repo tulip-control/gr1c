@@ -103,7 +103,8 @@ tagged "v0.6.1" has version 0.6.2.
 
 For C, I mostly prefer the [Linux](https://www.kernel.org/) kernel style (as
 expounded in Documentation/CodingStyle in the Linux source tree), except that
-tab width should be 4 spaces.  Documentation in source code should usually be
+indentation should use spaces (not tab charactors) and be in units of 4 spaces.
+Documentation in source code should usually be
 line-wrapped at 70 characters (default in Emacs), but more importantly, lines of
 code or comments should rarely exceed 80 characters in length.  README or other
 plain text files describing nearby stuff are written in
@@ -128,5 +129,5 @@ the following to your `.emacs` configuration file.
 
     (setq scott-c-style
       '((tab-width . 4)
-       (indent-tabs-mode . t)
+       (indent-tabs-mode . nil)
        (c-basic-offset . 4)))

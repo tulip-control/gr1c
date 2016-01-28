@@ -22,21 +22,21 @@
 /** \brief Strategy automaton nodes. */
 typedef struct anode_t
 {
-	bool initial;  /**<\brief If True, then this node corresponds to a state
-					  that satisfies an initial condition.  Note that it may be
-					  False even when this node could be used for
-					  initialization.  Possible interpretations of initial
-					  conditions are described in the documentation for
-					  check_realizable(). */
-	vartype *state;
-	int mode;  /**<\brief Goal mode; indicates which system goal is
-				  currently being pursued. */
-	int rgrad;  /**<\brief reach annotation value; unset value is
-				   indicated by -1. */
-	struct anode_t **trans;  /**<\brief Array of transitions */
-	int trans_len;
-	
-	struct anode_t *next;
+    bool initial;  /**<\brief If True, then this node corresponds to a state
+                      that satisfies an initial condition.  Note that it may be
+                      False even when this node could be used for
+                      initialization.  Possible interpretations of initial
+                      conditions are described in the documentation for
+                      check_realizable(). */
+    vartype *state;
+    int mode;  /**<\brief Goal mode; indicates which system goal is
+                  currently being pursued. */
+    int rgrad;  /**<\brief reach annotation value; unset value is
+                   indicated by -1. */
+    struct anode_t **trans;  /**<\brief Array of transitions */
+    int trans_len;
+    
+    struct anode_t *next;
 } anode_t;
 
 
@@ -50,20 +50,20 @@ typedef struct anode_t
  */
 #define DOT_AUT_ALL 0  /**<\brief Show all variables with values. */
 #define DOT_AUT_BINARY 1  /**<\brief Assume variables have Boolean
-						     domains, and only label nodes with those
-						     that are True. */
+                             domains, and only label nodes with those
+                             that are True. */
 #define DOT_AUT_EDGEINPUT 2  /**<\brief Show environment variables on edges. */
 #define DOT_AUT_ATTRIB 4  /**<\brief Show node attributes.
 
                              In addition to the state (presentation
-							 depends on format_flags given to
-							 dot_aut_dump()), each node is labeled with
+                             depends on format_flags given to
+                             dot_aut_dump()), each node is labeled with
 
-							     i;
-							     (m, r)
+                                 i;
+                                 (m, r)
 
-							 where i is the node ID, m the goal mode,
-							 and r the reach annotation value. */
+                             where i is the node ID, m the goal mode,
+                             and r the reach annotation value. */
 /**@}*/
 
 
@@ -72,7 +72,7 @@ typedef struct anode_t
 
    Return new head on success, NULL on error. */
 anode_t *insert_anode( anode_t *head, int mode, int rgrad,
-					   bool initial, vartype *state, int state_len );
+                       bool initial, vartype *state, int state_len );
 
 /** Delete topmost (head) node from list.  Return pointer to new head. */
 anode_t *pop_anode( anode_t *head );
@@ -91,14 +91,14 @@ anode_t *pop_anode( anode_t *head );
    Return given head on success, NULL if one of the needed nodes is
    not found. */
 anode_t *build_anode_trans( anode_t *head, int mode,
-							vartype *state, int state_len, int next_mode,
-							vartype **next_states, int next_len );
+                            vartype *state, int state_len, int next_mode,
+                            vartype **next_states, int next_len );
 
 /** Append transition to array for the first node with given state and mode.
    Return new head on success, NULL on error. */
 anode_t *append_anode_trans( anode_t *head,
-							 int mode, vartype *state, int state_len,
-							 int next_mode, vartype *next_state );
+                             int mode, vartype *state, int state_len,
+                             int next_mode, vartype *next_state );
 
 /** Return pointer to the first node with given state and mode,
    or NULL if not found. */
@@ -149,19 +149,19 @@ anode_t *aut_prune_deadends( anode_t *head );
 
    If fp = NULL, then write to stdout.  Return nonzero if error. */
 int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
-					FILE *fp );
+                    FILE *fp );
 
 /** Dump using tulipcon version 0.  DEPRECATED!  Please use
    tulip_aut_dump() instead.  tulip0_aut_dump() is provided only for
    legacy code and will soon be removed. */
 int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
-					 FILE *fp );
+                     FILE *fp );
 
 /** Dump DOT file describing the automaton (strategy).  The appearance can be
    configured using \ref DotDumpFlags.  Also read comments for
    tulip_aut_dump().  */
 int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
-				  unsigned char format_flags, FILE *fp );
+                  unsigned char format_flags, FILE *fp );
 
 /** Dump list of nodes; mostly useful for debugging.
    If fp = NULL, then write to stdout.  The basic format is
@@ -207,7 +207,7 @@ anode_t *aut_aut_load( int state_len, FILE *fp );
 /** Dump strategy using the current version of the gr1c-JSON file
    format.  Consult [external_notes](md_formats.html) for details. */
 int json_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
-				   FILE *fp );
+                   FILE *fp );
 
 /** Get number of nodes in given automaton. */
 int aut_size( anode_t *head );
@@ -225,7 +225,7 @@ void delete_aut( anode_t *head );
    mode, and setting the mode field of each reached node to
    magic_mode.  Return zero on success, nonzero on error. */
 int forward_modereach( anode_t *node, int mode, vartype **N, int N_len,
-					   int magic_mode, int state_len );
+                       int magic_mode, int state_len );
 
 
 /** Convert binary-expanded form of a variable back into nonboolean.
@@ -234,12 +234,12 @@ int forward_modereach( anode_t *node, int mode, vartype **N, int N_len,
    entry (in evar_list or svar_list).
    Returns the new state vector length, or -1 on error. */
 int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
-						 char *name, int maxval );
+                         char *name, int maxval );
 
 /** Inverse operation of aut_compact_nonbool().
-	Return zero on success, nonzero on error. */
+    Return zero on success, nonzero on error. */
 int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
-					 ptree_t *nonbool_var_list );
+                     ptree_t *nonbool_var_list );
 
 /** Dump strategy as Spin Promela model.
 
@@ -252,11 +252,11 @@ int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 
    If fp = NULL, then write to stdout.  Return nonzero if error. */
 int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
-				   ptree_t *env_init, ptree_t *sys_init,
-				   ptree_t **env_trans_array, int et_array_len,
-				   ptree_t **sys_trans_array, int st_array_len,
-				   ptree_t **env_goals, int num_env_goals,
-				   ptree_t **sys_goals, int num_sys_goals,
-				   FILE *fp );
+                   ptree_t *env_init, ptree_t *sys_init,
+                   ptree_t **env_trans_array, int et_array_len,
+                   ptree_t **sys_trans_array, int st_array_len,
+                   ptree_t **env_goals, int num_env_goals,
+                   ptree_t **sys_goals, int num_sys_goals,
+                   FILE *fp );
 
 #endif

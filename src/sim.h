@@ -21,9 +21,9 @@
    following those changes.  As such, sim_rhc() should be considered
    as possibly temporarily defunct. */
 anode_t *sim_rhc( DdManager *manager, DdNode *W,
-				  DdNode *etrans, DdNode *strans, DdNode **sgoals,
-				  char *metric_vars, int horizon, vartype *init_state,
-				  int num_it, unsigned char verbose );
+                  DdNode *etrans, DdNode *strans, DdNode **sgoals,
+                  char *metric_vars, int horizon, vartype *init_state,
+                  int num_it, unsigned char verbose );
 
 
 #endif

@@ -31,25 +31,25 @@
    As usual, this function will not try to close given streams when
    finished. */
 anode_t *patch_localfixpoint( DdManager *manager,
-							  FILE *strategy_fp, FILE *change_fp,
-							  int original_num_env, int original_num_sys,
-							  ptree_t *nonbool_var_list, int *offw,
-							  unsigned char verbose );
+                              FILE *strategy_fp, FILE *change_fp,
+                              int original_num_env, int original_num_sys,
+                              ptree_t *nonbool_var_list, int *offw,
+                              unsigned char verbose );
 
 /** Solve a reachability game symbolically, by blocking an environment
    goal or reaching Exit from Entry.  States are restricted to the set
    N (given as a characteristic function named N_BDD). */
 anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
-							   anode_t **Entry, int Entry_len,
-							   anode_t **Exit, int Exit_len,
-							   DdNode *etrans, DdNode *strans, DdNode **egoals,
-							   DdNode *N_BDD, unsigned char verbose );
+                               anode_t **Entry, int Entry_len,
+                               anode_t **Exit, int Exit_len,
+                               DdNode *etrans, DdNode *strans, DdNode **egoals,
+                               DdNode *N_BDD, unsigned char verbose );
 
 /** Implementation of algorithm from [[LM14]](md_papers.html#LM14) for adding sys goals
 
-	 S.C. Livingston, R.M. Murray.
+     S.C. Livingston, R.M. Murray.
      Hot-swapping robot task goals in reactive formal synthesis.
-	 presented at CDC in Dec 2014.
+     presented at CDC in Dec 2014.
      Extended version available as Caltech CDS tech report at
      http://resolver.caltech.edu/CaltechCDSTR:2014.001
 
@@ -60,15 +60,15 @@ anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
 
    Return the head pointer of the augmented strategy, or NULL if error. */
 anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
-							 int original_num_env, int original_num_sys,
-							 int *offw, int num_metric_vars,
-							 ptree_t *new_sysgoal, unsigned char verbose );
+                             int original_num_env, int original_num_sys,
+                             int *offw, int num_metric_vars,
+                             ptree_t *new_sysgoal, unsigned char verbose );
 
 /** Implementation of algorithm from [[LM14]](md_papers.html#LM14) for removing sys goals
 
-	 S.C. Livingston, R.M. Murray.
+     S.C. Livingston, R.M. Murray.
      Hot-swapping robot task goals in reactive formal synthesis.
-	 presented at CDC in Dec 2014.
+     presented at CDC in Dec 2014.
      Extended version available as Caltech CDS tech report at
      http://resolver.caltech.edu/CaltechCDSTR:2014.001
 
@@ -90,7 +90,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
    providing initial conditions have goal mode corresponding to
    delete_i or delete_i+1 mod n. */
 anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
-					 int original_num_env, int original_num_sys,
-					 int delete_i, unsigned char verbose );
+                     int original_num_env, int original_num_sys,
+                     int delete_i, unsigned char verbose );
 
 #endif
