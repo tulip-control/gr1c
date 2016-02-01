@@ -13,23 +13,6 @@
 #include "tests_common.h"
 
 
-/**************************
- **** Global variables ****/
-
-ptree_t *evar_list = NULL;
-ptree_t *svar_list = NULL;
-ptree_t *env_init = NULL;
-ptree_t *sys_init = NULL;
-ptree_t *env_trans = NULL;
-ptree_t *sys_trans = NULL;
-ptree_t **env_goals = NULL;
-ptree_t **sys_goals = NULL;
-int num_egoals = 0;
-int num_sgoals = 0;
-
-/**************************/
-
-
 /* Abort on discrepancy. */
 void compare_bcubes( vartype *cube1, vartype *cube2, int len )
 {

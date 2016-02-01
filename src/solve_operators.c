@@ -15,14 +15,7 @@
 #include "solve_support.h"
 
 
-extern ptree_t *evar_list;
-extern ptree_t *svar_list;
-extern ptree_t *env_trans;
-extern ptree_t *sys_trans;
-extern ptree_t **env_goals;
-extern ptree_t **sys_goals;
-extern int num_egoals;
-extern int num_sgoals;
+extern specification_t spc;
 
 
 DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
@@ -35,54 +28,54 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
     
     /* Set environment goal to True (i.e., any state) if none was
        given. This simplifies the implementation below. */
-    if (num_egoals == 0) {
+    if (spc.num_egoals == 0) {
         env_nogoal_flag = True;
-        num_egoals = 1;
-        env_goals = malloc( sizeof(ptree_t *) );
-        *env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        spc.num_egoals = 1;
+        spc.env_goals = malloc( sizeof(ptree_t *) );
+        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
     }
 
     /* Chain together environment and system variable lists for
        working with BDD library. */
-    if (evar_list == NULL) {
+    if (spc.evar_list == NULL) {
         var_separator = NULL;
-        evar_list = svar_list;  /* that this is the deterministic case
-                                   is indicated by var_separator = NULL. */
+        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+                                           is indicated by var_separator = NULL. */
     } else {
-        var_separator = get_list_item( evar_list, -1 );
+        var_separator = get_list_item( spc.evar_list, -1 );
         if (var_separator == NULL) {
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
             return NULL;
         }
-        var_separator->left = svar_list;
+        var_separator->left = spc.svar_list;
     }
 
     /* Generate BDDs for the various parse trees from the problem spec. */
     if (verbose > 1)
         logprint( "Building environment transition BDD..." );
-    etrans = ptree_BDD( env_trans, evar_list, manager );
+    etrans = ptree_BDD( spc.env_trans, spc.evar_list, manager );
     if (verbose > 1) {
         logprint( "Done." );
         logprint( "Building system transition BDD..." );
     }
-    strans = ptree_BDD( sys_trans, evar_list, manager );
+    strans = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
     if (verbose > 1)
         logprint( "Done." );
 
     /* Build goal BDDs, if present. */
-    if (num_egoals > 0) {
-        egoals = malloc( num_egoals*sizeof(DdNode *) );
-        for (i = 0; i < num_egoals; i++)
-            *(egoals+i) = ptree_BDD( *(env_goals+i), evar_list, manager );
+    if (spc.num_egoals > 0) {
+        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_egoals; i++)
+            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
     } else {
         egoals = NULL;
     }
-    if (num_sgoals > 0) {
-        sgoals = malloc( num_sgoals*sizeof(DdNode *) );
-        for (i = 0; i < num_sgoals; i++)
-            *(sgoals+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
+    if (spc.num_sgoals > 0) {
+        sgoals = malloc( spc.num_sgoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_sgoals; i++)
+            *(sgoals+i) = ptree_BDD( *(spc.sys_goals+i), spc.evar_list, manager );
     } else {
         sgoals = NULL;
     }
@@ -90,7 +83,7 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
     /* Break the link that appended the system variables list to the
        environment variables list. */
     if (var_separator == NULL) {
-        evar_list = NULL;
+        spc.evar_list = NULL;
     } else {
         var_separator->left = NULL;
     }
@@ -100,18 +93,18 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
 
     Cudd_RecursiveDeref( manager, etrans );
     Cudd_RecursiveDeref( manager, strans );
-    for (i = 0; i < num_egoals; i++)
+    for (i = 0; i < spc.num_egoals; i++)
         Cudd_RecursiveDeref( manager, *(egoals+i) );
-    for (i = 0; i < num_sgoals; i++)
+    for (i = 0; i < spc.num_sgoals; i++)
         Cudd_RecursiveDeref( manager, *(sgoals+i) );
-    if (num_egoals > 0)
+    if (spc.num_egoals > 0)
         free( egoals );
-    if (num_sgoals > 0)
+    if (spc.num_sgoals > 0)
         free( sgoals );
     if (env_nogoal_flag) {
-        num_egoals = 0;
-        delete_tree( *env_goals );
-        free( env_goals );
+        spc.num_egoals = 0;
+        delete_tree( *spc.env_goals );
+        free( spc.env_goals );
     }
 
     return W;
@@ -139,8 +132,8 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
     int *cube;  /* length will be twice total number of variables (to
                    account for both variables and their primes). */
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     /* Allocate cube array, used later for quantifying over variables. */
     cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
@@ -165,17 +158,17 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
     free( vars );
     free( pvars );
 
-    if (num_sgoals > 0) {
-        Z = malloc( num_sgoals*sizeof(DdNode *) );
-        Z_prev = malloc( num_sgoals*sizeof(DdNode *) );
-        for (i = 0; i < num_sgoals; i++) {
+    if (spc.num_sgoals > 0) {
+        Z = malloc( spc.num_sgoals*sizeof(DdNode *) );
+        Z_prev = malloc( spc.num_sgoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_sgoals; i++) {
             *(Z+i) = NULL;
             *(Z_prev+i) = NULL;
         }
     }
 
     /* Initialize */
-    for (i = 0; i < num_sgoals; i++) {
+    for (i = 0; i < spc.num_sgoals; i++) {
         *(Z+i) = Cudd_ReadOne( manager );
         Cudd_Ref( *(Z+i) );
     }
@@ -186,14 +179,14 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
         if (verbose > 1)
             logprint( "Z iteration %d", num_it_Z );
 
-        for (i = 0; i < num_sgoals; i++) {
+        for (i = 0; i < spc.num_sgoals; i++) {
             if (*(Z_prev+i) != NULL)
                 Cudd_RecursiveDeref( manager, *(Z_prev+i) );
             *(Z_prev+i) = *(Z+i);
         }
             
-        for (i = 0; i < num_sgoals; i++) {
-            if (i == num_sgoals-1) {
+        for (i = 0; i < spc.num_sgoals; i++) {
+            if (i == spc.num_sgoals-1) {
                 *(Z+i) = compute_existsmodal( manager, *Z_prev, etrans, strans,
                                               num_env, num_sys, cube );
             } else {
@@ -232,7 +225,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
                 
                 Y = Cudd_Not( Cudd_ReadOne( manager ) );
                 Cudd_Ref( Y );
-                for (j = 0; j < num_egoals; j++) {
+                for (j = 0; j < spc.num_egoals; j++) {
                     
                     /* (Re)initialize X */
                     if (X != NULL)
@@ -315,7 +308,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
         }
 
         Z_changed = False;
-        for (i = 0; i < num_sgoals; i++) {
+        for (i = 0; i < spc.num_sgoals; i++) {
             if (!(Cudd_bddLeq( manager, *(Z+i), *(Z_prev+i) )
                   *Cudd_bddLeq( manager, *(Z_prev+i), *(Z+i) ))) {
                 Z_changed = True;
@@ -327,7 +320,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
     /* Pre-exit clean-up */
     tmp = *Z;
     Cudd_RecursiveDeref( manager, *Z_prev );
-    for (i = 1; i < num_sgoals; i++) {
+    for (i = 1; i < spc.num_sgoals; i++) {
         Cudd_RecursiveDeref( manager, *(Z+i) );
         Cudd_RecursiveDeref( manager, *(Z_prev+i) );
     }
@@ -358,8 +351,8 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
     DdNode *tmp, *tmp2;
     int i, r;
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
     if (cube == NULL) {

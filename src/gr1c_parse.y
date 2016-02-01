@@ -8,25 +8,12 @@
 %{
   #include <stdlib.h>
   #include <stdio.h>
+  #include "common.h"
   #include "ptree.h"
   void yyerror( char const * );
   int yylex( void );
 
-  ptree_t *evar_list = NULL;
-  ptree_t *svar_list = NULL;
-
-  ptree_t *sys_init = NULL;
-  ptree_t *env_init = NULL;
-
-  ptree_t **env_goals = NULL;
-  ptree_t **sys_goals = NULL;
-  int num_egoals = 0;
-  int num_sgoals = 0;
-
-  ptree_t **env_trans_array = NULL;
-  ptree_t **sys_trans_array = NULL;
-  int et_array_len = 0;
-  int st_array_len = 0;
+  specification_t spc;
 
   /* General purpose tree pointer,
      which facilitates cleaner Yacc parsing code. */
@@ -83,72 +70,72 @@ input: /* empty */
 exp: evar_list ';'
    | svar_list ';'
    | E_INIT ';' {
-       if (env_init != NULL) {
+       if (spc.env_init != NULL) {
        printf( "Error detected on line %d.  Duplicate ENVINIT\n",
                @1.last_line );
        YYABORT;
        }
      }
    | E_INIT propformula ';' {
-       if (env_init != NULL) {
+       if (spc.env_init != NULL) {
            printf( "Error detected on line %d.  Duplicate ENVINIT\n",
                    @1.last_line );
            YYABORT;
        }
-       env_init = gen_tree_ptr;
+       spc.env_init = gen_tree_ptr;
        gen_tree_ptr = NULL;
      }
    | E_TRANS ';' {
-       if (et_array_len == 0) {
-           et_array_len = 1;
-           env_trans_array = malloc( sizeof(ptree_t *) );
-           if (env_trans_array == NULL) {
+       if (spc.et_array_len == 0) {
+           spc.et_array_len = 1;
+           spc.env_trans_array = malloc( sizeof(ptree_t *) );
+           if (spc.env_trans_array == NULL) {
                perror( "gr1c_parse.y, etransformula, malloc" );
                exit(-1);
            }
-           *env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+           *spc.env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
        }
      }
    | E_TRANS etransformula ';'
    | E_GOAL ';'
    | E_GOAL egoalformula ';'
    | S_INIT ';' {
-       if (sys_init != NULL) {
+       if (spc.sys_init != NULL) {
            printf( "Error detected on line %d.  Duplicate SYSINIT.\n",
                    @1.last_line );
            YYABORT;
        }
      }
    | S_INIT propformula ';' {
-       if (sys_init != NULL) {
+       if (spc.sys_init != NULL) {
            printf( "Error detected on line %d.  Duplicate SYSINIT.\n",
                    @1.last_line );
            YYABORT;
        }
-       sys_init = gen_tree_ptr;
+       spc.sys_init = gen_tree_ptr;
        gen_tree_ptr = NULL;
      }
    | S_TRANS ';' {
-       if (st_array_len == 0) {
-           st_array_len = 1;
-           sys_trans_array = malloc( sizeof(ptree_t *) );
-           if (sys_trans_array == NULL) {
+       if (spc.st_array_len == 0) {
+           spc.st_array_len = 1;
+           spc.sys_trans_array = malloc( sizeof(ptree_t *) );
+           if (spc.sys_trans_array == NULL) {
                perror( "gr1c_parse.y, stransformula, malloc" );
                exit(-1);
            }
-           *sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+           *spc.sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
        }
      }
    | S_TRANS stransformula ';'
    | S_GOAL ';' {
-       num_sgoals = 1;
-       sys_goals = malloc( sizeof(ptree_t *) );
-       if (sys_goals == NULL) {
+       spc.num_sgoals = 1;
+       spc.sys_goals = malloc( sizeof(ptree_t *) );
+       if (spc.sys_goals == NULL) {
            perror( "gr1c_parse.y, S_GOAL ';', malloc" );
            exit(-1);
        }
        /* Equivalent to []<>True */
-       *sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+       *spc.sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );
      }
    | S_GOAL sgoalformula ';'
    | error  { printf( "Error detected on line %d.\n", @1.last_line ); YYABORT; }
@@ -156,10 +143,10 @@ exp: evar_list ';'
 
 evar_list: E_VARS
          | evar_list VARIABLE  {
-             if (evar_list == NULL) {
-                 evar_list = init_ptree( PT_VARIABLE, $2, -1 );
+             if (spc.evar_list == NULL) {
+                 spc.evar_list = init_ptree( PT_VARIABLE, $2, -1 );
              } else {
-                 append_list_item( evar_list, PT_VARIABLE, $2, -1 );
+                 append_list_item( spc.evar_list, PT_VARIABLE, $2, -1 );
              }
                  free( $2 );
            }
@@ -177,10 +164,10 @@ evar_list: E_VARS
                           @1.last_line );
                  YYABORT;
              }
-             if (evar_list == NULL) {
-                 evar_list = init_ptree( PT_VARIABLE, $2, $6 );
+             if (spc.evar_list == NULL) {
+                 spc.evar_list = init_ptree( PT_VARIABLE, $2, $6 );
              } else {
-                 append_list_item( evar_list, PT_VARIABLE, $2, $6 );
+                 append_list_item( spc.evar_list, PT_VARIABLE, $2, $6 );
              }
                  free( $2 );
            }
@@ -188,10 +175,10 @@ evar_list: E_VARS
 
 svar_list: S_VARS
          | svar_list VARIABLE  {
-             if (svar_list == NULL) {
-                 svar_list = init_ptree( PT_VARIABLE, $2, -1 );
+             if (spc.svar_list == NULL) {
+                 spc.svar_list = init_ptree( PT_VARIABLE, $2, -1 );
              } else {
-                 append_list_item( svar_list, PT_VARIABLE, $2, -1 );
+                 append_list_item( spc.svar_list, PT_VARIABLE, $2, -1 );
              }
                  free( $2 );
            }
@@ -209,107 +196,107 @@ svar_list: S_VARS
                           @1.last_line );
                  YYABORT;
              }
-             if (svar_list == NULL) {
-                 svar_list = init_ptree( PT_VARIABLE, $2, $6 );
+             if (spc.svar_list == NULL) {
+                 spc.svar_list = init_ptree( PT_VARIABLE, $2, $6 );
              } else {
-                 append_list_item( svar_list, PT_VARIABLE, $2, $6 );
+                 append_list_item( spc.svar_list, PT_VARIABLE, $2, $6 );
              }
              free( $2 );
            }
 ;
 
 etransformula: SAFETY_OP tpropformula  {
-                 et_array_len++;
-                 env_trans_array = realloc( env_trans_array,
-                                            sizeof(ptree_t *)*et_array_len );
-                 if (env_trans_array == NULL) {
+                 spc.et_array_len++;
+                 spc.env_trans_array = realloc( spc.env_trans_array,
+                                                sizeof(ptree_t *)*spc.et_array_len );
+                 if (spc.env_trans_array == NULL) {
                      perror( "gr1c_parse.y, etransformula, realloc" );
                      exit(-1);
                  }
-                 *(env_trans_array+et_array_len-1) = gen_tree_ptr;
+                 *(spc.env_trans_array+spc.et_array_len-1) = gen_tree_ptr;
                  gen_tree_ptr = NULL;
                }
              | etransformula AND_SAFETY_OP tpropformula  {
-                 et_array_len++;
-                 env_trans_array = realloc( env_trans_array,
-                                            sizeof(ptree_t *)*et_array_len );
-                 if (env_trans_array == NULL) {
+                 spc.et_array_len++;
+                 spc.env_trans_array = realloc( spc.env_trans_array,
+                                                sizeof(ptree_t *)*spc.et_array_len );
+                 if (spc.env_trans_array == NULL) {
                      perror( "gr1c_parse.y, etransformula, realloc" );
                      exit(-1);
                  }
-                 *(env_trans_array+et_array_len-1) = gen_tree_ptr;
+                 *(spc.env_trans_array+spc.et_array_len-1) = gen_tree_ptr;
                  gen_tree_ptr = NULL;
                }
 ;
 
 stransformula: SAFETY_OP tpropformula  {
-                 st_array_len++;
-                 sys_trans_array = realloc( sys_trans_array,
-                                            sizeof(ptree_t *)*st_array_len );
-                 if (sys_trans_array == NULL) {
+                 spc.st_array_len++;
+                 spc.sys_trans_array = realloc( spc.sys_trans_array,
+                                                sizeof(ptree_t *)*spc.st_array_len );
+                 if (spc.sys_trans_array == NULL) {
                      perror( "gr1c_parse.y, stransformula, realloc" );
                      exit(-1);
                  }
-                 *(sys_trans_array+st_array_len-1) = gen_tree_ptr;
+                 *(spc.sys_trans_array+spc.st_array_len-1) = gen_tree_ptr;
                  gen_tree_ptr = NULL;
                }
              | stransformula AND_SAFETY_OP tpropformula  {
-                 st_array_len++;
-                 sys_trans_array = realloc( sys_trans_array,
-                                            sizeof(ptree_t *)*st_array_len );
-                 if (sys_trans_array == NULL) {
+                 spc.st_array_len++;
+                 spc.sys_trans_array = realloc( spc.sys_trans_array,
+                                                sizeof(ptree_t *)*spc.st_array_len );
+                 if (spc.sys_trans_array == NULL) {
                      perror( "gr1c_parse.y, stransformula, realloc" );
                      exit(-1);
                  }
-                 *(sys_trans_array+st_array_len-1) = gen_tree_ptr;
+                 *(spc.sys_trans_array+spc.st_array_len-1) = gen_tree_ptr;
                  gen_tree_ptr = NULL;
                }
 ;
 
 egoalformula: LIVENESS_OP propformula  {
-                num_egoals++;
-                env_goals = realloc( env_goals,
-                                     sizeof(ptree_t *)*num_egoals );
-                if (env_goals == NULL) {
+                spc.num_egoals++;
+                spc.env_goals = realloc( spc.env_goals,
+                                         sizeof(ptree_t *)*spc.num_egoals );
+                if (spc.env_goals == NULL) {
                     perror( "gr1c_parse.y, egoalformula, realloc" );
                     exit(-1);
                 }
-                *(env_goals+num_egoals-1) = gen_tree_ptr;
+                *(spc.env_goals+spc.num_egoals-1) = gen_tree_ptr;
                 gen_tree_ptr = NULL;
               }
             | egoalformula AND_LIVENESS_OP propformula  {
-                num_egoals++;
-                env_goals = realloc( env_goals,
-                                     sizeof(ptree_t *)*num_egoals );
-                if (env_goals == NULL) {
+                spc.num_egoals++;
+                spc.env_goals = realloc( spc.env_goals,
+                                         sizeof(ptree_t *)*spc.num_egoals );
+                if (spc.env_goals == NULL) {
                     perror( "gr1c_parse.y, egoalformula, realloc" );
                     exit(-1);
                 }
-                *(env_goals+num_egoals-1) = gen_tree_ptr;
+                *(spc.env_goals+spc.num_egoals-1) = gen_tree_ptr;
                 gen_tree_ptr = NULL;
               }
 ;
 
 sgoalformula: LIVENESS_OP propformula  {
-                num_sgoals++;
-                sys_goals = realloc( sys_goals,
-                                     sizeof(ptree_t *)*num_sgoals );
-                if (sys_goals == NULL) {
+                spc.num_sgoals++;
+                spc.sys_goals = realloc( spc.sys_goals,
+                                         sizeof(ptree_t *)*spc.num_sgoals );
+                if (spc.sys_goals == NULL) {
                     perror( "gr1c_parse.y, sgoalformula, realloc" );
                     exit(-1);
                 }
-                *(sys_goals+num_sgoals-1) = gen_tree_ptr;
+                *(spc.sys_goals+spc.num_sgoals-1) = gen_tree_ptr;
                 gen_tree_ptr = NULL;
               }
             | sgoalformula AND_LIVENESS_OP propformula  {
-                num_sgoals++;
-                sys_goals = realloc( sys_goals,
-                                     sizeof(ptree_t *)*num_sgoals );
-                if (sys_goals == NULL) {
+                spc.num_sgoals++;
+                spc.sys_goals = realloc( spc.sys_goals,
+                                         sizeof(ptree_t *)*spc.num_sgoals );
+                if (spc.sys_goals == NULL) {
                     perror( "gr1c_parse.y, sgoalformula, realloc" );
                     exit(-1);
                 }
-                *(sys_goals+num_sgoals-1) = gen_tree_ptr;
+                *(spc.sys_goals+spc.num_sgoals-1) = gen_tree_ptr;
                 gen_tree_ptr = NULL;
               }
 ;

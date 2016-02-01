@@ -17,14 +17,7 @@
 #include "solve_metric.h"
 
 
-extern ptree_t *evar_list;
-extern ptree_t *svar_list;
-extern ptree_t *env_trans;
-extern ptree_t *sys_trans;
-extern ptree_t **env_goals;
-extern ptree_t **sys_goals;
-extern int num_egoals;
-extern int num_sgoals;
+extern specification_t spc;
 
 
 anode_t *sim_rhc( DdManager *manager, DdNode *W,
@@ -69,8 +62,8 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
         return NULL;
 
     srand( time(NULL) );
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
     pvars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
@@ -133,7 +126,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
         state_to_cube( init_state, cube, num_env+num_sys );
         ddval = Cudd_Eval( manager, *(sgoals+current_goal), cube );
         if (!Cudd_IsComplement( ddval )) {
-            current_goal = (current_goal+1) % num_sgoals;
+            current_goal = (current_goal+1) % spc.num_sgoals;
             free( MEM );
             MEM = NULL;
             MEM_len = 0;

@@ -9,8 +9,10 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include "ptree.h"
 
-#define GR1C_VERSION "0.10.3"
+
+#define GR1C_VERSION "0.11.0"
 #define GR1C_COPYRIGHT "Copyright (c) 2012-2015 by Scott C. Livingston,\n" \
                        "California Institute of Technology\n\n" \
                        "This is free, open source software, released under a BSD license\n" \
@@ -26,6 +28,47 @@ typedef char bool;
 #define False 0
 
 typedef unsigned char byte;
+
+typedef struct {
+    ptree_t *nonbool_var_list;
+    int original_num_env;
+    int original_num_sys;
+    int *offw;
+
+    ptree_t *evar_list;
+    ptree_t *svar_list;
+    ptree_t *env_init;
+    ptree_t *sys_init;
+    ptree_t *env_trans;  /* Built from components in env_trans_array. */
+    ptree_t *sys_trans;  /* Built from components in sys_trans_array. */
+    ptree_t **env_goals;
+    ptree_t **sys_goals;
+    int num_egoals;
+    int num_sgoals;
+
+    ptree_t **env_trans_array;
+    ptree_t **sys_trans_array;
+    int et_array_len;
+    int st_array_len;
+} specification_t;
+
+#define SPC_INIT(X) \
+    X.nonbool_var_list = NULL; \
+    X.original_num_env = 0; \
+    X.original_num_sys = 0; \
+    X.offw = NULL; \
+    X.evar_list = NULL; \
+    X.svar_list = NULL; \
+    X.sys_init = NULL; \
+    X.env_init = NULL; \
+    X.env_goals = NULL; \
+    X.sys_goals = NULL; \
+    X.num_egoals = 0; \
+    X.num_sgoals = 0; \
+    X.env_trans_array = NULL; \
+    X.sys_trans_array = NULL; \
+    X.et_array_len = 0; \
+    X.st_array_len = 0
 
 
 #include "cudd.h"

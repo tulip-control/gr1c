@@ -16,16 +16,7 @@
 #include "automaton.h"
 
 
-extern ptree_t *evar_list;
-extern ptree_t *svar_list;
-extern ptree_t *env_init;
-extern ptree_t *sys_init;
-extern ptree_t *env_trans;
-extern ptree_t *sys_trans;
-extern ptree_t **env_goals;
-extern ptree_t **sys_goals;
-extern int num_egoals;
-extern int num_sgoals;
+extern specification_t spc;
 
 
 DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
@@ -73,15 +64,15 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 
     /* Set environment goal to True (i.e., any state) if none was
        given. This simplifies the implementation below. */
-    if (num_egoals == 0) {
+    if (spc.num_egoals == 0) {
         env_nogoal_flag = True;
-        num_egoals = 1;
-        env_goals = malloc( sizeof(ptree_t *) );
-        *env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        spc.num_egoals = 1;
+        spc.env_goals = malloc( sizeof(ptree_t *) );
+        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
     }
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     /* State vector (i.e., valuation of the variables) */
     state = malloc( sizeof(vartype)*(num_env+num_sys) );
@@ -99,63 +90,63 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
 
     /* Chain together environment and system variable lists for
        working with BDD library. */
-    if (evar_list == NULL) {
+    if (spc.evar_list == NULL) {
         var_separator = NULL;
-        evar_list = svar_list;  /* that this is the deterministic case
-                                   is indicated by var_separator = NULL. */
+        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+                                           is indicated by var_separator = NULL. */
     } else {
-        var_separator = get_list_item( evar_list, -1 );
+        var_separator = get_list_item( spc.evar_list, -1 );
         if (var_separator == NULL) {
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
             return NULL;
         }
-        var_separator->left = svar_list;
+        var_separator->left = spc.svar_list;
     }
 
     /* Generate BDDs for the various parse trees from the problem spec. */
-    if (env_init != NULL) {
-        einit = ptree_BDD( env_init, evar_list, manager );
+    if (spc.env_init != NULL) {
+        einit = ptree_BDD( spc.env_init, spc.evar_list, manager );
     } else {
         einit = Cudd_ReadOne( manager );
         Cudd_Ref( einit );
     }
-    if (sys_init != NULL) {
-        sinit = ptree_BDD( sys_init, evar_list, manager );
+    if (spc.sys_init != NULL) {
+        sinit = ptree_BDD( spc.sys_init, spc.evar_list, manager );
     } else {
         sinit = Cudd_ReadOne( manager );
         Cudd_Ref( sinit );
     }
     if (verbose > 1)
         logprint( "Building environment transition BDD..." );
-    etrans = ptree_BDD( env_trans, evar_list, manager );
+    etrans = ptree_BDD( spc.env_trans, spc.evar_list, manager );
     if (verbose > 1) {
         logprint( "Done." );
         logprint( "Building system transition BDD..." );
     }
-    strans = ptree_BDD( sys_trans, evar_list, manager );
+    strans = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
     if (verbose > 1)
         logprint( "Done." );
 
     /* Build goal BDDs, if present. */
-    if (num_egoals > 0) {
-        egoals = malloc( num_egoals*sizeof(DdNode *) );
-        for (i = 0; i < num_egoals; i++)
-            *(egoals+i) = ptree_BDD( *(env_goals+i), evar_list, manager );
+    if (spc.num_egoals > 0) {
+        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_egoals; i++)
+            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
     } else {
         egoals = NULL;
     }
-    if (num_sgoals > 0) {
-        sgoals = malloc( num_sgoals*sizeof(DdNode *) );
-        for (i = 0; i < num_sgoals; i++)
-            *(sgoals+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
+    if (spc.num_sgoals > 0) {
+        sgoals = malloc( spc.num_sgoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_sgoals; i++)
+            *(sgoals+i) = ptree_BDD( *(spc.sys_goals+i), spc.evar_list, manager );
     } else {
         sgoals = NULL;
     }
 
     if (var_separator == NULL) {
-        evar_list = NULL;
+        spc.evar_list = NULL;
     } else {
         var_separator->left = NULL;
     }
@@ -168,8 +159,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
         return NULL;
     }
     Y = compute_sublevel_sets( manager, W, etrans, strans,
-                               egoals, num_egoals,
-                               sgoals, num_sgoals,
+                               egoals, spc.num_egoals,
+                               sgoals, spc.num_sgoals,
                                &num_sublevels, &X_ijr, verbose );
     if (Y == NULL) {
         fprintf( stderr,
@@ -185,10 +176,10 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
        replace Y_1 with the intersection of i-goal states and the
        winning set, and then shift the indices down (so that Y_1 is
        now called Y_0, Y_2 is now called Y_1, etc.) */
-    for (i = 0; i < num_sgoals; i++) {
+    for (i = 0; i < spc.num_sgoals; i++) {
         Cudd_RecursiveDeref( manager, *(*(Y+i)) );
         Cudd_RecursiveDeref( manager, *(*(Y+i)+1) );
-        for (r = 0; r < num_egoals; r++)
+        for (r = 0; r < spc.num_egoals; r++)
             Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i))+r) );
         free( *(*(X_ijr+i)) );
 
@@ -232,7 +223,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
        combination has already been encountered (whence the
        strategy already built). */
     if (init_flags == ALL_INIT
-        || (init_flags == ONE_SIDE_INIT && sys_init == NULL)) {
+        || (init_flags == ONE_SIDE_INIT && spc.sys_init == NULL)) {
         if (init_flags == ALL_INIT) {
             if (verbose > 1)
                 logprint( "Enumerating initial states, given init_flags ="
@@ -439,7 +430,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                 }
             } while (j > 0);
             if (j == 0) {
-                if (this_node_stack->mode == num_sgoals-1) {
+                if (this_node_stack->mode == spc.num_sgoals-1) {
                     this_node_stack->mode = 0;
                 } else {
                     (this_node_stack->mode)++;
@@ -549,7 +540,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                 Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
                 if (j > 0) {
                     for (offset = 1; offset >= 0; offset--) {
-                    for (r = 0; r < num_egoals; r++) {
+                    for (r = 0; r < spc.num_egoals; r++) {
                         Cudd_RecursiveDeref( manager, tmp );
                         Cudd_RecursiveDeref( manager, Y_i_primed );
                         Y_i_primed
@@ -584,10 +575,10 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                                             tmp )))
                             break;
                     }
-                    if (r < num_egoals)
+                    if (r < spc.num_egoals)
                         break;
                     }
-                    if (r >= num_egoals) {
+                    if (r >= spc.num_egoals) {
                         fprintf( stderr,
                                  "Error synthesize: unexpected losing"
                                  " state.\n" );
@@ -601,13 +592,13 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                     tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
                     Cudd_Ref( tmp );
                     tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
-                                      node->state,
-                                      tmp, 0, num_sys+num_env );
+                                         node->state,
+                                         tmp, 0, num_sys+num_env );
                     Cudd_RecursiveDeref( manager, tmp );
                     if (num_env > 0) {
                         tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
-                                         *(env_moves+k),
-                                         tmp2, num_sys+num_env, num_env );
+                                            *(env_moves+k),
+                                            tmp2, num_sys+num_env, num_env );
                         Cudd_RecursiveDeref( manager, tmp2 );
                     } else {
                         tmp = tmp2;
@@ -649,7 +640,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
             if (Cudd_IsComplement( ddval )) {
                 next_mode = node->mode;
             } else {
-                if (node->mode == num_sgoals-1) {
+                if (node->mode == spc.num_sgoals-1) {
                     next_mode = 0;
                 } else {
                     next_mode = node->mode + 1;
@@ -707,20 +698,20 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
     Cudd_RecursiveDeref( manager, sinit );
     Cudd_RecursiveDeref( manager, etrans );
     Cudd_RecursiveDeref( manager, strans );
-    for (i = 0; i < num_egoals; i++)
+    for (i = 0; i < spc.num_egoals; i++)
         Cudd_RecursiveDeref( manager, *(egoals+i) );
-    for (i = 0; i < num_sgoals; i++)
+    for (i = 0; i < spc.num_sgoals; i++)
         Cudd_RecursiveDeref( manager, *(sgoals+i) );
-    if (num_egoals > 0)
+    if (spc.num_egoals > 0)
         free( egoals );
-    if (num_sgoals > 0)
+    if (spc.num_sgoals > 0)
         free( sgoals );
     free( cube );
     free( state );
-    for (i = 0; i < num_sgoals; i++) {
+    for (i = 0; i < spc.num_sgoals; i++) {
         for (j = 0; j < *(num_sublevels+i); j++) {
             Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
-            for (r = 0; r < num_egoals; r++) {
+            for (r = 0; r < spc.num_egoals; r++) {
                 Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i)+j)+r) );
             }
             free( *(*(X_ijr+i)+j) );
@@ -730,15 +721,15 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
             free( *(X_ijr+i) );
         }
     }
-    if (num_sgoals > 0) {
+    if (spc.num_sgoals > 0) {
         free( Y );
         free( X_ijr );
         free( num_sublevels );
     }
     if (env_nogoal_flag) {
-        num_egoals = 0;
-        delete_tree( *env_goals );
-        free( env_goals );
+        spc.num_egoals = 0;
+        delete_tree( *spc.env_goals );
+        free( spc.env_goals );
     }
 
 
@@ -775,8 +766,8 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
         logprint_endline();
     }
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     /* Allocate cube array, used later for quantifying over variables. */
     cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
@@ -787,29 +778,29 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 
     /* Chain together environment and system variable lists for
        working with BDD library. */
-    if (evar_list == NULL) {
+    if (spc.evar_list == NULL) {
         var_separator = NULL;
-        evar_list = svar_list;  /* that this is the deterministic case
-                                   is indicated by var_separator = NULL. */
+        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+                                           is indicated by var_separator = NULL. */
     } else {
-        var_separator = get_list_item( evar_list, -1 );
+        var_separator = get_list_item( spc.evar_list, -1 );
         if (var_separator == NULL) {
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
             return NULL;
         }
-        var_separator->left = svar_list;
+        var_separator->left = spc.svar_list;
     }
 
-    if (env_init != NULL) {
-        einit = ptree_BDD( env_init, evar_list, manager );
+    if (spc.env_init != NULL) {
+        einit = ptree_BDD( spc.env_init, spc.evar_list, manager );
     } else {
         einit = Cudd_ReadOne( manager );
         Cudd_Ref( einit );
     }
-    if (sys_init != NULL) {
-        sinit = ptree_BDD( sys_init, evar_list, manager );
+    if (spc.sys_init != NULL) {
+        sinit = ptree_BDD( spc.sys_init, spc.evar_list, manager );
     } else {
         sinit = Cudd_ReadOne( manager );
         Cudd_Ref( sinit );
@@ -818,7 +809,7 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
     /* Break the link that appended the system variables list to the
        environment variables list. */
     if (var_separator == NULL) {
-        evar_list = NULL;
+        spc.evar_list = NULL;
     } else {
         var_separator->left = NULL;
     }
@@ -885,7 +876,7 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
         Cudd_RecursiveDeref( manager, tmp2 );
 
     } else if (init_flags == ONE_SIDE_INIT) {
-        if (sys_init == NULL) {
+        if (spc.sys_init == NULL) {
 
             tmp = Cudd_bddAnd( manager, einit, W );
             Cudd_Ref( tmp );

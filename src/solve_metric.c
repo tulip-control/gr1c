@@ -20,14 +20,7 @@
 #include "solve_metric.h"
 
 
-extern ptree_t *evar_list;
-extern ptree_t *svar_list;
-extern ptree_t *env_trans;
-extern ptree_t *sys_trans;
-extern ptree_t **env_goals;
-extern ptree_t **sys_goals;
-extern int num_egoals;
-extern int num_sgoals;
+extern specification_t spc;
 
 
 int *get_offsets( char *metric_vars, int *num_vars )
@@ -59,7 +52,7 @@ int *get_offsets( char *metric_vars, int *num_vars )
             exit(-1);
         }
 
-        var = evar_list;
+        var = spc.evar_list;
         start_index = 0;
         while (var) {
             if (strstr( var->name, tok ) == var->name)
@@ -68,7 +61,7 @@ int *get_offsets( char *metric_vars, int *num_vars )
             start_index++;
         }
         if (var == NULL) {
-            var = svar_list;
+            var = spc.svar_list;
             while (var) {
                 if (strstr( var->name, tok ) == var->name)
                     break;
@@ -116,8 +109,8 @@ int bounds_state( DdManager *manager, DdNode *T, vartype *ref_state,
     CUDD_VALUE_TYPE gvalue;
     int *gcube;
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     /* State vector (i.e., valuation of the variables) */
     state = malloc( sizeof(vartype)*(num_env+num_sys) );
@@ -212,8 +205,8 @@ int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
     CUDD_VALUE_TYPE gvalue;
     int *gcube;
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     state = malloc( (num_env+num_sys)*sizeof(vartype) );
     if (state == NULL) {
@@ -312,56 +305,56 @@ DdNode *compute_winning_set_saveBDDs( DdManager *manager,
     ptree_t *var_separator;
     DdNode *W;
 
-    if (num_egoals == 0) {
-        num_egoals = 1;
-        env_goals = malloc( sizeof(ptree_t *) );
-        *env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+    if (spc.num_egoals == 0) {
+        spc.num_egoals = 1;
+        spc.env_goals = malloc( sizeof(ptree_t *) );
+        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
     }
 
-    if (evar_list == NULL) {
+    if (spc.evar_list == NULL) {
         var_separator = NULL;
-        evar_list = svar_list;  /* that this is the deterministic case
-                                   is indicated by var_separator = NULL. */
+        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+                                           is indicated by var_separator = NULL. */
     } else {
-        var_separator = get_list_item( evar_list, -1 );
+        var_separator = get_list_item( spc.evar_list, -1 );
         if (var_separator == NULL) {
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
-            return -1;
+            return NULL;
         }
-        var_separator->left = svar_list;
+        var_separator->left = spc.svar_list;
     }
 
     if (verbose > 1)
         logprint( "Building environment transition BDD..." );
-    (*etrans) = ptree_BDD( env_trans, evar_list, manager );
+    (*etrans) = ptree_BDD( spc.env_trans, spc.evar_list, manager );
     if (verbose > 1) {
         logprint( "Done." );
         logprint( "Building system transition BDD..." );
     }
-    (*strans) = ptree_BDD( sys_trans, evar_list, manager );
+    (*strans) = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
     if (verbose > 1)
         logprint( "Done." );
 
     /* Build goal BDDs, if present. */
-    if (num_egoals > 0) {
-        (*egoals) = malloc( num_egoals*sizeof(DdNode *) );
-        for (i = 0; i < num_egoals; i++)
-            *((*egoals)+i) = ptree_BDD( *(env_goals+i), evar_list, manager );
+    if (spc.num_egoals > 0) {
+        (*egoals) = malloc( spc.num_egoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_egoals; i++)
+            *((*egoals)+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
     } else {
         (*egoals) = NULL;
     }
-    if (num_sgoals > 0) {
-        (*sgoals) = malloc( num_sgoals*sizeof(DdNode *) );
-        for (i = 0; i < num_sgoals; i++)
-            *((*sgoals)+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
+    if (spc.num_sgoals > 0) {
+        (*sgoals) = malloc( spc.num_sgoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_sgoals; i++)
+            *((*sgoals)+i) = ptree_BDD( *(spc.sys_goals+i), spc.evar_list, manager );
     } else {
         (*sgoals) = NULL;
     }
 
     if (var_separator == NULL) {
-        evar_list = NULL;
+        spc.evar_list = NULL;
     } else {
         var_separator->left = NULL;
     }
@@ -393,14 +386,14 @@ int compute_minmax( DdManager *manager,DdNode **W,
     int i, j, r;
     DdNode *tmp, *tmp2;
 
-    if (num_egoals == 0)
+    if (spc.num_egoals == 0)
         env_nogoal_flag = True;
 
     *W = compute_winning_set_saveBDDs( manager, etrans, strans, &egoals, sgoals,
                                        verbose );
     Y = compute_sublevel_sets( manager, *W, (*etrans), (*strans),
-                               egoals, num_egoals,
-                               (*sgoals), num_sgoals,
+                               egoals, spc.num_egoals,
+                               (*sgoals), spc.num_sgoals,
                                num_sublevels, &X_ijr, verbose );
     if (Y == NULL) {
         fprintf( stderr,
@@ -408,14 +401,14 @@ int compute_minmax( DdManager *manager,DdNode **W,
         return -1;
     }
 
-    *Min = malloc( num_sgoals*sizeof(double *) );
-    *Max = malloc( num_sgoals*sizeof(double *) );
+    *Min = malloc( spc.num_sgoals*sizeof(double *) );
+    *Max = malloc( spc.num_sgoals*sizeof(double *) );
     if (*Min == NULL || *Max == NULL) {
         perror( "compute_minmax, malloc" );
         exit(-1);
     }
 
-    for (i = 0; i < num_sgoals; i++) {
+    for (i = 0; i < spc.num_sgoals; i++) {
         *(*Min + i) = malloc( (*(*num_sublevels+i)-1)*sizeof(double) );
         *(*Max + i) = malloc( (*(*num_sublevels+i)-1)*sizeof(double) );
         if (*(*Min + i) == NULL || *(*Max + i) == NULL) {
@@ -443,15 +436,15 @@ int compute_minmax( DdManager *manager,DdNode **W,
 
 
     /* Pre-exit clean-up */
-    for (i = 0; i < num_egoals; i++)
+    for (i = 0; i < spc.num_egoals; i++)
         Cudd_RecursiveDeref( manager, *(egoals+i) );
-    if (num_egoals > 0)
+    if (spc.num_egoals > 0)
         free( egoals );
 
-    for (i = 0; i < num_sgoals; i++) {
+    for (i = 0; i < spc.num_sgoals; i++) {
         for (j = 0; j < *(*num_sublevels+i); j++) {
             Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
-            for (r = 0; r < num_egoals; r++) {
+            for (r = 0; r < spc.num_egoals; r++) {
                 Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i)+j)+r) );
             }
             free( *(*(X_ijr+i)+j) );
@@ -462,12 +455,12 @@ int compute_minmax( DdManager *manager,DdNode **W,
         }
     }
     if (env_nogoal_flag) {
-        num_egoals = 0;
-        delete_tree( *env_goals );
-        free( env_goals );
+        spc.num_egoals = 0;
+        delete_tree( *spc.env_goals );
+        free( spc.env_goals );
     }
 
-    if (num_sgoals > 0) {
+    if (spc.num_sgoals > 0) {
         free( Y );
         free( X_ijr );
     }
@@ -496,7 +489,7 @@ int compute_horizon( DdManager *manager, DdNode **W,
         return -1;  /* Error in compute_minmax() */
 
     if (verbose) {
-        for (i = 0; i < num_sgoals; i++) {
+        for (i = 0; i < spc.num_sgoals; i++) {
             for (j = 0; j < *(num_sublevels+i)-1; j++) {
                 logprint_startline();
                 logprint_raw( "goal %d, level %d: ", i, j );
@@ -506,7 +499,7 @@ int compute_horizon( DdManager *manager, DdNode **W,
         }
     }
 
-    for (i = 0; i < num_sgoals; i++) {
+    for (i = 0; i < spc.num_sgoals; i++) {
         for (j = 3; j < *(num_sublevels+i); j++) {
             horiz_j = 1;
             for (k = j-2; k >= 1; k--) {
@@ -518,9 +511,9 @@ int compute_horizon( DdManager *manager, DdNode **W,
         }
     }
 
-    if (num_sgoals > 0) {
+    if (spc.num_sgoals > 0) {
         free( num_sublevels );
-        for (i = 0; i < num_sgoals; i++) {
+        for (i = 0; i < spc.num_sgoals; i++) {
             free( *(Min+i) );
             free( *(Max+i) );
         }

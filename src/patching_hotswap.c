@@ -19,15 +19,7 @@
 #include "solve_metric.h"
 
 
-extern ptree_t *nonbool_var_list;
-extern ptree_t *evar_list;
-extern ptree_t *svar_list;
-extern ptree_t **env_goals;
-extern ptree_t **sys_goals;
-extern int num_egoals;
-extern int num_sgoals;
-extern ptree_t *env_trans;
-extern ptree_t *sys_trans;
+extern specification_t spc;
 
 
 /* Defined in patching.c */
@@ -79,8 +71,8 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
     if (strategy_fp == NULL)
         strategy_fp = stdin;
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     strategy = aut_aut_load( original_num_env+original_num_sys, strategy_fp );
     if (strategy == NULL) {
@@ -92,7 +84,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
     if (verbose > 1)
         logprint( "Expanding nonbool variables in the given strategy"
                   " automaton..." );
-    if (aut_expand_bool( strategy, evar_list, svar_list, nonbool_var_list )) {
+    if (aut_expand_bool( strategy, spc.evar_list, spc.svar_list, spc.nonbool_var_list )) {
         fprintf( stderr,
                  "Error add_metric_sysgoal: Failed to expand nonboolean"
                  " variables in given automaton." );
@@ -101,69 +93,69 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
     if (verbose > 1) {
         logprint( "Given strategy after variable expansion:" );
         logprint_startline();
-        dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_ATTRIB,
+        dot_aut_dump( strategy, spc.evar_list, spc.svar_list, DOT_AUT_ATTRIB,
                       getlogstream() );
         logprint_endline();
     }
 
     /* Set environment goal to True (i.e., any state) if none was
        given. This simplifies the implementation below. */
-    if (num_egoals == 0) {
+    if (spc.num_egoals == 0) {
         env_nogoal_flag = True;
-        num_egoals = 1;
-        env_goals = malloc( sizeof(ptree_t *) );
-        *env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        spc.num_egoals = 1;
+        spc.env_goals = malloc( sizeof(ptree_t *) );
+        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
     }
 
     /* Chain together environment and system variable lists for
        working with BDD library. */
-    if (evar_list == NULL) {
+    if (spc.evar_list == NULL) {
         var_separator = NULL;
-        evar_list = svar_list;  /* that this is the deterministic case
-                                   is indicated by var_separator = NULL. */
+        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+                                           is indicated by var_separator = NULL. */
     } else {
-        var_separator = get_list_item( evar_list, -1 );
+        var_separator = get_list_item( spc.evar_list, -1 );
         if (var_separator == NULL) {
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
             return NULL;
         }
-        var_separator->left = svar_list;
+        var_separator->left = spc.svar_list;
     }
 
     /* Generate BDDs for the various parse trees from the problem spec. */
     if (verbose > 1)
         logprint( "Building environment transition BDD..." );
-    etrans = ptree_BDD( env_trans, evar_list, manager );
+    etrans = ptree_BDD( spc.env_trans, spc.evar_list, manager );
     if (verbose > 1) {
         logprint( "Done." );
         logprint( "Building system transition BDD..." );
     }
-    strans = ptree_BDD( sys_trans, evar_list, manager );
+    strans = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
     if (verbose > 1)
         logprint( "Done." );
 
     /* Build goal BDDs, if present. */
-    if (num_egoals > 0) {
-        egoals = malloc( num_egoals*sizeof(DdNode *) );
-        for (i = 0; i < num_egoals; i++)
-            *(egoals+i) = ptree_BDD( *(env_goals+i), evar_list, manager );
+    if (spc.num_egoals > 0) {
+        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_egoals; i++)
+            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
     } else {
         egoals = NULL;
     }
-    if (num_sgoals > 0) {
-        sgoals = malloc( num_sgoals*sizeof(DdNode *) );
-        for (i = 0; i < num_sgoals; i++)
-            *(sgoals+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
+    if (spc.num_sgoals > 0) {
+        sgoals = malloc( spc.num_sgoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_sgoals; i++)
+            *(sgoals+i) = ptree_BDD( *(spc.sys_goals+i), spc.evar_list, manager );
     } else {
         sgoals = NULL;
     }
 
-    new_sgoal = ptree_BDD( new_sysgoal, evar_list, manager );
+    new_sgoal = ptree_BDD( new_sysgoal, spc.evar_list, manager );
 
     if (var_separator == NULL) {
-        evar_list = NULL;
+        spc.evar_list = NULL;
     } else {
         var_separator->left = NULL;
     }
@@ -171,13 +163,13 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
 
     /* Find which original system goal is closest to the new one */
     if (offw != NULL && num_metric_vars > 0) {
-        Min = malloc( num_sgoals*sizeof(double) );
-        Max = malloc( num_sgoals*sizeof(double) );
+        Min = malloc( spc.num_sgoals*sizeof(double) );
+        Max = malloc( spc.num_sgoals*sizeof(double) );
         if (Min == NULL || Max == NULL) {
             perror( "add_metric_sysgoal, malloc" );
             exit(-1);
         }
-        for (i = 0; i < num_sgoals; i++) {
+        for (i = 0; i < spc.num_sgoals; i++) {
             if (bounds_DDset( manager, *(sgoals+i), new_sgoal,
                               offw, num_metric_vars, Min+i, Max+i, verbose )) {
                 fprintf( stderr,
@@ -188,7 +180,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
             }
         }
         istar[0] = 0;
-        for (i = 1; i < num_sgoals; i++) {
+        for (i = 1; i < spc.num_sgoals; i++) {
             if (*(Min+i) < *(Min+istar[0]))
                 istar[0] = i;
         }
@@ -198,13 +190,13 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
                       istar[0] );
     } else {
         Min = Max = NULL;
-        istar[0] = num_sgoals-1;
+        istar[0] = spc.num_sgoals-1;
 
         if (verbose)
             logprint( "No metric variables given, so using sys goal mode i* = %d", istar[0] );
     }
 
-    if (istar[0] == num_sgoals-1) {
+    if (istar[0] == spc.num_sgoals-1) {
         istar[1] = 0;
     } else {
         istar[1] = istar[0]+1;
@@ -308,7 +300,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
         logprint( "Component strategy to reach the new system goal from"
                   " G_{i*}:" );
         logprint_startline();
-        dot_aut_dump( component_strategy, evar_list, svar_list,
+        dot_aut_dump( component_strategy, spc.evar_list, spc.svar_list,
                       DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
         logprint_endline();
     }
@@ -339,7 +331,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
     node1 = component_strategy;
     while (node1) {
         /* Temporary mode label for this component. */
-        node1->mode = num_sgoals+1;
+        node1->mode = spc.num_sgoals+1;
         node1 = node1->next;
     }
 
@@ -370,7 +362,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
         (*(Gi[0]+i))->trans = NULL;
 
         /* Temporary mode label for this component. */
-        (*(Gi[0]+i))->mode = num_sgoals+1;
+        (*(Gi[0]+i))->mode = spc.num_sgoals+1;
 
         node1 = component_strategy;
         while (node1) {
@@ -406,7 +398,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
     if (verbose > 1) {
         logprint( "Partially patched strategy before de-expanding variables:" );
         logprint_startline();
-        dot_aut_dump( strategy, evar_list, svar_list,
+        dot_aut_dump( strategy, spc.evar_list, spc.svar_list,
                       DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
         logprint_endline();
     }
@@ -428,7 +420,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
         logprint( "Component strategy to reach G_{i*+1} from the new system"
                   " goal:" );
         logprint_startline();
-        dot_aut_dump( component_strategy, evar_list, svar_list,
+        dot_aut_dump( component_strategy, spc.evar_list, spc.svar_list,
                       DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
         logprint_endline();
     }
@@ -510,18 +502,18 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
     Gi_succ = NULL; Gi_succ_len = 0;
 
     /* Update labels, thus completing the insertion process */
-    if (istar[0] == num_sgoals-1) {
+    if (istar[0] == spc.num_sgoals-1) {
         node1 = strategy;
         while (node1) {
-            if (node1->mode == num_sgoals+1) {
-                node1->mode = num_sgoals;
+            if (node1->mode == spc.num_sgoals+1) {
+                node1->mode = spc.num_sgoals;
             } else if (node1->mode == -1) {
                 node1->mode = 0;
             }
             node1 = node1->next;
         }
     } else {  /* istar[0] < istar[1] */
-        for (i = num_sgoals-1; i >= istar[1]; i--) {
+        for (i = spc.num_sgoals-1; i >= istar[1]; i--) {
             node1 = strategy;
             while (node1) {
                 if (node1->mode == i)
@@ -531,7 +523,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
         }
         node1 = strategy;
         while (node1) {
-            if (node1->mode == num_sgoals+1) {
+            if (node1->mode == spc.num_sgoals+1) {
                 node1->mode = istar[1];
             } else if (node1->mode == -1) {
                 node1->mode = istar[1]+1;
@@ -549,18 +541,18 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
     free( new_reached );
     Cudd_RecursiveDeref( manager, etrans );
     Cudd_RecursiveDeref( manager, strans );
-    for (i = 0; i < num_egoals; i++)
+    for (i = 0; i < spc.num_egoals; i++)
         Cudd_RecursiveDeref( manager, *(egoals+i) );
-    for (i = 0; i < num_sgoals; i++)
+    for (i = 0; i < spc.num_sgoals; i++)
         Cudd_RecursiveDeref( manager, *(sgoals+i) );
-    if (num_egoals > 0)
+    if (spc.num_egoals > 0)
         free( egoals );
-    if (num_sgoals > 0)
+    if (spc.num_sgoals > 0)
         free( sgoals );
     if (env_nogoal_flag) {
-        num_egoals = 0;
-        delete_tree( *env_goals );
-        free( env_goals );
+        spc.num_egoals = 0;
+        delete_tree( *spc.env_goals );
+        free( spc.env_goals );
     }
 
     return strategy;
@@ -592,21 +584,21 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
     if (strategy_fp == NULL)
         strategy_fp = stdin;
 
-    if (delete_i < 0 || delete_i >= num_sgoals) {
+    if (delete_i < 0 || delete_i >= spc.num_sgoals) {
         logprint( "Error rm_sysgoal: invoked with goal index %d outside"
                   " bounds [0,%d]",
                   delete_i,
-                  num_sgoals-1 );
+                  spc.num_sgoals-1 );
         return NULL;
     }
-    if (num_sgoals < 3) {
+    if (spc.num_sgoals < 3) {
         logprint( "Error rm_sysgoal: Current implementation requires at"
                   " least 3 initial system goals." );
         return NULL;
     }
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     strategy = aut_aut_load( original_num_env+original_num_sys, strategy_fp );
     if (strategy == NULL) {
@@ -619,7 +611,7 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
         logprint( "Expanding nonbool variables in the given strategy"
                   " automaton..." );
     if (aut_expand_bool( strategy,
-                         evar_list, svar_list, nonbool_var_list )) {
+                         spc.evar_list, spc.svar_list, spc.nonbool_var_list )) {
         fprintf( stderr,
                  "Error rm_sysgoal: Failed to expand nonboolean variables"
                  " in given automaton." );
@@ -628,60 +620,60 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
     if (verbose > 1) {
         logprint( "Given strategy after variable expansion:" );
         logprint_startline();
-        dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_ATTRIB,
+        dot_aut_dump( strategy, spc.evar_list, spc.svar_list, DOT_AUT_ATTRIB,
                       getlogstream() );
         logprint_endline();
     }
 
     /* Set environment goal to True (i.e., any state) if none was
        given. This simplifies the implementation below. */
-    if (num_egoals == 0) {
+    if (spc.num_egoals == 0) {
         env_nogoal_flag = True;
-        num_egoals = 1;
-        env_goals = malloc( sizeof(ptree_t *) );
-        *env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        spc.num_egoals = 1;
+        spc.env_goals = malloc( sizeof(ptree_t *) );
+        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
     }
 
     /* Chain together environment and system variable lists for
        working with BDD library. */
-    if (evar_list == NULL) {
+    if (spc.evar_list == NULL) {
         var_separator = NULL;
-        evar_list = svar_list;  /* that this is the deterministic case
-                                   is indicated by var_separator = NULL. */
+        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+                                           is indicated by var_separator = NULL. */
     } else {
-        var_separator = get_list_item( evar_list, -1 );
+        var_separator = get_list_item( spc.evar_list, -1 );
         if (var_separator == NULL) {
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
             return NULL;
         }
-        var_separator->left = svar_list;
+        var_separator->left = spc.svar_list;
     }
 
     /* Generate BDDs for the various parse trees from the problem spec. */
     if (verbose > 1)
         logprint( "Building environment transition BDD..." );
-    etrans = ptree_BDD( env_trans, evar_list, manager );
+    etrans = ptree_BDD( spc.env_trans, spc.evar_list, manager );
     if (verbose > 1) {
         logprint( "Done." );
         logprint( "Building system transition BDD..." );
     }
-    strans = ptree_BDD( sys_trans, evar_list, manager );
+    strans = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
     if (verbose > 1)
         logprint( "Done." );
 
     /* Build goal BDDs, if present. */
-    if (num_egoals > 0) {
-        egoals = malloc( num_egoals*sizeof(DdNode *) );
-        for (i = 0; i < num_egoals; i++)
-            *(egoals+i) = ptree_BDD( *(env_goals+i), evar_list, manager );
+    if (spc.num_egoals > 0) {
+        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_egoals; i++)
+            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
     } else {
         egoals = NULL;
     }
 
     if (var_separator == NULL) {
-        evar_list = NULL;
+        spc.evar_list = NULL;
     } else {
         var_separator->left = NULL;
     }
@@ -690,7 +682,7 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
     node = strategy;
     num_del_nodes = 0;
     while (node) {
-        if (node->mode == delete_i || node->mode == (delete_i+1)%num_sgoals)
+        if (node->mode == delete_i || node->mode == (delete_i+1)%spc.num_sgoals)
             num_del_nodes++;
         node = node->next;
     }
@@ -699,7 +691,7 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
                   " to-be-deleted (%d) or successor (%d)",
                   num_del_nodes,
                   delete_i,
-                  (delete_i+1)%num_sgoals );
+                  (delete_i+1)%spc.num_sgoals );
 
     /* Pre-allocate space for Entry and Exit sets; the number of
        elements actually used is tracked by Entry_len and Exit_len,
@@ -718,10 +710,10 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 
     node = strategy;
     while (node) {
-        if (node->mode == delete_i || node->mode == (delete_i+1)%num_sgoals) {
+        if (node->mode == delete_i || node->mode == (delete_i+1)%spc.num_sgoals) {
 
             for (i = 0; i < node->trans_len; i++) {
-                if ((*(node->trans+i))->mode != (delete_i+1)%num_sgoals
+                if ((*(node->trans+i))->mode != (delete_i+1)%spc.num_sgoals
                     && (*(node->trans+i))->mode != delete_i) {
                     for (j = 0; j < Exit_len; j++)
                         if (*(Exit+j) == *(node->trans+i))
@@ -807,7 +799,7 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
     if (verbose > 1) {
         logprint( "rm_sysgoal: substrategy from Entry to Exit:" );
         logprint_startline();
-        dot_aut_dump( substrategy, evar_list, svar_list,
+        dot_aut_dump( substrategy, spc.evar_list, spc.svar_list,
                       DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
         logprint_endline();
     }
@@ -864,7 +856,7 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
     /* Delete nodes of the deleted and superseded goal modes */
     node = strategy;
     while (node) {
-        if (node->mode == delete_i || node->mode == (delete_i+1)%num_sgoals) {
+        if (node->mode == delete_i || node->mode == (delete_i+1)%spc.num_sgoals) {
             replace_anode_trans( strategy, node, NULL );
             replace_anode_trans( substrategy, node, NULL );
             strategy = delete_anode( strategy, node );
@@ -877,7 +869,7 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
     node = substrategy;
     while (node) {
         if (node->mode == -1) {
-            node->mode = (delete_i+1)%num_sgoals;
+            node->mode = (delete_i+1)%spc.num_sgoals;
         }
         node = node->next;
     }
@@ -895,14 +887,14 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
 
     Cudd_RecursiveDeref( manager, etrans );
     Cudd_RecursiveDeref( manager, strans );
-    for (i = 0; i < num_egoals; i++)
+    for (i = 0; i < spc.num_egoals; i++)
         Cudd_RecursiveDeref( manager, *(egoals+i) );
-    if (num_egoals > 0)
+    if (spc.num_egoals > 0)
         free( egoals );
     if (env_nogoal_flag) {
-        num_egoals = 0;
-        delete_tree( *env_goals );
-        free( env_goals );
+        spc.num_egoals = 0;
+        delete_tree( *spc.env_goals );
+        free( spc.env_goals );
     }
     free( Exit );
     free( Entry );

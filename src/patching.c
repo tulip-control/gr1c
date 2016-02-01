@@ -18,15 +18,7 @@
 #include "gr1c_util.h"
 
 
-extern ptree_t *evar_list;
-extern ptree_t *svar_list;
-extern ptree_t **env_goals;
-extern int num_egoals;
-extern int num_sgoals;
-extern ptree_t **env_trans_array;
-extern ptree_t **sys_trans_array;
-extern int et_array_len;
-extern int st_array_len;
+extern specification_t spc;
 
 
 /* Pretty print state vector, default is to list nonzero variables.
@@ -41,7 +33,7 @@ void pprint_state( vartype *state, int num_env, int num_sys, FILE *fp )
     if (fp == NULL)
         fp = stdout;
 
-    node = evar_list;
+    node = spc.evar_list;
     for (i = 0; i < num_env; i++) {
         if (*(state+i)) {
             fprintf( fp, " %s", node->name );
@@ -57,9 +49,9 @@ void pprint_state( vartype *state, int num_env, int num_sys, FILE *fp )
     }
 
     if (num_env == -1)
-        num_env = tree_size( evar_list );
+        num_env = tree_size( spc.evar_list );
 
-    node = svar_list;
+    node = spc.svar_list;
     for (i = num_env; i < num_sys+num_env; i++) {
         if (*(state+i)) {
             fprintf( fp, " %s", node->name );
@@ -216,7 +208,7 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
     if (verbose > 1) {
         logprint( "Local strategy for goal mode %d:", goal_mode );
         logprint_startline();
-        dot_aut_dump( local_strategy, evar_list, svar_list, DOT_AUT_ATTRIB,
+        dot_aut_dump( local_strategy, spc.evar_list, spc.svar_list, DOT_AUT_ATTRIB,
                       getlogstream() );
         logprint_endline();
     }
@@ -404,8 +396,8 @@ anode_t *patch_localfixpoint( DdManager *manager,
     if (strategy_fp == NULL)
         strategy_fp = stdin;
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     strategy = aut_aut_load( original_num_env+original_num_sys, strategy_fp );
     if (strategy == NULL) {
@@ -414,13 +406,13 @@ anode_t *patch_localfixpoint( DdManager *manager,
     if (verbose)
         logprint( "Read in strategy of size %d", aut_size( strategy ) );
 
-    num_nonbool = tree_size( nonbool_var_list );
+    num_nonbool = tree_size( spc.nonbool_var_list );
     if (num_nonbool > 0) {
         if (verbose > 1)
             logprint( "Expanding nonbool variables in the given strategy"
                       " automaton..." );
         if (aut_expand_bool( strategy,
-                             evar_list, svar_list, nonbool_var_list )) {
+                             spc.evar_list, spc.svar_list, spc.nonbool_var_list )) {
             fprintf( stderr,
                      "Error patch_localfixpoint: Failed to expand"
                      " nonboolean variables in given automaton." );
@@ -429,7 +421,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
         if (verbose > 1) {
             logprint( "Given strategy after variable expansion:" );
             logprint_startline();
-            dot_aut_dump( strategy, evar_list, svar_list, DOT_AUT_ATTRIB,
+            dot_aut_dump( strategy, spc.evar_list, spc.svar_list, DOT_AUT_ATTRIB,
                           getlogstream() );
             logprint_endline();
         }
@@ -447,17 +439,17 @@ anode_t *patch_localfixpoint( DdManager *manager,
             *(doffw+2*num_nonbool+i) = *(doffw+i) = *(offw+i);
     }
 
-    affected = malloc( sizeof(anode_t **)*num_sgoals );
+    affected = malloc( sizeof(anode_t **)*spc.num_sgoals );
     if (affected == NULL) {
         perror( "patch_localfixpoint, malloc" );
         exit(-1);
     }
-    affected_len = malloc( sizeof(int)*num_sgoals );
+    affected_len = malloc( sizeof(int)*spc.num_sgoals );
     if (affected_len == NULL) {
         perror( "patch_localfixpoint, malloc" );
         exit(-1);
     }
-    for (i = 0; i < num_sgoals; i++) {
+    for (i = 0; i < spc.num_sgoals; i++) {
         *(affected+i) = NULL;
         *(affected_len+i) = 0;
     }
@@ -470,11 +462,11 @@ anode_t *patch_localfixpoint( DdManager *manager,
     
     /* Set environment goal to True (i.e., any state) if none was
        given. This simplifies the implementation below. */
-    if (num_egoals == 0) {
+    if (spc.num_egoals == 0) {
         env_nogoal_flag = True;
-        num_egoals = 1;
-        env_goals = malloc( sizeof(ptree_t *) );
-        *env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        spc.num_egoals = 1;
+        spc.env_goals = malloc( sizeof(ptree_t *) );
+        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
     }
 
     /* Process game graph changes file */
@@ -543,19 +535,19 @@ anode_t *patch_localfixpoint( DdManager *manager,
 
     /* Chain together environment and system variable lists for
        working with BDD library. */
-    if (evar_list == NULL) {
+    if (spc.evar_list == NULL) {
         var_separator = NULL;
-        evar_list = svar_list;  /* that this is the deterministic case
-                                   is indicated by var_separator = NULL. */
+        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+                                           is indicated by var_separator = NULL. */
     } else {
-        var_separator = get_list_item( evar_list, -1 );
+        var_separator = get_list_item( spc.evar_list, -1 );
         if (var_separator == NULL) {
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
             return NULL;
         }
-        var_separator->left = svar_list;
+        var_separator->left = spc.svar_list;
     }
 
     /* Generate BDDs for parse trees from the problem spec transition
@@ -568,8 +560,8 @@ anode_t *patch_localfixpoint( DdManager *manager,
         logprint_startline();
         logprint_raw( "Relevant env trans (one per line):" );
     }
-    for (i = 0; i < et_array_len; i++) {
-        etrans_part = ptree_BDD( *(env_trans_array+i), evar_list, manager );
+    for (i = 0; i < spc.et_array_len; i++) {
+        etrans_part = ptree_BDD( *(spc.env_trans_array+i), spc.evar_list, manager );
         for (j = 0; j < N_len; j++) {
             for (k = 0; k < num_env+num_sys; k++) {
                 *(cube+k) = *(*(N+j)+k);
@@ -605,7 +597,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
         if (j < N_len) {
             if (verbose) {
                 logprint_raw( "\n" );
-                print_formula( *(env_trans_array+i), getlogstream(),
+                print_formula( *(spc.env_trans_array+i), getlogstream(),
                                FORMULA_SYNTAX_GR1C );
             }
             tmp = Cudd_bddAnd( manager, etrans, etrans_part );
@@ -628,8 +620,8 @@ anode_t *patch_localfixpoint( DdManager *manager,
         logprint_startline();
         logprint_raw( "Relevant sys trans (one per line):" );
     }
-    for (i = 0; i < st_array_len; i++) {
-        strans_part = ptree_BDD( *(sys_trans_array+i), evar_list, manager );
+    for (i = 0; i < spc.st_array_len; i++) {
+        strans_part = ptree_BDD( *(spc.sys_trans_array+i), spc.evar_list, manager );
         for (j = 0; j < N_len; j++) {
             for (k = 0; k < num_env+num_sys; k++) {
                 *(cube+k) = *(*(N+j)+k);
@@ -665,7 +657,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
         if (j < N_len) {
             if (verbose) {
                 logprint_raw( "\n" );
-                print_formula( *(sys_trans_array+i), getlogstream(),
+                print_formula( *(spc.sys_trans_array+i), getlogstream(),
                                FORMULA_SYNTAX_GR1C );
             }
             tmp = Cudd_bddAnd( manager, strans, strans_part );
@@ -682,16 +674,16 @@ anode_t *patch_localfixpoint( DdManager *manager,
     }
 
     /* Build goal BDDs, if present. */
-    if (num_egoals > 0) {
-        egoals = malloc( num_egoals*sizeof(DdNode *) );
-        for (i = 0; i < num_egoals; i++)
-            *(egoals+i) = ptree_BDD( *(env_goals+i), evar_list, manager );
+    if (spc.num_egoals > 0) {
+        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_egoals; i++)
+            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
     } else {
         egoals = NULL;
     }
 
     if (var_separator == NULL) {
-        evar_list = NULL;
+        spc.evar_list = NULL;
     } else {
         var_separator->left = NULL;
     }
@@ -782,7 +774,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                 }
                 
                 /* Find nodes in strategy that are affected by this change */
-                for (j = 0; j < num_sgoals; j++) {
+                for (j = 0; j < spc.num_sgoals; j++) {
                     node = find_anode( strategy, j, state, num_env+num_sys );
                     while (node != NULL) {
                         if (!strncmp( line, "restrict ", strlen( "restrict " ) )
@@ -1016,7 +1008,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
     free( vars );
     free( pvars );
 
-    for (goal_mode = 0; goal_mode < num_sgoals; goal_mode++) {
+    for (goal_mode = 0; goal_mode < spc.num_sgoals; goal_mode++) {
 
         result_strategy = localfixpoint_goalmode( manager, num_env, num_sys,
                                                   strategy, goal_mode,
@@ -1029,7 +1021,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
         strategy = result_strategy;
     }
 
-    if (goal_mode != num_sgoals) {  /* Did a local patching attempt fail? */
+    if (goal_mode != spc.num_sgoals) {  /* Did a local patching attempt fail? */
         delete_aut( strategy );
         strategy = NULL;
     } else {
@@ -1041,20 +1033,20 @@ anode_t *patch_localfixpoint( DdManager *manager,
     free( cube );
     Cudd_RecursiveDeref( manager, etrans );
     Cudd_RecursiveDeref( manager, strans );
-    for (i = 0; i < num_egoals; i++)
+    for (i = 0; i < spc.num_egoals; i++)
         Cudd_RecursiveDeref( manager, *(egoals+i) );
-    if (num_egoals > 0)
+    if (spc.num_egoals > 0)
         free( egoals );
     if (env_nogoal_flag) {
-        num_egoals = 0;
-        delete_tree( *env_goals );
-        free( env_goals );
+        spc.num_egoals = 0;
+        delete_tree( *spc.env_goals );
+        free( spc.env_goals );
     }
     Cudd_RecursiveDeref( manager, N_BDD );
     for (i = 0; i < N_len; i++)
         free( *(N+i) );
     free( N );
-    for (i = 0; i < num_sgoals; i++)
+    for (i = 0; i < spc.num_sgoals; i++)
         free( *(affected+i) );
     free( affected );
     free( affected_len );

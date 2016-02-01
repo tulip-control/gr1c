@@ -29,14 +29,7 @@
 #include "logging.h"
 
 
-extern ptree_t *evar_list;
-extern ptree_t *svar_list;
-extern ptree_t *env_trans;
-extern ptree_t *sys_trans;
-extern ptree_t **env_goals;
-extern ptree_t **sys_goals;
-extern int num_egoals;
-extern int num_sgoals;
+extern specification_t spc;
 
 
 /***************************
@@ -119,8 +112,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
     char *input;
     int num_read;
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
 #ifdef USE_READLINE
     while ((input = readline( GR1C_INTERACTIVE_PROMPT ))) {
@@ -142,13 +135,13 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                              strlen( "disable autoreorder" ) )) {
             Cudd_AutodynDisable( manager );
         } else if (!strncmp( input, "numgoals", strlen( "numgoals" ) )) {
-            fprintf( outfp, "%d", num_sgoals );
+            fprintf( outfp, "%d", spc.num_sgoals );
         } else if (!strncmp( input, "envvar", strlen( "envvar" ) )) {
             var_index = 0;
-            if (evar_list == NULL) {
+            if (spc.evar_list == NULL) {
                 fprintf( outfp, "(none)" );
             } else {
-                tmppt = evar_list;
+                tmppt = spc.evar_list;
                 while (tmppt) {
                     if (tmppt->left == NULL) {
                         fprintf( outfp, "%s (%d)", tmppt->name, var_index );
@@ -161,10 +154,10 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
             }
         } else if (!strncmp( input, "sysvar", strlen( "sysvar" ) )) {
             var_index = num_env;
-            if (svar_list == NULL) {
+            if (spc.svar_list == NULL) {
                 fprintf( outfp, "(none)" );
             } else {
-                tmppt = svar_list;
+                tmppt = spc.svar_list;
                 while (tmppt) {
                     if (tmppt->left == NULL) {
                         fprintf( outfp, "%s (%d)", tmppt->name, var_index );
@@ -177,16 +170,16 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
             }
         } else if (!strncmp( input, "var", strlen( "var" ) )) {
             var_index = 0;
-            if (evar_list != NULL) {
-                tmppt = evar_list;
+            if (spc.evar_list != NULL) {
+                tmppt = spc.evar_list;
                 while (tmppt) {
                     fprintf( outfp, "%s (%d), ", tmppt->name, var_index );
                     tmppt = tmppt->left;
                     var_index++;
                 }
             }
-            if (svar_list != NULL) {
-                tmppt = svar_list;
+            if (spc.svar_list != NULL) {
+                tmppt = spc.svar_list;
                 while (tmppt) {
                     if (tmppt->left == NULL) {
                         fprintf( outfp, "%s (%d)", tmppt->name, var_index );
@@ -211,10 +204,10 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
             if (num_read < 1) {
                 fprintf( outfp, "Invalid arguments." );
             } else {
-                if (*intcom_state < 0 || *intcom_state > num_sgoals-1) {
+                if (*intcom_state < 0 || *intcom_state > spc.num_sgoals-1) {
                     fprintf( outfp, "Invalid mode: %d", *intcom_state );
                 } else {
-                    print_formula( *(sys_goals+*intcom_state), stdout,
+                    print_formula( *(spc.sys_goals+*intcom_state), stdout,
                                    FORMULA_SYNTAX_GR1C );
                 }
                 free( intcom_state );
@@ -222,8 +215,8 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
             
         } else if (!strncmp( input, "printegoals", strlen( "printegoals" ) )) {
 
-            for (var_index = 0; var_index < num_egoals; var_index++) {
-                print_formula( *(env_goals+var_index), stdout,
+            for (var_index = 0; var_index < spc.num_egoals; var_index++) {
+                print_formula( *(spc.env_goals+var_index), stdout,
                                FORMULA_SYNTAX_GR1C );
                 fprintf( outfp, "\n" );
             }
@@ -270,7 +263,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                 continue;
             }
             if (*(intcom_state+2*num_env+num_sys) < 0
-                || *(intcom_state+2*num_env+num_sys) > num_sgoals-1) {
+                || *(intcom_state+2*num_env+num_sys) > spc.num_sgoals-1) {
                 fprintf( outfp,
                          "Invalid mode: %d",
                          *(intcom_state+2*num_env+num_sys) );
@@ -377,7 +370,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                 continue;
             }
             if (*(intcom_state+num_env+num_sys) < 0
-                || *(intcom_state+num_env+num_sys) > num_sgoals-1) {
+                || *(intcom_state+num_env+num_sys) > spc.num_sgoals-1) {
                 fprintf( outfp,
                          "Invalid mode: %d", *(intcom_state+num_env+num_sys) );
                 free( intcom_state );
@@ -447,15 +440,15 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
     /* Set environment goal to True (i.e., any state) if none was
        given. This simplifies the implementation below. */
-    if (num_egoals == 0) {
+    if (spc.num_egoals == 0) {
         env_nogoal_flag = True;
-        num_egoals = 1;
-        env_goals = malloc( sizeof(ptree_t *) );
-        *env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        spc.num_egoals = 1;
+        spc.env_goals = malloc( sizeof(ptree_t *) );
+        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
     }
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     /* State vector (i.e., valuation of the variables) */
     state = malloc( sizeof(vartype)*(num_env+num_sys) );
@@ -473,51 +466,51 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
     /* Chain together environment and system variable lists for
        working with BDD library. */
-    if (evar_list == NULL) {
+    if (spc.evar_list == NULL) {
         var_separator = NULL;
-        evar_list = svar_list;  /* that this is the deterministic case
-                                   is indicated by var_separator = NULL. */
+        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+                                           is indicated by var_separator = NULL. */
     } else {
-        var_separator = get_list_item( evar_list, -1 );
+        var_separator = get_list_item( spc.evar_list, -1 );
         if (var_separator == NULL) {
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
             return -1;
         }
-        var_separator->left = svar_list;
+        var_separator->left = spc.svar_list;
     }
 
     /* Generate BDDs for the various parse trees from the problem spec. */
     if (verbose > 1)
         logprint( "Building environment transition BDD..." );
-    etrans = ptree_BDD( env_trans, evar_list, manager );
+    etrans = ptree_BDD( spc.env_trans, spc.evar_list, manager );
     if (verbose > 1) {
         logprint( "Done." );
         logprint( "Building system transition BDD..." );
     }
-    strans = ptree_BDD( sys_trans, evar_list, manager );
+    strans = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
     if (verbose > 1)
         logprint( "Done." );
 
     /* Build goal BDDs, if present. */
-    if (num_egoals > 0) {
-        egoals = malloc( num_egoals*sizeof(DdNode *) );
-        for (i = 0; i < num_egoals; i++)
-            *(egoals+i) = ptree_BDD( *(env_goals+i), evar_list, manager );
+    if (spc.num_egoals > 0) {
+        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_egoals; i++)
+            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
     } else {
         egoals = NULL;
     }
-    if (num_sgoals > 0) {
-        sgoals = malloc( num_sgoals*sizeof(DdNode *) );
-        for (i = 0; i < num_sgoals; i++)
-            *(sgoals+i) = ptree_BDD( *(sys_goals+i), evar_list, manager );
+    if (spc.num_sgoals > 0) {
+        sgoals = malloc( spc.num_sgoals*sizeof(DdNode *) );
+        for (i = 0; i < spc.num_sgoals; i++)
+            *(sgoals+i) = ptree_BDD( *(spc.sys_goals+i), spc.evar_list, manager );
     } else {
         sgoals = NULL;
     }
 
     if (var_separator == NULL) {
-            evar_list = NULL;
+            spc.evar_list = NULL;
     } else {
         var_separator->left = NULL;
     }
@@ -566,21 +559,21 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
                 return -1;
             }
             if (Y != NULL) {
-                for (i = 0; i < num_sgoals; i++) {
+                for (i = 0; i < spc.num_sgoals; i++) {
                     for (j = 0; j < *(num_sublevels+i); j++)
                         Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
                     if (*(num_sublevels+i) > 0)
                         free( *(Y+i) );
                 }
-                if (num_sgoals > 0) {
+                if (spc.num_sgoals > 0) {
                     free( Y );
                     free( num_sublevels );
                 }
             }
             Y = compute_sublevel_sets( manager, W,
                                        etrans_patched, strans_patched,
-                                       egoals, num_egoals,
-                                       sgoals, num_sgoals,
+                                       egoals, spc.num_egoals,
+                                       sgoals, spc.num_sgoals,
                                        &num_sublevels, &X_ijr, verbose );
             if (Y == NULL) {
                 fprintf( stderr,
@@ -966,20 +959,20 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
     Cudd_RecursiveDeref( manager, W );
     Cudd_RecursiveDeref( manager, etrans );
     Cudd_RecursiveDeref( manager, strans );
-    for (i = 0; i < num_egoals; i++)
+    for (i = 0; i < spc.num_egoals; i++)
         Cudd_RecursiveDeref( manager, *(egoals+i) );
-    for (i = 0; i < num_sgoals; i++)
+    for (i = 0; i < spc.num_sgoals; i++)
         Cudd_RecursiveDeref( manager, *(sgoals+i) );
-    if (num_egoals > 0)
+    if (spc.num_egoals > 0)
         free( egoals );
-    if (num_sgoals > 0)
+    if (spc.num_sgoals > 0)
         free( sgoals );
     free( cube );
     free( state );
-    for (i = 0; i < num_sgoals; i++) {
+    for (i = 0; i < spc.num_sgoals; i++) {
         for (j = 0; j < *(num_sublevels+i); j++) {
             Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
-            for (r = 0; r < num_egoals; r++) {
+            for (r = 0; r < spc.num_egoals; r++) {
                 Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i)+j)+r) );
             }
             free( *(*(X_ijr+i)+j) );
@@ -990,11 +983,11 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
         }
     }
     if (env_nogoal_flag) {
-        num_egoals = 0;
-        delete_tree( *env_goals );
-        free( env_goals );
+        spc.num_egoals = 0;
+        delete_tree( *spc.env_goals );
+        free( spc.env_goals );
     }
-    if (num_sgoals > 0) {
+    if (spc.num_sgoals > 0) {
         free( Y );
         free( X_ijr );
         free( num_sublevels );

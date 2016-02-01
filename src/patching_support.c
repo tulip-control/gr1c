@@ -13,7 +13,7 @@
 #include "solve_support.h"
 
 
-extern int num_egoals;
+extern specification_t spc;
 
 
 anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
@@ -73,12 +73,12 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
         exit(-1);
     }
     
-    *X_jr = malloc( num_egoals*sizeof(DdNode *) );
+    *X_jr = malloc( spc.num_egoals*sizeof(DdNode *) );
     if (*X_jr == NULL) {
         perror( "synthesize_reachgame_BDD, malloc" );
         exit(-1);
     }
-    for (r = 0; r < num_egoals; r++) {
+    for (r = 0; r < spc.num_egoals; r++) {
         *(*X_jr+r) = Cudd_Not( Cudd_ReadOne( manager ) );
         Cudd_Ref( *(*X_jr+r) );
     }
@@ -92,7 +92,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
             exit(-1);
         }
         
-        *(X_jr + num_sublevels-1) = malloc( num_egoals*sizeof(DdNode *) );
+        *(X_jr + num_sublevels-1) = malloc( spc.num_egoals*sizeof(DdNode *) );
         if (*(X_jr + num_sublevels-1) == NULL) {
             perror( "synthesize_reachgame_BDD, malloc" );
             exit(-1);
@@ -110,7 +110,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 
         *(Y+num_sublevels-1) = Cudd_Not( Cudd_ReadOne( manager ) );
         Cudd_Ref( *(Y+num_sublevels-1) );
-        for (r = 0; r < num_egoals; r++) {
+        for (r = 0; r < spc.num_egoals; r++) {
             
             /* (Re)initialize X */
             if (X != NULL)
@@ -184,7 +184,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
                 *Cudd_bddLeq( manager, *(Y+num_sublevels-2),
                               *(Y+num_sublevels-1) )) {
                 Cudd_RecursiveDeref( manager, *(Y+num_sublevels-1) );
-                for (r = 0; r < num_egoals; r++) {
+                for (r = 0; r < spc.num_egoals; r++) {
                     Cudd_RecursiveDeref( manager,
                                          *(*(X_jr+num_sublevels-1) + r) );
                 }
@@ -335,7 +335,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
                 Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
                 if (j > 0) {
                     for (offset = 1; offset >= 0; offset--) {
-                    for (r = 0; r < num_egoals; r++) {
+                    for (r = 0; r < spc.num_egoals; r++) {
                         Cudd_RecursiveDeref( manager, tmp );
                         Cudd_RecursiveDeref( manager, Y_i_primed );
                         Y_i_primed = Cudd_bddVarMap( manager, *(*(X_jr+j - offset)+r) );
@@ -370,10 +370,10 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
                                             tmp )))
                             break;
                     }
-                    if (r < num_egoals)
+                    if (r < spc.num_egoals)
                         break;
                     }
-                    if (r >= num_egoals) {
+                    if (r >= spc.num_egoals) {
                         fprintf( stderr,
                                  "Error synthesize_reachgame_BDD: unexpected"
                                  " losing state.\n" );
@@ -478,7 +478,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
     free( state );
     for (i = 0; i < num_sublevels; i++) {
         Cudd_RecursiveDeref( manager, *(Y+i) );
-        for (j = 0; j < num_egoals; j++) {
+        for (j = 0; j < spc.num_egoals; j++) {
             Cudd_RecursiveDeref( manager, *(*(X_jr+i)+j) );
         }
         free( *(X_jr+i) );

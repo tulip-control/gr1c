@@ -21,21 +21,7 @@ extern void yyrestart( FILE *new_file );
 /**************************
  **** Global variables ****/
 
-extern ptree_t *evar_list;
-extern ptree_t *svar_list;
-extern ptree_t *env_init;
-extern ptree_t *sys_init;
-ptree_t *env_trans = NULL;  /* Built from components in env_trans_array. */
-ptree_t *sys_trans = NULL;
-extern ptree_t **env_goals;
-extern ptree_t **sys_goals;
-extern int num_egoals;
-extern int num_sgoals;
-
-extern ptree_t **env_trans_array;
-extern ptree_t **sys_trans_array;
-extern int et_array_len;
-extern int st_array_len;
+extern specification_t spc;
 
 /**************************/
 
@@ -228,6 +214,7 @@ int main( int argc, char **argv )
         yyrestart( spc_fp );
         if (verbose)
             logprint( "Parsing reference specification file..." );
+        SPC_INIT( spc );
         if (yyparse())
             return 2;
         if (verbose)
@@ -235,7 +222,7 @@ int main( int argc, char **argv )
         fclose( spc_fp );
         spc_fp = NULL;
 
-        state_len = tree_size( evar_list ) + tree_size( svar_list );
+        state_len = tree_size( spc.evar_list ) + tree_size( spc.svar_list );
         if (verbose)
             logprint( "Detected state vector length of %d.", state_len );
     }
@@ -277,12 +264,12 @@ int main( int argc, char **argv )
     case AUTMAN_VERMODEL:
         /* Currently, only target supported is Spin Promela,
            so the variable verification_model is not checked. */
-        spin_aut_dump( head, evar_list, svar_list,
-                       env_init, sys_init,
-                       env_trans_array, et_array_len,
-                       sys_trans_array, st_array_len,
-                       env_goals, num_egoals,
-                       sys_goals, num_sgoals,
+        spin_aut_dump( head, spc.evar_list, spc.svar_list,
+                       spc.env_init, spc.sys_init,
+                       spc.env_trans_array, spc.et_array_len,
+                       spc.sys_trans_array, spc.st_array_len,
+                       spc.env_goals, spc.num_egoals,
+                       spc.sys_goals, spc.num_sgoals,
                        stdout );
         break;
 
@@ -290,14 +277,14 @@ int main( int argc, char **argv )
         if (format_option == OUTPUT_FORMAT_TEXT) {
             list_aut_dump( head, state_len, stdout );
         } else if (format_option == OUTPUT_FORMAT_DOT) {
-            dot_aut_dump( head, evar_list, svar_list,
+            dot_aut_dump( head, spc.evar_list, spc.svar_list,
                           DOT_AUT_ATTRIB, stdout );
         } else if (format_option == OUTPUT_FORMAT_AUT) {
             aut_aut_dump( head, state_len, stdout );
         } else if (format_option == OUTPUT_FORMAT_JSON) {
-            json_aut_dump( head, evar_list, svar_list, stdout );
+            json_aut_dump( head, spc.evar_list, spc.svar_list, stdout );
         } else { /* OUTPUT_FORMAT_TULIP */
-            tulip_aut_dump( head, evar_list, svar_list, stdout );
+            tulip_aut_dump( head, spc.evar_list, spc.svar_list, stdout );
         }
         break;
 

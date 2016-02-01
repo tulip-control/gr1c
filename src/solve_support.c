@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "solve_support.h"
 

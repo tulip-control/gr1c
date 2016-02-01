@@ -25,24 +25,7 @@ extern void yyrestart( FILE *new_file );
 /**************************
  **** Global variables ****/
 
-ptree_t *nonbool_var_list = NULL;
-
-extern ptree_t *evar_list;
-extern ptree_t *svar_list;
-extern ptree_t *env_init;
-extern ptree_t *sys_init;
-ptree_t *env_trans = NULL;  /* Built from components in env_trans_array. */
-ptree_t *sys_trans = NULL;
-extern ptree_t **env_goals;
-extern ptree_t **sys_goals;
-extern int num_egoals;
-extern int num_sgoals;
-
-extern ptree_t **env_trans_array;
-extern ptree_t **sys_trans_array;
-extern int et_array_len;
-extern int st_array_len;
-
+extern specification_t spc;
 extern ptree_t *gen_tree_ptr;
 
 /**************************/
@@ -309,6 +292,7 @@ int main( int argc, char **argv )
             return -1;
         }
         yyrestart( clf_file );
+        SPC_INIT( spc );
         yyparse();
         fclose( clf_file );
 
@@ -339,20 +323,21 @@ int main( int argc, char **argv )
     }
 
     /* Parse the specification. */
-    evar_list = NULL;
-    svar_list = NULL;
+    spc.evar_list = NULL;
+    spc.svar_list = NULL;
     gen_tree_ptr = NULL;
     if (verbose)
         logprint( "Parsing input..." );
+    SPC_INIT( spc );
     if (yyparse())
         return 2;
     if (verbose)
         logprint( "Done." );
 
-    if (check_gr1c_form( evar_list, svar_list, env_init, sys_init,
-                         env_trans_array, et_array_len,
-                         sys_trans_array, st_array_len,
-                         env_goals, num_egoals, sys_goals, num_sgoals,
+    if (check_gr1c_form( spc.evar_list, spc.svar_list, spc.env_init, spc.sys_init,
+                         spc.env_trans_array, spc.et_array_len,
+                         spc.sys_trans_array, spc.st_array_len,
+                         spc.env_goals, spc.num_egoals, spc.sys_goals, spc.num_sgoals,
                          UNDEFINED_INIT ) < 0)
         return 2;
 
@@ -362,13 +347,13 @@ int main( int argc, char **argv )
 
     /* Check clformula for clandestine variables */
     tmppt = NULL;
-    if (svar_list == NULL) {
-        svar_list = evar_list;
+    if (spc.svar_list == NULL) {
+        spc.svar_list = spc.evar_list;
     } else {
-        tmppt = get_list_item( svar_list, -1 );
-        tmppt->left = evar_list;
+        tmppt = get_list_item( spc.svar_list, -1 );
+        tmppt->left = spc.evar_list;
     }
-    if ((tmpstr = check_vars( clformula, svar_list, NULL )) != NULL) {
+    if ((tmpstr = check_vars( clformula, spc.svar_list, NULL )) != NULL) {
         fprintf( stderr, "Unrecognized variable in -f formula: %s\n", tmpstr );
         return 1;
     }
@@ -376,80 +361,80 @@ int main( int argc, char **argv )
         tmppt->left = NULL;
         tmppt = NULL;
     } else {
-        svar_list = NULL;
+        spc.svar_list = NULL;
     }
 
 
     /* Omission implies empty. */
-    if (et_array_len == 0) {
-        et_array_len = 1;
-        env_trans_array = malloc( sizeof(ptree_t *) );
-        if (env_trans_array == NULL) {
+    if (spc.et_array_len == 0) {
+        spc.et_array_len = 1;
+        spc.env_trans_array = malloc( sizeof(ptree_t *) );
+        if (spc.env_trans_array == NULL) {
             perror( "gr1c, malloc" );
             return -1;
         }
-        *env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+        *spc.env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
     }
-    if (st_array_len == 0) {
-        st_array_len = 1;
-        sys_trans_array = malloc( sizeof(ptree_t *) );
-        if (sys_trans_array == NULL) {
+    if (spc.st_array_len == 0) {
+        spc.st_array_len = 1;
+        spc.sys_trans_array = malloc( sizeof(ptree_t *) );
+        if (spc.sys_trans_array == NULL) {
             perror( "gr1c, malloc" );
             return -1;
         }
-        *sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+        *spc.sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
     }
-    if (num_sgoals == 0) {
-        num_sgoals = 1;
-        sys_goals = malloc( sizeof(ptree_t *) );
-        if (sys_goals == NULL) {
+    if (spc.num_sgoals == 0) {
+        spc.num_sgoals = 1;
+        spc.sys_goals = malloc( sizeof(ptree_t *) );
+        if (spc.sys_goals == NULL) {
             perror( "gr1c, malloc" );
             return -1;
         }
-        *sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        *spc.sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );
     }
 
     /* Number of variables, before expansion of those that are nonboolean */
-    original_num_env = tree_size( evar_list );
-    original_num_sys = tree_size( svar_list );
+    original_num_env = tree_size( spc.evar_list );
+    original_num_sys = tree_size( spc.svar_list );
 
 
     if (ptdump_flag) {
-        tree_dot_dump( env_init, "env_init_ptree.dot" );
-        tree_dot_dump( sys_init, "sys_init_ptree.dot" );
+        tree_dot_dump( spc.env_init, "env_init_ptree.dot" );
+        tree_dot_dump( spc.sys_init, "sys_init_ptree.dot" );
 
-        for (i = 0; i < et_array_len; i++) {
+        for (i = 0; i < spc.et_array_len; i++) {
             snprintf( dumpfilename, sizeof(dumpfilename),
                       "env_trans%05d_ptree.dot", i );
-            tree_dot_dump( *(env_trans_array+i), dumpfilename );
+            tree_dot_dump( *(spc.env_trans_array+i), dumpfilename );
         }
-        for (i = 0; i < st_array_len; i++) {
+        for (i = 0; i < spc.st_array_len; i++) {
             snprintf( dumpfilename, sizeof(dumpfilename),
                       "sys_trans%05d_ptree.dot", i );
-            tree_dot_dump( *(sys_trans_array+i), dumpfilename );
+            tree_dot_dump( *(spc.sys_trans_array+i), dumpfilename );
         }
 
-        if (num_egoals > 0) {
-            for (i = 0; i < num_egoals; i++) {
+        if (spc.num_egoals > 0) {
+            for (i = 0; i < spc.num_egoals; i++) {
                 snprintf( dumpfilename, sizeof(dumpfilename),
                          "env_goal%05d_ptree.dot", i );
-                tree_dot_dump( *(env_goals+i), dumpfilename );
+                tree_dot_dump( *(spc.env_goals+i), dumpfilename );
             }
         }
-        if (num_sgoals > 0) {
-            for (i = 0; i < num_sgoals; i++) {
+        if (spc.num_sgoals > 0) {
+            for (i = 0; i < spc.num_sgoals; i++) {
                 snprintf( dumpfilename, sizeof(dumpfilename),
                          "sys_goal%05d_ptree.dot", i );
-                tree_dot_dump( *(sys_goals+i), dumpfilename );
+                tree_dot_dump( *(spc.sys_goals+i), dumpfilename );
             }
         }
 
         var_index = 0;
         printf( "Environment variables (indices; domains): " );
-        if (evar_list == NULL) {
+        if (spc.evar_list == NULL) {
             printf( "(none)" );
         } else {
-            tmppt = evar_list;
+            tmppt = spc.evar_list;
             while (tmppt) {
                 if (tmppt->value == 0) {  /* Boolean */
                     if (tmppt->left == NULL) {
@@ -473,10 +458,10 @@ int main( int argc, char **argv )
         printf( "\n\n" );
 
         printf( "System variables (indices; domains): " );
-        if (svar_list == NULL) {
+        if (spc.svar_list == NULL) {
             printf( "(none)" );
         } else {
-            tmppt = svar_list;
+            tmppt = spc.svar_list;
             while (tmppt) {
                 if (tmppt->value == 0) {  /* Boolean */
                     if (tmppt->left == NULL) {
@@ -499,22 +484,22 @@ int main( int argc, char **argv )
         }
         printf( "\n\n" );
 
-        print_GR1_spec( evar_list, svar_list, env_init, sys_init,
-                        env_trans_array, et_array_len,
-                        sys_trans_array, st_array_len,
-                        env_goals, num_egoals, sys_goals, num_sgoals, stdout );
+        print_GR1_spec( spc.evar_list, spc.svar_list, spc.env_init, spc.sys_init,
+                        spc.env_trans_array, spc.et_array_len,
+                        spc.sys_trans_array, spc.st_array_len,
+                        spc.env_goals, spc.num_egoals, spc.sys_goals, spc.num_sgoals, stdout );
     }
 
-    if (expand_nonbool_GR1( evar_list, svar_list, &env_init, &sys_init,
-                            &env_trans_array, &et_array_len,
-                            &sys_trans_array, &st_array_len,
-                            &env_goals, num_egoals, &sys_goals, num_sgoals,
+    if (expand_nonbool_GR1( spc.evar_list, spc.svar_list, &spc.env_init, &spc.sys_init,
+                            &spc.env_trans_array, &spc.et_array_len,
+                            &spc.sys_trans_array, &spc.st_array_len,
+                            &spc.env_goals, spc.num_egoals, &spc.sys_goals, spc.num_sgoals,
                             ALL_ENV_EXIST_SYS_INIT, verbose ) < 0)
         return -1;
-    nonbool_var_list = expand_nonbool_variables( &evar_list, &svar_list,
-                                                 verbose );
+    spc.nonbool_var_list = expand_nonbool_variables( &spc.evar_list, &spc.svar_list,
+                                                     verbose );
 
-    tmppt = nonbool_var_list;
+    tmppt = spc.nonbool_var_list;
     while (tmppt) {
         if (clformula != NULL) {
             if (verbose > 1)
@@ -529,14 +514,14 @@ int main( int argc, char **argv )
 
     if (verbose > 1)
         /* Dump the spec to show results of conversion (if any). */
-        print_GR1_spec( evar_list, svar_list, env_init, sys_init,
-                        env_trans_array, et_array_len,
-                        sys_trans_array, st_array_len,
-                        env_goals, num_egoals, sys_goals, num_sgoals, NULL );
+        print_GR1_spec( spc.evar_list, spc.svar_list, spc.env_init, spc.sys_init,
+                        spc.env_trans_array, spc.et_array_len,
+                        spc.sys_trans_array, spc.st_array_len,
+                        spc.env_goals, spc.num_egoals, spc.sys_goals, spc.num_sgoals, NULL );
 
 
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
 
     /* Compute bitwise offsets for metric variables, if requested. */
     if (metric_vars != NULL)
@@ -561,7 +546,7 @@ int main( int argc, char **argv )
 
         if (offw != NULL)
             free( offw );
-        offw = get_offsets_list( evar_list, svar_list, nonbool_var_list );
+        offw = get_offsets_list( spc.evar_list, spc.svar_list, spc.nonbool_var_list );
 
         fp = fopen( argv[edges_input_index], "r" );
         if (fp == NULL) {
@@ -573,27 +558,27 @@ int main( int argc, char **argv )
             logprint( "Patching given strategy..." );
         strategy = patch_localfixpoint( manager, strategy_fp, fp,
                                         original_num_env, original_num_sys,
-                                        nonbool_var_list, offw, verbose );
+                                        spc.nonbool_var_list, offw, verbose );
         if (verbose)
             logprint( "Done." );
 
         fclose( fp );
     } else if (clformula_index >= 0) {  /* add_metric_sysgoal() */
 
-        if (et_array_len > 1) {
-            env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
-        } else if (et_array_len == 1) {
-            env_trans = *env_trans_array;
+        if (spc.et_array_len > 1) {
+            spc.env_trans = merge_ptrees( spc.env_trans_array, spc.et_array_len, PT_AND );
+        } else if (spc.et_array_len == 1) {
+            spc.env_trans = *spc.env_trans_array;
         } else {
             fprintf( stderr,
                      "Syntax error: GR(1) specification is missing environment"
                      " transition rules.\n" );
             return 2;
         }
-        if (st_array_len > 1) {
-            sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
-        } else if (st_array_len == 1) {
-            sys_trans = *sys_trans_array;
+        if (spc.st_array_len > 1) {
+            spc.sys_trans = merge_ptrees( spc.sys_trans_array, spc.st_array_len, PT_AND );
+        } else if (spc.st_array_len == 1) {
+            spc.sys_trans = *spc.sys_trans_array;
         } else {
             fprintf( stderr,
                      "Syntax error: GR(1) specification is missing system"
@@ -612,28 +597,28 @@ int main( int argc, char **argv )
 
     } else if (remove_goal_mode >= 0) {  /* rm_sysgoal() */
 
-        if (remove_goal_mode > num_sgoals-1) {
+        if (remove_goal_mode > spc.num_sgoals-1) {
             fprintf( stderr,
                      "Requested system goal index %d exceeds maximum %d.\n",
                      remove_goal_mode,
-                     num_sgoals-1 );
+                     spc.num_sgoals-1 );
             return 1;
         }
 
-        if (et_array_len > 1) {
-            env_trans = merge_ptrees( env_trans_array, et_array_len, PT_AND );
-        } else if (et_array_len == 1) {
-            env_trans = *env_trans_array;
+        if (spc.et_array_len > 1) {
+            spc.env_trans = merge_ptrees( spc.env_trans_array, spc.et_array_len, PT_AND );
+        } else if (spc.et_array_len == 1) {
+            spc.env_trans = *spc.env_trans_array;
         } else {
             fprintf( stderr,
                      "Syntax error: GR(1) specification is missing environment"
                      " transition rules.\n" );
             return 2;
         }
-        if (st_array_len > 1) {
-            sys_trans = merge_ptrees( sys_trans_array, st_array_len, PT_AND );
-        } else if (st_array_len == 1) {
-            sys_trans = *sys_trans_array;
+        if (spc.st_array_len > 1) {
+            spc.sys_trans = merge_ptrees( spc.sys_trans_array, spc.st_array_len, PT_AND );
+        } else if (spc.st_array_len == 1) {
+            spc.sys_trans = *spc.sys_trans_array;
         } else {
             fprintf( stderr,
                      "Syntax error: GR(1) specification is missing system"
@@ -663,15 +648,15 @@ int main( int argc, char **argv )
     T = NULL;  /* To avoid seg faults by the generic clean-up code. */
 
     if (strategy != NULL) {  /* De-expand nonboolean variables */
-        tmppt = nonbool_var_list;
+        tmppt = spc.nonbool_var_list;
         while (tmppt) {
-            aut_compact_nonbool( strategy, evar_list, svar_list,
+            aut_compact_nonbool( strategy, spc.evar_list, spc.svar_list,
                                  tmppt->name, tmppt->value );
             tmppt = tmppt->left;
         }
 
-        num_env = tree_size( evar_list );
-        num_sys = tree_size( svar_list );
+        num_env = tree_size( spc.evar_list );
+        num_sys = tree_size( spc.svar_list );
     }
 
     if (strategy != NULL) {
@@ -692,19 +677,19 @@ int main( int argc, char **argv )
         if (format_option == OUTPUT_FORMAT_TEXT) {
             list_aut_dump( strategy, num_env+num_sys, fp );
         } else if (format_option == OUTPUT_FORMAT_DOT) {
-            if (nonbool_var_list != NULL) {
-                dot_aut_dump( strategy, evar_list, svar_list,
+            if (spc.nonbool_var_list != NULL) {
+                dot_aut_dump( strategy, spc.evar_list, spc.svar_list,
                               DOT_AUT_ATTRIB, fp );
             } else {
-                dot_aut_dump( strategy, evar_list, svar_list,
+                dot_aut_dump( strategy, spc.evar_list, spc.svar_list,
                               DOT_AUT_BINARY | DOT_AUT_ATTRIB, fp );
             }
         } else if (format_option == OUTPUT_FORMAT_AUT) {
             aut_aut_dump( strategy, num_env+num_sys, fp );
         } else if (format_option == OUTPUT_FORMAT_JSON) {
-            json_aut_dump( strategy, evar_list, svar_list, fp );
+            json_aut_dump( strategy, spc.evar_list, spc.svar_list, fp );
         } else { /* OUTPUT_FORMAT_TULIP */
-            tulip_aut_dump( strategy, evar_list, svar_list, fp );
+            tulip_aut_dump( strategy, spc.evar_list, spc.svar_list, fp );
         }
 
         if (fp != stdout)
@@ -717,20 +702,20 @@ int main( int argc, char **argv )
     if (offw != NULL)
         free( offw );
     delete_tree( clformula );
-    delete_tree( evar_list );
-    delete_tree( svar_list );
-    delete_tree( env_init );
-    delete_tree( sys_init );
-    delete_tree( env_trans );
-    delete_tree( sys_trans );
-    for (i = 0; i < num_egoals; i++)
-        delete_tree( *(env_goals+i) );
-    if (num_egoals > 0)
-        free( env_goals );
-    for (i = 0; i < num_sgoals; i++)
-        delete_tree( *(sys_goals+i) );
-    if (num_sgoals > 0)
-        free( sys_goals );
+    delete_tree( spc.evar_list );
+    delete_tree( spc.svar_list );
+    delete_tree( spc.env_init );
+    delete_tree( spc.sys_init );
+    delete_tree( spc.env_trans );
+    delete_tree( spc.sys_trans );
+    for (i = 0; i < spc.num_egoals; i++)
+        delete_tree( *(spc.env_goals+i) );
+    if (spc.num_egoals > 0)
+        free( spc.env_goals );
+    for (i = 0; i < spc.num_sgoals; i++)
+        delete_tree( *(spc.sys_goals+i) );
+    if (spc.num_sgoals > 0)
+        free( spc.sys_goals );
     if (T != NULL)
         Cudd_RecursiveDeref( manager, T );
     if (strategy)

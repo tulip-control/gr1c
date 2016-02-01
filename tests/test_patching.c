@@ -13,26 +13,7 @@
 #include "automaton.h"
 #include "patching.h"
 
-
-/**************************
- **** Global variables ****/
-
-ptree_t *evar_list = NULL;
-ptree_t *svar_list = NULL;
-ptree_t *env_init = NULL;
-ptree_t *sys_init = NULL;
-ptree_t *env_trans = NULL;
-ptree_t *sys_trans = NULL;
-ptree_t **env_goals = NULL;
-ptree_t **sys_goals = NULL;
-int num_egoals = 0;
-int num_sgoals = 0;
-ptree_t **env_trans_array = NULL;
-ptree_t **sys_trans_array = NULL;
-int et_array_len = 0;
-int st_array_len = 0;
-
-/**************************/
+specification_t spc;
 
 
 #define STRING_MAXLEN 60
@@ -52,6 +33,8 @@ int main( int argc, char **argv )
     DdNode *tmp, *tmp2;  /* Temporary BDDs */
     DdNode **vars, **pvars;
     anode_t *start_node, *stop_node;
+
+    SPC_INIT( spc );
     
     /*************************************************************
        # **Test fixture**
@@ -108,8 +91,8 @@ int main( int argc, char **argv )
     strans = Cudd_ReadOne( manager );
     Cudd_Ref( strans );
 
-    num_egoals = 1;
-    egoals = malloc( num_egoals*sizeof(DdNode *) );
+    spc.num_egoals = 1;
+    egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
     if (egoals == NULL) {
         perror( "test_patching, malloc" );
         abort();
@@ -210,7 +193,7 @@ int main( int argc, char **argv )
     /* Clean-up and check for leaks */
     Cudd_RecursiveDeref( manager, etrans );
     Cudd_RecursiveDeref( manager, strans );
-    for (i = 0; i < num_egoals; i++)
+    for (i = 0; i < spc.num_egoals; i++)
         Cudd_RecursiveDeref( manager, *(egoals+i) );
     free( egoals );
     Cudd_RecursiveDeref( manager, N_BDD );
