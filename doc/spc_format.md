@@ -59,7 +59,8 @@ similarly for `SYSINIT`.
 
 * `ALL_ENV_EXIST_SYS_INIT` (default) : For each initial valuation of environment
   variables that satisfies the `ENVINIT:...;` section, the strategy must provide
-  some valuation of system variables that satisfies `SYSINIT:...;`.
+  some valuation of system variables that satisfies `SYSINIT:...;`.  Only SYS
+  vars can appear in SYSINIT, and only ENV vars can appear in ENVINIT.
 
 * `ALL_INIT` : Any state that satisfies the conjunction of the `ENVINIT:...;`
   and `SYSINIT:...;` sections can occur initially.  Any variable can appear in
