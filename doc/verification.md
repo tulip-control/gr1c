@@ -63,7 +63,9 @@ first few lines of the file, e.g.,
 Because we want to verify that the strategy realizes the specification, we
 generate a [never claim](http://spinroot.com/spin/Man/never.html) from the
 negation of the formula that we just located in `trivaut.pml`.  Continuing our
-example, we use the routine available by the `-f` switch of Spin.  Placing the
+example, we use the routine available by the `-f` switch of Spin.  Note that
+there are other tools capable of generating a never-claim from an LTL formula,
+e.g., [LTL2BA](http://www.lsv.ens-cachan.fr/~gastin/ltl2ba/). Placing the
 formula found into <code>spin -f '!(...)'</code>, we have
 
     $ spin -f '!((X envinit && [] (!checketrans || envtrans) && []<> envgoal0000) -> (X sysinit && [] (!checkstrans || systrans) && []<> sysgoal0000 && []<> sysgoal0001 && [] !pmlfault))' >> trivaut.pml
