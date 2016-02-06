@@ -74,9 +74,8 @@ objects") in Python.  An example is the following.
 
 <h2 id="tulipconxml">tulipcon XML</h2>
 
-See [nTLP documentation](http://slivingston.github.io/nTLP/doc/), specifically
-the [page about data
-formats](http://slivingston.github.io/nTLP/doc/data_formats.html#tulipcon-xml).
+A file format from before version 1 of [TuLiP](http://tulip-control.org).  At
+the time of writing, it is not yet available in the current release of TuLiP.
 
 
 <h2 id="gr1cautformat">gr1c automaton</h2>
