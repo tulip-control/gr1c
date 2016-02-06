@@ -228,6 +228,11 @@ int main( int argc, char **argv )
         } else if (input_index < 0) {
             /* Use first non-flag argument as filename whence to read
                specification. */
+            if (i < argc-1) {
+                fprintf( stderr,
+                         "Unexpected arguments after filename. Try \"-h\".\n" );
+                return 1;
+            }
             input_index = i;
         }
     }
