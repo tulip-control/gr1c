@@ -23,5 +23,88 @@ gr1c \- a software suite for GR(1) synthesis and related activities
 is a collection of tools for GR(1) synthesis and related activities.  Its core
 functionality is checking realizability of and synthesizing strategies for GR(1)
 specifications, though it does much more.
-
+.PP
 The citable URL is http://scottman.net/2012/gr1c
+.PP
+As usual for UNIX command-line programs,
+.B \-\-
+can be used to disable option parsing, e.g., if a file named "-beef" is to be
+read.
+.PP
+Besides being a command on its own,
+.B gr1c
+provides access to other commands in the suite when invoked as
+.RS
+.B gr1c
+.I COMMAND
+.R "[\|...]\|"
+.RE
+where COMMAND is one of the following:
+.BR rg ,
+.BR patch ,
+.BR help .
+When applicable, any arguments after COMMAND are passed on to the appropriate
+program. Use
+.B \-h
+to get the corresponding help message.
+.SH OPTIONS
+.IP "\-h, \-\-help"
+this help message
+.IP "\-V, \-\-version"
+print version and exit
+.IP \-v
+be verbose; use
+.B -vv
+to be more verbose
+.IP \-l
+enable logging
+.IP "\-t TYPE"
+strategy output format; default is
+.BR json ;
+supported formats:
+.BR txt ,
+.BR dot ,
+.BR aut ,
+.BR json ,
+.BR tulip
+.IP "\-n INIT"
+initial condition interpretation, selected as
+one of the following (not case sensitive):
+.BR ALL_ENV_EXIST_SYS_INIT \ (default),
+.BR ALL_INIT ,
+.BR ONE_SIDE_INIT
+.IP \-s
+only check specification syntax (return 2 on error)
+.IP \-p
+dump parse trees to DOT files, and echo formulas to screen
+.IP \-r
+only check realizability; do not synthesize strategy
+(return 0 if realizable, 3 if not)
+.IP \-i
+interactive mode
+.IP "\-o FILE"
+output strategy to FILE, rather than stdout (default)
+.IP \-P
+create Spin Promela model of strategy;
+output to stdout, so requires
+.B -o
+flag to also be used.
+.SH EXAMPLE
+More examples are available in the gr1c release.
+.in
+.SS Specification
+\&
+.nf
+ENV: x;
+SYS: y;
+
+ENVINIT: !x;
+ENVTRANS: [](x <-> !x');
+ENVGOAL: []<>x;
+
+SYSINIT: y;
+SYSTRANS:;
+SYSGOAL: []<>(y&x) & []<>(!y);
+.fi
+.SH AUTHORS
+Scott C. Livingston  <slivingston@cds.caltech.edu>
