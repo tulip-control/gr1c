@@ -118,10 +118,8 @@ int main( int argc, char **argv )
                 return -1;
             }
 
-        }
-
-        else if (!strncmp( argv[1], "help", strlen( "help" ) )
-                 && argv[1][strlen("help")] == '\0') {
+        } else if (!strncmp( argv[1], "help", strlen( "help" ) )
+                   && argv[1][strlen("help")] == '\0') {
             reading_options = False;
             help_flag = True;
         }
