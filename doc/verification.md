@@ -14,8 +14,8 @@ Tutorial
 In this tutorial, we will synthesize a strategy and then verify it using
 [Spin](http://spinroot.com).  We assume that `spin` is installed and that there
 is a C compiler available as `cc`.  If you are running this from a local build
-of **gr1c**, then you may need to instead use `./autman` and `./gr1c`, i.e.,
-prepending by `./`.
+of **gr1c**, then you may need to first add the directory containing `gr1c` and
+other programs to `PATH`, as described in [the developer's introduction](md_start_dev.html).
 
 Consider the small specification
 
@@ -41,7 +41,7 @@ where shell redirection is used to save the output to a file named
 The next step is to create a [Spin](http://spinroot.com)
 [Promela](http://spinroot.com/spin/Man/promela.html) file using
 
-    $ autman -i examples/trivial.spc trivstrategy.aut -P > trivaut.pml
+    $ gr1c autman -i examples/trivial.spc trivstrategy.aut -P > trivaut.pml
 
 While we could have created this file in the first step using the `-P` switch of
 `gr1c`, first storing the aut file allows later generation of a Promela file (as

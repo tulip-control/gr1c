@@ -36,7 +36,7 @@ gr1c include:
 in `exp/grpatch.c`.</dd>
 
 <dt>`aux/`</dt>
-<dd>Consult `aux/README.txt`.  The main entry point for the program `autman` is
+<dd>Consult `aux/README.txt`.  The main entry point for the program `gr1c-autman` is
 in `aux/autman.c`.</dd></dd>
 
 <dt>`examples/`</dt>

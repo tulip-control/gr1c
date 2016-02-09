@@ -110,7 +110,7 @@ publications.  E.g., patch_localfixpoint() (cf. patching.h) concerns the method
 in [[LPJM13]](md_papers.html#LPJM13).
 </dd>
 
-<dt>autman</dt>
+<dt>gr1c&nbsp;autman</dt>
 <dd>(auxiliary.)  a command-line tool for manipulating automata.  Currently it
 only supports [gr1c automaton format](md_formats.html#gr1cautformat).
 </dd>
