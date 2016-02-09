@@ -3,7 +3,7 @@
 # SCL; 2012-2015.
 
 CORE_PROGRAMS = gr1c gr1c-rg
-EXP_PROGRAMS = gr1c-patch
+EXP_PROGRAMS = gr1c-patch gr1c-jit
 AUX_PROGRAMS = gr1c-autman
 
 
@@ -54,7 +54,7 @@ gr1c-autman: util.o logging.o solve_support.o ptree.o autman.o automaton.o autom
 gr1c-patch: grpatch.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o patching_hotswap.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-grjit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
+gr1c-jit: grjit.o sim.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 autman.o: aux/autman.c

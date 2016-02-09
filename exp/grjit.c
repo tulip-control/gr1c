@@ -20,7 +20,6 @@
 #include "ptree.h"
 #include "solve.h"
 #include "automaton.h"
-#include "util.h"
 #include "solve_metric.h"
 #include "solve_support.h"
 #include "sim.h"
@@ -427,7 +426,7 @@ int main( int argc, char **argv )
                             &spc.env_trans_array, &spc.et_array_len,
                             &spc.sys_trans_array, &spc.st_array_len,
                             &spc.env_goals, spc.num_egoals, &spc.sys_goals, spc.num_sgoals,
-                            verbose ) < 0)
+                            ALL_ENV_EXIST_SYS_INIT, verbose ) < 0)
         return -1;
     spc.nonbool_var_list = expand_nonbool_variables( &spc.evar_list, &spc.svar_list,
                                                      verbose );
@@ -469,7 +468,7 @@ int main( int argc, char **argv )
     Cudd_SetMaxCacheHard( manager, (unsigned int)-1 );
     Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 
-    T = check_realizable( manager, EXIST_SYS_INIT, verbose );
+    T = check_realizable( manager, ALL_ENV_EXIST_SYS_INIT, verbose );
     if (verbose) {
         if (T != NULL) {
             logprint( "Realizable." );

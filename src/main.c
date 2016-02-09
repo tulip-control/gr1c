@@ -118,6 +118,20 @@ int main( int argc, char **argv )
                 return -1;
             }
 
+        } else if (!strncmp( argv[1], "jit", strlen( "jit" ) )
+                   && argv[1][strlen("jit")] == '\0') {
+
+            command_argv = malloc( sizeof(char *)*argc );
+            command_argv[0] = strdup( "gr1c jit" );
+            command_argv[argc] = NULL;
+            for (i = 1; i < argc-1; i++)
+                command_argv[i] = argv[i+1];
+
+            if (execvp( "gr1c-jit", command_argv ) < 0) {
+                perror( "gr1c, execvp" );
+                return -1;
+            }
+
         } else if (!strncmp( argv[1], "autman", strlen( "autman" ) )
                    && argv[1][strlen("autman")] == '\0') {
 
@@ -277,6 +291,7 @@ int main( int argc, char **argv )
                 "  rg          solve reachability game\n"
                 "  autman      manipulate finite-memory strategies\n"
                 "  patch       patch or modify a given strategy (incremental synthesis)\n"
+                "  jit         just-in-time (or on-the-fly) methods\n"
                 "  help        this help message (equivalent to -h)\n\n"
                 "When applicable, any arguments after COMMAND are passed on to the\n"
                 "appropriate program. Use -h to get the corresponding help message.\n", argv[0] );
