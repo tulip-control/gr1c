@@ -118,6 +118,20 @@ int main( int argc, char **argv )
                 return -1;
             }
 
+        } else if (!strncmp( argv[1], "autman", strlen( "autman" ) )
+                   && argv[1][strlen("autman")] == '\0') {
+
+            command_argv = malloc( sizeof(char *)*argc );
+            command_argv[0] = strdup( "gr1c autman" );
+            command_argv[argc] = NULL;
+            for (i = 1; i < argc-1; i++)
+                command_argv[i] = argv[i+1];
+
+            if (execvp( "gr1c-autman", command_argv ) < 0) {
+                perror( "gr1c, execvp" );
+                return -1;
+            }
+
         } else if (!strncmp( argv[1], "help", strlen( "help" ) )
                    && argv[1][strlen("help")] == '\0') {
             reading_options = False;
@@ -261,6 +275,7 @@ int main( int argc, char **argv )
                 "              output to stdout, so requires -o flag to also be used\n" );
         printf( "\nFor other commands, use: %s COMMAND [...]\n\n"
                 "  rg          solve reachability game\n"
+                "  autman      manipulate finite-memory strategies\n"
                 "  patch       patch or modify a given strategy (incremental synthesis)\n"
                 "  help        this help message (equivalent to -h)\n\n"
                 "When applicable, any arguments after COMMAND are passed on to the\n"

@@ -4,7 +4,7 @@
 
 CORE_PROGRAMS = gr1c gr1c-rg
 EXP_PROGRAMS = gr1c-patch
-AUX_PROGRAMS = autman
+AUX_PROGRAMS = gr1c-autman
 
 
 prefix = /usr/local
@@ -48,7 +48,7 @@ gr1c: main.o util.o logging.o interactive.o solve_support.o solve_operators.o so
 gr1c-rg: rg_main.o util.o patching_support.o logging.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o rg_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-autman: util.o logging.o solve_support.o ptree.o autman.o automaton.o automaton_io.o gr1c_parse.o
+gr1c-autman: util.o logging.o solve_support.o ptree.o autman.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 gr1c-patch: grpatch.o util.o logging.o interactive.o solve_metric.o solve_support.o solve_operators.o solve.o patching.o patching_support.o patching_hotswap.o ptree.o automaton.o automaton_io.o gr1c_parse.o

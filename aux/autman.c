@@ -88,7 +88,7 @@ int main( int argc, char **argv )
                         "  -i FILE     process strategy with respect to specification FILE\n" );
                 return 0;
             } else if (argv[i][1] == 'V') {
-                printf( "autman (automaton file manipulator, distributed with"
+                printf( "gr1c-autman (automaton file manipulator, distributed with"
                         " gr1c v" GR1C_VERSION ")\n\n" GR1C_COPYRIGHT "\n" );
                 return 0;
             } else if (argv[i][1] == 'v') {
