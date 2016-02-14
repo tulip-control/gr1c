@@ -283,12 +283,12 @@ int main( int argc, char **argv )
 
         clf_file = tmpfile();
         if (clf_file == NULL) {
-            perror( "gr1c, tmpfile" );
+            perror( "gr1c-patch, tmpfile" );
             return -1;
         }
         fprintf( clf_file, "%s\n", argv[clformula_index] );
         if (fseek( clf_file, 0, SEEK_SET )) {
-            perror( "gr1c, fseek" );
+            perror( "gr1c-patch, fseek" );
             return -1;
         }
         yyrestart( clf_file );
@@ -314,7 +314,7 @@ int main( int argc, char **argv )
     if (input_index > 0) {
         fp = fopen( argv[input_index], "r" );
         if (fp == NULL) {
-            perror( "gr1c, fopen" );
+            perror( "gr1c-patch, fopen" );
             return -1;
         }
         yyrestart( fp );
@@ -370,7 +370,7 @@ int main( int argc, char **argv )
         spc.et_array_len = 1;
         spc.env_trans_array = malloc( sizeof(ptree_t *) );
         if (spc.env_trans_array == NULL) {
-            perror( "gr1c, malloc" );
+            perror( "gr1c-patch, malloc" );
             return -1;
         }
         *spc.env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
@@ -379,7 +379,7 @@ int main( int argc, char **argv )
         spc.st_array_len = 1;
         spc.sys_trans_array = malloc( sizeof(ptree_t *) );
         if (spc.sys_trans_array == NULL) {
-            perror( "gr1c, malloc" );
+            perror( "gr1c-patch, malloc" );
             return -1;
         }
         *spc.sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
@@ -388,7 +388,7 @@ int main( int argc, char **argv )
         spc.num_sgoals = 1;
         spc.sys_goals = malloc( sizeof(ptree_t *) );
         if (spc.sys_goals == NULL) {
-            perror( "gr1c, malloc" );
+            perror( "gr1c-patch, malloc" );
             return -1;
         }
         *spc.sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );
@@ -537,7 +537,7 @@ int main( int argc, char **argv )
     } else {
         strategy_fp = fopen( argv[aut_input_index], "r" );
         if (strategy_fp == NULL) {
-            perror( "gr1c, fopen" );
+            perror( "gr1c-patch, fopen" );
             return -1;
         }
     }
@@ -550,7 +550,7 @@ int main( int argc, char **argv )
 
         fp = fopen( argv[edges_input_index], "r" );
         if (fp == NULL) {
-            perror( "gr1c, fopen" );
+            perror( "gr1c-patch, fopen" );
             return -1;
         }
 
@@ -664,7 +664,7 @@ int main( int argc, char **argv )
         if (output_file_index >= 0) {
             fp = fopen( argv[output_file_index], "w" );
             if (fp == NULL) {
-                perror( "gr1c, fopen" );
+                perror( "gr1c-patch, fopen" );
                 return -1;
             }
         } else {

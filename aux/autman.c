@@ -208,7 +208,7 @@ int main( int argc, char **argv )
 
         spc_fp = fopen( argv[spc_file_index], "r" );
         if (spc_fp == NULL) {
-            perror( "gr1c, fopen" );
+            perror( "gr1c-autman, fopen" );
             return -1;
         }
         yyrestart( spc_fp );

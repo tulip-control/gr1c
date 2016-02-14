@@ -258,7 +258,7 @@ int main( int argc, char **argv )
         spc.et_array_len = 1;
         spc.env_trans_array = malloc( sizeof(ptree_t *) );
         if (spc.env_trans_array == NULL) {
-            perror( "gr1c, malloc" );
+            perror( "gr1c-rg, malloc" );
             return -1;
         }
         *spc.env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
@@ -267,7 +267,7 @@ int main( int argc, char **argv )
         spc.st_array_len = 1;
         spc.sys_trans_array = malloc( sizeof(ptree_t *) );
         if (spc.sys_trans_array == NULL) {
-            perror( "gr1c, malloc" );
+            perror( "gr1c-rg, malloc" );
             return -1;
         }
         *spc.sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
