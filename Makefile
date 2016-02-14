@@ -110,7 +110,7 @@ rg_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/rg_parse.y gr1c_parse.o
 	$(LD) lex.yy.o y.tab.o -o $@
 
 install:
-	$(INSTALL) $(CORE_PROGRAMS) $(DESTDIR)$(bindir)
+	$(INSTALL) $(CORE_PROGRAMS) $(AUX_PROGRAMS) $(DESTDIR)$(bindir)
 
 .PHONY: expinstall
 expinstall:
