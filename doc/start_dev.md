@@ -90,6 +90,10 @@ is installed and a release commit is checked-out, then try
 ### The checklist
 
 - Update the CHANGELOG.
+- Add copyright year where appropriate.
+- Tag and sign.
+- Create release note on GitHub.
+- Build and post API manual of this release.
 
 
 Code style
