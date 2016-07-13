@@ -11,5 +11,5 @@ SYSINIT: ;
 SYSTRANS: ;
 
 # The subformula y != 0 is included as a regression test for erroneous
-# != operator expansion (cf. https://github.com/slivingston/gr1c/issues/17)
+# != operator expansion (cf. https://github.com/tulip-control/gr1c/issues/17)
 SYSGOAL: []<>(y = 1 & y != 0);

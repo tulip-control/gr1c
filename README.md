@@ -9,8 +9,8 @@ for GR(1) specifications, though it does much more.
 
 The citable URL is http://scottman.net/2012/gr1c
 
-The public Git repo can be cloned from https://github.com/slivingston/gr1c.git
-Documentation for the latest release is at http://slivingston.github.io/gr1c
+The public Git repo can be cloned from https://github.com/tulip-control/gr1c.git
+Documentation for the latest release is at https://tulip-control.github.io/gr1c
 
 
 Examples and Documentation
@@ -31,7 +31,7 @@ Building and installation
 =========================
 
 We use Travis CI to build and test gr1c from the current source code in the
-repository. [![Build Status](https://travis-ci.org/slivingston/gr1c.svg?branch=master)](https://travis-ci.org/slivingston/gr1c)
+repository. [![Build Status](https://travis-ci.org/tulip-control/gr1c.svg?branch=master)](https://travis-ci.org/tulip-control/gr1c)
 
 Dependencies
 ------------
@@ -54,7 +54,7 @@ Building from Source
 
 Detailed installation instructions are in the repository at doc/installation.md
 For the most recent release, a copy of these instructions is on the Web at
-http://slivingston.github.io/gr1c/md_installation.html
+https://tulip-control.github.io/gr1c/md_installation.html
 
 For Linux x86_64 and Mac OSX, try the following.
 

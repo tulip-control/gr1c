@@ -66,7 +66,7 @@ gr1c can be run interactively.  Among other things, this allows probing the
 intermediate values of the GR(1) fixpoint computation and querying the winning
 set.  Consult the "Interaction" page of the documentation.  It is distributed in
 the sources at `doc/interaction.md`; a current build release is available at
-http://slivingston.github.io/gr1c/md_interaction.html
+https://tulip-control.github.io/gr1c/md_interaction.html
 
 * jit:
   Examples for "just-in-time synthesis."  E.g., compare the horizon lengths of

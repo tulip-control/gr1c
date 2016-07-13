@@ -26,13 +26,13 @@ Building
 --------
 
 For the latest development snapshot, either [clone the
-repo](https://github.com/slivingston/gr1c) (at
-https://github.com/slivingston/gr1c.git) or [download a
-tarball](https://github.com/slivingston/gr1c/tarball/master).  For the latter,
+repo](https://github.com/tulip-control/gr1c) (at
+https://github.com/tulip-control/gr1c.git) or [download a
+tarball](https://github.com/tulip-control/gr1c/tarball/master).  For the latter,
 untar the file (name may vary) and change into the source directory.
 
-    $ tar -xzf slivingston-gr1c-658f32b.tar.gz
-    $ cd slivingston-gr1c-658f32b
+    $ tar -xzf tulip-control-gr1c-658f32b.tar.gz
+    $ cd tulip-control-gr1c-658f32b
 
 We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/).
 
@@ -86,7 +86,7 @@ notifications.  E.g., try `VERBOSE=1 make check`.  Most test code is placed
 under the `tests` directory. **N.B.**, scripted interaction will only work if
 you build without GNU Readline.  If a test fails, despite you following the
 installation instructions, then please open an [issue on
-GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott Livingston
+GitHub](https://github.com/tulip-control/gr1c/issues) or contact Scott Livingston
 at <slivingston@cds.caltech.edu>
 
 

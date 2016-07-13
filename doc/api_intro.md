@@ -4,7 +4,7 @@ Introduction        {#mainpage}
 The citable URL is <http://scottman.net/2012/gr1c>.  The public Git repo can be
 cloned from
 
-    https://github.com/slivingston/gr1c.git
+    https://github.com/tulip-control/gr1c.git
 
 **gr1c** is a collection of tools for GR(1) synthesis and related activities.
 Its core functionality is checking realizability of and synthesizing strategies
@@ -17,7 +17,7 @@ form is as a source bundle.  Read the [installation page](md_installation.html)
 for instructions about installing gr1c from source code.  Beware the code is
 still experimental. If you find a possible bug or have comments,
 recommendations, or feature requests, then please open an [issue on
-GitHub](https://github.com/slivingston/gr1c/issues) or contact Scott Livingston
+GitHub](https://github.com/tulip-control/gr1c/issues) or contact Scott Livingston
 at <slivingston@cds.caltech.edu>
 
 In the documentation below, we assume that gr1c is on the shell path. To get a
