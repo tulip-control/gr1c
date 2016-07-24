@@ -1,3 +1,19 @@
+gr1c (0.11.0)
+
+  * Begin to use CUDD 3.0.0.
+
+  * Various updates, additions to documentation. The gr1c repository and issue
+    tracker are now located at https://github.com/tulip-control/gr1c
+
+  * Move autman to be the command `gr1c autman`, and include it among programs
+    installed during `make install`.
+
+  * Various improvements to parsing of command-line options: `-vv` is equivalent
+    to `-v -v`; report unknown options that begin with `--`; add --version
+
+ -- Scott C. Livingston <slivingston@cds.caltech.edu>  Sun, 24 Jul 2016 10:19:56 -0400
+
+
 gr1c (0.10.2)
 
   * Include PID in default logging file name prefix.
