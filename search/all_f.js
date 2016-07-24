@@ -8,6 +8,7 @@ var searchData=
   ['solve_2eh',['solve.h',['../solve_8h.html',1,'']]],
   ['solve_5fmetric_2eh',['solve_metric.h',['../solve__metric_8h.html',1,'']]],
   ['solve_5fsupport_2eh',['solve_support.h',['../solve__support_8h.html',1,'']]],
+  ['specification_5ft',['specification_t',['../structspecification__t.html',1,'']]],
   ['spin_5faut_5fdump',['spin_aut_dump',['../automaton_8h.html#ae85baecde070f1027d3e581df5e74010',1,'automaton_io.c']]],
   ['state_5fto_5fbdd',['state_to_BDD',['../solve__support_8h.html#a02b20eab914c1355f8a41707c59eb49b',1,'solve_support.c']]],
   ['state_5fto_5fcof',['state_to_cof',['../solve__support_8h.html#a1c1291f3f8def39145fbb7ad2a174d9d',1,'solve_support.c']]],
