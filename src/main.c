@@ -61,7 +61,7 @@ int main( int argc, char **argv )
     bool help_flag = False;
     bool ptdump_flag = False;
     bool logging_flag = False;
-    unsigned char init_flags = ALL_ENV_EXIST_SYS_INIT;
+    unsigned char init_flags = ALL_INIT;
     byte format_option = OUTPUT_FORMAT_JSON;
     unsigned char verbose = 0;
     bool reading_options = True;  /* For disabling option parsing using "--" */
