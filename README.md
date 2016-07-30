@@ -1,8 +1,6 @@
 Introduction
 ============
 
-Scott C. Livingston  <slivingston@cds.caltech.edu>
-
 **gr1c** is a collection of tools for GR(1) synthesis and related activities.
 Its core functionality is checking realizability of and synthesizing strategies
 for GR(1) specifications, though it does much more.
@@ -11,6 +9,10 @@ The citable URL is http://scottman.net/2012/gr1c
 
 The public Git repo can be cloned from https://github.com/tulip-control/gr1c.git
 Documentation for the latest release is at https://tulip-control.github.io/gr1c
+
+Bug reports, feature requests, and substantial comments can be submitted via the
+[project issue tracker](https://github.com/tulip-control/gr1c/issues) or via
+email to the authors.
 
 
 Examples and Documentation
