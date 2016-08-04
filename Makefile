@@ -33,6 +33,10 @@ LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 #CFLAGS += -DUSE_READLINE
 #LDFLAGS += -lreadline
 
+# To measure test coverage
+#CFLAGS += -fprofile-arcs -ftest-coverage
+#LDFLAGS += -lgcov
+
 # N.B., scripted interaction tests, which are invoked if you run "make check",
 # will fail if you build gr1c with GNU Readline.
 
@@ -135,6 +139,7 @@ dclean:
 .PHONY: eclean
 eclean:
 	-rm -f *~ *.o y.tab.h y.tab.c lex.yy.c $(CORE_PROGRAMS) $(EXP_PROGRAMS) $(AUX_PROGRAMS)
+	-rm -f *.gcno *.gcda *.gcov
 
 # Delete testing-related things
 .PHONY: tclean

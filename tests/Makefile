@@ -7,6 +7,10 @@ deps_prefix = ../extern
 CFLAGS = -g -Wall -pedantic -ansi -I$(deps_prefix)/include -I../src
 LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 
+# To measure test coverage
+#CFLAGS += -fprofile-arcs -ftest-coverage
+#LDFLAGS += -lgcov
+
 PROGRAMS = test_logging test_automaton test_automaton_io test_ptree test_ptree_to_BDD test_solve_support test_patching
 
 all: $(PROGRAMS)
@@ -48,3 +52,4 @@ test_patching: test_patching.c
 clean:
 	-rm -f *~ *.o $(PROGRAMS) temp_*_dump*
 	-rm -fr *.dSYM
+	-rm -f *.gcno *.gcda *.gcov
