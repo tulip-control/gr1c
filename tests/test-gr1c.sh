@@ -96,6 +96,15 @@ done
 
 
 ################################################################
+# Checking output formats
+
+if ! ($BUILD_ROOT/gr1c -t dot specs/trivial_2var.spc | dot -Tsvg > /dev/null); then
+    echo $PREFACE "syntax error in DOT output from gr1c on specs/trivial_2var.spc\n"
+    exit -1
+fi
+
+
+################################################################
 # Reachability game synthesis regression tests
 
 REFSPECS="reach_2var.spc reach_2var_mustblock.spc reach_free_counter.spc reach_free_counter_mustblock.spc reach_count_onestep.spc"
