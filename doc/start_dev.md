@@ -77,6 +77,17 @@ happens at boundaries of powers of two, e.g., so that an integer variable domain
 of `[0,513]` incurs the same number of states as `[0,1023]`.
 
 
+Quality assurance
+-----------------
+
+### Test coverage
+
+Test coverage can be measured by
+[gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html), which is distributed with
+[GCC](https://gcc.gnu.org). To use it, add `-fprofile-arcs -ftest-coverage` to
+CFLAGS and `-lgcov` to LDFLAGS in the root Makefile and tests/Makefile.
+
+
 Making releases
 ---------------
 
