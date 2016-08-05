@@ -85,7 +85,15 @@ Quality assurance
 Test coverage can be measured by
 [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html), which is distributed with
 [GCC](https://gcc.gnu.org). To use it, add `-fprofile-arcs -ftest-coverage` to
-CFLAGS and `-lgcov` to LDFLAGS in the root Makefile and tests/Makefile.
+CFLAGS and `-lgcov` to LDFLAGS in the root Makefile and tests/Makefile. Examples
+of how to do so are in the comments of these Makefiles. Then, `make check` to
+run all tests. (Consider doing `make clean && make all` before to ensure that
+all built files are up-to-date.) The coverage report for a source file can be
+obtained from `gcov` by calling it with the file name. E.g.,
+
+    gcov automaton.c
+
+will produce automaton.c.gcov, which describes coverage of src/automaton.c.
 
 
 Making releases
