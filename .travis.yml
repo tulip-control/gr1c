@@ -12,6 +12,7 @@ compiler:
 
 install:
   - ./get-deps.sh
+  - ./get-extra-deps.sh
   - ./build-deps.sh
 script:
   - make -e all
