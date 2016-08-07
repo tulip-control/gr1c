@@ -16,7 +16,7 @@ install:
   - ./build-deps.sh
 script:
   - make -e all
-  - make -e check
+  - VERBOSE=1 make -e check
 
 notifications:
   email: false
