@@ -23,6 +23,7 @@ all: $(PROGRAMS)
 	./test_patching
 	sh test-gr1c.sh
 	sh test-grpatch.sh
+	sh test-verification.sh
 	@echo "============================================================\nPASSED\n"
 
 
