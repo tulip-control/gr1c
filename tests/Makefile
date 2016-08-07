@@ -54,3 +54,4 @@ clean:
 	-rm -f *~ *.o $(PROGRAMS) temp_*_dump*
 	-rm -fr *.dSYM
 	-rm -f *.gcno *.gcda *.gcov
+	-rm -f pan* *.aut *.aut.pml *.aut.pml.trail
