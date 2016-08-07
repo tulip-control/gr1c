@@ -33,7 +33,7 @@ for k in `echo $REFSPECS`; do
     fi
     if ! $BUILD_ROOT/gr1c -r specs/$k > /dev/null; then
 	echo $PREFACE "realizable specs/${k} detected as unrealizable\n"
-	exit -1
+	exit 1
     fi
 done
 
@@ -46,7 +46,7 @@ for k in `echo $UNREALIZABLE_REFSPECS`; do
     fi
     if $BUILD_ROOT/gr1c -r specs/$k > /dev/null; then
 	echo $PREFACE "unrealizable specs/${k} detected as realizable\n"
-	exit -1
+	exit 1
     fi
 done
 
@@ -57,7 +57,7 @@ if test $VERBOSE -eq 1; then
 fi
 if $BUILD_ROOT/gr1c -r -n ALL_INIT specs/trivial_partwin.spc > /dev/null; then
     echo $PREFACE "unrealizable specs/trivial_partwin.spc with init_flags ALL_INIT detected as realizable\n"
-    exit -1
+    exit 1
 fi
 
 
@@ -76,7 +76,7 @@ for k in `echo $REFSPECS`; do
     fi
     if ! ($BUILD_ROOT/gr1c -t txt specs/$k | cmp -s expected_outputs/${k}.listdump.out -); then
 	echo $PREFACE "synthesis regression test failed for specs/${k}\n"
-	exit -1
+	exit 1
     fi
 done
 
@@ -89,7 +89,7 @@ for q in ALL_INIT; do
         fi
         if ! ($BUILD_ROOT/gr1c -n ${q} -t txt specs/$k | cmp -s expected_outputs/${k}.${q}.listdump.out -); then
             echo $PREFACE "synthesis regression test failed for specs/${k} with init_flags ${q}\n"
-            exit -1
+            exit 1
         fi
     done
 done
@@ -100,7 +100,7 @@ done
 
 if ! ($BUILD_ROOT/gr1c -t dot specs/trivial_2var.spc | dot -Tsvg > /dev/null); then
     echo $PREFACE "syntax error in DOT output from gr1c on specs/trivial_2var.spc\n"
-    exit -1
+    exit 1
 fi
 
 
@@ -118,7 +118,7 @@ for k in `echo $REFSPECS`; do
     fi
     if ! ($BUILD_ROOT/gr1c-rg -t txt specs/$k | cmp -s expected_outputs/${k}.listdump.out -); then
 	echo $PREFACE "Reachability game synthesis regression test failed for specs/${k}\n"
-	exit -1
+	exit 1
     fi
 done
 
@@ -137,7 +137,7 @@ for k in `echo $REFSPECS`; do
     fi
     if ! $BUILD_ROOT/gr1c -i specs/${k}.spc < interaction_scripts/${k}_IN.txt | diff - interaction_scripts/${k}_OUT.txt > /dev/null; then
         echo $PREFACE "unexpected behavior in scripted interaction using specs/${k}\n"
-        exit -1
+        exit 1
     fi
 done
 
@@ -154,7 +154,7 @@ for k in `ls flawed_specs/*.spc`; do
     fi
     if $BUILD_ROOT/gr1c -s $k > /dev/null 2>&1; then
 	echo $PREFACE "Flawed ${k} detected as OK\n"
-	exit -1
+	exit 1
     fi
 done
 
@@ -171,6 +171,6 @@ for k in `ls flawed_reach_specs/*.spc`; do
     fi
     if $BUILD_ROOT/gr1c-rg -s $k > /dev/null 2>&1; then
 	echo $PREFACE "Flawed reachability game spec ${k} detected as OK\n"
-	exit -1
+	exit 1
     fi
 done
