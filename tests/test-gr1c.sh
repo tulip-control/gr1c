@@ -29,11 +29,11 @@ if test $VERBOSE -eq 1; then
 fi
 for k in `echo $REFSPECS`; do
     if test $VERBOSE -eq 1; then
-	echo "\t gr1c -r $TESTDIR/specs/$k"
+        echo "\t gr1c -r $TESTDIR/specs/$k"
     fi
     if ! $BUILD_ROOT/gr1c -r specs/$k > /dev/null; then
-	echo $PREFACE "realizable specs/${k} detected as unrealizable\n"
-	exit 1
+        echo $PREFACE "realizable specs/${k} detected as unrealizable\n"
+        exit 1
     fi
 done
 
@@ -42,11 +42,11 @@ if test $VERBOSE -eq 1; then
 fi
 for k in `echo $UNREALIZABLE_REFSPECS`; do
     if test $VERBOSE -eq 1; then
-	echo "\t gr1c -r $TESTDIR/specs/$k"
+        echo "\t gr1c -r $TESTDIR/specs/$k"
     fi
     if $BUILD_ROOT/gr1c -r specs/$k > /dev/null; then
-	echo $PREFACE "unrealizable specs/${k} detected as realizable\n"
-	exit 1
+        echo $PREFACE "unrealizable specs/${k} detected as realizable\n"
+        exit 1
     fi
 done
 
@@ -72,11 +72,11 @@ if test $VERBOSE -eq 1; then
 fi
 for k in `echo $REFSPECS`; do
     if test $VERBOSE -eq 1; then
-	echo "\tComparing  gr1c -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.listdump.out"
+        echo "\tComparing  gr1c -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.listdump.out"
     fi
     if ! ($BUILD_ROOT/gr1c -t txt specs/$k | cmp -s expected_outputs/${k}.listdump.out -); then
-	echo $PREFACE "synthesis regression test failed for specs/${k}\n"
-	exit 1
+        echo $PREFACE "synthesis regression test failed for specs/${k}\n"
+        exit 1
     fi
 done
 
@@ -114,11 +114,11 @@ if test $VERBOSE -eq 1; then
 fi
 for k in `echo $REFSPECS`; do
     if test $VERBOSE -eq 1; then
-	echo "\tComparing  gr1c-rg -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.listdump.out"
+        echo "\tComparing  gr1c-rg -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.listdump.out"
     fi
     if ! ($BUILD_ROOT/gr1c-rg -t txt specs/$k | cmp -s expected_outputs/${k}.listdump.out -); then
-	echo $PREFACE "Reachability game synthesis regression test failed for specs/${k}\n"
-	exit 1
+        echo $PREFACE "Reachability game synthesis regression test failed for specs/${k}\n"
+        exit 1
     fi
 done
 
@@ -133,7 +133,7 @@ if test $VERBOSE -eq 1; then
 fi
 for k in `echo $REFSPECS`; do
     if test $VERBOSE -eq 1; then
-	echo "\tComparing gr1c -i $TESTDIR/specs/${k}.spc < $TESTDIR/interaction_scripts/${k}_IN.txt \n\t\tagainst $TESTDIR/interaction_scripts/${k}_OUT.txt"
+        echo "\tComparing gr1c -i $TESTDIR/specs/${k}.spc < $TESTDIR/interaction_scripts/${k}_IN.txt \n\t\tagainst $TESTDIR/interaction_scripts/${k}_OUT.txt"
     fi
     if ! $BUILD_ROOT/gr1c -i specs/${k}.spc < interaction_scripts/${k}_IN.txt | diff - interaction_scripts/${k}_OUT.txt > /dev/null; then
         echo $PREFACE "unexpected behavior in scripted interaction using specs/${k}\n"
@@ -150,11 +150,11 @@ if test $VERBOSE -eq 1; then
 fi
 for k in `ls flawed_specs/*.spc`; do
     if test $VERBOSE -eq 1; then
-	echo "\t gr1c -s $k"
+        echo "\t gr1c -s $k"
     fi
     if $BUILD_ROOT/gr1c -s $k > /dev/null 2>&1; then
-	echo $PREFACE "Flawed ${k} detected as OK\n"
-	exit 1
+        echo $PREFACE "Flawed ${k} detected as OK\n"
+        exit 1
     fi
 done
 
@@ -167,10 +167,10 @@ if test $VERBOSE -eq 1; then
 fi
 for k in `ls flawed_reach_specs/*.spc`; do
     if test $VERBOSE -eq 1; then
-	echo "\t gr1c -s $k"
+        echo "\t gr1c -s $k"
     fi
     if $BUILD_ROOT/gr1c-rg -s $k > /dev/null 2>&1; then
-	echo $PREFACE "Flawed reachability game spec ${k} detected as OK\n"
-	exit 1
+        echo $PREFACE "Flawed reachability game spec ${k} detected as OK\n"
+        exit 1
     fi
 done
