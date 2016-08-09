@@ -304,7 +304,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
                       DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
         logprint_endline();
     }
-        
+
     Cudd_RecursiveDeref( manager, Gi_BDD );
     Gi_BDD = NULL;
 
@@ -327,7 +327,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
         node1 = node1->next;
     }
 
-    
+
     node1 = component_strategy;
     while (node1) {
         /* Temporary mode label for this component. */

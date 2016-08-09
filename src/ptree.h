@@ -1,4 +1,4 @@
-/** \file ptree.h 
+/** \file ptree.h
  * \brief Routines for working with a GR(1) formula parse tree.
  *
  * To avoid defining another basic data structure, we may effectively

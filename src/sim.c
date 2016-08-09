@@ -200,7 +200,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
                             candidate_state, num_env+num_sys ) == NULL) {
                 *hstacks = insert_anode( *hstacks, 0, -1, False,
                                          candidate_state, num_env+num_sys );
-                
+
                 node = (*(MEM+MEM_index))->next;
                 while (node) {
                     if (statecmp( node->state, candidate_state,
@@ -243,7 +243,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
                                            num_env, num_sys,
                                            &emoves_len );
                 for (emove_index = 0; emove_index < emoves_len; emove_index++) {
-                
+
                     tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
                                      finit_state, strans_into_W,
                                      0, num_env+num_sys );
@@ -251,10 +251,10 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
                                       *(env_moves+emove_index), tmp,
                                       num_env+num_sys, num_env );
                     Cudd_RecursiveDeref( manager, tmp );
-                
+
                     tmp = Cudd_bddAnd( manager, *(sgoals+current_goal), W );
                     Cudd_Ref( tmp );
-                
+
                     Cudd_AutodynDisable( manager );
                     Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
                         for (i = 0; i < num_env; i++)
@@ -403,7 +403,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
         for (i = 0; i < num_env+num_sys; i++)
             *(init_state+i) = *(next_state+i);
     }
-    
+
 
     Cudd_RecursiveDeref( manager, strans_into_W );
     free( next_state );

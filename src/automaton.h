@@ -35,7 +35,7 @@ typedef struct anode_t
                    indicated by -1. */
     struct anode_t **trans;  /**<\brief Array of transitions */
     int trans_len;
-    
+
     struct anode_t *next;
 } anode_t;
 

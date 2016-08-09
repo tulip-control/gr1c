@@ -72,10 +72,10 @@ FILE *openlogfile( char *prefix )
         return NULL;
     }
     logfilename[FILENAME_LEN-1] = '\0';
-    
+
     if (closelogfile())
         return NULL;
-    
+
     logfp = fopen( logfilename, "a" );
     if (logfp == NULL) {
         perror( "openlogfile, fopen" );

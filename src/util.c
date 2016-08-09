@@ -173,7 +173,7 @@ vartype *expand_nonbool_state( vartype *state, int *offw, int num_nonbool,
         perror( "expand_nonbool_state, malloc" );
         exit(-1);
     }
-    
+
     i = j = k = 0;
     while (j < mapped_len) {
         if (i >= num_nonbool || j < *(offw+2*i)) {
@@ -425,7 +425,7 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
                     logprint( "Done." );
             }
         }
-        
+
         tmppt = tmppt->left;
     }
     if (var_separator == NULL) {
@@ -588,7 +588,7 @@ int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
                 return -1;
             }
         }
-        
+
     } else if (init_flags == ONE_SIDE_INIT) {
         if (env_init != NULL && sys_init != NULL) {
             fprintf( stderr,

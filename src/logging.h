@@ -1,7 +1,7 @@
 /** \file logging.h
  * \brief A simple logging mechanism for gr1c.
  *
- * 
+ *
  * SCL; 2012, 2013.
  */
 
@@ -21,7 +21,7 @@ FILE *getlogstream();
 
 
 /** Configure format of log entries.
-    
+
    Combine non-conflicting options with or.  Options can be
 
        LOGOPT_TIME : Show timestamp (default).

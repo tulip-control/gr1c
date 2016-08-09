@@ -559,7 +559,7 @@ int main( int argc, char **argv )
                 fclose( fp );
         }
 
-        
+
         Cudd_RecursiveDeref( manager, W );
         Cudd_RecursiveDeref( manager, etrans );
         Cudd_RecursiveDeref( manager, strans );

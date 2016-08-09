@@ -68,7 +68,7 @@ int main( int argc, char **argv )
         ERRPRINT1( "size 3 automaton detected as having size %d.", aut_size( head ) );
         abort();
     }
-    
+
     state[0] = 1;
     state[1] = 0;
     node = find_anode( head, 0, state, 2 );
@@ -80,7 +80,7 @@ int main( int argc, char **argv )
         ERRPRINT1( "node should have reach annotation value of 2 but actually has %d", node->rgrad );
         abort();
     }
-    
+
     state[0] = 0;
     state[1] = 0;
     out_node = find_anode( head, 0, state, 2 );
@@ -92,7 +92,7 @@ int main( int argc, char **argv )
         ERRPRINT1( "node should have reach annotation value of 1 but actually has %d", out_node->rgrad );
         abort();
     }
-    
+
     if (node->trans_len != 2) {
         ERRPRINT1( "node should have 2 outgoing transitions but actually has %d.", node->trans_len );
         abort();

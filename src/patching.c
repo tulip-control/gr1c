@@ -462,7 +462,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
         perror( "patch_localfixpoint, malloc" );
         exit(-1);
     }
-    
+
     /* Set environment goal to True (i.e., any state) if none was
        given. This simplifies the implementation below. */
     if (spc.num_egoals == 0) {
@@ -590,7 +590,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                 return NULL;
             }
             Cudd_Ref( ddval );
-        
+
             tmp2 = Cudd_Cofactor( manager, etrans_part, ddval );
             if (tmp2 == NULL) {
                 fprintf( stderr,
@@ -605,7 +605,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                 Cudd_RecursiveDeref( manager, ddval );
                 break;
             }
-            
+
             Cudd_RecursiveDeref( manager, tmp2 );
             Cudd_RecursiveDeref( manager, ddval );
         }
@@ -621,7 +621,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
             etrans = tmp;
         }
         Cudd_RecursiveDeref( manager, etrans_part );
-        
+
     }
     if (verbose) {
         logprint_endline();
@@ -650,7 +650,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                 return NULL;
             }
             Cudd_Ref( ddval );
-        
+
             tmp2 = Cudd_Cofactor( manager, strans_part, ddval );
             if (tmp2 == NULL) {
                 fprintf( stderr,
@@ -665,7 +665,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                 Cudd_RecursiveDeref( manager, ddval );
                 break;
             }
-            
+
             Cudd_RecursiveDeref( manager, tmp2 );
             Cudd_RecursiveDeref( manager, ddval );
         }
@@ -681,7 +681,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
             strans = tmp;
         }
         Cudd_RecursiveDeref( manager, strans_part );
-        
+
     }
     if (verbose) {
         logprint_endline();
@@ -787,7 +787,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                                   getlogstream() );
                     logprint_endline();
                 }
-                
+
                 /* Find nodes in strategy that are affected by this change */
                 for (j = 0; j < spc.num_sgoals; j++) {
                     node = find_anode( strategy, j, state, num_env+num_sys );
@@ -870,7 +870,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                         node = find_anode( node->next, j, state, num_env+num_sys );
                     }
                 }
-                
+
                 vertex1 = state_to_BDD( manager, state, 0, num_env+num_sys );
                 vertex2 = state_to_BDD( manager, state+num_env+num_sys,
                                      num_env+num_sys,
@@ -908,7 +908,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                 }
                 Cudd_RecursiveDeref( manager, tmp );
                 free( state );
-                
+
             } else if (!strncmp( line, "blocksys ", strlen( "blocksys " ) )) {
                 num_read = read_state_str( line+strlen( "blocksys" )+1,
                                            &state_frag, original_num_sys );
@@ -945,7 +945,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                     pprint_state( state, -1, num_sys, getlogstream() );
                     logprint_endline();
                 }
-                
+
                 /* Find nodes in strategy that are affected by this change */
                 head = strategy;
                 node_counter = 0;

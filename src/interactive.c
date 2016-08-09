@@ -212,7 +212,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                 }
                 free( intcom_state );
             }
-            
+
         } else if (!strncmp( input, "printegoals", strlen( "printegoals" ) )) {
 
             for (var_index = 0; var_index < spc.num_egoals; var_index++) {
@@ -235,7 +235,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                     free( intcom_state );
                 fprintf( outfp, "Invalid arguments." );
             }
-            
+
         } else if (!strncmp( input, "envnext ", strlen( "envnext " ) )) {
 
             *(input+strlen( "envnext" )) = '\0';
@@ -249,7 +249,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                     free( intcom_state );
                 fprintf( outfp, "Invalid arguments." );
             }
-            
+
         } else if (!strncmp( input, "sysnext ", strlen( "sysnext " ) )) {
 
             *(input+strlen( "sysnext" )) = '\0';
@@ -279,7 +279,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                 }
                 return INTCOM_SYSNEXT;
             }
-            
+
         } else if (!strncmp( input, "sysnexta ", strlen( "sysnexta " ) )) {
 
             *(input+strlen( "sysnexta" )) = '\0';
@@ -293,7 +293,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                     free( intcom_state );
                 fprintf( outfp, "Invalid arguments." );
             }
-            
+
         } else if (!strncmp( input, "restrict ", strlen( "restrict " ) )) {
 
             *(input+strlen( "restrict" )) = '\0';
@@ -309,7 +309,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                     free( intcom_state );
                 fprintf( outfp, "Invalid arguments." );
             }
-            
+
         } else if (!strncmp( input, "relax ", strlen( "relax " ) )) {
 
             *(input+strlen( "relax" )) = '\0';
@@ -325,7 +325,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                     free( intcom_state );
                 fprintf( outfp, "Invalid arguments." );
             }
-            
+
         } else if (!strncmp( input, "clear", strlen( "clear" ) )) {
             free( input );
             return INTCOM_CLEAR;
@@ -342,7 +342,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                     free( intcom_state );
                 fprintf( outfp, "Invalid arguments." );
             }
-            
+
         } else if (!strncmp( input, "blocksys ", strlen( "blocksys " ) )) {
 
             *(input+strlen( "blocksys" )) = '\0';
@@ -356,7 +356,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                     free( intcom_state );
                 fprintf( outfp, "Invalid arguments." );
             }
-            
+
         } else if (!strncmp( input, "getindex ", strlen( "getindex " ) )) {
 
             *(input+strlen( "getindex" )) = '\0';
@@ -385,7 +385,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                 }
                 return INTCOM_GETINDEX;
             }
-            
+
         } else {
             fprintf( outfp, "Unrecognized command: %s", input );
         }
@@ -418,7 +418,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
 
     DdNode *etrans_patched, *strans_patched;
     DdNode *vertex1, *vertex2; /* ...regarding vertices of the game graph. */
-    
+
     DdNode *ddval;  /* Store result of evaluating a BDD */
     DdNode ***Y = NULL;
     DdNode *Y_i_primed;
@@ -428,7 +428,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
     DdNode *tmp, *tmp2;
     int i, j, r;  /* Generic counters */
     bool env_nogoal_flag = False;  /* Indicate environment has no goals */
-    
+
     int num_env, num_sys;
     int *cube;  /* length will be twice total number of variables (to
                    account for both variables and their primes). */
@@ -598,7 +598,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
                 free( intcom_state );
                 break;
             }
-            
+
             for (i = 0; i < emoves_len; i++) {
                 if (num_env > 0)
                     fprintf( outfp, "%d", **(env_moves+i) );
@@ -858,7 +858,7 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
                 for (i = num_env+num_sys; i < intcom_index; i++)
                     logprint( " %d", *(intcom_state+i) );
             }
-            
+
             vertex1 = state_to_BDD( manager, intcom_state, 0, num_env+num_sys );
             vertex2 = state_to_BDD( manager,
                                  intcom_state+num_env+num_sys, num_env+num_sys,

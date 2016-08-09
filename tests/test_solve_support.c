@@ -135,7 +135,7 @@ int main( int argc, char **argv )
     *(ref_cube+1) = 1;
     compare_bcubes( state, ref_cube, len );
     /* Should be [0,1,0,0] */
-    
+
     increment_cube( state, gcube, len );
     *(ref_cube+3) = 1;
     compare_bcubes( state, ref_cube, len );
@@ -170,7 +170,7 @@ int main( int argc, char **argv )
                          0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
     Cudd_SetMaxCacheHard( manager, (unsigned int)-1 );
     Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
-    
+
     cube = malloc( sizeof(int)*2*(num_env+num_sys) );
     if (cube == NULL) {
         perror( "test_solve_support, malloc" );
@@ -182,7 +182,7 @@ int main( int argc, char **argv )
         perror( "test_solve_support, malloc" );
         abort();
     }
-    
+
     /* Single environment transition rule (safety formula):  [](y -> !x1') */
     head = NULL;
     head = pusht_terminal( head, PT_VARIABLE, "y", -1 );
@@ -193,7 +193,7 @@ int main( int argc, char **argv )
     etrans = ptree_BDD( head, var_list, manager );
     delete_tree( head );
     head = NULL;
-    
+
     /* First state is zero for all variables */
     /* COMMENT: a possible weakness in the checking approach used here
        is that we assume the environment moves will be generated in a

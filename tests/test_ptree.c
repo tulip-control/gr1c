@@ -173,7 +173,7 @@ int main( int argc, char **argv )
         ERRPRINT( "Error while manually building parse tree for \"" REF_FORMULA1_SMALL "\"." );
         abort();
     }
-    
+
     if (tree_size( head ) != REF_FORMULA1_SIZE) {
         ERRPRINT2( "Manually built parse tree of size %d detected as having wrong size %d.", REF_FORMULA1_SIZE, tree_size( head ) );
         abort();
@@ -243,7 +243,7 @@ int main( int argc, char **argv )
         ERRPRINT2( "Conjunction (from manually built subformulae) of size %d detected as having wrong size %d.", CONJUNCTED_SMALLS_SIZE, tree_size( head ) );
         abort();
     }
-    
+
     /* Dump conjunction of manually built trees to a temporary file. */
     if (fseek( fp, 0, SEEK_SET )) {
         perror( "test_ptree, fseek" );
@@ -290,7 +290,7 @@ int main( int argc, char **argv )
     head2 = pusht_terminal( head2, PT_NEXT_VARIABLE, "x", -1 );
     head2 = pusht_operator( head2, PT_NEG );
     head2 = pusht_operator( head2, PT_AND );
-    
+
     if (tree_size( head2 ) != CONJUNCTED_SMALLS_SIZE) {
         ERRPRINT2( "Stack-generated parse tree of size %d detected as having wrong size %d.", CONJUNCTED_SMALLS_SIZE, tree_size( head ) );
         abort();

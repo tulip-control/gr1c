@@ -35,7 +35,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
     int *tmp_intp;
     int **tmp_intpp;
     anode_t **tmp_anode_tpp;
-    
+
     if (fp == NULL)
         fp = stdin;
 
@@ -681,7 +681,7 @@ int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
              "<sys_init></sys_init><sys_safety></sys_safety>"
              "<sys_prog></sys_prog>\n"
              "  </spec>\n" );
-    
+
     fprintf( fp, "  <aut type=\"basic\">\n" );
     node = head;
     while (node) {
@@ -1043,7 +1043,7 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
              "  /* Check sys transition rule? */\n"
              "bool pmlfault = false;\n\n" );
     fprintf( fp, "init\n{\nint current_node;\n\n" );
-    
+
     /* Initial nodes */
     fprintf( fp, "d_step {\nif" );
     node = head;
@@ -1132,7 +1132,7 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
                 if (tmppt->value == -1) {
                     if (!(*((*(node->trans+j))->state+i))) {
                         fprintf( fp, "!" );
-                    } 
+                    }
                     fprintf( fp, "%s_next", tmppt->name );
                 } else {
                     fprintf( fp, "%s_next == %d",
@@ -1163,7 +1163,7 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
                 tmppt = tmppt->left;
             }
         }
-        
+
         node_counter++;
         node = node->next;
     }

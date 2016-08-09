@@ -166,7 +166,7 @@ DdNode *state_to_cof( DdManager *manager, int *cube, int cube_len,
     int i;
     DdNode *tmp;
     DdNode *ddcube;
-    
+
     for (i = 0; i < cube_len; i++)
         *(cube+i) = 2;
     for (i = 0; i < len; i++)
@@ -268,7 +268,7 @@ vartype **get_env_moves( DdManager *manager, int *cube,
 
             for (i = 0; i < num_env; i++)
                 *(*(env_moves+*emoves_len-1)+i) = *(state+i);
-            
+
             increment_cube( state, gcube+num_env+num_sys, num_env );
         }
         (*emoves_len)++;
@@ -282,7 +282,7 @@ vartype **get_env_moves( DdManager *manager, int *cube,
             fprintf( stderr, "Error in building next environment moves list." );
             return NULL;
         }
-        
+
         for (i = 0; i < num_env; i++)
             *(*(env_moves+*emoves_len-1)+i) = *(state+i);
     }

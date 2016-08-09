@@ -35,7 +35,7 @@ int main( int argc, char **argv )
     Cudd_SetMaxCacheHard( manager, (unsigned int)-1 );
     Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 
-    
+
     /************************************************
      * (a & b) | !c
      ************************************************/

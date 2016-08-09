@@ -35,10 +35,10 @@ int main( int argc, char **argv )
     anode_t *start_node, *stop_node;
 
     SPC_INIT( spc );
-    
+
     /*************************************************************
        # **Test fixture**
-       
+
        ENV: x;
        SYS: y;
 
@@ -85,7 +85,7 @@ int main( int argc, char **argv )
     }
     free( vars );
     free( pvars );
-    
+
     etrans = Cudd_ReadOne( manager );
     Cudd_Ref( etrans );
     strans = Cudd_ReadOne( manager );
@@ -99,7 +99,7 @@ int main( int argc, char **argv )
     }
     node = pusht_terminal( NULL, PT_VARIABLE, "x", -1 );
     *egoals = ptree_BDD( node, var_list, manager );
-    
+
     /* In this test for synthesize_reachgame(), we do not patch an
        existing strategy.  Thus the nodes in the Entry and Exit sets
        are orphaned.  In terms of states, Entry contains [0,0], and

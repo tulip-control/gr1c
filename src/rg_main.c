@@ -536,7 +536,7 @@ int main( int argc, char **argv )
     }
     free( vars );
     free( pvars );
-    
+
     strategy = synthesize_reachgame_BDD( manager, num_env, num_sys,
                                          Entry, Exit, etrans, strans,
                                          egoals, Cudd_ReadOne( manager ),

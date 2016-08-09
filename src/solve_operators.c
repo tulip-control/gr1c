@@ -25,7 +25,7 @@ DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
     DdNode *W;  /* Characteristic function of winning set */
     DdNode *etrans, *strans, **egoals, **sgoals;
     bool env_nogoal_flag = False;  /* Indicate environment has no goals */
-    
+
     /* Set environment goal to True (i.e., any state) if none was
        given. This simplifies the implementation below. */
     if (spc.num_egoals == 0) {
@@ -141,7 +141,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
         perror( "compute_winning_set_BDD, malloc" );
         exit(-1);
     }
-    
+
     /* Define a map in the manager to easily swap variables with their
        primed selves. */
     vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
@@ -185,7 +185,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
                 Cudd_RecursiveDeref( manager, *(Z_prev+i) );
             *(Z_prev+i) = *(Z+i);
         }
-            
+
         for (i = 0; i < spc.num_sgoals; i++) {
             if (i == spc.num_sgoals-1) {
                 *(Z+i) = compute_existsmodal( manager, *Z_prev, etrans, strans,
@@ -223,11 +223,11 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
                     /* fatal error */
                     return NULL;
                 }
-                
+
                 Y = Cudd_Not( Cudd_ReadOne( manager ) );
                 Cudd_Ref( Y );
                 for (j = 0; j < spc.num_egoals; j++) {
-                    
+
                     /* (Re)initialize X */
                     if (X != NULL)
                         Cudd_RecursiveDeref( manager, X );
@@ -240,7 +240,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
                         num_it_X++;
                         if (verbose > 1)
                             logprint( "\t\tX iteration %d", num_it_X );
-                        
+
                         if (X_prev != NULL)
                             Cudd_RecursiveDeref( manager, X_prev );
                         X_prev = X;
@@ -251,7 +251,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
                             /* fatal error */
                             return NULL;
                         }
-                                
+
                         tmp = Cudd_bddAnd( manager, *(sgoals+i), *(Z+i) );
                         Cudd_Ref( tmp );
                         tmp2 = Cudd_bddOr( manager, tmp, Y_exmod );
@@ -448,7 +448,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
             *(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_Not(Cudd_ReadOne( manager ));
             Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
             for (r = 0; r < num_env_goals; r++) {
-                    
+
                 /* (Re)initialize X */
                 if (X != NULL)
                     Cudd_RecursiveDeref( manager, X );
@@ -466,7 +466,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
                         /* fatal error */
                         return NULL;
                     }
-                                
+
                     tmp = Cudd_bddAnd( manager, *(sgoals+i), W );
                     Cudd_Ref( tmp );
                     tmp2 = Cudd_bddOr( manager, tmp, Y_exmod );
@@ -498,7 +498,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
                     = Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1), X );
                 Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
                 Cudd_RecursiveDeref( manager, tmp );
-            
+
                 Cudd_RecursiveDeref( manager, X );
                 X = NULL;
                 Cudd_RecursiveDeref( manager, X_prev );

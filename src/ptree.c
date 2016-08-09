@@ -548,7 +548,7 @@ void print_node( ptree_t *node, FILE *fp )
     case PT_CONSTANT:
         fprintf( fp, "%d", node->value );
         break;
-            
+
     case PT_NEG:
         fprintf( fp, "!" );
         break;
@@ -568,7 +568,7 @@ void print_node( ptree_t *node, FILE *fp )
     case PT_EQUIV:
         fprintf( fp, "<->" );
         break;
-        
+
     case PT_EQUALS:
         fprintf( fp, "=" );
         break;
@@ -778,7 +778,7 @@ void tree_dot_dump_node( ptree_t *node, FILE *fp )
 
 int tree_dot_dump( ptree_t *head, char *filename )
 {
-    
+
 
     FILE *fp = fopen( filename, "w" );
     if (fp == NULL) {
@@ -879,7 +879,7 @@ void print_formula( ptree_t *head, FILE *fp, unsigned char format_flags )
             fprintf( fp, "%s'", head->name );
         }
         return;
-        
+
     case PT_CONSTANT:
         if (head->value == 0) {
             if (format_flags == FORMULA_SYNTAX_SPIN) {

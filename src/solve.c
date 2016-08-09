@@ -39,7 +39,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
     DdNode *strans_into_W;
 
     DdNode *einit, *sinit, *etrans, *strans, **egoals, **sgoals;
-    
+
     DdNode *ddval;  /* Store result of evaluating a BDD */
     DdNode ***Y = NULL;
     DdNode *Y_i_primed;
@@ -52,7 +52,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
     bool env_nogoal_flag = False;  /* Indicate environment has no goals */
     int loop_mode;
     int next_mode;
-    
+
     int num_env, num_sys;
     int *cube;  /* length will be twice total number of variables (to
                    account for both variables and their primes). */
@@ -575,7 +575,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                         } else {
                             tmp = tmp2;
                         }
-                    
+
                         if (!(Cudd_bddLeq( manager, tmp,
                                            Cudd_Not( Cudd_ReadOne( manager ) ) )
                               *Cudd_bddLeq( manager,
@@ -637,7 +637,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                 Cudd_GenFree( gen );
                 Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
             }
-            
+
             Cudd_RecursiveDeref( manager, tmp );
             initialize_cube( state, cube+num_env+num_sys, num_env+num_sys );
             for (i = 0; i < num_env; i++)
@@ -675,7 +675,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                              " failed.\n" );
                     return NULL;
                 }
-            } 
+            }
 
             strategy = append_anode_trans( strategy,
                                            node->mode, node->state,

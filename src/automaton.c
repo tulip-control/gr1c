@@ -131,7 +131,7 @@ anode_t *find_anode( anode_t *head, int mode, vartype *state, int state_len )
         }
         head = head->next;
     }
-    
+
     if (match_flag) {
         return head;
     } else {
@@ -161,7 +161,7 @@ int find_anode_index( anode_t *head, int mode, vartype *state, int state_len )
         head = head->next;
         node_counter++;
     }
-    
+
     if (match_flag) {
         return node_counter;
     } else {
@@ -404,7 +404,7 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
         for (i = start_index+1;
              i < num_env+num_sys - (stop_index-start_index); i++)
             *(new_state+i) = *(head->state+i+stop_index-start_index);
-        
+
         free( head->state );
         head->state = new_state;
 
