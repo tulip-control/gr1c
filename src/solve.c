@@ -100,6 +100,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
+            free( state );
+            free( cube );
             return NULL;
         }
         var_separator->left = spc.svar_list;
@@ -156,6 +158,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
     if (W == NULL) {
         fprintf( stderr,
                  "Error synthesize: failed to construct winning set.\n" );
+        free( state );
+        free( cube );
         return NULL;
     }
     Y = compute_sublevel_sets( manager, W, etrans, strans,
@@ -165,6 +169,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
     if (Y == NULL) {
         fprintf( stderr,
                  "Error synthesize: failed to construct sublevel sets.\n" );
+        free( state );
+        free( cube );
         return NULL;
     }
 
@@ -210,6 +216,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
         fprintf( stderr,
                  "Error synthesize: Error in swapping variables with primed"
                  " forms.\n" );
+        free( state );
+        free( cube );
         return NULL;
     }
     Cudd_Ref( tmp );
@@ -788,6 +796,7 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
+            free( cube );
             return NULL;
         }
         var_separator->left = spc.svar_list;

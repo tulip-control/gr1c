@@ -495,8 +495,13 @@ int main( int argc, char **argv )
                             &spc.env_trans_array, &spc.et_array_len,
                             &spc.sys_trans_array, &spc.st_array_len,
                             &spc.env_goals, spc.num_egoals, &spc.sys_goals, spc.num_sgoals,
-                            init_flags, verbose ) < 0)
+                            init_flags, verbose ) < 0) {
+        free( original_env_goals );
+        free( original_sys_goals );
+        free( original_env_trans_array );
+        free( original_sys_trans_array );
         return -1;
+    }
     spc.nonbool_var_list = expand_nonbool_variables( &spc.evar_list, &spc.svar_list,
                                                      verbose );
 

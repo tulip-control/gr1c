@@ -100,8 +100,11 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
     }
 
     /* Ignore goal modes that are unaffected by the change. */
-    if (*(affected_len + goal_mode) == 0)
+    if (*(affected_len + goal_mode) == 0) {
+        free( Exit );
+        free( Entry );
         return strategy;
+    }
 
     if (verbose)
         logprint( "Processing for goal mode %d...", goal_mode );
@@ -487,6 +490,10 @@ anode_t *patch_localfixpoint( DdManager *manager,
             fprintf( stderr,
                      "Error patch_localfixpoint: malformed game change"
                      " file.\n" );
+            free( doffw );
+            free( affected );
+            free( affected_len );
+            free( cube );
             return NULL;
         }
 
@@ -503,6 +510,10 @@ anode_t *patch_localfixpoint( DdManager *manager,
                 fprintf( stderr,
                          "Error patch_localfixpoint: failed to expand"
                          " nonbool values in edge change file\n" );
+                free( doffw );
+                free( affected );
+                free( affected_len );
+                free( cube );
                 return NULL;
             }
             free( state );
@@ -545,6 +556,10 @@ anode_t *patch_localfixpoint( DdManager *manager,
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
+            free( doffw );
+            free( affected );
+            free( affected_len );
+            free( cube );
             return NULL;
         }
         var_separator->left = spc.svar_list;

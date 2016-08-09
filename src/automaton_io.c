@@ -32,6 +32,9 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
     char *start, *end;
     int line_num;
     int detected_version = -1;
+    int *tmp_intp;
+    int **tmp_intpp;
+    anode_t **tmp_anode_tpp;
     
     if (fp == NULL)
         fp = stdin;
@@ -172,9 +175,28 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
             exit(-1);
         }
         ia_len++;
-        ID_array = realloc( ID_array, sizeof(int)*ia_len );
-        trans_array = realloc( trans_array, sizeof(int *)*ia_len );
-        node_array = realloc( node_array, sizeof(anode_t *)*ia_len );
+
+        tmp_intp = realloc( ID_array, sizeof(int)*ia_len );
+        if (tmp_intp == NULL) {
+            free( ID_array );
+            ID_array = NULL;
+        } else {
+            ID_array = tmp_intp;
+        }
+        tmp_intpp = realloc( trans_array, sizeof(int *)*ia_len );
+        if (tmp_intpp == NULL) {
+            free( trans_array );
+            trans_array = NULL;
+        } else {
+            trans_array = tmp_intpp;
+        }
+        tmp_anode_tpp = realloc( node_array, sizeof(anode_t *)*ia_len );
+        if (tmp_anode_tpp == NULL) {
+            free( node_array );
+            node_array = NULL;
+        } else {
+            node_array = tmp_anode_tpp;
+        }
         if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
             perror( "aut_aut_load, realloc" );
             exit(-1);
@@ -182,9 +204,28 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
     }
     free( state );
     ia_len--;
-    ID_array = realloc( ID_array, sizeof(int)*ia_len );
-    trans_array = realloc( trans_array, sizeof(int *)*ia_len );
-    node_array = realloc( node_array, sizeof(anode_t *)*ia_len );
+
+    tmp_intp = realloc( ID_array, sizeof(int)*ia_len );
+    if (tmp_intp == NULL) {
+        free( ID_array );
+        ID_array = NULL;
+    } else {
+        ID_array = tmp_intp;
+    }
+    tmp_intpp = realloc( trans_array, sizeof(int *)*ia_len );
+    if (tmp_intpp == NULL) {
+        free( trans_array );
+        trans_array = NULL;
+    } else {
+        trans_array = tmp_intpp;
+    }
+    tmp_anode_tpp = realloc( node_array, sizeof(anode_t *)*ia_len );
+    if (tmp_anode_tpp == NULL) {
+        free( node_array );
+        node_array = NULL;
+    } else {
+        node_array = tmp_anode_tpp;
+    }
     if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
         perror( "aut_aut_load, realloc" );
         exit(-1);
@@ -968,6 +1009,7 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
+            free( env_counter );
             return -1;
         }
         var_separator->left = svar_list;
@@ -1143,11 +1185,8 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
         fprintf( fp, " };\n\ngoto SYS_MOVE\n}\n\n" );
     }
 
-    if (var_separator == NULL) {
-        evar_list = NULL;
-    } else {
+    if (var_separator != NULL)
         var_separator->left = NULL;
-    }
 
     free( env_counter );
     return 0;

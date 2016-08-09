@@ -777,6 +777,8 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
     if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
         fprintf( stderr,
                  "Error: failed to define variable map in CUDD manager.\n" );
+        free( Entry );
+        free( Exit );
         return NULL;
     }
     free( vars );

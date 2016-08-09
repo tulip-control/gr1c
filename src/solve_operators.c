@@ -153,6 +153,7 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
     if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
         fprintf( stderr,
                  "Error: failed to define variable map in CUDD manager.\n" );
+        free( cube );
         return NULL;
     }
     free( vars );
@@ -371,6 +372,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
     if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
         fprintf( stderr,
                  "Error: failed to define variable map in CUDD manager.\n" );
+        free( cube );
         return NULL;
     }
     free( vars );
@@ -415,6 +417,7 @@ DdNode ***compute_sublevel_sets( DdManager *manager,
             }
         }
     } else {
+        free( cube );
         return NULL;
     }
 

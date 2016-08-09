@@ -476,6 +476,8 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
             fprintf( stderr,
                      "Error: get_list_item failed on environment variables"
                      " list.\n" );
+            free( state );
+            free( cube );
             return -1;
         }
         var_separator->left = spc.svar_list;
@@ -526,6 +528,8 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
         fprintf( stderr,
                  "Error levelset_interactive: failed to construct winning"
                  " set.\n" );
+        free( state );
+        free( cube );
         return -1;
     }
 
