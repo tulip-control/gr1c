@@ -499,7 +499,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
         fprintf( stderr, "Error add_metric_sysgoal: pruning failed.\n" );
         return NULL;
     }
-    Gi_succ = NULL; Gi_succ_len = 0;
+    Gi_succ = NULL;
 
     /* Update labels, thus completing the insertion process */
     if (istar[0] == spc.num_sgoals-1) {

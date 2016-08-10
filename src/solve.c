@@ -199,7 +199,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
         }
         *(Y+i) = realloc( *(Y+i), (*(num_sublevels+i))*sizeof(DdNode *) );
         *(X_ijr+i) = realloc( *(X_ijr+i),
-                              (*(num_sublevels+i))*sizeof(DdNode *) );
+                              (*(num_sublevels+i))*sizeof(DdNode **) );
         if (*(Y+i) == NULL || *(X_ijr+i) == NULL) {
             perror( "synthesize, realloc" );
             exit(-1);
@@ -612,7 +612,6 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                         tmp = tmp2;
                     }
                 }
-                next_mode = node->mode;
 
                 Cudd_AutodynDisable( manager );
                 gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
