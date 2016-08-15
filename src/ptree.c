@@ -963,8 +963,12 @@ void print_formula( ptree_t *head, FILE *fp, unsigned char format_flags )
 
 DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
 {
-    DdNode *lsub, *rsub, *fn, *fn2, *tmp;
+    DdNode *lsub, *rsub,*fn2, *tmp;
     int index;
+
+    /* Initialize with NULL to ensure meaningful return value in case default
+       branches taken. */
+    DdNode *fn = NULL;
 
     switch (head->type) {
     case PT_AND:
