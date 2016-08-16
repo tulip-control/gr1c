@@ -16,8 +16,7 @@
 
 #define INPUT_STRING_LEN 1024
 
-/* Memory recovery in the case of parsing error is almost nil.
-   Also note that sorting of nodes could be made faster. */
+/* Future work: sorting of nodes could be made faster. */
 anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 {
     anode_t *head = NULL, *node;
