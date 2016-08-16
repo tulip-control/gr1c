@@ -49,7 +49,9 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
     ia_len = 1;
     ID_array = malloc( sizeof(int)*ia_len );
     trans_array = malloc( sizeof(int *)*ia_len );
+    *(trans_array+ia_len-1) = NULL;
     node_array = malloc( sizeof(anode_t *)*ia_len );
+    *(node_array+ia_len-1) = NULL;
     if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
         free( state );
         perror( "aut_aut_load, malloc" );
@@ -66,7 +68,8 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
         if (line == end) {
             fprintf( stderr,
                      "Error parsing gr1c automaton line %d.\n", line_num );
-            return NULL;
+            head = NULL;
+            goto gc;
         } else if (detected_version < 0) {
             if (*end == '\0' || *end == '\n' || *end == '\r') {
                 detected_version = *(ID_array+ia_len-1);
@@ -76,7 +79,8 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
                              " parsing gr1c automaton line %d.\n",
                              detected_version,
                              line_num );
-                    return NULL;
+                    head = NULL;
+                    goto gc;
                 }
                 continue;
             } else {
@@ -88,7 +92,8 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
             if (detected_version != 0 && detected_version != 1) {
                 fprintf( stderr,
                          "Only gr1c automaton format versions 0 and 1 are supported." );
-                return NULL;
+                head = NULL;
+                goto gc;
             }
         }
 
@@ -102,7 +107,8 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
         if (i != state_len) {
             fprintf( stderr,
                      "Error parsing gr1c automaton line %d.\n", line_num );
-            return NULL;
+            head = NULL;
+            goto gc;
         }
 
         *(node_array+ia_len-1) = malloc( sizeof(anode_t) );
@@ -116,13 +122,15 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
             if (start == end || *end == '\0') {
                 fprintf( stderr,
                          "Error parsing gr1c automaton line %d.\n", line_num );
-                return NULL;
+                head = NULL;
+                goto gc;
             }
             if ((*(node_array+ia_len-1))->initial != 0
                 && (*(node_array+ia_len-1))->initial != 1) {
                 fprintf( stderr,
                          "Invalid value for node field \"initial\" on line %d.\n", line_num );
-                return NULL;
+                head = NULL;
+                goto gc;
             }
             start = end;
         }
@@ -131,7 +139,8 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
         if (start == end || *end == '\0') {
             fprintf( stderr,
                      "Error parsing gr1c automaton line %d.\n", line_num );
-            return NULL;
+            head = NULL;
+            goto gc;
         }
         start = end;
 
@@ -139,7 +148,8 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
         if (start == end) {
             fprintf( stderr,
                      "Error parsing gr1c automaton line %d.\n", line_num );
-            return NULL;
+            head = NULL;
+            goto gc;
         }
         start = end;
 
@@ -200,9 +210,16 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
             perror( "aut_aut_load, realloc" );
             exit(-1);
         }
+        *(trans_array+ia_len-1) = NULL;
+        *(node_array+ia_len-1) = NULL;
     }
     free( state );
+    state = NULL;
     ia_len--;
+    if (ia_len == 0) {
+        head = NULL;
+        goto gc;
+    }
 
     tmp_intp = realloc( ID_array, sizeof(int)*ia_len );
     if (tmp_intp == NULL) {
@@ -235,7 +252,8 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
         if (j == ia_len) {
             fprintf( stderr,
                      "Error parsing gr1c automaton data; missing indices.\n" );
-            return NULL;
+            head = NULL;
+            goto gc;
         }
 
         if (i == 0) {
@@ -260,20 +278,27 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
                     fprintf( stderr,
                              "Error parsing gr1c automaton data; missing"
                              " indices.\n" );
-                    return NULL;
+                    head = NULL;
+                    goto gc;
                 }
                 *(node->trans+j) = *(node_array+k);
             }
         }
     }
 
+  gc:
+    free( state );
     free( ID_array );
+    if (head == NULL) {
+        for (i = 0; i < ia_len; i++)
+            delete_aut( *(node_array+i) );
+    }
     free( node_array );
     for (i = 0; i < ia_len; i++)
         free( *(trans_array+i) );
     free( trans_array );
 
-    if (version != NULL)
+    if (version != NULL && head != NULL)
         *version = detected_version;
     return head;
 }
