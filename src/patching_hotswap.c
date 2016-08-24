@@ -693,6 +693,13 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
                   delete_i,
                   (delete_i+1)%spc.num_sgoals );
 
+    if (num_del_nodes == 0) {
+        if (verbose)
+            logprint( "rm_sysgoal: Did not find nodes to be deleted "
+                      "nor nodes of successor mode." );
+        return NULL;
+    }
+
     /* Pre-allocate space for Entry and Exit sets; the number of
        elements actually used is tracked by Entry_len and Exit_len,
        respectively. */
