@@ -788,9 +788,9 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
     tmp = Cudd_ReadOne( manager );
     Cudd_Ref( tmp );
     substrategy = synthesize_reachgame( manager, num_env, num_sys,
-                                           Entry, Entry_len, Exit, Exit_len,
-                                           etrans, strans, egoals, tmp,
-                                           verbose );
+                                        Entry, Entry_len, Exit, Exit_len,
+                                        etrans, strans, egoals, tmp,
+                                        verbose );
     Cudd_RecursiveDeref( manager, tmp );
     if (substrategy == NULL) {
         free( Exit );
