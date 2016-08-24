@@ -88,7 +88,11 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
    Two special cases are not currently treated: given strategies in
    which there is less than three system goals or in which nodes
    providing initial conditions have goal mode corresponding to
-   delete_i or delete_i+1 mod n. */
+   delete_i or delete_i+1 mod n.
+
+   Return the head pointer of the modified strategy, or NULL if error or if no
+   operation performed because the call was vacuous (e.g., no nodes to delete
+   for requested mode). */
 anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
                      int original_num_env, int original_num_sys,
                      int delete_i, unsigned char verbose );
