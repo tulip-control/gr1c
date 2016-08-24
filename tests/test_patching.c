@@ -102,7 +102,7 @@ int main( int argc, char **argv )
 
     /* In this test for synthesize_reachgame(), we do not patch an
        existing strategy.  Thus the nodes in the Entry and Exit sets
-       are orphaned.  In terms of states, Entry contains [0,0], and
+       are without predecessors.  In terms of states, Entry contains [0,0], and
        Exit contains [1,1]. */
     Entry_len = Exit_len = 1;
     Entry = malloc( sizeof(anode_t *)*Entry_len );
@@ -119,14 +119,14 @@ int main( int argc, char **argv )
     state[0] = state[1] = 0;
     *Entry = insert_anode( NULL, 0, -1, False, state, num_env+num_sys );
     if (*Entry == NULL) {
-        ERRPRINT2( "failed to create orphan node with state [%d, %d].", state[0], state[1] );
+        ERRPRINT2( "failed to create node without predecessors and with state [%d, %d].", state[0], state[1] );
         abort();
     }
 
     state[0] = state[1] = 1;
     *Exit = insert_anode( NULL, 0, -1, False, state, num_env+num_sys );
     if (*Exit == NULL) {
-        ERRPRINT2( "failed to create orphan node with state [%d, %d].", state[0], state[1] );
+        ERRPRINT2( "failed to create node without predecessors and with state [%d, %d].", state[0], state[1] );
         abort();
     }
 
