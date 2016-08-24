@@ -72,7 +72,8 @@ int main( int argc, char **argv )
     Cudd_SetMaxCacheHard( manager, (unsigned int)-1 );
     Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
 
-    /* Define a map in the manager to easily swap variables with their primed selves. */
+    /* Define a map in the manager to easily swap variables with
+       their primed selves. */
     vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
     pvars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
     for (i = 0; i < num_env+num_sys; i++) {
@@ -100,9 +101,9 @@ int main( int argc, char **argv )
     node = pusht_terminal( NULL, PT_VARIABLE, "x", -1 );
     *egoals = ptree_BDD( node, var_list, manager );
 
-    /* In this test for synthesize_reachgame(), we do not patch an
-       existing strategy.  Thus the nodes in the Entry and Exit sets
-       are without predecessors.  In terms of states, Entry contains [0,0], and
+    /* In this test for synthesize_reachgame(), we do not patch an existing
+       strategy.  Thus the nodes in the Entry and Exit sets are without
+       predecessors.  In terms of states, Entry contains [0,0], and
        Exit contains [1,1]. */
     Entry_len = Exit_len = 1;
     Entry = malloc( sizeof(anode_t *)*Entry_len );
@@ -119,14 +120,18 @@ int main( int argc, char **argv )
     state[0] = state[1] = 0;
     *Entry = insert_anode( NULL, 0, -1, False, state, num_env+num_sys );
     if (*Entry == NULL) {
-        ERRPRINT2( "failed to create node without predecessors and with state [%d, %d].", state[0], state[1] );
+        ERRPRINT2( "failed to create node without predecessors "
+                   "and with state [%d, %d].",
+                   state[0], state[1] );
         abort();
     }
 
     state[0] = state[1] = 1;
     *Exit = insert_anode( NULL, 0, -1, False, state, num_env+num_sys );
     if (*Exit == NULL) {
-        ERRPRINT2( "failed to create node without predecessors and with state [%d, %d].", state[0], state[1] );
+        ERRPRINT2( "failed to create node without predecessors "
+                   "and with state [%d, %d].",
+                   state[0], state[1] );
         abort();
     }
 
@@ -157,7 +162,8 @@ int main( int argc, char **argv )
         abort();
     }
     if (aut_size( strategy ) != 2) {
-        ERRPRINT1( "local automaton has size %d but expected size 2.", aut_size( strategy ) );
+        ERRPRINT1( "local automaton has size %d but expected size 2.",
+                   aut_size( strategy ) );
         abort();
     }
 
@@ -178,10 +184,11 @@ int main( int argc, char **argv )
     }
 
     /* Verify transitions */
-    if (!(start_node->trans_len == 2 && ((*(start_node->trans) == start_node
-                                          && *(start_node->trans+1) == stop_node)
-                                         || (*(start_node->trans) == stop_node
-                                             && *(start_node->trans+1) == start_node)))) {
+    if (!(start_node->trans_len == 2
+          && ((*(start_node->trans) == start_node
+               && *(start_node->trans+1) == stop_node)
+              || (*(start_node->trans) == stop_node
+                  && *(start_node->trans+1) == start_node)))) {
         ERRPRINT( "local automaton start node has unexpected transitions." );
         abort();
     }
@@ -198,7 +205,8 @@ int main( int argc, char **argv )
     free( egoals );
     Cudd_RecursiveDeref( manager, N_BDD );
     if (Cudd_CheckZeroRef( manager ) != 0) {
-        ERRPRINT1( "Leaked BDD references; Cudd_CheckZeroRef -> %d.", Cudd_CheckZeroRef( manager ) );
+        ERRPRINT1( "Leaked BDD references; Cudd_CheckZeroRef -> %d.",
+                   Cudd_CheckZeroRef( manager ) );
         abort();
     }
     Cudd_Quit( manager );
