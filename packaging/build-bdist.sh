@@ -12,9 +12,9 @@ if [ $KERNEL = "MacOS" ]; then
     ARCHNAME="MacOS"
 elif [ $KERNEL = "Linux" ]; then
     if [ $ARCH = "x86_64" -o $ARCH = "x86-64" ]; then
-	ARCHNAME="Linux_x86-64"
+        ARCHNAME="Linux_x86-64"
     else
-	ARCHNAME="Linux_"$ARCH
+        ARCHNAME="Linux_"$ARCH
     fi
 else
     echo Unrecognized platform \"$KERNEL $ARCH\"
