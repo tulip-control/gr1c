@@ -28,7 +28,9 @@ if [ -d $DNAME ]; then
     exit 1
 fi
 
-make all
+make -j4 all
+strip --strip-debug gr1c gr1c-patch gr1c-autman gr1c-rg
+
 make check
 mkdir $DNAME
 
