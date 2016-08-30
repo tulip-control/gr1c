@@ -18,6 +18,7 @@ elif [ $KERNEL = "Linux" ]; then
     fi
 else
     echo Unrecognized platform \"$KERNEL $ARCH\"
+    exit 1
 fi
 
 DNAME=gr1c-${GR1C_VERSION}-$ARCHNAME
@@ -31,8 +32,16 @@ make all
 make check
 mkdir $DNAME
 
-cp -r examples gr1c gr1c-patch autman gr1c-rg README.md CHANGELOG LICENSE.txt $DNAME/
-cp extern/cudd-$CUDDVER/LICENSE $DNAME/LICENSE-cudd-$CUDDVER
+cp -r examples gr1c gr1c-patch gr1c-autman gr1c-rg README.md CHANGELOG LICENSE.txt $DNAME/
+if [ -d extern/cudd-$CUDDVER ]; then
+    CUDD_SRC_DIR=extern/cudd-$CUDDVER
+elif [ -d extern/src/cudd-$CUDDVER ]; then
+    CUDD_SRC_DIR=extern/src/cudd-$CUDDVER
+else
+    echo ERROR: CUDD source directory was not found.
+    exit 1
+fi
+cp ${CUDD_SRC_DIR}/LICENSE $DNAME/LICENSE-cudd-$CUDDVER
 if [ $KERNEL = "MacOS" ]; then
     zip -r $DNAME.zip $DNAME
 elif [ $KERNEL = "Linux" ]; then
