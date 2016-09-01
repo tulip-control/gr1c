@@ -496,18 +496,20 @@ int main( int argc, char **argv )
                             &spc.sys_trans_array, &spc.st_array_len,
                             &spc.env_goals, spc.num_egoals, &spc.sys_goals, spc.num_sgoals,
                             init_flags, verbose ) < 0) {
-        for (j = 0; j < original_num_egoals; j++)
-            free( *(original_env_goals+j) );
-        free( original_env_goals );
-        for (j = 0; j < original_num_sgoals; j++)
-            free( *(original_sys_goals+j) );
-        free( original_sys_goals );
-        for (j = 0; j < original_et_array_len; j++)
-            free( *(original_env_trans_array+j) );
-        free( original_env_trans_array );
-        for (j = 0; j < original_st_array_len; j++)
-            free( *(original_sys_trans_array+j) );
-        free( original_sys_trans_array );
+        if (verification_model > 0) {
+            for (j = 0; j < original_num_egoals; j++)
+                free( *(original_env_goals+j) );
+            free( original_env_goals );
+            for (j = 0; j < original_num_sgoals; j++)
+                free( *(original_sys_goals+j) );
+            free( original_sys_goals );
+            for (j = 0; j < original_et_array_len; j++)
+                free( *(original_env_trans_array+j) );
+            free( original_env_trans_array );
+            for (j = 0; j < original_st_array_len; j++)
+                free( *(original_sys_trans_array+j) );
+            free( original_sys_trans_array );
+        }
         return -1;
     }
     spc.nonbool_var_list = expand_nonbool_variables( &spc.evar_list, &spc.svar_list,
