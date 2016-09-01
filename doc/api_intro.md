@@ -17,8 +17,8 @@ form is as a source bundle.  Read the [installation page](md_installation.html)
 for instructions about installing gr1c from source code.  Beware the code is
 still experimental. If you find a possible bug or have comments,
 recommendations, or feature requests, then please open an [issue on
-GitHub](https://github.com/tulip-control/gr1c/issues) or contact Scott Livingston
-at <slivingston@cds.caltech.edu>
+GitHub](https://github.com/tulip-control/gr1c/issues) or contact
+Scott C. Livingston at <slivingston@cds.caltech.edu>
 
 In the documentation below, we assume that gr1c is on the shell path. To get a
 summary of possible command-line arguments,
