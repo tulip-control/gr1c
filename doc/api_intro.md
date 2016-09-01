@@ -11,7 +11,7 @@ Its core functionality is checking realizability of and synthesizing strategies
 for GR(1) specifications, though it does much more.  Relevant papers can be
 found in the [bibliography](md_papers.html).
 
-Releases are posted at http://vehicles.caltech.edu/snapshots/.  Pre-built
+Releases are posted at https://dl.bintray.com/slivingston/generic/.  Pre-built
 binaries for several platforms are available, though the preferred distribution
 form is as a source bundle.  Read the [installation page](md_installation.html)
 for instructions about installing gr1c from source code.  Beware the code is
