@@ -95,6 +95,29 @@ obtained from `gcov` by calling it with the file name. E.g.,
 
 will produce automaton.c.gcov, which describes coverage of src/automaton.c.
 
+### Static analysis
+
+Usage on gr1c of several tools for static analysis, i.e., tools that examine the
+source code without running the programs, are given below. The treatment is not
+exhaustive. For Clang static analyzer <http://clang-analyzer.llvm.org>, try
+
+    scan-build make all
+
+For cppcheck <http://cppcheck.sourceforge.net>, try
+
+    cppcheck --enable=all src 2> cppcheck-issues.txt
+
+Other websites about cppcheck are <https://github.com/danmar/cppcheck/> and
+<https://sourceforge.net/projects/cppcheck/>.
+
+### Dynamic analysis
+
+Several tools for dynamic analysis, i.e., tools that examine the behavior of
+live processes, are listed below. The treatment is not exhaustive.
+
+* Tools that use the Valgrind instrumentation framework, which are available at
+  http://www.valgrind.org
+
 
 Making releases
 ---------------
