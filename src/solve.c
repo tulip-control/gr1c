@@ -915,6 +915,7 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 
     } else {
         fprintf( stderr, "Error: Unrecognized init_flags %d", init_flags );
+        free( cube );
         return NULL;
     }
 

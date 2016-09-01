@@ -68,16 +68,16 @@ int main( int argc, char **argv )
     char **command_argv = NULL;
 
     byte verification_model = 0;  /* For command-line flag "-P". */
-    ptree_t *original_env_init;
-    ptree_t *original_sys_init;
-    ptree_t **original_env_goals;
-    ptree_t **original_sys_goals;
-    int original_num_egoals;
-    int original_num_sgoals;
-    ptree_t **original_env_trans_array;
-    ptree_t **original_sys_trans_array;
-    int original_et_array_len;
-    int original_st_array_len;
+    ptree_t *original_env_init = NULL;
+    ptree_t *original_sys_init = NULL;
+    ptree_t **original_env_goals = NULL;
+    ptree_t **original_sys_goals = NULL;
+    int original_num_egoals = 0;
+    int original_num_sgoals = 0;
+    ptree_t **original_env_trans_array = NULL;
+    ptree_t **original_sys_trans_array = NULL;
+    int original_et_array_len = 0;
+    int original_st_array_len = 0;
 
     int i, j, var_index;
     ptree_t *tmppt;  /* General purpose temporary ptree pointer */
@@ -496,9 +496,17 @@ int main( int argc, char **argv )
                             &spc.sys_trans_array, &spc.st_array_len,
                             &spc.env_goals, spc.num_egoals, &spc.sys_goals, spc.num_sgoals,
                             init_flags, verbose ) < 0) {
+        for (j = 0; j < original_num_egoals; j++)
+            free( *(original_env_goals+j) );
         free( original_env_goals );
+        for (j = 0; j < original_num_sgoals; j++)
+            free( *(original_sys_goals+j) );
         free( original_sys_goals );
+        for (j = 0; j < original_et_array_len; j++)
+            free( *(original_env_trans_array+j) );
         free( original_env_trans_array );
+        for (j = 0; j < original_st_array_len; j++)
+            free( *(original_sys_trans_array+j) );
         free( original_sys_trans_array );
         return -1;
     }
