@@ -40,7 +40,7 @@ vartype *expand_nonbool_state( vartype *state, int *offw, int num_nonbool,
 int *get_offsets_list( ptree_t *evar_list, ptree_t *svar_list,
                        ptree_t *nonbool_var_list );
 
-/* Expand any variables with integral domains in parse trees of the
+/** Expand any variables with integral domains in parse trees of the
    GR(1) specification components.
 
    init_flags as used with check_realizable() and synthesize()
@@ -57,7 +57,7 @@ int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
                         unsigned char init_flags,
                         unsigned char verbose );
 
-/* Print to outf if it is not NULL.  Otherwise, dump to the log. */
+/** Print to outf if it is not NULL.  Otherwise, dump to the log. */
 void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
                      ptree_t *env_init, ptree_t *sys_init,
                      ptree_t **env_trans_array, int et_array_len,
