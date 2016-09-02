@@ -94,6 +94,9 @@ obtained from `gcov` by calling it with the file name. E.g.,
     gcov automaton.c
 
 will produce automaton.c.gcov, which describes coverage of src/automaton.c.
+To obtain coverage-annotated files for all C source code, try
+
+    for k in `find src exp aux -name \*.c`; do gcov `basename ${k}`; done
 
 ### Static analysis
 
