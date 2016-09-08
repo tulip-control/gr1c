@@ -3,3 +3,10 @@
 /doc/build/
 /build/
 *.pyc
+
+# GCC gcov files
+*.gcov
+*.gcno
+
+# temporary object files during C compilation
+*.o
