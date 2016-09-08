@@ -10,3 +10,8 @@
 
 # temporary object files during C compilation
 *.o
+
+# lex, yacc generated files
+lex.yy.c
+y.tab.c
+y.tab.h
