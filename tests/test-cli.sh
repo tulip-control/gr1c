@@ -98,3 +98,14 @@ if ! (gr1c -h | diff $TMPFILE -); then
     echo
     exit 1
 fi
+
+if test $VERBOSE -eq 1; then
+    echo '\nComparing `gr1c --help` and `gr1c -h`...'
+fi
+TMPFILE=`mktemp`
+gr1c --help > $TMPFILE
+if ! (gr1c -h | diff $TMPFILE -); then
+    echo $PREFACE 'Outputs of `gr1c --help` and gr1c -h` do not match'
+    echo
+    exit 1
+fi
