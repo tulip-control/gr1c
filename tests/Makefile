@@ -56,3 +56,4 @@ clean:
 	-rm -fr *.dSYM
 	-rm -f *.gcno *.gcda *.gcov
 	-rm -f pan* *.aut *.aut.pml *.aut.pml.trail
+	-rm -f tmp.*
