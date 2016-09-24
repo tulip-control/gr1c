@@ -89,7 +89,7 @@ fi
 
 
 if (hash mktemp > /dev/null 2>&1); then
-    MKTEMP=mktemp
+    MKTEMP='mktemp tmp.XXXXXXXXXXXX'
 else
     MKTEMP=tempfile
 fi
