@@ -88,10 +88,16 @@ if test $VERBOSE -eq 1; then
 fi
 
 
+if (hash mktemp > /dev/null 2>&1); then
+    MKTEMP=mktemp
+else
+    MKTEMP=tempfile
+fi
+
 if test $VERBOSE -eq 1; then
     echo '\nComparing `gr1c help` and `gr1c -h`...'
 fi
-TMPFILE=`mktemp`
+TMPFILE=`$MKTEMP`
 gr1c help > $TMPFILE
 if ! (gr1c -h | diff $TMPFILE -); then
     echo $PREFACE 'Outputs of `gr1c help` and gr1c -h` do not match'
@@ -102,7 +108,7 @@ fi
 if test $VERBOSE -eq 1; then
     echo '\nComparing `gr1c --help` and `gr1c -h`...'
 fi
-TMPFILE=`mktemp`
+TMPFILE=`$MKTEMP`
 gr1c --help > $TMPFILE
 if ! (gr1c -h | diff $TMPFILE -); then
     echo $PREFACE 'Outputs of `gr1c --help` and gr1c -h` do not match'
