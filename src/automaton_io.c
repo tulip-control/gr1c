@@ -937,38 +937,14 @@ int json_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 }
 
 
-int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
-                   ptree_t *env_init, ptree_t *sys_init,
-                   ptree_t **env_trans_array, int et_array_len,
-                   ptree_t **sys_trans_array, int st_array_len,
-                   ptree_t **env_goals, int num_env_goals,
-                   ptree_t **sys_goals, int num_sys_goals,
-                   FILE *fp )
+void spin_aut_ltl_formula( int num_env,
+                           ptree_t *env_init, ptree_t *sys_init,
+                           int num_env_goals, int num_sys_goals,
+                           FILE *fp )
 {
-    anode_t *node, *next_node;
-    int num_env, num_sys;
-    int node_counter, next_node_counter;
-    vartype *env_counter;
-    ptree_t *tmppt, *var_separator;
-    int i, j;
-
+    int i;
     if (fp == NULL)
         fp = stdout;
-
-    num_env = tree_size( evar_list );
-    num_sys = tree_size( svar_list );
-
-    env_counter = malloc( num_env*sizeof(int) );
-    if (env_counter == NULL) {
-        perror( "spin_aut_dump, malloc" );
-        exit(-1);
-    }
-
-    fprintf( fp,
-             "/* Spin Promela model created by gr1c, version "
-             GR1C_VERSION " */\n\n" );
-
-    fprintf( fp, "/* LTL formula\n" );
     if (num_env > 0) {
         fprintf( fp, "(" );
         if (env_init != NULL)
@@ -986,7 +962,52 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
     fprintf( fp, " && [] !pmlfault" );
     if (num_env > 0)
         fprintf( fp, ")" );
-    fprintf( fp, "\n*/\n\n" );
+    fprintf( fp, "\n" );
+}
+
+int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+                   ptree_t *env_init, ptree_t *sys_init,
+                   ptree_t **env_trans_array, int et_array_len,
+                   ptree_t **sys_trans_array, int st_array_len,
+                   ptree_t **env_goals, int num_env_goals,
+                   ptree_t **sys_goals, int num_sys_goals,
+                   FILE *fp, FILE *formula_fp )
+{
+    anode_t *node, *next_node;
+    int num_env, num_sys;
+    int node_counter, next_node_counter;
+    vartype *env_counter;
+    ptree_t *tmppt, *var_separator;
+    int i, j;
+
+    if (fp == NULL)
+        fp = stdout;
+
+    if (formula_fp == NULL && fp != stdout)
+        formula_fp = stdout;
+
+    num_env = tree_size( evar_list );
+    num_sys = tree_size( svar_list );
+
+    env_counter = malloc( num_env*sizeof(int) );
+    if (env_counter == NULL) {
+        perror( "spin_aut_dump, malloc" );
+        exit(-1);
+    }
+
+    fprintf( fp,
+             "/* Spin Promela model created by gr1c, version "
+             GR1C_VERSION " */\n\n" );
+
+    fprintf( fp, "/* LTL formula\n" );
+    spin_aut_ltl_formula( num_env, env_init, sys_init,
+                          num_env_goals, num_sys_goals,
+                          fp );
+    if (formula_fp)
+        spin_aut_ltl_formula( num_env, env_init, sys_init,
+                              num_env_goals, num_sys_goals,
+                              formula_fp );
+    fprintf( fp, "*/\n\n" );
 
     if (num_env > 0) {
         if (env_init != NULL) {

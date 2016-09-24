@@ -30,13 +30,17 @@ fi
 $BUILD_ROOT/gr1c -t aut specs/${REFSPC} > ${REFSPC}.aut
 if test $VERBOSE -eq 1; then
     echo "\nVerifying it using Spin..."
-    echo "\tgr1c-autman -i ${TESTDIR}/specs/${REFSPC} ${REFSPC}.aut -P > ${REFSPC}.aut.pml"
-    echo "\tspin -f '!(X sysinit && [] (!checkstrans || systrans) && []<> sysgoal0000 && [] !pmlfault)' >> ${REFSPC}.aut.pml"
+    echo "\tgr1c-autman -i specs/${REFSPC} ${REFSPC}.aut -P -o ${REFSPC}.aut.pml"
+fi
+FORMULA=`$BUILD_ROOT/gr1c-autman -i specs/${REFSPC} ${REFSPC}.aut -P -o ${REFSPC}.aut.pml`
+if test $VERBOSE -eq 1; then
+    echo "\tspin -f \"!(${FORMULA})\" >> ${REFSPC}.aut.pml"
+fi
+${SPINEXE} -f "!(${FORMULA})" >> ${REFSPC}.aut.pml
+if test $VERBOSE -eq 1; then
     echo "\tspin -a ${REFSPC}.aut.pml"
     echo "\tcc -o pan pan.c && ./pan -a"
 fi
-$BUILD_ROOT/gr1c-autman -i specs/${REFSPC} ${REFSPC}.aut -P > ${REFSPC}.aut.pml
-${SPINEXE} -f '!(X sysinit && [] (!checkstrans || systrans) && []<> sysgoal0000 && [] !pmlfault)' >> ${REFSPC}.aut.pml
 ${SPINEXE} -a ${REFSPC}.aut.pml
 cc -o pan pan.c
 if test `./pan -a | grep errors| cut -d: -f2` -ne 0; then

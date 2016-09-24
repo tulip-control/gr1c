@@ -45,6 +45,7 @@ extern specification_t spc;
 
 int main( int argc, char **argv )
 {
+    FILE *fp;
     int i, j;
     int in_filename_index = -1;
     FILE *in_fp = NULL;
@@ -58,6 +59,7 @@ int main( int argc, char **argv )
     bool logging_flag = False;
     int run_option = AUTMAN_SYNTAX;
     int spc_file_index = -1;
+    int output_file_index = -1;  /* For command-line flag "-o". */
     FILE *spc_fp;
 
     for (i = 1; i < argc; i++) {
@@ -69,7 +71,7 @@ int main( int argc, char **argv )
             }
 
             if (argv[i][1] == 'h') {
-                printf( "Usage: %s [-hVvlsP] [-t TYPE] [-L N] [-i FILE] [FILE]\n\n"
+                printf( "Usage: %s [-hVvlsP] [-t TYPE] [-L N] [-i FILE] [-o FILE] [FILE]\n\n"
                         "If no input file is given, or if FILE is -, read from stdin.  If no action\n"
                         "is requested, then assume -s.\n\n"
                         "  -h          this help message\n"
@@ -84,8 +86,10 @@ int main( int argc, char **argv )
                 printf( "  -t TYPE     convert to format: txt, dot, aut, json, tulip\n"
                         "              some of these require a reference specification.\n"
                         "  -P          create Spin Promela model of strategy\n"
+                        "              if used with -o, then the LTL formula is printed to stdout.\n"
                         "  -L N        declare that state vector size is N\n"
-                        "  -i FILE     process strategy with respect to specification FILE\n" );
+                        "  -i FILE     process strategy with respect to specification FILE\n"
+                        "  -o FILE     output to FILE, rather than stdout (default)\n" );
                 return 0;
             } else if (argv[i][1] == 'V') {
                 printf( "gr1c-autman (automaton file manipulator, distributed with"
@@ -145,6 +149,13 @@ int main( int argc, char **argv )
             } else if (argv[i][1] == 'P') {
                 run_option = AUTMAN_VERMODEL;
                 verification_model = VERMODEL_TARGET_SPIN;
+            } else if (argv[i][1] == 'o') {
+                if (i == argc-1) {
+                    fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+                    return 1;
+                }
+                output_file_index = i+1;
+                i++;
             } else {
                 fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
                 return 1;
@@ -256,6 +267,18 @@ int main( int argc, char **argv )
         logprint( "Given automaton has size %d.", aut_size( head ) );
     }
 
+
+    /* Open output file if specified; else point to stdout. */
+    if (output_file_index >= 0) {
+        fp = fopen( argv[output_file_index], "w" );
+        if (fp == NULL) {
+            perror( "gr1c, fopen" );
+            return -1;
+        }
+    } else {
+        fp = stdout;
+    }
+
     switch (run_option) {
     case AUTMAN_SYNTAX:
         printf( "%d\n", version );
@@ -270,21 +293,21 @@ int main( int argc, char **argv )
                        spc.sys_trans_array, spc.st_array_len,
                        spc.env_goals, spc.num_egoals,
                        spc.sys_goals, spc.num_sgoals,
-                       stdout );
+                       fp, stdout );
         break;
 
     case AUTMAN_CONVERT:
         if (format_option == OUTPUT_FORMAT_TEXT) {
-            list_aut_dump( head, state_len, stdout );
+            list_aut_dump( head, state_len, fp );
         } else if (format_option == OUTPUT_FORMAT_DOT) {
             dot_aut_dump( head, spc.evar_list, spc.svar_list,
-                          DOT_AUT_ATTRIB, stdout );
+                          DOT_AUT_ATTRIB, fp );
         } else if (format_option == OUTPUT_FORMAT_AUT) {
-            aut_aut_dump( head, state_len, stdout );
+            aut_aut_dump( head, state_len, fp );
         } else if (format_option == OUTPUT_FORMAT_JSON) {
-            json_aut_dump( head, spc.evar_list, spc.svar_list, stdout );
+            json_aut_dump( head, spc.evar_list, spc.svar_list, fp );
         } else { /* OUTPUT_FORMAT_TULIP */
-            tulip_aut_dump( head, spc.evar_list, spc.svar_list, stdout );
+            tulip_aut_dump( head, spc.evar_list, spc.svar_list, fp );
         }
         break;
 
@@ -292,6 +315,9 @@ int main( int argc, char **argv )
         fprintf( stderr, "Unrecognized run option.  Try \"-h\".\n" );
         return 1;
     }
+
+    if (fp != stdout)
+        fclose( fp );
 
     return 0;
 }

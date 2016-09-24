@@ -665,7 +665,7 @@ int main( int argc, char **argv )
                            original_sys_trans_array, original_st_array_len,
                            original_env_goals, original_num_egoals,
                            original_sys_goals, original_num_sgoals,
-                           stdout );
+                           stdout, NULL );
         }
     }
 

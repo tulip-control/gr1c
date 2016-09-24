@@ -250,13 +250,28 @@ int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
        checkstrans, pmlfault, envinit, envtrans, envgoal0, envgoal1, ...
        sysinit, systrans, sysgoal0, sysgoal1, ...
 
-   If fp = NULL, then write to stdout.  Return nonzero if error. */
+   An LTL formula that can be used to decide whether the strategy realizes the
+   GR(1) specification is included in the comments near the top of the generated
+   Spin Promela model.
+
+   Example instructions for model checking are provided in doc/verification.md.
+
+   If fp = NULL, then write to stdout.
+
+   If fp != NULL, then formula_fp is the file in which to print the LTL formula,
+   or stdout if formula_fp = NULL. Note that this is a copy of the LTL formula
+   that is included in the Promela model, which is described above.
+
+   If fp = formula_fp (i.e., the same file pointer), then do not print the LTL
+   formula to formula_fp.
+
+   Return nonzero if error. */
 int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
                    ptree_t *env_init, ptree_t *sys_init,
                    ptree_t **env_trans_array, int et_array_len,
                    ptree_t **sys_trans_array, int st_array_len,
                    ptree_t **env_goals, int num_env_goals,
                    ptree_t **sys_goals, int num_sys_goals,
-                   FILE *fp );
+                   FILE *fp, FILE *formula_fp );
 
 #endif
