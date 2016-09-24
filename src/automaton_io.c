@@ -983,8 +983,11 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
     if (fp == NULL)
         fp = stdout;
 
-    if (formula_fp == NULL && fp != stdout)
+    if (formula_fp == NULL)
         formula_fp = stdout;
+
+    if (formula_fp == fp)
+        formula_fp = NULL;
 
     num_env = tree_size( evar_list );
     num_sys = tree_size( svar_list );
