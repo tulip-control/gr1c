@@ -22,28 +22,30 @@ if test $VERBOSE -eq 1; then
     ${SPINEXE} -V
 fi
 
-REFSPC=free_counter.spc
-if test $VERBOSE -eq 1; then
-    echo "\nConstructing strategy for ${TESTDIR}/specs/${REFSPC}"
-    echo "\tgr1c -t aut ${TESTDIR}/specs/${REFSPC} > ${REFSPC}.aut"
-fi
-$BUILD_ROOT/gr1c -t aut specs/${REFSPC} > ${REFSPC}.aut
-if test $VERBOSE -eq 1; then
-    echo "\nVerifying it using Spin..."
-    echo "\tgr1c-autman -i specs/${REFSPC} ${REFSPC}.aut -P -o ${REFSPC}.aut.pml"
-fi
-FORMULA=`$BUILD_ROOT/gr1c-autman -i specs/${REFSPC} ${REFSPC}.aut -P -o ${REFSPC}.aut.pml`
-if test $VERBOSE -eq 1; then
-    echo "\tspin -f \"!(${FORMULA})\" >> ${REFSPC}.aut.pml"
-fi
-${SPINEXE} -f "!(${FORMULA})" >> ${REFSPC}.aut.pml
-if test $VERBOSE -eq 1; then
-    echo "\tspin -a ${REFSPC}.aut.pml"
-    echo "\tcc -o pan pan.c && ./pan -a"
-fi
-${SPINEXE} -a ${REFSPC}.aut.pml
-cc -o pan pan.c
-if test `./pan -a | grep errors| cut -d: -f2` -ne 0; then
-    echo $PREFACE "Strategy does not satisfy specification ${TESTDIR}/specs/${REFSPC}\n"
-    exit 1
-fi
+REFSPECS="free_counter.spc count_onestep.spc"
+for REFSPC in `echo $REFSPECS`; do
+    if test $VERBOSE -eq 1; then
+        echo "\nConstructing strategy for ${TESTDIR}/specs/${REFSPC}"
+        echo "\tgr1c -t aut ${TESTDIR}/specs/${REFSPC} > ${REFSPC}.aut"
+    fi
+    $BUILD_ROOT/gr1c -t aut specs/${REFSPC} > ${REFSPC}.aut
+    if test $VERBOSE -eq 1; then
+        echo "\nVerifying it using Spin..."
+        echo "\tgr1c-autman -i specs/${REFSPC} ${REFSPC}.aut -P -o ${REFSPC}.aut.pml"
+    fi
+    FORMULA=`$BUILD_ROOT/gr1c-autman -i specs/${REFSPC} ${REFSPC}.aut -P -o ${REFSPC}.aut.pml`
+    if test $VERBOSE -eq 1; then
+        echo "\tspin -f \"!(${FORMULA})\" >> ${REFSPC}.aut.pml"
+    fi
+    ${SPINEXE} -f "!(${FORMULA})" >> ${REFSPC}.aut.pml
+    if test $VERBOSE -eq 1; then
+        echo "\tspin -a ${REFSPC}.aut.pml"
+        echo "\tcc -o pan pan.c && ./pan -a"
+    fi
+    ${SPINEXE} -a ${REFSPC}.aut.pml
+    cc -o pan pan.c
+    if test `./pan -a | grep errors| cut -d: -f2` -ne 0; then
+        echo $PREFACE "Strategy does not satisfy specification ${TESTDIR}/specs/${REFSPC}\n"
+        exit 1
+    fi
+done
