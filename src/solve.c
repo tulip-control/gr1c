@@ -45,6 +45,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
     anode_t *strategy = NULL;
     anode_t *this_node_stack = NULL;
     anode_t *node, *new_node;
+    bool initial;
     vartype *state;
     vartype **env_moves;
     int emoves_len;
@@ -495,6 +496,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                     logprint_state( node->state );
                     logprint( "}" );
                 }
+                initial = node->initial;
                 strategy = delete_anode( strategy, node );
                 new_node = find_anode( strategy, this_node_stack->mode,
                                        this_node_stack->state,
@@ -507,7 +509,7 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                         logprint( "}" );
                     }
                     strategy = insert_anode( strategy,
-                                             this_node_stack->mode, -1, False,
+                                             this_node_stack->mode, -1, initial,
                                              this_node_stack->state,
                                              num_env+num_sys );
                     if (strategy == NULL) {
