@@ -440,6 +440,11 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
         node = node->next;
     }
 
+    if (verbose > 1) {
+        logprint( "Constructing enumerative strategy..." );
+        logprint( "Beginning with node stack size %d.",
+                  aut_size( this_node_stack ) );
+    }
     while (this_node_stack) {
         /* Find smallest Y_j set containing node. */
         for (k = num_env+num_sys; k < 2*(num_env+num_sys); k++)
@@ -484,11 +489,23 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                 this_node_stack = pop_anode( this_node_stack );
                 continue;
             } else {
+                if (verbose > 1) {
+                    logprint( "Delete node with mode %d and state: {",
+                              node->mode );
+                    logprint_state( node->state );
+                    logprint( "}" );
+                }
                 strategy = delete_anode( strategy, node );
                 new_node = find_anode( strategy, this_node_stack->mode,
                                        this_node_stack->state,
                                        num_env+num_sys );
                 if (new_node == NULL) {
+                    if (verbose > 1) {
+                        logprint( "Insert node with mode %d and state: {",
+                                  this_node_stack->mode );
+                        logprint_state( this_node_stack->state );
+                        logprint( "}" );
+                    }
                     strategy = insert_anode( strategy,
                                              this_node_stack->mode, -1, False,
                                              this_node_stack->state,
@@ -677,6 +694,12 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
             new_node = find_anode( strategy, next_mode,
                                    state, num_env+num_sys );
             if (new_node == NULL) {
+                if (verbose > 1) {
+                    logprint( "Insert node with mode %d and state: {",
+                              next_mode );
+                    logprint_state( state );
+                    logprint( "}" );
+                }
                 strategy = insert_anode( strategy, next_mode, -1, False,
                                          state, num_env+num_sys );
                 if (strategy == NULL) {
