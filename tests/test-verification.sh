@@ -22,7 +22,7 @@ if test $VERBOSE -eq 1; then
     ${SPINEXE} -V
 fi
 
-REFSPECS="free_counter.spc count_onestep.spc"
+REFSPECS="trivial_2var.spc free_counter.spc count_onestep.spc"
 for REFSPC in `echo $REFSPECS`; do
     if test $VERBOSE -eq 1; then
         echo "\nConstructing strategy for ${TESTDIR}/specs/${REFSPC}"
