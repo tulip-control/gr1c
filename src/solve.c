@@ -24,6 +24,21 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
                                    unsigned char verbose );
 
 
+void logprint_state( vartype *state ) {
+    int i;
+    int num_env, num_sys;
+    num_env = tree_size( spc.evar_list );
+    num_sys = tree_size( spc.svar_list );
+    for (i = 0; i < num_env+num_sys; i++) {
+        logprint( "\t%s = %d;",
+                  (i < num_env ?
+                   (get_list_item( spc.evar_list, i ))->name
+                   : (get_list_item( spc.svar_list, i-num_env ))->name),
+                  *(state+i) );
+    }
+}
+
+
 anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                      unsigned char verbose )
 {
@@ -409,6 +424,11 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
     /* Insert all stacked, initial nodes into strategy. */
     node = this_node_stack;
     while (node) {
+        if (verbose > 1) {
+            logprint( "Insert initial state: {" );
+            logprint_state( node->state );
+            logprint( "}" );
+        }
         strategy = insert_anode( strategy, node->mode, node->rgrad, True,
                                  node->state, num_env+num_sys );
         if (strategy == NULL) {
