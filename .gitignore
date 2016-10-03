@@ -15,3 +15,7 @@
 lex.yy.c
 y.tab.c
 y.tab.h
+
+# temporary files generated during testing
+/tests/pan*
+/tests/tmp*
