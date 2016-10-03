@@ -1018,10 +1018,14 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
             print_formula( env_init, fp, FORMULA_SYNTAX_SPIN );
         }
         fprintf( fp, "\n#define envtrans " );
-        for (i = 0; i < et_array_len; i++) {
-            print_formula( *(env_trans_array+i), fp, FORMULA_SYNTAX_SPIN );
-            if (i < et_array_len-1)
-                fprintf( fp, " && " );
+        if (et_array_len == 0) {
+            fprintf( fp, "true" );
+        } else {
+            for (i = 0; i < et_array_len; i++) {
+                print_formula( *(env_trans_array+i), fp, FORMULA_SYNTAX_SPIN );
+                if (i < et_array_len-1)
+                    fprintf( fp, " && " );
+            }
         }
         if (num_env_goals > 0) {
             for (i = 0; i < num_env_goals; i++) {
@@ -1035,10 +1039,14 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
         print_formula( sys_init, fp, FORMULA_SYNTAX_SPIN );
     }
     fprintf( fp, "\n#define systrans " );
-    for (i = 0; i < st_array_len; i++) {
-        print_formula( *(sys_trans_array+i), fp, FORMULA_SYNTAX_SPIN );
-        if (i < st_array_len-1)
-            fprintf( fp, " && " );
+    if (st_array_len == 0) {
+        fprintf( fp, "true" );
+    } else {
+        for (i = 0; i < st_array_len; i++) {
+            print_formula( *(sys_trans_array+i), fp, FORMULA_SYNTAX_SPIN );
+            if (i < st_array_len-1)
+                fprintf( fp, " && " );
+        }
     }
     if (num_sys_goals > 0) {
         for (i = 0; i < num_sys_goals; i++) {
