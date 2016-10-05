@@ -73,4 +73,19 @@ typedef struct {
 
 #include "cudd.h"
 
+
+#ifdef USE_READLINE
+#include <readline/readline.h>
+#define READLINE_PRINT_VERSION() \
+    printf( "readline %d.%d\n", RL_VERSION_MAJOR, RL_VERSION_MAJOR )
+#else
+#define READLINE_PRINT_VERSION()
+#endif
+#define PRINT_LINKED_VERSIONS() \
+    printf( "\nLinked with the following externals:\n" ); \
+    READLINE_PRINT_VERSION(); \
+    printf( "CUDD " ); \
+    Cudd_PrintVersion( stdout )
+
+
 #endif
