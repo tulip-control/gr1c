@@ -94,6 +94,7 @@ int main( int argc, char **argv )
             } else if (argv[i][1] == 'V') {
                 printf( "gr1c-autman (automaton file manipulator, distributed with"
                         " gr1c v" GR1C_VERSION ")\n\n" GR1C_COPYRIGHT "\n" );
+                PRINT_LINKED_VERSIONS();
                 return 0;
             } else if (argv[i][1] == 'v') {
                 verbose++;

@@ -99,6 +99,7 @@ int main( int argc, char **argv )
                 help_flag = True;
             } else if (argv[i][1] == 'V') {
                 PRINT_VERSION();
+                PRINT_LINKED_VERSIONS();
                 return 0;
             } else if (argv[i][1] == 'v') {
                 verbose++;
