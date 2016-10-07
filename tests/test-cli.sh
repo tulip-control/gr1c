@@ -53,13 +53,13 @@ fi
 # Format of each test case: ARGS<<<STDIN
 # where the command is `echo STDIN | gr1c ARGS`.
 # Each command is expected to succeed (exitcode 0).
-for args in '<<<SYS: x;' 'rg<<<SYS: x;\nSYSGOAL:<>x;'; do
+for args in "<<<SYS: x;" "rg<<<SYS: x;\nSYSGOAL:<>x;"; do
     stdin=${args##*<<<}
     args=${args%%<<<*}
     if test $VERBOSE -eq 1; then
         echo "\t gr1c ${args}  # with input:" ${stdin}
     fi
-    echo -e ${stdin} | gr1c ${args} > /dev/null 2>&1
+    echo ${stdin} | gr1c ${args} > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         echo $PREFACE "Failed on basic task via stdin: echo ${stdin} | gr1c ${args}"
         echo
