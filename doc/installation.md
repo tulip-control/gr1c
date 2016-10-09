@@ -99,30 +99,23 @@ administrative privileges, one solution is
 
     $ sudo make install
 
-which will copy `gr1c` and `rg` to `/usr/local/bin`, a commonly used location
-for "local" installations.  This is based on a default installation prefix of
-`/usr/local`.  Adjust it by invoking `make` with something like
-`prefix=/your/new/path`.  The programs `grpatch` and `grjit` are *not* included
-in as an effect of `make install`.  [Extra instructions](#extras) concerning
-these are below.
+which will copy `gr1c`, `gr1c-rg`, and other programs to `/usr/local/bin`, a
+commonly used location for "local" installations.  This is based on a default
+installation prefix of `/usr/local`.  Adjust it by invoking `make` with
+something like `prefix=/your/new/path`.
 
 
 <h2 id="extras">Extras</h2>
 
-Running `make`, as described above, will not cause the programs `grpatch` and
-`grjit` to be built.  To achieve this,
+The gr1c repository includes experimental programs that are only of special
+interest, are not (yet) reliably maintained, or otherwise are not ready for
+applications in production. These are found in the directories contrib/ and
+exp/, and some parts of the implementation are available through the gr1c API.
+In some cases these programs can be built by providing the executable name to
+`make`, e.g., `make grjit`.
 
-    $ make all
-
-Alternatively, you can request a specific executable, e.g., `make grpatch`.  To
-install `grpatch` in the same place as `gr1c`,
-
-    $ make expinstall
-
-Other experiment-related programs, such as `grjit`, will eventually be added to
-the list installed by the expinstall command.  [Doxygen](http://www.doxygen.org)
-must be installed to build the documentation...including the page you are now
-reading.  Try
+[Doxygen](http://www.doxygen.org) must be installed to build the
+documentation...including the page you are now reading.  Try
 
     $ make doc
 
