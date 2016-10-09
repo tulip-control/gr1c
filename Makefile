@@ -41,10 +41,8 @@ LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 # will fail if you build gr1c with GNU Readline.
 
 
-core: $(CORE_PROGRAMS)
-exp: $(EXP_PROGRAMS)
-aux: $(AUX_PROGRAMS)
-all: core exp aux
+core: $(CORE_PROGRAMS) $(EXP_PROGRAMS) $(AUX_PROGRAMS)
+all: core
 
 gr1c: main.o util.o logging.o interactive.o solve_support.o solve_operators.o solve.o ptree.o automaton.o automaton_io.o gr1c_parse.o
 	$(CC) -o $@ $^ $(LDFLAGS)
