@@ -112,11 +112,7 @@ rg_parse.o: $(SRCDIR)/gr1c_scan.l $(SRCDIR)/rg_parse.y gr1c_parse.o
 	$(LD) lex.yy.o y.tab.o -o $@
 
 install:
-	$(INSTALL) $(CORE_PROGRAMS) $(AUX_PROGRAMS) $(DESTDIR)$(bindir)
-
-.PHONY: expinstall
-expinstall:
-	$(INSTALL) $(EXP_PROGRAMS) $(DESTDIR)$(bindir)
+	$(INSTALL) $(CORE_PROGRAMS) $(EXP_PROGRAMS) $(AUX_PROGRAMS) $(DESTDIR)$(bindir)
 
 uninstall:
 	rm -f $(DESTDIR)$(bindir)/gr1c $(DESTDIR)$(bindir)/gr1c-rg $(DESTDIR)$(bindir)/gr1c-patch
