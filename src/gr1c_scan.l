@@ -47,16 +47,16 @@ number  [0-9]+([.][0-9]+)?
 "True"  { return TRUE_CONSTANT; }
 "False"  { return FALSE_CONSTANT; }
 
-^("ENV:")  { return E_VARS; }
-^("SYS:")  { return S_VARS; }
+^([ \t\r]*)("ENV:")  { return E_VARS; }
+^([ \t\r]*)("SYS:")  { return S_VARS; }
 
-^("ENVINIT:")  { return E_INIT; }
-^("ENVTRANS:")  { return E_TRANS; }
-^("ENVGOAL:")  { return E_GOAL; }
+^([ \t\r]*)("ENVINIT:")  { return E_INIT; }
+^([ \t\r]*)("ENVTRANS:")  { return E_TRANS; }
+^([ \t\r]*)("ENVGOAL:")  { return E_GOAL; }
 
-^("SYSINIT:")  { return S_INIT; }
-^("SYSTRANS:")  { return S_TRANS; }
-^("SYSGOAL:")  { return S_GOAL; }
+^([ \t\r]*)("SYSINIT:")  { return S_INIT; }
+^([ \t\r]*)("SYSTRANS:")  { return S_TRANS; }
+^([ \t\r]*)("SYSGOAL:")  { return S_GOAL; }
 
 {identifier}  { yylval.str = strdup( yytext ); return VARIABLE; }
 {number}  { yylval.num = strtol( yytext, NULL, 10 ); return NUMBER; }
