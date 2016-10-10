@@ -76,8 +76,20 @@ build options](#extras).
 <h2 id="testing">Testing</h2>
 
 Before deploying gr1c and especially if you are building it yourself, run the
-test suite from the source distribution. After following the build steps above,
-do
+test suite from the source distribution. Testing covers optional features of
+gr1c, so accordingly, optional dependencies become required for the purposes of
+testing. If you were able to build `gr1c` as described above, then it suffices
+to additionally install [Graphviz dot](http://www.graphviz.org/) and
+[Spin](http://spinroot.com). Try
+
+    $ ./get-extra-deps.sh
+    $ ./build-deps.sh
+
+which will download source code for Spin and build it. Tests that use Spin for
+model checking are configured to search in the path used by ./build-deps.sh.
+To run a different `spin`, modify `SPINEXE` in tests/test-verification.sh
+
+After following the build steps above, do
 
     $ make check
 
