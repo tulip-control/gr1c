@@ -177,8 +177,11 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
     num_it_Z = 0;
     do {
         num_it_Z++;
-        if (verbose > 1)
+        if (verbose > 1) {
             logprint( "Z iteration %d", num_it_Z );
+            logprint( "Cudd_ReadMemoryInUse (bytes): %d",
+                      Cudd_ReadMemoryInUse( manager ) );
+        }
 
         for (i = 0; i < spc.num_sgoals; i++) {
             if (*(Z_prev+i) != NULL)
@@ -209,8 +212,11 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
             num_it_Y = 0;
             do {
                 num_it_Y++;
-                if (verbose > 1)
+                if (verbose > 1) {
                     logprint( "\tY iteration %d", num_it_Y );
+                    logprint( "\tCudd_ReadMemoryInUse (bytes): %d",
+                              Cudd_ReadMemoryInUse( manager ) );
+                }
 
                 if (Y_prev != NULL)
                     Cudd_RecursiveDeref( manager, Y_prev );
@@ -238,8 +244,11 @@ DdNode *compute_winning_set_BDD( DdManager *manager,
                     num_it_X = 0;
                     do {
                         num_it_X++;
-                        if (verbose > 1)
+                        if (verbose > 1) {
                             logprint( "\t\tX iteration %d", num_it_X );
+                            logprint( "\t\tCudd_ReadMemoryInUse (bytes): %d",
+                                      Cudd_ReadMemoryInUse( manager ) );
+                        }
 
                         if (X_prev != NULL)
                             Cudd_RecursiveDeref( manager, X_prev );
