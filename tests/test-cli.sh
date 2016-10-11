@@ -60,7 +60,7 @@ SYSGOAL:<>x;"; do
     if test $VERBOSE -eq 1; then
         echo "\t gr1c ${args}  # with input:" ${stdin}
     fi
-    echo "${stdin}" | gr1c ${args} > /dev/null 2>&1
+    echo "${stdin}" | gr1c ${args}
     if [ $? -ne 0 ]; then
         echo $PREFACE "Failed on basic task via stdin: echo ${stdin} | gr1c ${args}"
         echo
