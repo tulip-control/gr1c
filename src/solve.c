@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "logging.h"
 #include "solve.h"
@@ -213,6 +214,8 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
             *(*(Y+i)+j) = *(*(Y+i)+j+1);
             *(*(X_ijr+i)+j) = *(*(X_ijr+i)+j+1);
         }
+
+        assert( *(num_sublevels+i) > 0 );
         *(Y+i) = realloc( *(Y+i), (*(num_sublevels+i))*sizeof(DdNode *) );
         *(X_ijr+i) = realloc( *(X_ijr+i),
                               (*(num_sublevels+i))*sizeof(DdNode **) );
