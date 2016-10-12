@@ -881,8 +881,9 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
         Cudd_Ref( tmp );
         tmp2 = Cudd_bddAnd( manager, tmp, W );
         Cudd_Ref( tmp2 );
-        if (!(Cudd_bddLeq( manager, tmp, tmp2 )
-              *Cudd_bddLeq( manager, tmp2, tmp ))) {
+        if (tmp == Cudd_Not( Cudd_ReadOne( manager ) )
+            || !(Cudd_bddLeq( manager, tmp, tmp2 )
+                 *Cudd_bddLeq( manager, tmp2, tmp ))) {
             realizable = False;
         } else {
             realizable = True;
