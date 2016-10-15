@@ -107,7 +107,7 @@ int main( int argc, char **argv )
         } else if (!strncmp( argv[1], "patch", strlen( "patch" ) )
                    && argv[1][strlen("patch")] == '\0') {
 
-            command_argv = malloc( sizeof(char *)*argc );
+            command_argv = malloc( sizeof(char *)*(argc+1) );
             command_argv[0] = strdup( "gr1c patch" );
             command_argv[argc] = NULL;
             for (i = 1; i < argc-1; i++)
@@ -121,7 +121,7 @@ int main( int argc, char **argv )
         } else if (!strncmp( argv[1], "autman", strlen( "autman" ) )
                    && argv[1][strlen("autman")] == '\0') {
 
-            command_argv = malloc( sizeof(char *)*argc );
+            command_argv = malloc( sizeof(char *)*(argc+1) );
             command_argv[0] = strdup( "gr1c autman" );
             command_argv[argc] = NULL;
             for (i = 1; i < argc-1; i++)
