@@ -93,7 +93,7 @@ int main( int argc, char **argv )
             && argv[1][strlen("rg")] == '\0') {
 
             /* Pass arguments after rg */
-            command_argv = malloc( sizeof(char *)*argc );
+            command_argv = malloc( sizeof(char *)*(argc+1) );
             command_argv[0] = strdup( "gr1c rg" );
             command_argv[argc] = NULL;
             for (i = 1; i < argc-1; i++)
