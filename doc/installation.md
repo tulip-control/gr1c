@@ -105,9 +105,8 @@ at <slivingston@cds.caltech.edu>
 Placing gr1c on your shell path
 -------------------------------
 
-To use the program `gr1c` outside of the directory you just built it in, you
-will need to add it to the search path of your shell. Assuming you have
-administrative privileges, one solution is
+To be fully operational, gr1c must be on the search path of your shell.
+Assuming that you have administrative privileges, one solution is
 
     $ sudo make install
 
@@ -115,6 +114,11 @@ which will copy `gr1c`, `gr1c-rg`, and other programs to `/usr/local/bin`, a
 commonly used location for "local" installations.  This is based on a default
 installation prefix of `/usr/local`.  Adjust it by invoking `make` with
 something like `prefix=/your/new/path`.
+
+If you want to work with `gr1c` directly from the building directory, then from
+the same directory where `make` was invoked,
+
+    $ export PATH=`pwd`:$PATH
 
 
 <h2 id="extras">Extras</h2>
