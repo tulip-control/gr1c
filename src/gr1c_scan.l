@@ -58,7 +58,7 @@ number  [0-9]+([.][0-9]+)?
 ^([ \t\r]*)("SYSTRANS:"|"systrans:"|"Systrans:")  { return S_TRANS; }
 ^([ \t\r]*)("SYSGOAL:"|"sysgoal:"|"Sysgoal:")  { return S_GOAL; }
 
-{identifier}  { yylval.str = strdup( yytext ); return VARIABLE; }
+{identifier}  { yylval.str = strdup( yytext ); return NAME; }
 {number}  { yylval.num = strtol( yytext, NULL, 10 ); return NUMBER; }
 
 "#".*"\n"  { unput( '\n' ); }  /* Comments.
