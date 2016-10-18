@@ -58,7 +58,7 @@ int main( int argc, char **argv )
     bool help_flag = False;
     bool ptdump_flag = False;
     bool logging_flag = False;
-    unsigned char init_flags = ALL_ENV_EXIST_SYS_INIT;
+    unsigned char init_flags = UNDEFINED_INIT;
     byte format_option = OUTPUT_FORMAT_JSON;
     unsigned char verbose = 0;
     bool reading_options = True;  /* For disabling option parsing using "--" */
@@ -328,6 +328,27 @@ int main( int argc, char **argv )
         return 2;
     if (verbose)
         logprint( "Done." );
+
+    if (init_flags != UNDEFINED_INIT && spc.init_flags != UNDEFINED_INIT
+        && init_flags != spc.init_flags) {
+        if (verbose)
+            logprint( "Initialization flags from command-line differ "
+                      "from those of spc file.\n"
+                      "Using init flags from command-line..." );
+    } else if (init_flags != UNDEFINED_INIT && spc.init_flags == UNDEFINED_INIT) {
+        spc.init_flags = init_flags;
+    } else if (init_flags == UNDEFINED_INIT && spc.init_flags != UNDEFINED_INIT) {
+        init_flags = spc.init_flags;
+    } else {
+        init_flags = spc.init_flags = ALL_ENV_EXIST_SYS_INIT;
+        if (verbose) {
+            logprint_startline();
+            logprint_raw( "No init flags found. Using default: " );
+            LOGPRINT_INIT_FLAGS( init_flags );
+            logprint_endline();
+        }
+    }
+
 
     if (check_gr1c_form( spc.evar_list, spc.svar_list, spc.env_init, spc.sys_init,
                          spc.env_trans_array, spc.et_array_len,

@@ -29,11 +29,22 @@ typedef char bool;
 
 typedef unsigned char byte;
 
+
+/* Flags concerning initial conditions.  Consult documentation of
+   check_realizable() about possible values and interpretations. */
+#define UNDEFINED_INIT 0
+#define ALL_ENV_EXIST_SYS_INIT 1
+#define ALL_INIT 2
+#define ONE_SIDE_INIT 3
+
 typedef struct {
     ptree_t *nonbool_var_list;
     int original_num_env;
     int original_num_sys;
     int *offw;
+
+    /* Consult solve.h and check_realizable() about possible values. */
+    unsigned char init_flags;
 
     ptree_t *evar_list;
     ptree_t *svar_list;
@@ -57,6 +68,7 @@ typedef struct {
     X.original_num_env = 0; \
     X.original_num_sys = 0; \
     X.offw = NULL; \
+    X.init_flags = UNDEFINED_INIT; \
     X.evar_list = NULL; \
     X.svar_list = NULL; \
     X.sys_init = NULL; \

@@ -13,11 +13,6 @@
 #include "ptree.h"
 #include "automaton.h"
 
-/* Flags concerning initial conditions. (Consult comments for check_realizable.) */
-#define UNDEFINED_INIT 0
-#define ALL_ENV_EXIST_SYS_INIT 1
-#define ALL_INIT 2
-#define ONE_SIDE_INIT 3
 
 #define LOGPRINT_INIT_FLAGS(X) \
     if ((X) == ALL_ENV_EXIST_SYS_INIT) { \

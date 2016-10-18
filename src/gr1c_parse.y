@@ -8,6 +8,7 @@
 %{
   #include <stdlib.h>
   #include <stdio.h>
+  #include <string.h>
   #include "common.h"
   #include "ptree.h"
 
@@ -30,6 +31,8 @@
   int num;
 }
 
+
+%token INIT_INTERP
 
 %token E_VARS
 %token S_VARS
@@ -68,7 +71,8 @@ input: /* empty */
      | propformula
 ;
 
-exp: evar_list ';'
+exp: INIT_INTERP init_interpretation_type ';'
+   | evar_list ';'
    | svar_list ';'
    | E_INIT ';' {
        if (spc.env_init != NULL) {
@@ -140,6 +144,26 @@ exp: evar_list ';'
      }
    | S_GOAL sgoalformula ';'
    | error  { printf( "Error detected on line %d.\n", @1.last_line ); YYABORT; }
+;
+
+init_interpretation_type: NAME {
+                            if (!strncmp( $1, "ALL_ENV_EXIST_SYS_INIT",
+                                          strlen( "ALL_ENV_EXIST_SYS_INIT" ) )) {
+                                spc.init_flags = ALL_ENV_EXIST_SYS_INIT;
+                            } else if (!strncmp( $1, "ALL_INIT",
+                                          strlen( "ALL_INIT" ) )) {
+                                spc.init_flags = ALL_INIT;
+                            } else if (!strncmp( $1, "ONE_SIDE_INIT",
+                                          strlen( "ONE_SIDE_INIT" ) )) {
+                                spc.init_flags = ONE_SIDE_INIT;
+                            } else {
+                                fprintf( stderr,
+                                         "Error detected on line %d.  "
+                                         "Unrecognized init flags.\n",
+                                         @1.last_line );
+                                YYABORT;
+                            }
+                          }
 ;
 
 evar_list: E_VARS

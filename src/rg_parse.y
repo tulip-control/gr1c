@@ -30,6 +30,8 @@
 }
 
 
+%token INIT_INTERP
+
 %token E_VARS
 %token S_VARS
 

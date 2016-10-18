@@ -47,6 +47,8 @@ number  [0-9]+([.][0-9]+)?
 "True"  { return TRUE_CONSTANT; }
 "False"  { return FALSE_CONSTANT; }
 
+^([ \t\r]*)("INITTYPE:"|"inittype:"|"Inittype:")  { return INIT_INTERP; }
+
 ^([ \t\r]*)("ENV:"|"env:"|"Env:")  { return E_VARS; }
 ^([ \t\r]*)("SYS:"|"sys:"|"Sys:")  { return S_VARS; }
 
