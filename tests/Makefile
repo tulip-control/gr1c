@@ -21,9 +21,9 @@ all: $(PROGRAMS)
 	./test_automaton_io
 	./test_solve_support
 	./test_patching
-	sh test-cli.sh
 	sh test-gr1c.sh
 	sh test-grpatch.sh
+	sh test-cli.sh
 	sh test-verification.sh
 	@echo "============================================================\nPASSED\n"
 

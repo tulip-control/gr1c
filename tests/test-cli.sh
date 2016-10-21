@@ -13,7 +13,7 @@ if test -z $VERBOSE; then
 fi
 
 
-export PATH=${BUILD_ROOT}:$PATH
+export PATH=`pwd`/${BUILD_ROOT}:$PATH
 
 if test $VERBOSE -eq 1; then
     echo '\nChecking for detection of flawed command-line usage...'

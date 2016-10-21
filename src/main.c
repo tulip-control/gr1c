@@ -95,7 +95,7 @@ int main( int argc, char **argv )
             /* Pass arguments after rg */
             command_argv = malloc( sizeof(char *)*argc );
             command_argv[0] = strdup( "gr1c rg" );
-            command_argv[argc] = NULL;
+            command_argv[argc-1] = NULL;
             for (i = 1; i < argc-1; i++)
                 command_argv[i] = argv[i+1];
 
@@ -109,7 +109,7 @@ int main( int argc, char **argv )
 
             command_argv = malloc( sizeof(char *)*argc );
             command_argv[0] = strdup( "gr1c patch" );
-            command_argv[argc] = NULL;
+            command_argv[argc-1] = NULL;
             for (i = 1; i < argc-1; i++)
                 command_argv[i] = argv[i+1];
 
@@ -123,7 +123,7 @@ int main( int argc, char **argv )
 
             command_argv = malloc( sizeof(char *)*argc );
             command_argv[0] = strdup( "gr1c autman" );
-            command_argv[argc] = NULL;
+            command_argv[argc-1] = NULL;
             for (i = 1; i < argc-1; i++)
                 command_argv[i] = argv[i+1];
 
