@@ -79,6 +79,10 @@ anode_t *pop_anode( anode_t *head );
 
 /** Build the transition array for the first node with given state and mode.
 
+    \deprecated This function will be removed soon. In practice, it is more
+    robust and general to populate the transition array directly. To find nodes
+    of the appropriate next mode (as this function would), use find_anode().
+
    next_states is an array of state vectors, with length next_len,
    used to build transitions for this node. All of these states have
    mode next_mode, and the actual transitions are to the first nodes
