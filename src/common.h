@@ -13,7 +13,7 @@
 
 
 #define GR1C_VERSION "0.12.0"
-#define GR1C_COPYRIGHT "Copyright (c) 2012-2015 by Scott C. Livingston,\n" \
+#define GR1C_COPYRIGHT "Copyright (c) 2012-2016 by Scott C. Livingston,\n" \
                        "California Institute of Technology\n\n" \
                        "This is free, open source software, released under a BSD license\n" \
                        "and without warranty."
