@@ -19,3 +19,6 @@ y.tab.h
 # temporary files generated during testing
 /tests/pan*
 /tests/tmp*
+/tests/*.spc.aut.pml
+/tests/*.spc.aut.pml.trail
+/tests/*.spc.aut
