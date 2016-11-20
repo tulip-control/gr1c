@@ -107,6 +107,15 @@ int main( int argc, char **argv )
             abort();
         }
     }
+    if (find_anode_index( head, 100, *nodes_states, state_len ) != -1) {
+        ERRPRINT( "found node when none should match." );
+        abort();
+    }
+
+    if (anode_index( head, NULL ) != -1) {
+        ERRPRINT( "found node when none should match." );
+        abort();
+    }
 
     delete_aut( head );
     free( modes );
