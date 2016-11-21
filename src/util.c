@@ -61,9 +61,10 @@ ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
 
     /* Make all variables boolean */
     if ((*evar_list) == NULL) {
+        /* that this is the deterministic case
+           is indicated by var_separator = NULL. */
         var_separator = NULL;
-        (*evar_list) = (*svar_list);  /* that this is the deterministic case
-                                   is indicated by var_separator = NULL. */
+        (*evar_list) = (*svar_list);
     } else {
         var_separator = get_list_item( (*evar_list), -1 );
         if (var_separator == NULL) {
