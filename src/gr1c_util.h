@@ -13,18 +13,45 @@
 #include "ptree.h"
 
 
-/** least significant bit first; unsigned. */
+/** Convert unsigned bitvector into integer.
+
+   \param vec array that represents the bitvector, where the least significant
+   bit is first.
+
+   \param vec_len length of \p vec.
+
+   \return integer obtained by unsigned interpretation of given bitvector. */
 int bitvec_to_int( vartype *vec, int vec_len );
 
-/** least significant bit first; unsigned.  Up to given length vec_len;
-   if vec_len is not sufficiently large, then the result is
-   effectively a truncated form of the full bitvector for the given
-   integer.  The caller is assumed to free the bitvector. */
+/** Convert integer to unsigned bitvector.
+
+   \param x integer that is to be converted.
+
+   \param vec_len maximum length of the allocated array (bitvector).
+   If \p vec_len is not sufficiently large, then the result is effectively a
+   truncated form of the full bitvector for the given integer.
+
+   \return pointer to array that represents the bitvector, where the least
+   significant bit is first. The caller is assumed to free the allocated
+   array. E.g., call free() on the return value. */
 vartype *int_to_bitvec( int x, int vec_len );
 
 
-/** Expand any variables with integral domains in given lists of
-   environment and system variables (evar_list and svar_list, respectively). */
+/** Expand any variables with integral domains.
+
+   Expand any variables with integral domains in given lists of variables, where
+   the expansion is as performed by var_to_bool() (cf. ptree.h). Variables that
+   have type boolean are ignored.
+
+   \param evar_list linked list of environment variables.
+
+   \param svar_list linked list of system variables.
+
+   \param verbose level of detail in logging; larger implies more detail. 0
+   (zero) to be quiet.
+
+   \return list of names of replaced variables. The caller is assumed to free
+   this, e.g., using delete_tree(). */
 ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
                                    unsigned char verbose );
 
@@ -43,11 +70,14 @@ int *get_offsets_list( ptree_t *evar_list, ptree_t *svar_list,
 /** Expand any variables with integral domains in parse trees of the
    GR(1) specification components.
 
-   init_flags as used with check_realizable() and synthesize()
+   \p init_flags as used with check_realizable() and synthesize()
    (cf. solve.h) is necessary to decide how restrictions of
    unreachable values that result from nonbool expansion should be
    incorporated into initial conditions.  The _init trees are assumed
-   to be well-formed given init_flags, as verified by check_gr1c_form() */
+   to be well-formed given init_flags, as verified by check_gr1c_form().
+
+   \param verbose level of detail in logging; larger implies more detail. 0
+   (zero) to be quiet. */
 int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
                         ptree_t **env_init, ptree_t **sys_init,
                         ptree_t ***env_trans_array, int *et_array_len,
