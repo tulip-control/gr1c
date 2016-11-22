@@ -11,7 +11,7 @@ LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 #CFLAGS += -fprofile-arcs -ftest-coverage
 #LDFLAGS += -lgcov
 
-PROGRAMS = test_logging test_automaton test_automaton_io test_ptree test_ptree_to_BDD test_solve_support test_patching
+PROGRAMS = test_util test_logging test_automaton test_automaton_io test_ptree test_ptree_to_BDD test_solve_support test_patching
 
 all: $(PROGRAMS)
 	./test_logging
@@ -21,6 +21,7 @@ all: $(PROGRAMS)
 	./test_automaton_io
 	./test_solve_support
 	./test_patching
+	./test_util
 	sh test-gr1c.sh
 	sh test-grpatch.sh
 	sh test-cli.sh
@@ -29,6 +30,9 @@ all: $(PROGRAMS)
 
 
 COMMON_BINS = ../util.o ../automaton.o ../automaton_io.o ../ptree.o ../solve_support.o ../logging.o
+
+test_util: test_util.c
+	$(CC) $(CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
 
 test_logging: test_logging.c
 	$(CC) $(CFLAGS) $^ ../logging.o -o $@ $(LDFLAGS)
