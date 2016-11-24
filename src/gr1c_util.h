@@ -33,7 +33,8 @@ int bitvec_to_int( vartype *vec, int vec_len );
 
    \return pointer to array that represents the bitvector, where the least
    significant bit is first. The caller is assumed to free the allocated
-   array. E.g., call free() on the return value. */
+   array. E.g., call free() on the return value.
+   If vec_len < 1, then return value is NULL. */
 vartype *int_to_bitvec( int x, int vec_len );
 
 
