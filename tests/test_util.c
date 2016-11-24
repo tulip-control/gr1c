@@ -40,8 +40,16 @@ void check_bitvec_to_int( vartype *bv, int len, int expected )
 int main( int argc, char **argv )
 {
     vartype bv_A[] = {0,1,0,1};
+    vartype bv_5[] = {1,0,1,0};
+    vartype bv_0[] = {0,0,0,0};
+    vartype bv_F[] = {1,1,1,1};
+    vartype bv_5F[] = {1,1,1,1,1,0,1,0};
 
     check_bitvec_to_int( bv_A, 4, 0xA );
+    check_bitvec_to_int( bv_5, 4, 0x5 );
+    check_bitvec_to_int( bv_0, 4, 0x0 );
+    check_bitvec_to_int( bv_F, 4, 0xF );
+    check_bitvec_to_int( bv_5F, 8, 0x5F );
 
     return 0;
 }
