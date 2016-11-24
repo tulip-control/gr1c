@@ -26,7 +26,7 @@ YFLAGS = -d
 CC = gcc
 LD = ld -r
 
-CFLAGS = -g -Wall -pedantic -ansi -I$(deps_prefix)/include -Isrc
+CFLAGS = -g -Wall -pedantic -std=c99 -I$(deps_prefix)/include -Isrc
 LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 
 # To use and statically link with GNU Readline
