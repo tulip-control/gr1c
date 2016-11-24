@@ -4,20 +4,44 @@
  */
 
 #include <stdlib.h>
+#include <assert.h>
 
 #include "common.h"
 #include "tests_common.h"
 #include "gr1c_util.h"
 
 
-int main( int argc, char **argv )
+void print_arr( FILE *fp, vartype *arr, int len )
 {
-    vartype bv[] = {0,1,0,1};
+    int k;
+    assert( len > 0 );
+    fprintf( fp, "[" );
+    for (k = 0; k < len; k++) {
+        fprintf( fp, "%d", arr[k] );
+        if (k < len-1)
+            fprintf( fp, "," );
+    }
+    fprintf( fp, "]" );
+}
 
-    if (bitvec_to_int( bv, 4 ) != 0xA) {
-        ERRPRINT( "bitvec_to_int( [0,1,0,1], 4) != 0xA" );
+
+void check_bitvec_to_int( vartype *bv, int len, int expected )
+{
+    if (bitvec_to_int( bv, len ) != expected) {
+        ERRPRINT( "Unexpected return value of bitvec_to_int" );
+        fprintf( stderr, "bitvec_to_int( " );
+        print_arr( stderr, bv, len );
+        fprintf( stderr, ", %d ) != 0x%X\n\n", len, expected );
         abort();
     }
+}
+
+
+int main( int argc, char **argv )
+{
+    vartype bv_A[] = {0,1,0,1};
+
+    check_bitvec_to_int( bv_A, 4, 0xA );
 
     return 0;
 }
