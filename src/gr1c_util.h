@@ -27,7 +27,7 @@ int bitvec_to_int( vartype *vec, int vec_len );
 
    \param x integer that is to be converted.
 
-   \param vec_len maximum length of the allocated array (bitvector).
+   \param vec_len length of the allocated array (bitvector).
    If \p vec_len is not sufficiently large, then the result is effectively a
    truncated form of the full bitvector for the given integer.
 
