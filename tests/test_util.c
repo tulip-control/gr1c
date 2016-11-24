@@ -53,6 +53,42 @@ void test_bitvec_to_int()
 }
 
 
+void check_int_to_bitvec( int x, int vec_len )
+{
+    int k;  /* counter */
+    int actual = 0;
+    vartype *bv = int_to_bitvec( x, vec_len );
+    for (k = 0; k < vec_len; k++) {
+        if (*(bv+k) != 0)
+            actual += 1 << k;
+    }
+
+    if (actual != x) {
+        ERRPRINT( "Unexpected return value of int_to_bitvec" );
+        fprintf( stderr, "int_to_bitvec( %d, %d ) returned ", x, vec_len );
+        print_arr( stderr, bv, vec_len );
+        fprintf( stderr, "\n" );
+        abort();
+    }
+
+    free( bv );
+}
+
+
+void test_int_to_bitvec()
+{
+    check_int_to_bitvec( 0, 1 );
+    check_int_to_bitvec( 0xA, 4 );
+
+    /* Check error conditions */
+    if (int_to_bitvec( 2, 0 ) != NULL) {
+        ERRPRINT( "Unexpected return value of int_to_bitvec" );
+        fprintf( stderr, "int_to_bitvec( 2, 0 ) did not return NULL.\n" );
+        abort();
+    }
+}
+
+
 int main( int argc, char **argv )
 {
     test_bitvec_to_int();
