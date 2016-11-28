@@ -1,6 +1,6 @@
 /* Unit tests for formula parse trees.
  *
- * SCL; 2012, 2015
+ * SCL; 2012, 2015, 2016
  */
 
 #define _POSIX_C_SOURCE 200809L
@@ -337,6 +337,15 @@ int main( int argc, char **argv )
     }
 
     /* Now compare trees directly; abort on discrepancy. */
+    compare_ptrees( head, head2 );
+
+    delete_tree( head2 );
+    head2 = copy_ptree( head );
+
+    if (head == head2) {
+        ERRPRINT( "copy_tree() did not provide new pointer." );
+        abort();
+    }
     compare_ptrees( head, head2 );
 
     delete_tree( head );
