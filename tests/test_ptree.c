@@ -27,9 +27,42 @@ void compare_ptrees( ptree_t *head1, ptree_t *head2 )
     if (head1 == NULL && head2 == NULL)
         return;
     if ((head1 != NULL && head2 == NULL) || (head1 == NULL && head2 != NULL)) {
-        ERRPRINT( "Unexpected discrepancy between parse trees." );
+        ERRPRINT( "Unexpected discrepancy of branching structure "
+                  "between parse trees." );
         abort();
     }
+    if (head1->type != head2->type) {
+        ERRPRINT( "Unexpected discrepancy of node types "
+                  "between parse trees." );
+        abort();
+    }
+
+    switch (head1->type) {
+
+    case PT_CONSTANT:
+        if (head1->value != head2->value) {
+            ERRPRINT( "compare_ptrees: "
+                      "values of constant-type nodes do not match" );
+            abort();
+        }
+        break;
+
+    case PT_VARIABLE:
+    case PT_NEXT_VARIABLE:
+        if (strcmp( head1->name, head2->name )) {
+            ERRPRINT( "compare_ptrees: "
+                      "names of variable-type nodes do not match" );
+            abort();
+        }
+        if (head1->value != head2->value) {
+            ERRPRINT( "compare_ptrees: "
+                      "values of variable-type nodes do not match" );
+            abort();
+        }
+        break;
+
+    }
+
     compare_ptrees( head1->left, head2->left );
     compare_ptrees( head1->right, head2->right );
 }
