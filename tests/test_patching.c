@@ -63,7 +63,10 @@ int main( int argc, char **argv )
         abort();
     }
     if (tree_size( var_list ) != num_env+num_sys) {
-        ERRPRINT2( "variable list (type ptree) expected size is %d, but detected %d.", num_env+num_sys, tree_size( var_list ) );
+        ERRPRINT2( "variable list (type ptree) expected size is %d, "
+                   "but detected %d.",
+                   num_env+num_sys,
+                   tree_size( var_list ) );
         abort();
     }
 

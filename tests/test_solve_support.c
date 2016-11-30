@@ -163,7 +163,8 @@ int main( int argc, char **argv )
     append_list_item( var_list, PT_VARIABLE, "x3", -1 );
     append_list_item( var_list, PT_VARIABLE, "y", -1 );
     if (tree_size( var_list ) != 4) {
-        ERRPRINT1( "List of 4 variables detected as having wrong size %d.", tree_size( var_list ) );
+        ERRPRINT1( "List of 4 variables detected as having wrong size %d.",
+                   tree_size( var_list ) );
         abort();
     }
     manager = Cudd_Init( 2*tree_size( var_list ),
@@ -204,7 +205,8 @@ int main( int argc, char **argv )
     env_moves = get_env_moves( manager, cube, state, etrans,
                                num_env, num_sys, &emoves_len );
     if (emoves_len != 8) {
-        ERRPRINT1( "Expected 8 possible environment moves, but detected %d.", emoves_len );
+        ERRPRINT1( "Expected 8 possible environment moves, but detected %d.",
+                   emoves_len );
         abort();
     }
     move_counter = 0;
@@ -222,7 +224,8 @@ int main( int argc, char **argv )
     env_moves = get_env_moves( manager, cube, state, etrans,
                                num_env, num_sys, &emoves_len );
     if (emoves_len != 4) {
-        ERRPRINT1( "Expected 4 possible environment moves, but detected %d.", emoves_len );
+        ERRPRINT1( "Expected 4 possible environment moves, but detected %d.",
+                   emoves_len );
         abort();
     }
     move_counter = 0;
@@ -236,7 +239,8 @@ int main( int argc, char **argv )
 
     Cudd_RecursiveDeref( manager, etrans );
     if (Cudd_CheckZeroRef( manager ) != 0) {
-        ERRPRINT1( "Leaked BDD references; Cudd_CheckZeroRef -> %d.", Cudd_CheckZeroRef( manager ) );
+        ERRPRINT1( "Leaked BDD references; Cudd_CheckZeroRef -> %d.",
+                   Cudd_CheckZeroRef( manager ) );
         abort();
     }
     Cudd_Quit( manager );

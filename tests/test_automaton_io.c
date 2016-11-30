@@ -59,13 +59,15 @@ int main( int argc, char **argv )
     /* Load in "gr1c automaton" format */
     head = aut_aut_load( 2, fp );
     if (head == NULL) {
-        ERRPRINT( "Failed to read 3-node automaton in \"gr1c automaton\" format." );
+        ERRPRINT( "Failed to read 3-node automaton "
+                  "in \"gr1c automaton\" format." );
         abort();
     }
 
     /* Check number of nodes, labels, and outgoing edges */
     if (aut_size( head ) != 3) {
-        ERRPRINT1( "size 3 automaton detected as having size %d.", aut_size( head ) );
+        ERRPRINT1( "size 3 automaton detected as having size %d.",
+                   aut_size( head ) );
         abort();
     }
 
@@ -73,11 +75,14 @@ int main( int argc, char **argv )
     state[1] = 0;
     node = find_anode( head, 0, state, 2 );
     if (node == NULL) {
-        ERRPRINT2( "could not find expected node with state [%d %d].", state[0], state[1] );
+        ERRPRINT2( "could not find expected node with state [%d %d].",
+                   state[0], state[1] );
         abort();
     }
     if (node->rgrad != 2) {
-        ERRPRINT1( "node should have reach annotation value of 2 but actually has %d", node->rgrad );
+        ERRPRINT1( "node should have reach annotation value of 2 "
+                   "but actually has %d",
+                   node->rgrad );
         abort();
     }
 
@@ -85,16 +90,21 @@ int main( int argc, char **argv )
     state[1] = 0;
     out_node = find_anode( head, 0, state, 2 );
     if (out_node == NULL) {
-        ERRPRINT2( "could not find expected node with state [%d %d].", state[0], state[1] );
+        ERRPRINT2( "could not find expected node with state [%d %d].",
+                   state[0], state[1] );
         abort();
     }
     if (out_node->rgrad != 1) {
-        ERRPRINT1( "node should have reach annotation value of 1 but actually has %d", out_node->rgrad );
+        ERRPRINT1( "node should have reach annotation value of 1 "
+                   "but actually has %d",
+                   out_node->rgrad );
         abort();
     }
 
     if (node->trans_len != 2) {
-        ERRPRINT1( "node should have 2 outgoing transitions but actually has %d.", node->trans_len );
+        ERRPRINT1( "node should have 2 outgoing transitions "
+                   "but actually has %d.",
+                   node->trans_len );
         abort();
     }
     if (*(node->trans) != out_node && *(node->trans+1) != out_node) {
@@ -134,11 +144,13 @@ int main( int argc, char **argv )
     }
 
     /* NB, assumed width may cause problems if we start using Unicode. */
-    if (fread( instr, sizeof(char), strlen(REF_GR1CAUT_TRIVIAL_MOD), fp ) < strlen(REF_GR1CAUT_TRIVIAL_MOD)) {
+    if (fread( instr, sizeof(char), strlen(REF_GR1CAUT_TRIVIAL_MOD), fp )
+        < strlen(REF_GR1CAUT_TRIVIAL_MOD)) {
         ERRPRINT( "output of aut_aut_dump is too short." );
         abort();
     }
-    if (!strncmp( instr, REF_GR1CAUT_TRIVIAL_MOD, strlen(REF_GR1CAUT_TRIVIAL_MOD) )) {
+    if (!strncmp( instr, REF_GR1CAUT_TRIVIAL_MOD,
+                  strlen(REF_GR1CAUT_TRIVIAL_MOD) )) {
         ERRPRINT( "output of aut_aut_dump does not match expectation." );
         abort();
     }

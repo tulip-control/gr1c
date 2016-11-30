@@ -85,36 +85,50 @@ int main( int argc, char **argv )
      */
     if ((index = find_list_item( head, PT_VARIABLE, "b", -1 )) != 1) {
         if (index < 0) {
-            ERRPRINT1( "expected linked list (as ptree object) item named \"%s\" not found.", "b" );
+            ERRPRINT1( "expected linked list (as ptree object) item "
+                       "named \"%s\" not found.",
+                       "b" );
         } else {
-            ERRPRINT2( "linked list (as ptree object) item named \"%s\" found at wrong index %d.", "b", index );
+            ERRPRINT2( "linked list (as ptree object) item "
+                       "named \"%s\" found at wrong index %d.",
+                       "b", index );
         }
         abort();
     }
     index = find_list_item( head, PT_VARIABLE, "kitten", -1 );
     if (index != 2) {
         if (index < 0) {
-            ERRPRINT1( "expected linked list (as ptree object) item named \"%s\" not found.", "kitten" );
+            ERRPRINT1( "expected linked list (as ptree object) item "
+                       "named \"%s\" not found.",
+                       "kitten" );
         } else {
-            ERRPRINT2( "linked list (as ptree object) item named \"%s\" found at wrong index %d.", "kitten", index );
+            ERRPRINT2( "linked list (as ptree object) item "
+                       "named \"%s\" found at wrong index %d.",
+                       "kitten", index );
         }
         abort();
     }
     node = get_list_item( head, index );
     if (node == NULL) {
-        ERRPRINT( "error during index-based look-up of item in linked list (as ptree object)." );
+        ERRPRINT( "error during index-based look-up of item "
+                  "in linked list (as ptree object)." );
         abort();
     } else if (strncmp( node->name, "kitten", strlen("kitten") )) {
-        ERRPRINT2( "found wrong item named \"%s\" while looking for \"%s\" in linked list (as ptree object).", node->name, "kitten" );
+        ERRPRINT2( "found wrong item named \"%s\" while looking "
+                   "for \"%s\" in linked list (as ptree object).",
+                   node->name, "kitten" );
         abort();
     }
     if (tree_size( head ) != 3) {
-        ERRPRINT1( "linked list of length 3 detected as having wrong length %d.", tree_size( head ) );
+        ERRPRINT1( "linked list of length 3 detected as having "
+                   "wrong length %d.",
+                   tree_size( head ) );
         abort();
     }
     node = remove_list_item( head, 0 );  /* Remove first item in list */
     if (node == NULL || *(node->name) != 'b') {
-        ERRPRINT( "error removing first item in linked list (as ptree object)." );
+        ERRPRINT( "error removing first item in "
+                  "linked list (as ptree object)." );
         abort();
     }
     head = node;
@@ -123,7 +137,8 @@ int main( int argc, char **argv )
      */
     node = remove_list_item( head, -1 );  /* Remove last item in list */
     if (node == NULL || node != head) {
-        ERRPRINT( "error removing last item in linked list (as ptree object)." );
+        ERRPRINT( "error removing last item in "
+                  "linked list (as ptree object)." );
         abort();
     }
     /* At this point, the list is (in order)
@@ -145,37 +160,45 @@ int main( int argc, char **argv )
        formula, and compare results. */
     head = init_ptree( PT_AND, NULL, -1 );
     if (head == NULL) {
-        ERRPRINT( "Error while manually building parse tree for \"" REF_FORMULA1_SMALL "\"." );
+        ERRPRINT( "Error while manually building parse tree for \""
+                  REF_FORMULA1_SMALL "\"." );
         abort();
     }
     head->left = init_ptree( PT_VARIABLE, "felix", -1 );
     if (head->left == NULL) {
-        ERRPRINT( "Error while manually building parse tree for \"" REF_FORMULA1_SMALL "\"." );
+        ERRPRINT( "Error while manually building parse tree for \""
+                  REF_FORMULA1_SMALL "\"." );
         abort();
     }
     head->right = init_ptree( PT_NEG, NULL, -1 );
     if (head->right == NULL) {
-        ERRPRINT( "Error while manually building parse tree for \"" REF_FORMULA1_SMALL "\"." );
+        ERRPRINT( "Error while manually building parse tree for \""
+                  REF_FORMULA1_SMALL "\"." );
         abort();
     }
     head->right->right = init_ptree( PT_OR, NULL, -1 );
     if (head->right->right == NULL) {
-        ERRPRINT( "Error while manually building parse tree for \"" REF_FORMULA1_SMALL "\"." );
+        ERRPRINT( "Error while manually building parse tree for \""
+                  REF_FORMULA1_SMALL "\"." );
         abort();
     }
     head->right->right->left = init_ptree( PT_NEXT_VARIABLE, "the", -1 );
     if (head->right->right->left == NULL) {
-        ERRPRINT( "Error while manually building parse tree for \"" REF_FORMULA1_SMALL "\"." );
+        ERRPRINT( "Error while manually building parse tree for \""
+                  REF_FORMULA1_SMALL "\"." );
         abort();
     }
     head->right->right->right = init_ptree( PT_VARIABLE, "cat", -1 );
     if (head->right->right->right == NULL) {
-        ERRPRINT( "Error while manually building parse tree for \"" REF_FORMULA1_SMALL "\"." );
+        ERRPRINT( "Error while manually building parse tree for \""
+                  REF_FORMULA1_SMALL "\"." );
         abort();
     }
 
     if (tree_size( head ) != REF_FORMULA1_SIZE) {
-        ERRPRINT2( "Manually built parse tree of size %d detected as having wrong size %d.", REF_FORMULA1_SIZE, tree_size( head ) );
+        ERRPRINT2( "Manually built parse tree of size %d detected as "
+                   "having wrong size %d.",
+                   REF_FORMULA1_SIZE, tree_size( head ) );
         abort();
     }
 
@@ -212,7 +235,9 @@ int main( int argc, char **argv )
     }
     *(result+i-1) = '\0';
     if (strcmp( result, DUMP_FORMULA1_SMALL )) {
-        ERRPRINT1( "Error: expected formula string \"" DUMP_FORMULA1_SMALL "\" but got \"%s\".", result );
+        ERRPRINT1( "Error: expected formula string \"" DUMP_FORMULA1_SMALL
+                   "\" but got \"%s\".",
+                   result );
         abort();
     }
 
@@ -221,12 +246,14 @@ int main( int argc, char **argv )
     /* Manually build another small parse tree and try to merge. */
     head2 = init_ptree( PT_NEG, NULL, -1 );
     if (head2 == NULL) {
-        ERRPRINT( "Error while manually building parse tree for \"" REF_FORMULA2_SMALL "\"." );
+        ERRPRINT( "Error while manually building parse tree for \""
+                  REF_FORMULA2_SMALL "\"." );
         abort();
     }
     head2->right = init_ptree( PT_NEXT_VARIABLE, "x", -1 );
     if (head2->right == NULL) {
-        ERRPRINT( "Error while manually building parse tree for \"" REF_FORMULA2_SMALL "\"." );
+        ERRPRINT( "Error while manually building parse tree for \""
+                  REF_FORMULA2_SMALL "\"." );
         abort();
     }
     heads = malloc( 2*sizeof(ptree_t *) );
@@ -234,13 +261,16 @@ int main( int argc, char **argv )
     *(heads+1) = head2;
     head = merge_ptrees( heads, 2, PT_AND );
     if (head == NULL) {
-        ERRPRINT( "Error while conjuncting manually built subformulae \"" REF_FORMULA1_SMALL "\" and \"" REF_FORMULA2_SMALL "\"." );
+        ERRPRINT( "Error while conjuncting manually built subformulae \""
+                  REF_FORMULA1_SMALL "\" and \"" REF_FORMULA2_SMALL "\"." );
         abort();
     }
     free( heads );
 
     if (tree_size( head ) != CONJUNCTED_SMALLS_SIZE) {
-        ERRPRINT2( "Conjunction (from manually built subformulae) of size %d detected as having wrong size %d.", CONJUNCTED_SMALLS_SIZE, tree_size( head ) );
+        ERRPRINT2( "Conjunction (from manually built subformulae) "
+                   "of size %d detected as having wrong size %d.",
+                   CONJUNCTED_SMALLS_SIZE, tree_size( head ) );
         abort();
     }
 
@@ -273,7 +303,9 @@ int main( int argc, char **argv )
     }
     *(result+i-1) = '\0';
     if (strcmp( result, DUMP_CONJUNCTED_SMALLS )) {
-        ERRPRINT1( "Error: expected formula string \"" DUMP_CONJUNCTED_SMALLS "\" but got \"%s\".", result );
+        ERRPRINT1( "Error: expected formula string \"" DUMP_CONJUNCTED_SMALLS
+                   "\" but got \"%s\".",
+                   result );
         abort();
     }
 
@@ -292,7 +324,9 @@ int main( int argc, char **argv )
     head2 = pusht_operator( head2, PT_AND );
 
     if (tree_size( head2 ) != CONJUNCTED_SMALLS_SIZE) {
-        ERRPRINT2( "Stack-generated parse tree of size %d detected as having wrong size %d.", CONJUNCTED_SMALLS_SIZE, tree_size( head ) );
+        ERRPRINT2( "Stack-generated parse tree of size %d detected as "
+                   "having wrong size %d.",
+                   CONJUNCTED_SMALLS_SIZE, tree_size( head ) );
         abort();
     }
 
@@ -325,7 +359,9 @@ int main( int argc, char **argv )
     }
     *(result+i-1) = '\0';
     if (strcmp( result, DUMP_CONJUNCTED_SMALLS )) {
-        ERRPRINT1( "Error: expected formula string \"" DUMP_CONJUNCTED_SMALLS "\" but got \"%s\".", result );
+        ERRPRINT1( "Error: expected formula string \"" DUMP_CONJUNCTED_SMALLS
+                   "\" but got \"%s\".",
+                   result );
         abort();
     }
 

@@ -27,7 +27,8 @@ int main( int argc, char **argv )
     node = append_list_item( var_list, PT_VARIABLE, "b", -1 );
     node = append_list_item( var_list, PT_VARIABLE, "c", -1 );
     if (tree_size( var_list ) != 3) {
-        ERRPRINT1( "List of 3 variables detected as having wrong size %d.", tree_size( var_list ) );
+        ERRPRINT1( "List of 3 variables detected as having wrong size %d.",
+                   tree_size( var_list ) );
         abort();
     }
     manager = Cudd_Init( tree_size( var_list ),
@@ -60,7 +61,8 @@ int main( int argc, char **argv )
         ddval = Cudd_Eval( manager, f, cube );
         if ((Cudd_IsComplement( ddval ) && manual_eval)
             || (!Cudd_IsComplement( ddval ) && !manual_eval)) {
-            ERRPRINT( "BDD generated from parse tree of \"(a & b) | !c\" gave incorrect output."  );
+            ERRPRINT( "BDD generated from parse tree of \"(a & b) | !c\" "
+                      "gave incorrect output."  );
             abort();
         }
     }
@@ -69,7 +71,8 @@ int main( int argc, char **argv )
 
 
     if (Cudd_CheckZeroRef( manager ) != 0) {
-        ERRPRINT1( "Leaked BDD references; Cudd_CheckZeroRef -> %d.", Cudd_CheckZeroRef( manager ) );
+        ERRPRINT1( "Leaked BDD references; Cudd_CheckZeroRef -> %d.",
+                   Cudd_CheckZeroRef( manager ) );
         abort();
     }
     Cudd_Quit( manager );

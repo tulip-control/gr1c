@@ -60,7 +60,8 @@ int main( int argc, char **argv )
 
     /* Size computation */
     if (aut_size( head ) != 1) {
-        ERRPRINT1( "size 1 automaton detected as having size %d.", aut_size( head ) );
+        ERRPRINT1( "size 1 automaton detected as having size %d.",
+                   aut_size( head ) );
         abort();
     }
 
@@ -74,9 +75,11 @@ int main( int argc, char **argv )
     head = NULL;  /* head pointer should be NULL by now, but to be explicit. */
     for (i = 0; i < num_nodes; i++) {
         backup_head = head;
-        head = insert_anode( head, *(modes+i), -1, False, *(nodes_states+i), state_len );
+        head = insert_anode( head, *(modes+i), -1, False,
+                             *(nodes_states+i), state_len );
         if (head == NULL) {
-            ERRPRINT( "node insertion failed; attempting to print automaton..." );
+            ERRPRINT( "node insertion failed; "
+                      "attempting to print automaton..." );
             fflush( stderr );
             list_aut_dump( backup_head, state_len, stderr );
             abort();
@@ -89,7 +92,8 @@ int main( int argc, char **argv )
                                    *(modes+((i+rand()) % num_nodes)),
                                    *(nodes_states+((i+rand()) % num_nodes)));
         if (head == NULL) {
-            ERRPRINT( "transition insertion failed; attempting to print automaton..." );
+            ERRPRINT( "transition insertion failed; "
+                      "attempting to print automaton..." );
             fflush( stderr );
             list_aut_dump( backup_head, state_len, stderr );
             abort();
@@ -98,11 +102,13 @@ int main( int argc, char **argv )
 
     /* Probe the resulting automaton object */
     if (aut_size( head ) != num_nodes) {
-        ERRPRINT2( "size %d automaton detected as having size %d.", num_nodes, aut_size( head ) );
+        ERRPRINT2( "size %d automaton detected as having size %d.",
+                   num_nodes, aut_size( head ) );
         abort();
     }
     for (i = 0; i < num_nodes; i++) {
-        if (find_anode_index( head, *(modes+i), *(nodes_states+i), state_len ) < 0) {
+        if (find_anode_index( head, *(modes+i),
+                              *(nodes_states+i), state_len ) < 0) {
             ERRPRINT( "failed to find node that was previously inserted." );
             abort();
         }
