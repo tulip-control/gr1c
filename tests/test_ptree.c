@@ -80,6 +80,7 @@ int main( int argc, char **argv )
     char *result;
     int fd;
     FILE *fp;
+    int rv;  /* return value, for checking output */
 
 
     /************************************************
@@ -419,6 +420,23 @@ int main( int argc, char **argv )
 
     delete_tree( head );
     delete_tree( head2 );
+
+    /* Several trivial tests of finding min and max values in trees. */
+    head = NULL;
+    head = pusht_terminal( head, PT_CONSTANT, NULL, 1 );
+    rv = min_tree_value( head );
+    if (rv != 1) {
+        ERRPRINT1( "min_tree_value() returned value %d, instead of expected 1",
+                   rv );
+        abort();
+    }
+    rv = max_tree_value( head );
+    if (rv != 1) {
+        ERRPRINT1( "max_tree_value() returned value %d, instead of expected 1",
+                   rv );
+        abort();
+    }
+    delete_tree( head );
 
     return 0;
 }
