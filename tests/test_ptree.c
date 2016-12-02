@@ -268,7 +268,7 @@ int main( int argc, char **argv )
     }
     *(result+i-1) = '\0';
     if (strcmp( result, DUMP_FORMULA1_SMALL )) {
-        ERRPRINT1( "Error: expected formula string \"" DUMP_FORMULA1_SMALL
+        ERRPRINT1( "expected formula string \"" DUMP_FORMULA1_SMALL
                    "\" but got \"%s\".",
                    result );
         abort();
@@ -336,7 +336,7 @@ int main( int argc, char **argv )
     }
     *(result+i-1) = '\0';
     if (strcmp( result, DUMP_CONJUNCTED_SMALLS )) {
-        ERRPRINT1( "Error: expected formula string \"" DUMP_CONJUNCTED_SMALLS
+        ERRPRINT1( "expected formula string \"" DUMP_CONJUNCTED_SMALLS
                    "\" but got \"%s\".",
                    result );
         abort();
@@ -392,7 +392,7 @@ int main( int argc, char **argv )
     }
     *(result+i-1) = '\0';
     if (strcmp( result, DUMP_CONJUNCTED_SMALLS )) {
-        ERRPRINT1( "Error: expected formula string \"" DUMP_CONJUNCTED_SMALLS
+        ERRPRINT1( "expected formula string \"" DUMP_CONJUNCTED_SMALLS
                    "\" but got \"%s\".",
                    result );
         abort();
