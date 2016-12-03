@@ -167,7 +167,7 @@ if test $VERBOSE -eq 1; then
 fi
 for k in `ls flawed_reach_specs/*.spc`; do
     if test $VERBOSE -eq 1; then
-        echo "\t gr1c -s $k"
+        echo "\t gr1c-rg -s $k"
     fi
     if $BUILD_ROOT/gr1c-rg -s $k > /dev/null 2>&1; then
         echo $PREFACE "Flawed reachability game spec ${k} detected as OK\n"
