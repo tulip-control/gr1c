@@ -210,7 +210,9 @@ ptree_t *remove_list_item( ptree_t *head, int index );
    list.  Return pointer to the node, or NULL on error. */
 ptree_t *get_list_item( ptree_t *head, int index );
 
-/** Return index (0-base) to first match in list, or -1 if not found. */
+/** Return index (0-base) to first match in list, or -1 if not found.
+
+   If head is NULL, then return -1. */
 int find_list_item( ptree_t *head, int type, char *name, int value );
 
 
