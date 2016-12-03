@@ -23,7 +23,7 @@ Scott C. Livingston at <slivingston@cds.caltech.edu>
 In the documentation below, we assume that gr1c is on the shell path. To get a
 summary of possible command-line arguments,
 
-    $ gr1c -h
+    gr1c -h
 
 
 Examples
@@ -65,15 +65,15 @@ on transitions by the system, as indicated by the empty
 `SYSTRANS:;`. Equivalently, the safety component of the guarantee is `True`.  To
 check whether the specification is realizable,
 
-    $ gr1c -r  examples/trivial.spc
+    gr1c -r  examples/trivial.spc
 
 A message indicating realizability, such as "Realizable," will be printed. Now, to
 synthesize a strategy for it, output the result into a
 [DOT](http://www.graphviz.org/) file, and create a PNG called `temp.dot.png`
 from that output, try
 
-    $ gr1c -t dot examples/trivial.spc > temp.dot
-    $ dot -Tpng -O temp.dot
+    gr1c -t dot examples/trivial.spc > temp.dot
+    dot -Tpng -O temp.dot
 
 
 Organization

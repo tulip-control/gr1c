@@ -10,7 +10,7 @@ programs to be invoked, e.g., `gr1c-rg`. These programs must be on the system
 path, so `./gr1c rg` may fail if the local directory is not on the path. To add
 it, try
 
-    $ export PATH=`pwd`:$PATH
+    export PATH=`pwd`:$PATH
 
 
 Layout of the sources
@@ -130,7 +130,7 @@ Scripts and other files useful for creating release distributions are under
 explicitly declared by setting the environment variable `GR1C_VERSION`. If Git
 is installed and a release commit is checked-out, then try
 
-    $ export GR1C_VERSION=`git describe --tags --candidates=0 HEAD|cut -c 2-`
+    export GR1C_VERSION=`git describe --tags --candidates=0 HEAD|cut -c 2-`
 
 ### The checklist
 

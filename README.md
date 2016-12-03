@@ -23,7 +23,7 @@ The main documentation is built from `.md` files under the `doc` directory and
 API comments in the source code. It is possible to read these files directly,
 i.e., without building and browsing HTML files.
 
-    $ make doc
+    make doc
 
 will run [Doxygen](http://www.doxygen.org) and place the result in `doc/build`.
 
@@ -59,17 +59,17 @@ https://tulip-control.github.io/gr1c/md_installation.html
 
 For Linux x86_64 and Mac OSX, try the following.
 
-    $ ./get-deps.sh
-    $ make cudd
-    $ make all
-    $ make check
+    ./get-deps.sh
+    make cudd
+    make all
+    make check
 
 Consider using `make -j N` where N is the number of jobs to run simultaneously.
 The last command runs a test suite. Each testing step is reported if the
 environment variable VERBOSE is set to 1.  E.g., try `VERBOSE=1 make check`.
 Finally,
 
-    $ make install expinstall
+    make install expinstall
 
 The latter `expinstall` installs experimental tools, like `grpatch`.  The
 default installation prefix is /usr/local.  Adjust it by invoking `make` with

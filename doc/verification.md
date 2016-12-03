@@ -34,14 +34,14 @@ which is `examples/trivial.spc` from the source distribution of gr1c after
 removing comments.  We already know that it is realizable, so synthesize a
 strategy using the [gr1c automaton format](md_formats.html#gr1cautformat)
 
-    $ gr1c -t aut examples/trivial.spc > trivstrategy.aut
+    gr1c -t aut examples/trivial.spc > trivstrategy.aut
 
 where shell redirection is used to save the output to a file named
 "trivstrategy.aut".  Note that the `-o` switch could have been used instead.
 The next step is to create a [Spin](http://spinroot.com)
 [Promela](http://spinroot.com/spin/Man/promela.html) file using
 
-    $ gr1c autman -i examples/trivial.spc trivstrategy.aut -P > trivaut.pml
+    gr1c autman -i examples/trivial.spc trivstrategy.aut -P > trivaut.pml
 
 While we could have created this file in the first step using the `-P` switch of
 `gr1c`, first storing the aut file allows later generation of a Promela file (as
@@ -58,7 +58,7 @@ like `pmlfault` to indicate, e.g., moves by the environment that the strategy
 does not address.  You should be able to reach the comment block by printing the
 first few lines of the file, e.g.,
 
-    $ head trivaut.pml
+    head trivaut.pml
 
 Because we want to verify that the strategy realizes the specification, we
 generate a [never claim](http://spinroot.com/spin/Man/never.html) from the
@@ -68,18 +68,18 @@ there are other tools capable of generating a never-claim from an LTL formula,
 e.g., [LTL2BA](http://www.lsv.ens-cachan.fr/~gastin/ltl2ba/). Placing the
 formula found into <code>spin -f '!(...)'</code>, we have
 
-    $ spin -f '!((X envinit && [] (!checketrans || envtrans) && []<> envgoal0000) -> (X sysinit && [] (!checkstrans || systrans) && []<> sysgoal0000 && []<> sysgoal0001 && [] !pmlfault))' >> trivaut.pml
+    spin -f '!((X envinit && [] (!checketrans || envtrans) && []<> envgoal0000) -> (X sysinit && [] (!checkstrans || systrans) && []<> sysgoal0000 && []<> sysgoal0001 && [] !pmlfault))' >> trivaut.pml
 
 where the `>>` operator causes the resulting never claim to be appended to the
 end of the Promela file from `autman`.  (Like `>` used earlier, `>>` is another
 example of shell redirection.)  Finally, the verifier is built and run from
 
-    $ spin -a trivaut.pml && cc -o pan pan.c && ./pan -a
+    spin -a trivaut.pml && cc -o pan pan.c && ./pan -a
 
 If an acceptance cycle is found, then the strategy is not winning, i.e., it does
 not realize the specification.  You can find a counterexample using
 
-    $ spin -p -g -l -t trivaut.pml
+    spin -p -g -l -t trivaut.pml
 
 Note that `trivaut.pml.trail` would have been created by `./pan` after
 discovering an acceptance cycle.

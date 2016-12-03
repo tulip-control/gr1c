@@ -10,8 +10,8 @@ the following two commands will lead to the same output.  Note that you may need
 to use `./gr1c` instead if you have built but not installed the `gr1c`
 executable.
 
-    $ gr1c examples/trivial.spc
-    $ cat examples/trivial.spc | gr1c
+    gr1c examples/trivial.spc
+    cat examples/trivial.spc | gr1c
 
 Formatting possibilities for specification files are diverse.  The main cases
 are covered here.  Each file consists of several sections each of which may span

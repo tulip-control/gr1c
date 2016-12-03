@@ -31,15 +31,15 @@ https://github.com/tulip-control/gr1c.git) or [download a
 tarball](https://github.com/tulip-control/gr1c/tarball/master).  For the latter,
 untar the file (name may vary) and change into the source directory.
 
-    $ tar -xzf tulip-control-gr1c-658f32b.tar.gz
-    $ cd tulip-control-gr1c-658f32b
+    tar -xzf tulip-control-gr1c-658f32b.tar.gz
+    cd tulip-control-gr1c-658f32b
 
 We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/).
 
 <h3>Automatic</h3>
 
-    $ ./get-deps.sh
-    $ ./build-deps.sh
+    ./get-deps.sh
+    ./build-deps.sh
 
 <h3>Manual</h3>
 
@@ -50,14 +50,14 @@ command-line. Alternatively, [wget](http://www.gnu.org/software/wget/) can be
 used similarly. You might also try directing your Web browser at
 <ftp://vlsi.colorado.edu/pub/>, or read CUDD documentation for instructions.
 
-    $ mkdir extern
-    $ cd extern
-    $ curl -O ftp://vlsi.colorado.edu/pub/cudd-3.0.0.tar.gz
-    $ tar -xzf cudd-3.0.0.tar.gz
-    $ cd cudd-3.0.0
-    $ ./configure --prefix=`pwd`/..
-    $ make
-    $ make install
+    mkdir extern
+    cd extern
+    curl -O ftp://vlsi.colorado.edu/pub/cudd-3.0.0.tar.gz
+    tar -xzf cudd-3.0.0.tar.gz
+    cd cudd-3.0.0
+    ./configure --prefix=`pwd`/..
+    make
+    make install
 
 The last three commands are the usual autotools idiom; we install CUDD locally
 in the extern/ directory, where the gr1c Makefile expects it. Consult the README
@@ -67,7 +67,7 @@ With success building CUDD, we may now build gr1c. Change back to the gr1c root
 source directory and run `make`. If no errors were reported, you should be able
 to get the version with
 
-    $ ./gr1c -V
+    ./gr1c -V
 
 Later parts of this document describe [testing gr1c](#testing) and [additional
 build options](#extras).
@@ -82,8 +82,8 @@ testing. If you were able to build `gr1c` as described above, then it suffices
 to additionally install [Graphviz dot](http://www.graphviz.org/) and
 [Spin](http://spinroot.com). Try
 
-    $ ./get-extra-deps.sh
-    $ ./build-deps.sh
+    ./get-extra-deps.sh
+    ./build-deps.sh
 
 which will download source code for Spin and build it. Tests that use Spin for
 model checking are configured to search in the path used by ./build-deps.sh.
@@ -91,7 +91,7 @@ To run a different `spin`, modify `SPINEXE` in tests/test-verification.sh
 
 After following the build steps above, do
 
-    $ make check
+    make check
 
 Optionally, set the shell variable `VERBOSE` to 1 to receive detailed progress
 notifications.  E.g., try `VERBOSE=1 make check`.  Most test code is placed
@@ -108,7 +108,7 @@ Placing gr1c on your shell path
 To be fully operational, gr1c must be on the search path of your shell.
 Assuming that you have administrative privileges, one solution is
 
-    $ sudo make install
+    sudo make install
 
 which will copy `gr1c`, `gr1c-rg`, and other programs to `/usr/local/bin`, a
 commonly used location for "local" installations.  This is based on a default
@@ -118,7 +118,7 @@ something like `prefix=/your/new/path`.
 If you want to work with `gr1c` directly from the building directory, then from
 the same directory where `make` was invoked,
 
-    $ export PATH=`pwd`:$PATH
+    export PATH=`pwd`:$PATH
 
 
 <h2 id="extras">Extras</h2>
@@ -133,7 +133,7 @@ In some cases these programs can be built by providing the executable name to
 [Doxygen](http://www.doxygen.org) must be installed to build the
 documentation...including the page you are now reading.  Try
 
-    $ make doc
+    make doc
 
 and the result will be under `doc/build`.  Note that Doxygen version 1.8 or
 later is required to build documentation files formatted with
@@ -145,4 +145,4 @@ this page is `doc/installation.md`.
 You can clean the sourcetree of all executables and other temporary files by
 running
 
-    $ make clean
+    make clean

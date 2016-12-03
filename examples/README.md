@@ -19,7 +19,7 @@ access the functionality from the command-line tools.
 
 The common final step for visualization of results from the below code is
 
-    $ dot -Tpng -O patched-image.dot
+    dot -Tpng -O patched-image.dot
 
 which invokes the dot program and creates a PNG image from the DOT output; the
 image file name is patched-image.dot.png or similar.  Graphviz, which includes
@@ -32,8 +32,8 @@ This function is invoked when the `-e` switch is passed to `gr1c patch`.
 To run the example `dgridworld_2x10` (no environment, 2 by 10 gridworld using
 integer-valued variables), try
 
-    $ gr1c -t aut examples/patching/dgridworld_2x10.spc > nominal.aut
-    $ gr1c patch -t dot -a nominal.aut -e examples/patching/dgridworld_2x10.edc examples/patching/dgridworld_2x10.spc > patched-image.dot
+    gr1c -t aut examples/patching/dgridworld_2x10.spc > nominal.aut
+    gr1c patch -t dot -a nominal.aut -e examples/patching/dgridworld_2x10.edc examples/patching/dgridworld_2x10.spc > patched-image.dot
 
 The first command synthesizes a nominal strategy and outputs it in the "gr1c
 automaton" format and redirects it to a file named "nominal.aut".  The second
@@ -48,11 +48,11 @@ This function is invoked when the `-f` switch is passed to `gr1c patch`.
 
 We begin with the same deterministic gridworld from the previous subsection:
 
-    $ gr1c -t aut examples/patching/dgridworld_2x10.spc > nominal.aut
+    gr1c -t aut examples/patching/dgridworld_2x10.spc > nominal.aut
 
 To add a new system goal of the grid cell (0,6), try
 
-    $ gr1c patch -t dot -a nominal.aut -f 'Y_r=0 & Y_c=6' examples/patching/dgridworld_2x10.spc > patched-image.dot
+    gr1c patch -t dot -a nominal.aut -f 'Y_r=0 & Y_c=6' examples/patching/dgridworld_2x10.spc > patched-image.dot
 
 where intuitively the variable `Y_r` represents the current row and `Y_c`
 represents the current column.  An informal depiction of the setting is provided
@@ -72,8 +72,8 @@ https://tulip-control.github.io/gr1c/md_interaction.html
   Examples for "just-in-time synthesis."  E.g., compare the horizon lengths of
   2trolls.spc and 1trolls.spc by
 
-      $ ./gr1c -l -m -1,"x y" examples/jit/2trolls.spc
-      $ ./gr1c -l -m -1,"x y" examples/jit/1troll.spc
+      ./gr1c -l -m -1,"x y" examples/jit/2trolls.spc
+      ./gr1c -l -m -1,"x y" examples/jit/1troll.spc
 
 
 Of external origin
