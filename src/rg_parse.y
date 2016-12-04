@@ -143,6 +143,17 @@ exp: evar_list ';'
 
 evar_list: E_VARS
          | evar_list VARIABLE  {
+             if ((spc.evar_list != NULL
+                  && (find_list_item( spc.evar_list, PT_VARIABLE, $2, -1 ) != -1
+                      || find_list_item( spc.evar_list, PT_VARIABLE, $2, -1 ) != -1))
+                 || (spc.svar_list != NULL
+                  && (find_list_item( spc.svar_list, PT_VARIABLE, $2, -1 ) != -1
+                      || find_list_item( spc.svar_list, PT_VARIABLE, $2, -1 ) != -1))) {
+                 fprintf( stderr,
+                          "Duplicate variable detected on line %d.\n",
+                          @1.last_line );
+                 YYABORT;
+             }
              if (spc.evar_list == NULL) {
                  spc.evar_list = init_ptree( PT_VARIABLE, $2, -1 );
              } else {
@@ -164,6 +175,17 @@ evar_list: E_VARS
                           @1.last_line );
                  YYABORT;
              }
+             if ((spc.evar_list != NULL
+                  && (find_list_item( spc.evar_list, PT_VARIABLE, $2, $6 ) != -1
+                      || find_list_item( spc.evar_list, PT_VARIABLE, $2, $6 ) != -1))
+                 || (spc.svar_list != NULL
+                  && (find_list_item( spc.svar_list, PT_VARIABLE, $2, $6 ) != -1
+                      || find_list_item( spc.svar_list, PT_VARIABLE, $2, $6 ) != -1))) {
+                 fprintf( stderr,
+                          "Duplicate variable detected on line %d.\n",
+                          @1.last_line );
+                 YYABORT;
+             }
              if (spc.evar_list == NULL) {
                  spc.evar_list = init_ptree( PT_VARIABLE, $2, $6 );
              } else {
@@ -175,6 +197,17 @@ evar_list: E_VARS
 
 svar_list: S_VARS
          | svar_list VARIABLE  {
+             if ((spc.evar_list != NULL
+                  && (find_list_item( spc.evar_list, PT_VARIABLE, $2, -1 ) != -1
+                      || find_list_item( spc.evar_list, PT_VARIABLE, $2, -1 ) != -1))
+                 || (spc.svar_list != NULL
+                  && (find_list_item( spc.svar_list, PT_VARIABLE, $2, -1 ) != -1
+                      || find_list_item( spc.svar_list, PT_VARIABLE, $2, -1 ) != -1))) {
+                 fprintf( stderr,
+                          "Duplicate variable detected on line %d.\n",
+                          @1.last_line );
+                 YYABORT;
+             }
              if (spc.svar_list == NULL) {
                  spc.svar_list = init_ptree( PT_VARIABLE, $2, -1 );
              } else {
@@ -193,6 +226,17 @@ svar_list: S_VARS
                  fprintf( stderr,
                           "Error detected on line %d.  Upper bound must be"
                           " no less than zero.\n",
+                          @1.last_line );
+                 YYABORT;
+             }
+             if ((spc.evar_list != NULL
+                  && (find_list_item( spc.evar_list, PT_VARIABLE, $2, $6 ) != -1
+                      || find_list_item( spc.evar_list, PT_VARIABLE, $2, $6 ) != -1))
+                 || (spc.svar_list != NULL
+                  && (find_list_item( spc.svar_list, PT_VARIABLE, $2, $6 ) != -1
+                      || find_list_item( spc.svar_list, PT_VARIABLE, $2, $6 ) != -1))) {
+                 fprintf( stderr,
+                          "Duplicate variable detected on line %d.\n",
                           @1.last_line );
                  YYABORT;
              }
