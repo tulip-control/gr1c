@@ -7,4 +7,4 @@ ENVGOAL: []<> x;
 
 SYSINIT:!y;
 SYSTRANS:;
-SYSGOAL:<>y & <> !x;
+SYSGOAL:<>y;
