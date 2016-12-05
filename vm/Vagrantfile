@@ -1,0 +1,30 @@
+# coding: utf-8
+# Emacs, this is in -*- ruby -*-
+#
+# The directory one up from here is synced with /vagrant in the VM.
+# The intended usage is
+#
+#   cd /path/to/your/gr1c-sources
+#   cd vm
+#   vagrant up
+#   vagrant ssh
+#   cd /vagrant
+
+install_dependencies = <<-SHELL
+#!/bin/sh -e
+sudo apt-get -y update
+sudo apt-get -y install curl graphviz build-essential clang bison flex
+cd /vagrant
+./get-deps.sh
+./get-extra-deps.sh
+./build-deps.sh
+make -j4
+make check
+sudo make install
+SHELL
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "ubuntu/xenial64"
+  config.vm.provision "shell", inline: install_dependencies
+  config.vm.synced_folder "..", "/vagrant"
+end
