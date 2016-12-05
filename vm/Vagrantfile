@@ -4,11 +4,11 @@
 # The directory one up from here is synced with /vagrant in the VM.
 # The intended usage is
 #
-#   cd /path/to/your/gr1c-sources
-#   cd vm
-#   vagrant up
-#   vagrant ssh
-#   cd /vagrant
+#     cd /path/to/your/gr1c-sources
+#     cd vm
+#     vagrant up
+#     vagrant ssh
+#     cd /vagrant
 
 install_dependencies = <<-SHELL
 #!/bin/sh -e
