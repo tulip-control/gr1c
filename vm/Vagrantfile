@@ -1,14 +1,20 @@
 # coding: utf-8
 # Emacs, this is in -*- ruby -*-
 #
+# This is a configuration and provisioning file for Vagrant
+# (https://www.vagrantup.com/).  It has been tested with the
+# VirtualBox provider (https://www.virtualbox.org/) and is known to
+# work with box version 20161203.0.0 of the ubuntu/xenial64.
+#
 # The directory one up from here is synced with /vagrant in the VM.
 # The intended usage is
 #
 #     cd /path/to/your/gr1c-sources
 #     cd vm
 #     vagrant up
-#     vagrant ssh
-#     cd /vagrant
+#
+# which builds gr1c, performs all tests, and installs gr1c in the VM.
+# Afterward, for example, the VM can be accessed using `vagrant ssh`,
 
 install_dependencies = <<-SHELL
 #!/bin/sh -e
