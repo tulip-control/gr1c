@@ -22,3 +22,7 @@ y.tab.h
 /tests/*.spc.aut.pml
 /tests/*.spc.aut.pml.trail
 /tests/*.spc.aut
+
+# files generated when working with a virtual machine (VM)
+/vm/.vagrant/
+/vm/*.log
