@@ -176,7 +176,7 @@ int rmin_tree_value( ptree_t *head, char *name );
 /** Same as rmax_tree_value() but find maximum among v=k expressions. */
 int rmax_tree_value( ptree_t *head, char *name );
 
-/** Verify that every variable (resp., next variable) in given parse
+/** Verify that every variable (resp., primed variable) in given parse
    tree is contained in var_list (resp., nextvar_list).  Return NULL
    if successfully verified; else, return a pointer to a string of a
    violating variable, which the caller is expected to free. */
