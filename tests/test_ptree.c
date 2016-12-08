@@ -409,6 +409,7 @@ int main( int argc, char **argv )
     /* Now compare trees directly; abort on discrepancy. */
     compare_ptrees( head, head2 );
 
+    /* Test copy_ptree. */
     delete_tree( head2 );
     head2 = copy_ptree( head );
 
