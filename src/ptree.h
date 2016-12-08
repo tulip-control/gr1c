@@ -31,7 +31,7 @@
 /* variables or constant */
 #define PT_EMPTY 0
 #define PT_VARIABLE 1
-#define PT_NEXT_VARIABLE 2
+#define PT_NEXT_VARIABLE 2  /* primed variable */
 #define PT_CONSTANT 3
 
 /* unary */
