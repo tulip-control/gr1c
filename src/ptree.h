@@ -176,6 +176,9 @@ char *check_vars( ptree_t *head, ptree_t *var_list, ptree_t *nextvar_list );
    increasing bit index, e.g., invoking with a variable named "foo"
    and maxval=2 causes a list to be returned of the form foo0,foo1.
 
+   The maximum length of the resulting variable names, i.e., names after
+   appending bit indices, is 1024. (This is fixed as an internal constant.)
+
    Return NULL on error. */
 ptree_t *var_to_bool( char *name, int maxval );
 
