@@ -88,7 +88,18 @@ typedef struct ptree_t
 /**@}*/
 
 
-/** Create root node with given type.  Return NULL on error. */
+/** Create root node with given type.
+
+   The arguments correspond with members of the ptree_t structure.
+
+   \param type one of the \ref PTreeNodeTypes.
+
+   \param name string of variable name, or NULL; if \p name is not NULL, then an
+   internal copy is created of the string to which \p name is a pointer.
+
+   \param value meaning and whether this is used depends on \p type.
+
+   \return pointer to the new tree, or NULL if error. */
 ptree_t *init_ptree( int type, char *name, int value );
 
 /** Return (deep) copy of given ptree.  Return NULL on error. */
@@ -198,8 +209,12 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval );
    PT_VARIABLE or PT_NEXT_VARIABLE. */
 ptree_t *unreach_expanded_bool( char *name, int lower, int upper, int type );
 
-/** Push variable or constant into top of tree.  (Behavior is
-   like reverse Polish notation.)  Return the new head. */
+/** Push variable or constant into top of tree.
+
+   (Behavior is like reverse Polish notation.) If \p name is not NULL and if
+   \p type implies the relevance of \p name (cf. ptree_t and
+   \ref PTreeNodeTypes), then an internal copy is created.
+   Return the new head. */
 ptree_t *pusht_terminal( ptree_t *head, int type, char *name, int value );
 
 /** Push unary or binary operator into top of tree.  (Behavior is like reverse
