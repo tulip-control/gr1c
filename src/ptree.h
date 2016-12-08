@@ -148,10 +148,21 @@ int min_tree_value( ptree_t *head );
    Also read documentation for min_tree_value(). */
 int max_tree_value( ptree_t *head );
 
-/** Same as min_tree_value() but restrict attention to specified variable. */
+/** Return the minimum value among expressions of the form v = k.
+
+    Among all expressions in the tree of the form v = k, where v is a variable
+    or primed variable with the given name, and where k is a constant value,
+    find the smallest such k. Note that an expression in the tree has meaning as
+    the corresponding subformula that would be obtained by flattening the parse
+    tree into a formula.
+
+    If head is NULL, or if no equality expressions of this form are found, then
+    the return value is undefined.
+
+    \param name (string) name of the variable or primed variable. */
 int rmin_tree_value( ptree_t *head, char *name );
 
-/** Same as max_tree_value() but restrict attention to specified variable. */
+/** Same as rmax_tree_value() but find maximum among v=k expressions. */
 int rmax_tree_value( ptree_t *head, char *name );
 
 /** Verify that every variable (resp., next variable) in given parse
