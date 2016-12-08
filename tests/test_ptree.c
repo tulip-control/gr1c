@@ -76,6 +76,8 @@ int main( int argc, char **argv )
     ptree_t *head, *node;
     ptree_t *head2;
     ptree_t **heads;
+    ptree_t *var_list;
+    ptree_t *primed_var_list;
     char filename[STRING_MAXLEN];
     char *result;
     int fd;
@@ -410,6 +412,29 @@ int main( int argc, char **argv )
     compare_ptrees( head, head2 );
     delete_tree( head2 );
     head2 = NULL;
+
+    /* Several small tests of check_vars */
+    var_list = init_ptree( PT_VARIABLE, "felix", -1 );
+    append_list_item( var_list, PT_VARIABLE, "cat", -1 );
+    primed_var_list = init_ptree( PT_VARIABLE, "the", -1 );
+    result = check_vars( head, var_list, primed_var_list );
+    if (result == NULL) {
+        ERRPRINT( "check_vars() failed to catch extra variable: x'" );
+        abort();
+    }
+    free( result );
+    result = NULL;
+
+    append_list_item( primed_var_list, PT_VARIABLE, "x", -1 );
+    result = check_vars( head, var_list, primed_var_list );
+    if (result != NULL) {
+        ERRPRINT1( "check_vars() found unexpected variable: %s", result );
+        abort();
+    }
+    delete_tree( var_list );
+    delete_tree( primed_var_list );
+    var_list = primed_var_list = NULL;
+
 
     /* Test copy_ptree. */
     head2 = copy_ptree( head );
