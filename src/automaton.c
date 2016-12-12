@@ -187,7 +187,7 @@ int anode_index( anode_t *head, anode_t *node )
 anode_t *delete_anode( anode_t *head, anode_t *target )
 {
     anode_t *node, *next;
-    if (head == NULL)
+    if (head == NULL || target == NULL)
         return NULL;
     next = head->next;
     if (head == target) {
