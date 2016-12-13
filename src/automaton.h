@@ -116,8 +116,19 @@ int find_anode_index( anode_t *head, int mode, vartype *state, int state_len );
    0-based indexing. */
 int anode_index( anode_t *head, anode_t *node );
 
-/** Return (possibly new) head pointer.  Transition arrays are not
-   altered by this function. */
+/** Delete target node from strategy automaton.
+
+   Note that any references to \p target in transition arrays of other nodes are
+   not modified by this function. If you want to change or delete any such
+   pointers to \p target, use replace_anode_trans().
+
+   \param head pointer to the strategy automaton to be modified.
+
+   \param target node to be deleted. The associated state vector and transition
+   array are freed.
+
+   \return (possibly new) head pointer. If \p head or \p target is NULL, then
+   return NULL. */
 anode_t *delete_anode( anode_t *head, anode_t *target );
 
 /** Delete nodes in U that are not reachable in the graph from outside
