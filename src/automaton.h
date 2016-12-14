@@ -125,10 +125,10 @@ int anode_index( anode_t *head, anode_t *node );
    \param head pointer to the strategy automaton to be modified.
 
    \param target node to be deleted. The associated state vector and transition
-   array are freed.
+   array are freed. If \p target is not found, then return value is NULL.
 
-   \return (possibly new) head pointer. If \p head or \p target is NULL, then
-   return NULL. */
+   \return (possibly new) head pointer. If \p head or \p target is NULL
+   or if \p target is not found, then return NULL. */
 anode_t *delete_anode( anode_t *head, anode_t *target );
 
 /** Delete nodes in U that are not reachable in the graph from outside
