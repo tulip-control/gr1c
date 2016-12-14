@@ -150,6 +150,11 @@ int main( int argc, char **argv )
                    aut_size( backup_head ) );
         abort();
     }
+    if (anode_index( backup_head, node ) != -1) {
+        ERRPRINT( "delete_anode: "
+                  "node that should have been deleted still exists." );
+        abort();
+    }
     delete_aut( backup_head );
 
     return 0;
