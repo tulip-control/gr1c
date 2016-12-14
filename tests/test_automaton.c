@@ -144,6 +144,12 @@ int main( int argc, char **argv )
         ERRPRINT( "delete_anode failed to find, delete target node." );
         abort();
     }
+    if (aut_size( backup_head ) != 1) {
+        ERRPRINT1( "unexpected size after calling delete_anode; "
+                   "should be 1, found %d",
+                   aut_size( backup_head ) );
+        abort();
+    }
     delete_aut( backup_head );
 
     return 0;
