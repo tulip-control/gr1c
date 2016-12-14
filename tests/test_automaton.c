@@ -15,6 +15,7 @@ int main( int argc, char **argv )
 {
     int i, j;  /* Generic counters */
     anode_t *head, *backup_head;
+    anode_t *node;  /* Generic node, used for multiple purposes */
     vartype **nodes_states = NULL;
     int state_len = 10;
     int *modes = NULL;
@@ -134,6 +135,16 @@ int main( int argc, char **argv )
         ERRPRINT( "delete_anode( NULL, NULL ) returned non-NULL value." );
         abort();
     }
+
+    /* Construct 2-state automaton */
+    node = insert_anode( NULL, -1, -1, False, NULL, 0 );
+    head = insert_anode( node, -1, -1, False, NULL, 0 );
+    backup_head = delete_anode( head, node );
+    if (backup_head == NULL) {
+        ERRPRINT( "delete_anode failed to find, delete target node." );
+        abort();
+    }
+    delete_aut( backup_head );
 
     return 0;
 }
