@@ -124,6 +124,7 @@ int main( int argc, char **argv )
     }
 
     delete_aut( head );
+    head = NULL;
     free( modes );
     for (i = 0; i < num_nodes; i++)
         free( *(nodes_states+i) );
