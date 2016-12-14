@@ -129,5 +129,11 @@ int main( int argc, char **argv )
     for (i = 0; i < num_nodes; i++)
         free( *(nodes_states+i) );
     free( nodes_states );
+
+    if (delete_anode( NULL, NULL ) != NULL) {
+        ERRPRINT( "delete_anode( NULL, NULL ) returned non-NULL value." );
+        abort();
+    }
+
     return 0;
 }
