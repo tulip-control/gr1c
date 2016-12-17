@@ -124,6 +124,32 @@ int main( int argc, char **argv )
         abort();
     }
 
+    /* Test removal of edges to first successor node of `head`.
+       Before removing it, ensure that there is at least one such
+       transition.  */
+    if (head->trans_len < 1) {
+        head->trans_len = 1;
+        head->trans = malloc( sizeof(anode_t *) );
+        if (head->trans) {
+            perror( "test_automaton, malloc" );
+            abort();
+        }
+        *(head->trans) = head;
+    }
+    node = *(head->trans);
+    replace_anode_trans( head, node, NULL );
+    backup_head = head;
+    while (backup_head != NULL) {
+        for (i = 0; i < backup_head->trans_len; i++) {
+            if (*(backup_head->trans+i) == node) {
+                ERRPRINT( "found transition that should have been deleted "
+                          "via replace_anode_trans" );
+                abort();
+            }
+        }
+        backup_head = backup_head->next;
+    }
+
     delete_aut( head );
     head = NULL;
     free( modes );
