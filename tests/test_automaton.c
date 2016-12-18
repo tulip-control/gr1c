@@ -130,7 +130,7 @@ int main( int argc, char **argv )
     if (head->trans_len < 1) {
         head->trans_len = 1;
         head->trans = malloc( sizeof(anode_t *) );
-        if (head->trans) {
+        if (head->trans == NULL) {
             perror( "test_automaton, malloc" );
             abort();
         }
