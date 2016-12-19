@@ -150,6 +150,25 @@ int main( int argc, char **argv )
         backup_head = backup_head->next;
     }
 
+    /* Test replacement of edges to first successor node of `head`. */
+    if (head->trans_len > 0) {
+        free( head->trans );
+        head->trans_len = 0;
+    }
+    head->trans_len = 1;
+    head->trans = malloc( sizeof(anode_t *) );
+    if (head->trans == NULL) {
+        perror( "test_automaton, malloc" );
+        abort();
+    }
+    node = *(head->trans) = head->next;
+    replace_anode_trans( head, node, head );
+    if (*(head->trans) != head) {
+        ERRPRINT( "found transition that should have been replaced "
+                  "via replace_anode_trans" );
+        abort();
+    }
+
     delete_aut( head );
     head = NULL;
     free( modes );
