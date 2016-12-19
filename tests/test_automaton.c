@@ -151,10 +151,8 @@ int main( int argc, char **argv )
     }
 
     /* Test replacement of edges to first successor node of `head`. */
-    if (head->trans_len > 0) {
+    if (head->trans_len > 0)
         free( head->trans );
-        head->trans_len = 0;
-    }
     head->trans_len = 1;
     head->trans = malloc( sizeof(anode_t *) );
     if (head->trans == NULL) {
