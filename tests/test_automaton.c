@@ -198,6 +198,12 @@ int main( int argc, char **argv )
                   "node that should have been deleted still exists." );
         abort();
     }
+    backup_head = delete_anode( head, head );
+    if (backup_head != NULL) {
+        ERRPRINT( "delete_anode returned non-NULL after deleting last node." );
+        abort();
+    }
+
     delete_aut( backup_head );
 
     return 0;
