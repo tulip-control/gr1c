@@ -128,7 +128,9 @@ int anode_index( anode_t *head, anode_t *node );
    array are freed. If \p target is not found, then return value is NULL.
 
    \return (possibly new) head pointer. If \p head or \p target is NULL
-   or if \p target is not found, then return NULL. */
+   or if \p target is not found, then return NULL.
+   If head=target and there is only one node, then return NULL (because the only
+   node is deleted, there can be no head pointer). */
 anode_t *delete_anode( anode_t *head, anode_t *target );
 
 /** Delete nodes in U that are not reachable in the graph from outside
