@@ -99,7 +99,10 @@ anode_t *build_anode_trans( anode_t *head, int mode,
                             vartype **next_states, int next_len );
 
 /** Append transition to array for the first node with given state and mode.
-   Return new head on success, NULL on error. */
+
+   This function does not check for duplicate outgoing edges.
+
+   \return head on success, NULL on error. */
 anode_t *append_anode_trans( anode_t *head,
                              int mode, vartype *state, int state_len,
                              int next_mode, vartype *next_state );
