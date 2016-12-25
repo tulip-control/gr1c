@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "automaton.h"
 #include "common.h"
@@ -87,17 +88,29 @@ int main( int argc, char **argv )
         }
     }
     for (i = 0; i < num_nodes; i++) {
-        backup_head = head;
-        head = append_anode_trans( head, *(modes+i), *(nodes_states+i),
-                                   state_len,
-                                   *(modes+((i+rand()) % num_nodes)),
-                                   *(nodes_states+((i+rand()) % num_nodes)));
-        if (head == NULL) {
-            ERRPRINT( "transition insertion failed; "
+        node = find_anode( head, *(modes+i), *(nodes_states+i), state_len );
+        if (node == NULL) {
+            ERRPRINT( "transition insertion failed "
+                      "because base node not found.\n"
                       "attempting to print automaton..." );
             fflush( stderr );
-            list_aut_dump( backup_head, state_len, stderr );
+            list_aut_dump( head, state_len, stderr );
             abort();
+        }
+
+        /* Add 10 outgoing edges per node */
+        assert( node->trans_len == 0 );
+        node->trans_len = 10;
+        node->trans = malloc( 10*sizeof(anode_t *) );
+        if (node->trans == NULL) {
+            perror( "test_automaton, malloc" );
+            abort();
+        }
+        for (j = 0; j < 10; j++) {
+            *(node->trans+j) = find_anode( head,
+                                           *(modes+((i+j+1) % num_nodes)),
+                                           *(nodes_states+((i+j+1) % num_nodes)),
+                                           state_len );
         }
     }
 
