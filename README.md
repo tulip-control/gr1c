@@ -60,8 +60,8 @@ https://tulip-control.github.io/gr1c/md_installation.html
 For Linux x86_64 and Mac OSX, try the following.
 
     ./get-deps.sh
-    make cudd
-    make all
+    ./build-deps.sh
+    make
     make check
 
 Consider using `make -j N` where N is the number of jobs to run simultaneously.
