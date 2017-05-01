@@ -19,7 +19,7 @@ Yacc and lex compatible tools may suffice, but this has not been tested.
 If the machine on which you are building has more than one CPU, then building
 time may be reduced by running more than one Make job simultaneously. To do
 this, use the switch `-j N` in `make` commands in these instructions, where `N`
-is the number of jobs. E.g., if there are 8 CPUs available, `make -j 8 all`.
+is the number of jobs. E.g., if there are 8 CPUs available, `make -j 8`.
 
 
 Building
