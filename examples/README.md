@@ -76,6 +76,16 @@ https://tulip-control.github.io/gr1c/md_interaction.html
       ./gr1c -l -m -1,"x y" examples/jit/1troll.spc
 
 
+API
+---
+
+Examples in the `api` directory demonstrate how to call functions and use data
+structures of gr1c inside other programs. E.g.,
+
+    make
+    ./printwin ../trivial_partwin.spc
+
+
 Of external origin
 ------------------
 
