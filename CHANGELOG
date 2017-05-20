@@ -1,3 +1,10 @@
+gr1c (0.12.0)
+
+  * introduction of specification_t (This change occurred as part of 0.11.0.)
+
+  * ... (FILL BEFORE RELEASE) ...
+
+
 gr1c (0.11.0)
 
   * Begin to use CUDD 3.0.0.
