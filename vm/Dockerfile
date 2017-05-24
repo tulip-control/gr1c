@@ -15,7 +15,7 @@
 #
 # causes the gr1c help message to be printed.
 
-FROM ubuntu:16.04
+FROM debian:stable
 
 RUN apt-get update && apt-get -y install \
     curl \
