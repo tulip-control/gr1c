@@ -21,7 +21,6 @@ RUN apt-get update && apt-get -y install \
     curl \
     graphviz \
     build-essential \
-    clang \
     bison \
     flex
 
