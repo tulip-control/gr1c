@@ -11,7 +11,7 @@ LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 #CFLAGS += -fprofile-arcs -ftest-coverage
 #LDFLAGS += -lgcov
 
-PROGRAMS = test_util test_logging test_automaton test_automaton_io test_ptree test_ptree_to_BDD test_bitblasting test_solve_support test_patching
+PROGRAMS = test_util test_logging test_automaton test_aut_aut_load test_ptree test_ptree_to_BDD test_bitblasting test_solve_support test_patching
 
 all: $(PROGRAMS)
 	./test_logging
@@ -19,7 +19,7 @@ all: $(PROGRAMS)
 	./test_ptree_to_BDD
 	./test_bitblasting
 	./test_automaton
-	./test_automaton_io
+	./test_aut_aut_load
 	./test_solve_support
 	./test_patching
 	./test_util
@@ -50,7 +50,7 @@ test_bitblasting: test_bitblasting.c
 test_automaton: test_automaton.c
 	$(CC) $(CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
 
-test_automaton_io: test_automaton_io.c
+test_aut_aut_load: test_aut_aut_load.c
 	$(CC) $(CFLAGS) $^ $(COMMON_BINS) -o $@ $(LDFLAGS)
 
 test_solve_support: test_solve_support.c
