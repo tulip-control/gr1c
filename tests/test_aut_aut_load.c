@@ -1,4 +1,4 @@
-/* Unit tests for input and output routines of automaton (strategy) objects.
+/* Unit tests for aut_aut_load()
  *
  * SCL; 2012-2015
  */
@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "common.h"
 #include "tests_common.h"
@@ -28,8 +29,52 @@
 "3 1 1 1 1 2 0\n"
 
 
-
 #define STRING_MAXLEN 1024
+anode_t *aut_aut_loads( char *autstr, int state_len )
+{
+    int fd;
+    FILE *fp;
+    char filename[STRING_MAXLEN];
+    anode_t *head;
+
+    assert( autstr != NULL );
+    assert( state_len > 0 );
+
+    strcpy( filename, "dumpXXXXXX" );
+    fd = mkstemp( filename );
+    if (fd == -1) {
+        perror( __FILE__ ", mkstemp" );
+        abort();
+    }
+    fp = fdopen( fd, "w+" );
+    if (fp == NULL) {
+        perror( __FILE__ ", fdopen" );
+        abort();
+    }
+    fprintf( fp, autstr );
+    if (fseek( fp, 0, SEEK_SET )) {
+        perror( __FILE__ ", fseek" );
+        abort();
+    }
+
+    /* Load in "gr1c automaton" format */
+    head = aut_aut_load( state_len, fp );
+    if (head == NULL) {
+        ERRPRINT( "Failed to read automaton "
+                  "in \"gr1c automaton\" format." );
+        abort();
+    }
+
+    fclose( fp );
+    if (remove( filename )) {
+        perror( __FILE__ ", remove" );
+        abort();
+    }
+
+    return head;
+}
+
+
 int main( int argc, char **argv )
 {
     int fd;
@@ -39,32 +84,8 @@ int main( int argc, char **argv )
     anode_t *head, *node, *out_node;
     vartype state[2], next_state[2];
 
-    strcpy( filename, "temp_automaton_io_dumpXXXXXX" );
-    fd = mkstemp( filename );
-    if (fd == -1) {
-        perror( "test_automaton_io, mkstemp" );
-        abort();
-    }
-    fp = fdopen( fd, "w+" );
-    if (fp == NULL) {
-        perror( "test_automaton_io, fdopen" );
-        abort();
-    }
-    fprintf( fp, REF_GR1CAUT_TRIVIAL );
-    if (fseek( fp, 0, SEEK_SET )) {
-        perror( "test_automaton_io, fseek" );
-        abort();
-    }
+    head = aut_aut_loads( REF_GR1CAUT_TRIVIAL, 2 );
 
-    /* Load in "gr1c automaton" format */
-    head = aut_aut_load( 2, fp );
-    if (head == NULL) {
-        ERRPRINT( "Failed to read 3-node automaton "
-                  "in \"gr1c automaton\" format." );
-        abort();
-    }
-
-    /* Check number of nodes, labels, and outgoing edges */
     if (aut_size( head ) != 3) {
         ERRPRINT1( "size 3 automaton detected as having size %d.",
                    aut_size( head ) );
@@ -129,17 +150,30 @@ int main( int argc, char **argv )
         ERRPRINT( "failed to append transition to new node." );
         abort();
     }
+
+    strcpy( filename, "dumpXXXXXX" );
+    fd = mkstemp( filename );
+    if (fd == -1) {
+        perror( __FILE__ ", mkstemp" );
+        abort();
+    }
+    fp = fdopen( fd, "w+" );
+    if (fp == NULL) {
+        perror( __FILE__ ", fdopen" );
+        abort();
+    }
+
     if (fseek( fp, 0, SEEK_SET )) {
-        perror( "test_automaton_io, fseek" );
+        perror( __FILE__ ", fseek" );
         abort();
     }
     if (ftruncate( fd, 0 )) {
-        perror( "test_automaton_io, ftruncate" );
+        perror( __FILE__ ", ftruncate" );
         abort();
     }
     aut_aut_dump( head, 2, fp );
     if (fseek( fp, 0, SEEK_SET )) {
-        perror( "test_automaton_io, fseek" );
+        perror( __FILE__ ", fseek" );
         abort();
     }
 
@@ -157,7 +191,7 @@ int main( int argc, char **argv )
 
     fclose( fp );
     if (remove( filename )) {
-        perror( "test_automaton_io, remove" );
+        perror( __FILE__ ", remove" );
         abort();
     }
 
