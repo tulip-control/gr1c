@@ -88,7 +88,7 @@ char *fgets_wrap( char *prompt, int max_len, FILE *infp, FILE *outfp )
         return NULL;
     input = malloc( max_len*sizeof(char) );
     if (input == NULL) {
-        perror( "fgets_wrap, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 
@@ -274,7 +274,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                 intcom_state = realloc( intcom_state,
                                         (2*num_env+num_sys)*sizeof(vartype) );
                 if (intcom_state == NULL) {
-                    perror( "command_loop, realloc" );
+                    perror( __FILE__ ",  realloc" );
                     exit(-1);
                 }
                 return INTCOM_SYSNEXT;
@@ -380,7 +380,7 @@ int command_loop( DdManager *manager, FILE *infp, FILE *outfp )
                 intcom_state = realloc( intcom_state,
                                         (num_env+num_sys)*sizeof(vartype) );
                 if (intcom_state == NULL) {
-                    perror( "command_loop, realloc" );
+                    perror( __FILE__ ",  realloc" );
                     exit(-1);
                 }
                 return INTCOM_GETINDEX;
@@ -453,14 +453,14 @@ int levelset_interactive( DdManager *manager, unsigned char init_flags,
     /* State vector (i.e., valuation of the variables) */
     state = malloc( sizeof(vartype)*(num_env+num_sys) );
     if (state == NULL) {
-        perror( "levelset_interactive, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 
     /* Allocate cube array, used later for quantifying over variables. */
     cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
     if (cube == NULL) {
-        perror( "levelset_interactive, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 

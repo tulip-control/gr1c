@@ -50,7 +50,7 @@ int main( int argc, char **argv )
     f = ptree_BDD( head, var_list, manager );
     cube = malloc( 3*sizeof(int) );
     if (cube == NULL) {
-        perror( "test_ptree_to_BDD, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
     for (i = 0; i < 8; i++) {

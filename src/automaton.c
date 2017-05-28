@@ -22,13 +22,13 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad,
     int i;
     anode_t *new_head = malloc( sizeof(anode_t) );
     if (new_head == NULL) {
-        perror( "insert_anode, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 
     new_head->state = malloc( state_len*sizeof(vartype) );
     if (new_head->state == NULL) {
-        perror( "insert_anode, malloc" );
+        perror( __FILE__ ",  malloc" );
         free( new_head );
         exit(-1);
     }
@@ -69,7 +69,7 @@ anode_t *build_anode_trans( anode_t *head, int mode,
 
     trans = malloc( next_len*sizeof(anode_t *) );
     if (trans == NULL) {
-        perror( "build_anode_trans, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
     for (i = 0; i < next_len; i++) {
@@ -96,7 +96,7 @@ anode_t *append_anode_trans( anode_t *head,
 
     trans = realloc( base->trans, (base->trans_len+1)*sizeof(anode_t *) );
     if (trans == NULL) {
-        perror( "append_anode_trans, realloc" );
+        perror( __FILE__ ",  realloc" );
         exit(-1);
     }
 
@@ -231,7 +231,7 @@ void replace_anode_trans( anode_t *head, anode_t *old, anode_t *new )
                     } else {
                         trans = malloc( (head->trans_len-1)*sizeof(anode_t *) );
                         if (trans == NULL) {
-                            perror( "replace_anode_trans, malloc" );
+                            perror( __FILE__ ",  malloc" );
                             exit(-1);
                         }
                         for (j = 0; j < i; j++)
@@ -378,7 +378,7 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
     free( var->name );
     var->name = strdup( name );
     if (var->name == NULL) {
-        perror( "aut_compact_nonbool, strdup" );
+        perror( __FILE__ ",  strdup" );
         exit(-1);
     }
     var->value = maxval;
@@ -393,7 +393,7 @@ int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
         new_state = malloc( (num_env+num_sys - (stop_index-start_index))
                             * sizeof(vartype) );
         if (new_state == NULL) {
-            perror( "aut_compact_nonbool, malloc" );
+            perror( __FILE__ ",  malloc" );
             exit(-1);
         }
 
@@ -494,7 +494,7 @@ anode_t *forward_prune( anode_t *head, anode_t **U, int U_len )
                 U = realloc( U,
                              (U_len + (*(U+i))->trans_len)*sizeof(anode_t *) );
                 if (U == NULL) {
-                    perror( "forward_prune, realloc" );
+                    perror( __FILE__ ",  realloc" );
                     exit(-1);
                 }
                 for (j = 0; j < (*(U+i))->trans_len; j++)

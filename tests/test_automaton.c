@@ -29,19 +29,19 @@ int main( int argc, char **argv )
     /* Construct test fixture */
     nodes_states = malloc( num_nodes*sizeof(vartype *) );
     if (nodes_states == NULL) {
-        perror( "test_automaton, malloc" );
+        perror( __FILE__ ",  malloc" );
         return -1;
     }
     modes = malloc( num_nodes*sizeof(int) );
     if (modes == NULL) {
-        perror( "test_automaton, malloc" );
+        perror( __FILE__ ",  malloc" );
         return -1;
     }
     mode_counter = -1;
     for (i = 0; i < num_nodes; i++) {
         *(nodes_states+i) = malloc( state_len*sizeof(vartype) );
         if (*(nodes_states+i) == NULL) {
-            perror( "test_automaton, malloc" );
+            perror( __FILE__ ",  malloc" );
             return -1;
         }
         for (j = 0; j < state_len; j++) {
@@ -103,7 +103,7 @@ int main( int argc, char **argv )
         node->trans_len = 10;
         node->trans = malloc( 10*sizeof(anode_t *) );
         if (node->trans == NULL) {
-            perror( "test_automaton, malloc" );
+            perror( __FILE__ ",  malloc" );
             abort();
         }
         for (j = 0; j < 10; j++) {
@@ -144,7 +144,7 @@ int main( int argc, char **argv )
         head->trans_len = 1;
         head->trans = malloc( sizeof(anode_t *) );
         if (head->trans == NULL) {
-            perror( "test_automaton, malloc" );
+            perror( __FILE__ ",  malloc" );
             abort();
         }
         *(head->trans) = head;
@@ -169,7 +169,7 @@ int main( int argc, char **argv )
     head->trans_len = 1;
     head->trans = malloc( sizeof(anode_t *) );
     if (head->trans == NULL) {
-        perror( "test_automaton, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
     node = *(head->trans) = head->next;

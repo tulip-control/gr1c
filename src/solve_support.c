@@ -23,7 +23,7 @@ int read_state_str( char *input, vartype **state, int max_len )
     if (max_len > 0) {
         *state = malloc( sizeof(vartype)*max_len );
         if (*state == NULL) {
-            perror( "read_state_str, malloc" );
+            perror( __FILE__ ",  malloc" );
             exit(-1);
         }
     }
@@ -34,7 +34,7 @@ int read_state_str( char *input, vartype **state, int max_len )
         if (max_len < 0) {
             *state = realloc( *state, sizeof(vartype)*(i+1) );
             if (*state == NULL) {
-                perror( "read_state_str, realloc" );
+                perror( __FILE__ ",  realloc" );
                 exit(-1);
             }
         }
@@ -53,7 +53,7 @@ int read_state_str( char *input, vartype **state, int max_len )
     if (max_len > 0) {
         *state = realloc( *state, sizeof(vartype)*i );
         if (*state == NULL) {
-            perror( "read_state_str, realloc" );
+            perror( __FILE__ ",  realloc" );
             exit(-1);
         }
     }

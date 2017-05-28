@@ -98,7 +98,7 @@ int main( int argc, char **argv )
     spc.num_egoals = 1;
     egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
     if (egoals == NULL) {
-        perror( "test_patching, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
     node = pusht_terminal( NULL, PT_VARIABLE, "x", -1 );
@@ -111,12 +111,12 @@ int main( int argc, char **argv )
     Entry_len = Exit_len = 1;
     Entry = malloc( sizeof(anode_t *)*Entry_len );
     if (Entry == NULL) {
-        perror( "test_patching, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
     Exit = malloc( sizeof(anode_t *)*Exit_len );
     if (Exit == NULL) {
-        perror( "test_patching, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
 

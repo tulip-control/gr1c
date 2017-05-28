@@ -166,7 +166,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
         Min = malloc( spc.num_sgoals*sizeof(double) );
         Max = malloc( spc.num_sgoals*sizeof(double) );
         if (Min == NULL || Max == NULL) {
-            perror( "add_metric_sysgoal, malloc" );
+            perror( __FILE__ ",  malloc" );
             exit(-1);
         }
         for (i = 0; i < spc.num_sgoals; i++) {
@@ -227,7 +227,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
                             Gi[i] = realloc( Gi[i],
                                              Gi_len[i]*sizeof(anode_t *) );
                             if (Gi[i] == NULL) {
-                                perror( "add_metric_sysgoal, realloc" );
+                                perror( __FILE__ ",  realloc" );
                                 exit(-1);
                             }
 
@@ -318,7 +318,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
             new_reached = realloc(new_reached,
                                   new_reached_len*sizeof(anode_t *) );
             if (new_reached == NULL) {
-                perror( "add_metric_sysgoal, realloc" );
+                perror( __FILE__ ",  realloc" );
                 exit(-1);
             }
             *(new_reached+new_reached_len-1) = node1;
@@ -342,7 +342,7 @@ anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
                                (Gi_succ_len + (*(Gi[0]+i))->trans_len)
                                *sizeof(anode_t *) );
             if (Gi_succ == NULL) {
-                perror( "add_metric_sysgoal, realloc" );
+                perror( __FILE__ ",  realloc" );
                 exit(-1);
             }
             for (j = 0; j < (*(Gi[0]+i))->trans_len; j++) {
@@ -705,13 +705,13 @@ anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
        respectively. */
     Entry = malloc( sizeof(anode_t *)*num_del_nodes );
     if (Entry == NULL) {
-        perror( "rm_sysgoal, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
 
     }
     Exit = malloc( sizeof(anode_t *)*num_del_nodes );
     if (Exit == NULL) {
-        perror( "rm_sysgoal, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 

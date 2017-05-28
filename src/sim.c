@@ -81,7 +81,7 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
 
     hstacks = malloc( horizon*sizeof(anode_t *) );
     if (hstacks == NULL) {
-        perror( "sim_rhc, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
     for (i = 0; i < horizon; i++)
@@ -93,13 +93,13 @@ anode_t *sim_rhc( DdManager *manager, DdNode *W,
     fnext_state = malloc( (num_env+num_sys)*sizeof(vartype) );
     if (next_state == NULL || candidate_state == NULL || finit_state == NULL
         || fnext_state == NULL) {
-        perror( "sim_rhc, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 
     cube = malloc( 2*(num_env+num_sys)*sizeof(int) );
     if (cube == NULL) {
-        perror( "sim_rhc, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 

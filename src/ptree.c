@@ -21,7 +21,7 @@ ptree_t *init_ptree( int type, char *name, int value )
 {
     ptree_t *head = malloc( sizeof(ptree_t) );
     if (head == NULL) {
-        perror( "init_ptree, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
     head->left = head->right = NULL;
@@ -33,7 +33,7 @@ ptree_t *init_ptree( int type, char *name, int value )
         } else {
             head->name = strdup( name );
             if (head->name == NULL) {
-                perror( "init_ptree, strdup" );
+                perror( __FILE__ ",  strdup" );
                 exit(-1);
             }
         }
@@ -263,7 +263,7 @@ char *check_vars( ptree_t *head, ptree_t *var_list, ptree_t *nextvar_list )
         if (node == NULL) {
             name = malloc( (strlen( head->name )+2)*sizeof(char) );
             if (name == NULL) {
-                perror( "check_vars, malloc" );
+                perror( __FILE__ ",  malloc" );
                 exit(-1);
             }
             strcpy( name, head->name );
@@ -353,7 +353,7 @@ ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
     if (op_type == PT_NOTEQ) {
         heads = malloc( maxval*sizeof(ptree_t *) );
         if (heads == NULL) {
-            perror( "expand_nonbool_varnum, malloc" );
+            perror( __FILE__ ",  malloc" );
             exit(-1);
         }
         min = 0;
@@ -384,7 +384,7 @@ ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
 
         heads = malloc( (max-min+1)*sizeof(ptree_t *) );
         if (heads == NULL) {
-            perror( "expand_nonbool_varnum, malloc" );
+            perror( __FILE__ ",  malloc" );
             exit(-1);
         }
         for (i = min; i <= max; i++) {
@@ -452,7 +452,7 @@ ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
         delete_tree( head );
         heads = malloc( num_bits*sizeof(ptree_t *) );
         if (heads == NULL) {
-            perror( "expand_to_bool, malloc" );
+            perror( __FILE__ ",  malloc" );
             exit(-1);
         }
 
@@ -782,7 +782,7 @@ int tree_dot_dump( ptree_t *head, char *filename )
 
     FILE *fp = fopen( filename, "w" );
     if (fp == NULL) {
-        perror( "tree_dot_dump, fopen" );
+        perror( __FILE__ ",  fopen" );
         exit(-1);
     }
 
@@ -796,7 +796,7 @@ int tree_dot_dump( ptree_t *head, char *filename )
     fprintf( fp, "}\n" );
 
     if (fclose( fp )) {
-        perror( "tree_dot_dump, fclose" );
+        perror( __FILE__ ",  fclose" );
         exit(-1);
     }
 

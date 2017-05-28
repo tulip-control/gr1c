@@ -26,12 +26,12 @@ int main( int argc, char **argv )
     strcpy( filename, "temp_logging_dumpXXXXXX" );
     fd = mkstemp( filename );
     if (fd == -1) {
-        perror( "test_logging, mkstemp" );
+        perror( __FILE__ ",  mkstemp" );
         abort();
     }
     fp = fdopen( fd, "w+" );
     if (fp == NULL) {
-        perror( "test_logging, fdopen" );
+        perror( __FILE__ ",  fdopen" );
         abort();
     }
 
@@ -42,12 +42,12 @@ int main( int argc, char **argv )
     logprint( "%s %d", "ok thx bai", -1 );
 
     if (fseek( fp, 0, SEEK_SET )) {
-        perror( "test_logging, fseek" );
+        perror( __FILE__ ",  fseek" );
         abort();
     }
     result = fgets( data, STRING_MAXLEN, fp );
     if (result == NULL) {
-        perror( "test_logging, fgets" );
+        perror( __FILE__ ",  fgets" );
         abort();
     }
     result = strstr( data, "Hello, world!" );
@@ -58,7 +58,7 @@ int main( int argc, char **argv )
 
     result = fgets( data, STRING_MAXLEN, fp );
     if (result == NULL) {
-        perror( "test_logging, fgets" );
+        perror( __FILE__ ",  fgets" );
         abort();
     }
     result = strstr( data, "2 + 3 = 5.00" );
@@ -69,7 +69,7 @@ int main( int argc, char **argv )
 
     result = fgets( data, STRING_MAXLEN, fp );
     if (result == NULL) {
-        perror( "test_logging, fgets" );
+        perror( __FILE__ ",  fgets" );
         abort();
     }
     result = strstr( data, "ok thx bai -1" );
@@ -83,7 +83,7 @@ int main( int argc, char **argv )
         abort();
     }
     if (remove( filename )) {
-        perror( "test_logging, remove" );
+        perror( __FILE__ ",  remove" );
         abort();
     }
     return 0;

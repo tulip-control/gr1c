@@ -42,7 +42,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
         return NULL;
     state = malloc( sizeof(vartype)*state_len );
     if (state == NULL) {
-        perror( "aut_aut_load, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 
@@ -54,7 +54,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
     *(node_array+ia_len-1) = NULL;
     if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
         free( state );
-        perror( "aut_aut_load, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 
@@ -113,7 +113,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 
         *(node_array+ia_len-1) = malloc( sizeof(anode_t) );
         if (*(node_array+ia_len-1) == NULL) {
-            perror( "aut_aut_load, malloc" );
+            perror( __FILE__ ",  malloc" );
             exit(-1);
         }
 
@@ -168,7 +168,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
                 = realloc( *(trans_array+ia_len-1),
                            sizeof(int)*((*(node_array+ia_len-1))->trans_len) );
             if (*(trans_array+ia_len-1) == NULL) {
-                perror( "aut_aut_load, realloc" );
+                perror( __FILE__ ",  realloc" );
                 exit(-1);
             }
             *(*(trans_array+ia_len-1)
@@ -180,7 +180,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
 
         state = malloc( sizeof(vartype)*state_len );
         if (state == NULL) {
-            perror( "aut_aut_load, malloc" );
+            perror( __FILE__ ",  malloc" );
             exit(-1);
         }
         ia_len++;
@@ -207,7 +207,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
             node_array = tmp_anode_tpp;
         }
         if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
-            perror( "aut_aut_load, realloc" );
+            perror( __FILE__ ",  realloc" );
             exit(-1);
         }
         *(trans_array+ia_len-1) = NULL;
@@ -243,7 +243,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
         node_array = tmp_anode_tpp;
     }
     if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
-        perror( "aut_aut_load, realloc" );
+        perror( __FILE__ ",  realloc" );
         exit(-1);
     }
 
@@ -267,7 +267,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
         if (node->trans_len > 0) {
             node->trans = malloc( sizeof(anode_t *)*(node->trans_len) );
             if (node->trans == NULL) {
-                perror( "aut_aut_load, malloc" );
+                perror( __FILE__ ",  malloc" );
                 exit(-1);
             }
             for (j = 0; j < node->trans_len; j++) {
@@ -994,7 +994,7 @@ int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 
     env_counter = malloc( num_env*sizeof(int) );
     if (env_counter == NULL) {
-        perror( "spin_aut_dump, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 

@@ -43,7 +43,7 @@ int main( int argc, char **argv )
     /* Parse the specification. */
     fp = fopen( argv[1], "r" );
     if (fp == NULL) {
-        perror( "gr1c, fopen" );
+        perror( __FILE__ ",  fopen" );
         return -1;
     }
     yyrestart( fp );
@@ -64,7 +64,7 @@ int main( int argc, char **argv )
         spc.et_array_len = 1;
         spc.env_trans_array = malloc( sizeof(ptree_t *) );
         if (spc.env_trans_array == NULL) {
-            perror( "gr1c, malloc" );
+            perror( __FILE__ ",  malloc" );
             return -1;
         }
         *spc.env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
@@ -73,7 +73,7 @@ int main( int argc, char **argv )
         spc.st_array_len = 1;
         spc.sys_trans_array = malloc( sizeof(ptree_t *) );
         if (spc.sys_trans_array == NULL) {
-            perror( "gr1c, malloc" );
+            perror( __FILE__ ",  malloc" );
             return -1;
         }
         *spc.sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
@@ -82,7 +82,7 @@ int main( int argc, char **argv )
         spc.num_sgoals = 1;
         spc.sys_goals = malloc( sizeof(ptree_t *) );
         if (spc.sys_goals == NULL) {
-            perror( "gr1c, malloc" );
+            perror( __FILE__ ",  malloc" );
             return -1;
         }
         *spc.sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );

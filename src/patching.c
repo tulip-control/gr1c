@@ -90,12 +90,12 @@ anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
        respectively. */
     Exit = malloc( sizeof(anode_t *)*N_len );
     if (Exit == NULL) {
-        perror( "localfixpoint_goalmode, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
     Entry = malloc( sizeof(anode_t *)*N_len );
     if (Entry == NULL) {
-        perror( "localfixpoint_goalmode, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 
@@ -435,7 +435,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
 
         doffw = malloc( sizeof(int)*4*num_nonbool );
         if (doffw == NULL) {
-            perror( "patch_localfixpoint, malloc" );
+            perror( __FILE__ ",  malloc" );
             exit(-1);
         }
         for (i = 0; i < 2*num_nonbool; i++)
@@ -444,12 +444,12 @@ anode_t *patch_localfixpoint( DdManager *manager,
 
     affected = malloc( sizeof(anode_t **)*spc.num_sgoals );
     if (affected == NULL) {
-        perror( "patch_localfixpoint, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
     affected_len = malloc( sizeof(int)*spc.num_sgoals );
     if (affected_len == NULL) {
-        perror( "patch_localfixpoint, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
     for (i = 0; i < spc.num_sgoals; i++) {
@@ -459,7 +459,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
 
     cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
     if (cube == NULL) {
-        perror( "patch_localfixpoint, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 
@@ -500,7 +500,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
         N_len++;
         N = realloc( N, sizeof(vartype *)*N_len );
         if (N == NULL) {
-            perror( "patch_localfixpoint, realloc" );
+            perror( __FILE__ ",  realloc" );
             exit(-1);
         }
         if (num_nonbool > 0) {
@@ -806,7 +806,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                                                    *(*(affected_len
                                                        + node->mode)) );
                                     if (*(affected + node->mode) == NULL) {
-                                        perror( "patch_localfixpoint,"
+                                        perror( __FILE__ ", "
                                                 " realloc" );
                                         exit(-1);
                                     }
@@ -846,7 +846,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                                                *(*(affected_len
                                                    + node->mode)) );
                                 if (*(affected + node->mode) == NULL) {
-                                    perror( "patch_localfixpoint, realloc" );
+                                    perror( __FILE__ ",  realloc" );
                                     exit(-1);
                                 }
                                 /* If affected state is not in N, then fail. */
@@ -959,7 +959,7 @@ anode_t *patch_localfixpoint( DdManager *manager,
                                            sizeof(anode_t *)
                                            *(*(affected_len + head->mode)) );
                             if (*(affected + head->mode) == NULL) {
-                                perror( "patch_localfixpoint, realloc" );
+                                perror( __FILE__ ",  realloc" );
                                 exit(-1);
                             }
                             /* If affected state is not in N, then fail. */

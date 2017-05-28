@@ -53,12 +53,12 @@ int main( int argc, char **argv )
     len = 1024;
     state = malloc( len*sizeof(vartype) );
     if (state == NULL) {
-        perror( "test_solve_support, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
     ref_cube = malloc( len*sizeof(vartype) );
     if (ref_cube == NULL) {
-        perror( "test_solve_support, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
 
@@ -97,17 +97,17 @@ int main( int argc, char **argv )
     len = 4;
     state = malloc( len*sizeof(vartype) );
     if (state == NULL) {
-        perror( "test_solve_support, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
     ref_cube = malloc( len*sizeof(vartype) );
     if (ref_cube == NULL) {
-        perror( "test_solve_support, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
     gcube = malloc( len*sizeof(int) );
     if (gcube == NULL) {
-        perror( "test_solve_support, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
 
@@ -174,13 +174,13 @@ int main( int argc, char **argv )
 
     cube = malloc( sizeof(int)*2*(num_env+num_sys) );
     if (cube == NULL) {
-        perror( "test_solve_support, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
 
     state = malloc( sizeof(vartype)*(num_env+num_sys) );
     if (state == NULL) {
-        perror( "test_solve_support, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
 

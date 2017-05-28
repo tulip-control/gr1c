@@ -49,19 +49,19 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 
     state = malloc( sizeof(vartype)*(num_env+num_sys) );
     if (state == NULL) {
-        perror( "synthesize_reachgame_BDD, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
     cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
     if (cube == NULL) {
-        perror( "synthesize_reachgame_BDD, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 
     num_sublevels = 1;
     Y = malloc( num_sublevels*sizeof(DdNode *) );
     if (Y == NULL) {
-        perror( "synthesize_reachgame_BDD, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
     *Y = Exit;
@@ -69,13 +69,13 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 
     X_jr = malloc( num_sublevels*sizeof(DdNode **) );
     if (X_jr == NULL) {
-        perror( "synthesize_reachgame_BDD, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
 
     *X_jr = malloc( spc.num_egoals*sizeof(DdNode *) );
     if (*X_jr == NULL) {
-        perror( "synthesize_reachgame_BDD, malloc" );
+        perror( __FILE__ ",  malloc" );
         exit(-1);
     }
     for (r = 0; r < spc.num_egoals; r++) {
@@ -88,13 +88,13 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
         Y = realloc( Y, num_sublevels*sizeof(DdNode *) );
         X_jr = realloc( X_jr, num_sublevels*sizeof(DdNode **) );
         if (Y == NULL || X_jr == NULL) {
-            perror( "synthesize_reachgame_BDD, realloc" );
+            perror( __FILE__ ",  realloc" );
             exit(-1);
         }
 
         *(X_jr + num_sublevels-1) = malloc( spc.num_egoals*sizeof(DdNode *) );
         if (*(X_jr + num_sublevels-1) == NULL) {
-            perror( "synthesize_reachgame_BDD, malloc" );
+            perror( __FILE__ ",  malloc" );
             exit(-1);
         }
 
@@ -193,7 +193,7 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
                 Y = realloc( Y, num_sublevels*sizeof(DdNode *) );
                 X_jr = realloc( X_jr, num_sublevels*sizeof(DdNode **) );
                 if (Y == NULL || X_jr == NULL) {
-                    perror( "synthesize_reachgame_BDD, realloc" );
+                    perror( __FILE__ ",  realloc" );
                     exit(-1);
                 }
             }

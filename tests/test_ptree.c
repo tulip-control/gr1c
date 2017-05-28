@@ -242,17 +242,17 @@ int main( int argc, char **argv )
     strcpy( filename, "temp_ptree_dumpXXXXXX" );
     fd = mkstemp( filename );
     if (fd == -1) {
-        perror( "test_ptree, mkstemp" );
+        perror( __FILE__ ",  mkstemp" );
         abort();
     }
     fp = fdopen( fd, "w+" );
     if (fp == NULL) {
-        perror( "test_ptree, fdopen" );
+        perror( __FILE__ ",  fdopen" );
         abort();
     }
     inorder_trav( head, print_node, fp );
     if (fseek( fp, 0, SEEK_SET )) {
-        perror( "test_ptree, fseek" );
+        perror( __FILE__ ",  fseek" );
         abort();
     }
 
@@ -260,7 +260,7 @@ int main( int argc, char **argv )
        compare to reference. */
     result = malloc( STRING_MAXLEN*sizeof(char) );
     if (result == NULL) {
-        perror( "test_ptree, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
     for (i = 0; i < STRING_MAXLEN-1 && !feof( fp ); i++)
@@ -312,23 +312,23 @@ int main( int argc, char **argv )
 
     /* Dump conjunction of manually built trees to a temporary file. */
     if (fseek( fp, 0, SEEK_SET )) {
-        perror( "test_ptree, fseek" );
+        perror( __FILE__ ",  fseek" );
         abort();
     }
     if (ftruncate( fd, 0 )) {
-        perror( "test_ptree, ftruncate" );
+        perror( __FILE__ ",  ftruncate" );
         abort();
     }
     inorder_trav( head, print_node, fp );
     if (fseek( fp, 0, SEEK_SET )) {
-        perror( "test_ptree, fseek" );
+        perror( __FILE__ ",  fseek" );
         abort();
     }
 
     /* Read back in the result of dumping and compare to reference. */
     result = malloc( STRING_MAXLEN*sizeof(char) );
     if (result == NULL) {
-        perror( "test_ptree, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
     for (i = 0; i < STRING_MAXLEN-1 && !feof( fp ); i++)
@@ -368,23 +368,23 @@ int main( int argc, char **argv )
 
     /* Dump stack-generated parse tree to a temporary file. */
     if (fseek( fp, 0, SEEK_SET )) {
-        perror( "test_ptree, fseek" );
+        perror( __FILE__ ",  fseek" );
         abort();
     }
     if (ftruncate( fd, 0 )) {
-        perror( "test_ptree, ftruncate" );
+        perror( __FILE__ ",  ftruncate" );
         abort();
     }
     inorder_trav( head2, print_node, fp );
     if (fseek( fp, 0, SEEK_SET )) {
-        perror( "test_ptree, fseek" );
+        perror( __FILE__ ",  fseek" );
         abort();
     }
 
     /* Read back in the result of dumping and compare to reference. */
     result = malloc( STRING_MAXLEN*sizeof(char) );
     if (result == NULL) {
-        perror( "test_ptree, malloc" );
+        perror( __FILE__ ",  malloc" );
         abort();
     }
     for (i = 0; i < STRING_MAXLEN-1 && !feof( fp ); i++)
@@ -404,7 +404,7 @@ int main( int argc, char **argv )
     free( result );
     fclose( fp );
     if (remove( filename )) {
-        perror( "test_ptree, remove" );
+        perror( __FILE__ ",  remove" );
         abort();
     }
 
