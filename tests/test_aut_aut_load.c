@@ -17,19 +17,21 @@
 
 /* Trivial reference; state length of 2. */
 #define REF_GR1CAUT_TRIVIAL \
-"0 1 0 0 2 1 2\n" \
-"1 0 0 0 1 1 2\n" \
-"2 1 1 1 1 1 0\n"
+"1\n" \
+"0 1 0 1 0 2 1 2\n" \
+"1 0 0 1 0 1 1 2\n" \
+"2 1 1 1 1 1 1 0\n"
 
 /* ...after modification */
 #define REF_GR1CAUT_TRIVIAL_MOD \
-"0 0 1 0 -1 1\n" \
-"1 1 0 0 2 2 0\n" \
-"2 0 0 0 1 2 3\n" \
-"3 1 1 1 1 2 0\n"
+"1\n" \
+"0 0 1 0 0 -1 1\n"  \
+"1 1 0 1 0 2 2 1\n" \
+"2 0 0 1 0 1 2 3\n" \
+"3 1 1 1 1 1 2 1\n"
 
 
-#define STRING_MAXLEN 1024
+#define STRING_MAXLEN 2048
 anode_t *aut_aut_loads( char *autstr, int state_len )
 {
     int fd;
@@ -106,6 +108,12 @@ int main( int argc, char **argv )
                    node->rgrad );
         abort();
     }
+    if (node->mode != 0) {
+        ERRPRINT1( "node should have mode value of 0 "
+                   "but actually has %d",
+                   node->mode );
+        abort();
+    }
 
     state[0] = 0;
     state[1] = 0;
@@ -119,6 +127,12 @@ int main( int argc, char **argv )
         ERRPRINT1( "node should have reach annotation value of 1 "
                    "but actually has %d",
                    out_node->rgrad );
+        abort();
+    }
+    if (out_node->mode != 0) {
+        ERRPRINT1( "node should have mode value of 0 "
+                   "but actually has %d",
+                   out_node->mode );
         abort();
     }
 
@@ -171,7 +185,7 @@ int main( int argc, char **argv )
         perror( __FILE__ ", ftruncate" );
         abort();
     }
-    aut_aut_dump( head, 2, fp );
+    aut_aut_dumpver( head, 2, fp, 1 );
     if (fseek( fp, 0, SEEK_SET )) {
         perror( __FILE__ ", fseek" );
         abort();
@@ -183,9 +197,11 @@ int main( int argc, char **argv )
         ERRPRINT( "output of aut_aut_dump is too short." );
         abort();
     }
-    if (!strncmp( instr, REF_GR1CAUT_TRIVIAL_MOD,
-                  strlen(REF_GR1CAUT_TRIVIAL_MOD) )) {
+    if (strncmp( instr, REF_GR1CAUT_TRIVIAL_MOD,
+                 strlen(REF_GR1CAUT_TRIVIAL_MOD) )) {
         ERRPRINT( "output of aut_aut_dump does not match expectation." );
+        ERRPRINT1( "%s", instr  );
+        ERRPRINT1( "%s", REF_GR1CAUT_TRIVIAL_MOD );
         abort();
     }
 
