@@ -64,7 +64,7 @@ test_patching: test_patching.c
 	$(CC) $(CFLAGS) $^ $(COMMON_BINS) ../patching.o ../patching_support.o -o $@ $(LDFLAGS)
 
 clean:
-	-rm -f *~ *.o $(PROGRAMS) temp_*_dump*
+	-rm -f *~ *.o $(PROGRAMS) temp_*_dump* dump*
 	-rm -fr *.dSYM
 	-rm -f *.gcno *.gcda *.gcov
 	-rm -f pan* *.aut *.aut.pml *.aut.pml.trail
