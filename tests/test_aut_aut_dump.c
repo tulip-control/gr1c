@@ -18,8 +18,13 @@
 "1\n" \
 "0 0 0 0 1 0 -1 0\n"
 
+#define REF_GR1CAUT_SINGLE_LOOP_AND_SUCC \
+"1\n" \
+"0 1 0 0 1 0 -1 1\n" \
+"1 0 0 0 1 0 -1 1\n"
 
-#define STRING_MAXLEN 1024
+
+#define STRING_MAXLEN 2048
 int main(void)
 {
     int fd;
@@ -27,6 +32,7 @@ int main(void)
     char filename[STRING_MAXLEN];
     char instr[STRING_MAXLEN];
     anode_t *head = NULL;
+    anode_t *this_node, *that_node;
     const int state_len = 3;
     vartype state[] = {0, 0, 0};
 
@@ -65,6 +71,51 @@ int main(void)
         ERRPRINT( "output of aut_aut_dump does not match expectation" );
         ERRPRINT1( "%s", instr  );
         ERRPRINT1( "%s", REF_GR1CAUT_SINGLE_LOOP );
+        abort();
+    }
+
+    state[0] = 1;
+    head = insert_anode( head, 0, -1, True, state, state_len );
+    assert( head != NULL );
+
+    this_node = find_anode( head, 0, state, state_len );
+    assert( this_node != NULL );
+
+    state[0] = 0;
+    that_node = find_anode( head, 0, state, state_len );
+    assert( that_node != NULL );
+    assert( this_node != that_node );
+
+    this_node->trans = malloc( sizeof(anode_t *) );
+    assert( this_node->trans );
+    this_node->trans_len = 1;
+    *(this_node->trans) = that_node;
+
+    if (fseek( fp, 0, SEEK_SET )) {
+        perror( __FILE__ ", fseek" );
+        abort();
+    }
+
+    assert( !aut_aut_dumpver( head, state_len, fp, 1 ) );
+
+    if (fseek( fp, 0, SEEK_SET )) {
+        perror( __FILE__ ", fseek" );
+        abort();
+    }
+
+    /* NB, assumed width may cause problems if we start using Unicode. */
+    if (fread( instr, sizeof(char), strlen(REF_GR1CAUT_SINGLE_LOOP_AND_SUCC)+1, fp )
+        < strlen(REF_GR1CAUT_SINGLE_LOOP_AND_SUCC)) {
+        ERRPRINT( "output of aut_aut_dump is too short." );
+        ERRPRINT1( "%s", instr  );
+        ERRPRINT1( "%s", REF_GR1CAUT_SINGLE_LOOP_AND_SUCC );
+        abort();
+    }
+    if (strncmp( instr, REF_GR1CAUT_SINGLE_LOOP_AND_SUCC,
+                 strlen(REF_GR1CAUT_SINGLE_LOOP_AND_SUCC) )) {
+        ERRPRINT( "output of aut_aut_dump does not match expectation" );
+        ERRPRINT1( "%s", instr  );
+        ERRPRINT1( "%s", REF_GR1CAUT_SINGLE_LOOP_AND_SUCC );
         abort();
     }
 
