@@ -1,0 +1,3 @@
+*.egg-info
+/dist/
+gr1c/_version.py
