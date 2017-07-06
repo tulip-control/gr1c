@@ -6,7 +6,7 @@ Its core functionality is checking realizability of and synthesizing strategies
 for GR(1) specifications, though it does much more.
 
 This Python package wraps access to gr1c. The initial motivation is development
-of an experimental service for accessing remote instances of gr1c via HTTP, but
+of an experimental service for using remote instances of gr1c via HTTP, but
 other capabilities, e.g., local access to parts of the gr1c C API may be created
 later. Contributions are welcome.
 
