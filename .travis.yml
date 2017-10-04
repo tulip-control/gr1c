@@ -2,7 +2,6 @@ sudo: false
 
 os:
   - linux
-  - osx
 
 addons:
   apt:
@@ -15,10 +14,6 @@ compiler:
   - clang
 
 before_install:
-  - if [[ $TRAVIS_OS_NAME == "osx" ]]; then
-        brew update;
-        brew install graphviz;
-    fi
   - bison --version
   - flex --version
 
