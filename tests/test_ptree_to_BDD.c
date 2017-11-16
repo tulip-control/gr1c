@@ -19,13 +19,13 @@ int main( int argc, char **argv )
     int *cube;
     char manual_eval;
     ptree_t *var_list;
-    ptree_t *head, *node;
+    ptree_t *head;
     int i; /* Generic counter */
 
     /* Test fixture */
     var_list = append_list_item( NULL, PT_VARIABLE, "a", -1 );
-    node = append_list_item( var_list, PT_VARIABLE, "b", -1 );
-    node = append_list_item( var_list, PT_VARIABLE, "c", -1 );
+    append_list_item( var_list, PT_VARIABLE, "b", -1 );
+    append_list_item( var_list, PT_VARIABLE, "c", -1 );
     if (tree_size( var_list ) != 3) {
         ERRPRINT1( "List of 3 variables detected as having wrong size %d.",
                    tree_size( var_list ) );
