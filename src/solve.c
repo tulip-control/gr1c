@@ -618,11 +618,11 @@ anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
                             tmp = tmp2;
                         }
 
-                        if (!(Cudd_bddLeq( manager, tmp,
-                                           Cudd_Not( Cudd_ReadOne( manager ) ) )
-                              *Cudd_bddLeq( manager,
-                                            Cudd_Not( Cudd_ReadOne( manager ) ),
-                                            tmp )))
+                        if (!Cudd_bddLeq( manager, tmp,
+                                          Cudd_Not( Cudd_ReadOne( manager ) ) )
+                            || !Cudd_bddLeq( manager,
+                                             Cudd_Not( Cudd_ReadOne( manager ) ),
+                                             tmp ))
                             break;
                     }
                     if (r < spc.num_egoals)
@@ -882,8 +882,8 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
         tmp2 = Cudd_bddAnd( manager, tmp, W );
         Cudd_Ref( tmp2 );
         if (tmp == Cudd_Not( Cudd_ReadOne( manager ) )
-            || !(Cudd_bddLeq( manager, tmp, tmp2 )
-                 *Cudd_bddLeq( manager, tmp2, tmp ))) {
+            || !Cudd_bddLeq( manager, tmp, tmp2 )
+            || !Cudd_bddLeq( manager, tmp2, tmp )) {
             realizable = False;
         } else {
             realizable = True;
@@ -923,8 +923,8 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
         Cudd_RecursiveDeref( manager, ddcube );
         Cudd_RecursiveDeref( manager, tmp3 );
 
-        if (!(Cudd_bddLeq( manager, tmp, tmp2 )
-              *Cudd_bddLeq( manager, tmp2, tmp ))) {
+        if (!Cudd_bddLeq( manager, tmp, tmp2 )
+            || !Cudd_bddLeq( manager, tmp2, tmp )) {
             realizable = False;
         } else {
             realizable = True;
@@ -937,8 +937,8 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 
             tmp = Cudd_bddAnd( manager, einit, W );
             Cudd_Ref( tmp );
-            if (!(Cudd_bddLeq( manager, tmp, einit )
-                  *Cudd_bddLeq( manager, einit, tmp ))) {
+            if (!Cudd_bddLeq( manager, tmp, einit )
+                || !Cudd_bddLeq( manager, einit, tmp )) {
                 realizable = False;
             } else {
                 realizable = True;
@@ -953,8 +953,8 @@ DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
 
             tmp = Cudd_bddAnd( manager, sinit, W );
             Cudd_Ref( tmp );
-            if (!(Cudd_bddLeq( manager, tmp, Cudd_Not( Cudd_ReadOne( manager ) ) )
-                  *Cudd_bddLeq( manager, Cudd_Not( Cudd_ReadOne( manager ) ), tmp ))) {
+            if (!Cudd_bddLeq( manager, tmp, Cudd_Not( Cudd_ReadOne( manager ) ) )
+                || !Cudd_bddLeq( manager, Cudd_Not( Cudd_ReadOne( manager ) ), tmp )) {
                 realizable = True;
             } else {
                 realizable = False;
