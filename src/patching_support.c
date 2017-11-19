@@ -149,8 +149,8 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
                 Cudd_Ref( X );
                 Cudd_RecursiveDeref( manager, tmp );
 
-            } while (!(Cudd_bddLeq( manager, X, X_prev )
-                       *Cudd_bddLeq( manager, X_prev, X )));
+            } while (!Cudd_bddLeq( manager, X, X_prev )
+                     || !Cudd_bddLeq( manager, X_prev, X ));
 
             *(*(X_jr+num_sublevels-1) + r) = X;
             Cudd_Ref( *(*(X_jr+num_sublevels-1) + r) );
@@ -177,12 +177,12 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
         tmp = Cudd_bddOr( manager, Entry, *(Y+num_sublevels-1) );
         Cudd_Ref( tmp );
         if (Cudd_bddLeq( manager, tmp, *(Y+num_sublevels-1) )
-            *Cudd_bddLeq( manager, *(Y+num_sublevels-1), tmp )) {
+            && Cudd_bddLeq( manager, *(Y+num_sublevels-1), tmp )) {
             Cudd_RecursiveDeref( manager, tmp );
             if (Cudd_bddLeq( manager, *(Y+num_sublevels-1),
                              *(Y+num_sublevels-2) )
-                *Cudd_bddLeq( manager, *(Y+num_sublevels-2),
-                              *(Y+num_sublevels-1) )) {
+                && Cudd_bddLeq( manager, *(Y+num_sublevels-2),
+                                *(Y+num_sublevels-1) )) {
                 Cudd_RecursiveDeref( manager, *(Y+num_sublevels-1) );
                 for (r = 0; r < spc.num_egoals; r++) {
                     Cudd_RecursiveDeref( manager,
@@ -203,8 +203,8 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
 
         if (Cudd_bddLeq( manager, *(Y+num_sublevels-1),
                          *(Y+num_sublevels-2) )
-            *Cudd_bddLeq( manager, *(Y+num_sublevels-2),
-                          *(Y+num_sublevels-1) )) {
+            && Cudd_bddLeq( manager, *(Y+num_sublevels-2),
+                            *(Y+num_sublevels-1) )) {
             return NULL;  /* Local synthesis failed */
         }
     }
@@ -362,12 +362,12 @@ anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
                             tmp = tmp2;
                         }
 
-                        if (!(Cudd_bddLeq( manager,
-                                           tmp,
-                                           Cudd_Not( Cudd_ReadOne( manager ) ) )
-                              *Cudd_bddLeq( manager,
-                                            Cudd_Not( Cudd_ReadOne( manager ) ),
-                                            tmp )))
+                        if (!Cudd_bddLeq( manager,
+                                          tmp,
+                                          Cudd_Not( Cudd_ReadOne( manager ) ) )
+                            || ! Cudd_bddLeq( manager,
+                                              Cudd_Not( Cudd_ReadOne( manager ) ),
+                                              tmp ))
                             break;
                     }
                     if (r < spc.num_egoals)

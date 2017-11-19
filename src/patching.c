@@ -599,8 +599,8 @@ anode_t *patch_localfixpoint( DdManager *manager,
             }
             Cudd_Ref( tmp2 );
 
-            if (!(Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )
-                  *Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 ))) {
+            if (!Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )
+                || !Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 )) {
                 Cudd_RecursiveDeref( manager, tmp2 );
                 Cudd_RecursiveDeref( manager, ddval );
                 break;
@@ -659,8 +659,8 @@ anode_t *patch_localfixpoint( DdManager *manager,
             }
             Cudd_Ref( tmp2 );
 
-            if (!(Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )
-                  *Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 ))) {
+            if (!Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )
+                || !Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 )) {
                 Cudd_RecursiveDeref( manager, tmp2 );
                 Cudd_RecursiveDeref( manager, ddval );
                 break;
