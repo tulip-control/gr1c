@@ -1,8 +1,29 @@
 gr1c (0.12.0)
 
-  * introduction of specification_t (This change occurred as part of 0.11.0.)
+  * Introduction of specification_t (This change occurred as part of 0.11.0.)
 
-  * ... (FILL BEFORE RELEASE) ...
+  * Create command-line option to redirect LTL formula for Spin Promela. Now it
+    is much easier to generate and use Spin Promela models, as demonstrated in
+    tests/test-verification.sh
+
+  * Minor optimizations for special cases; these should not affect final output
+
+  * Small improvements to the documentation, including a new section about
+    static and dynamic analysis for hacking on the gr1c code
+
+  * Include yet more details with `-vv` (verbose level >= 2)
+
+  * Declare C99 as the standard reference. Previously it was C90 (`gcc -ansi`).
+
+  * Create Dockerfile and Vagrantfile for gr1c
+
+  * Consolidate Make targets. Now in most cases, `make && make check` is enough.
+
+  * Fix several non-critical memory leaks
+
+  * More tests
+
+ -- Scott C. Livingston <slivingston@cds.caltech.edu>  Fri, 26 Jan 2018 18:22:22 -0800
 
 
 gr1c (0.11.0)
