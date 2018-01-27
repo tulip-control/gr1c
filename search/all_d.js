@@ -4,6 +4,7 @@ var searchData=
   ['patching_2eh',['patching.h',['../patching_8h.html',1,'']]],
   ['pop_5fanode',['pop_anode',['../automaton_8h.html#aea6e451c56cf9ed34916afa860221490',1,'automaton.c']]],
   ['print_5fformula',['print_formula',['../ptree_8h.html#a93b61854e1e9d3b3b16d83dd37b7ab80',1,'ptree.c']]],
+  ['print_5fgr1_5fspec',['print_GR1_spec',['../gr1c__util_8h.html#ae7a10ef5f8ad48fd4911b85113130642',1,'util.c']]],
   ['print_5fnode',['print_node',['../ptree_8h.html#a22ae1907d506910fb09d6c065649a1c4',1,'ptree.c']]],
   ['print_5fsupport',['print_support',['../gr1c__util_8h.html#a4b648bb79b430e2b5a08dc7085df42e4',1,'util.c']]],
   ['ptree_2eh',['ptree.h',['../ptree_8h.html',1,'']]],

@@ -3,6 +3,7 @@ var searchData=
   ['delete_5fanode',['delete_anode',['../automaton_8h.html#a1c2058a2959949782553b2f4bf3302fa',1,'automaton.c']]],
   ['delete_5faut',['delete_aut',['../automaton_8h.html#a6003bf5e6d68756a2ff99dfd86d1b2f4',1,'automaton.c']]],
   ['delete_5ftree',['delete_tree',['../ptree_8h.html#a09e85d3f26e47440f53bf401b2625a83',1,'ptree.c']]],
+  ['deprecated_20list',['Deprecated List',['../deprecated.html',1,'']]],
   ['dot_5faut_5fall',['DOT_AUT_ALL',['../group__DotDumpFlags.html#ga2f380c751f91c6f27c8b8ca8c34c4ac2',1,'automaton.h']]],
   ['dot_5faut_5fattrib',['DOT_AUT_ATTRIB',['../group__DotDumpFlags.html#gaf43296551a53d0f526ed5224d1f407e4',1,'automaton.h']]],
   ['dot_5faut_5fbinary',['DOT_AUT_BINARY',['../group__DotDumpFlags.html#gae2a4e537f3f20d76ed8d98247da74d75',1,'automaton.h']]],
