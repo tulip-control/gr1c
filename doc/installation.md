@@ -85,9 +85,25 @@ to additionally install [Graphviz dot](http://www.graphviz.org/) and
     ./get-extra-deps.sh
     ./build-deps.sh
 
-which will download source code for Spin and build it. Tests that use Spin for
-model checking are configured to search in the path used by ./build-deps.sh.
-To run a different `spin`, modify `SPINEXE` in tests/test-verification.sh
+which will download source code for Spin and build it. If the building process
+raises an error about missing `yacc` or `y?tab.c` files, then check for `yacc`
+on your shell path. To do so, try
+
+    which yacc
+
+If it is not found but `bison` is (compare with `which bison`), then create a
+shell script that wraps access to bison emulating yacc. This can be achieved by
+creating a file named `yacc`, placing the following in it
+
+    #!/bin/sh
+    bison -y $@
+
+and marking it as executable (`chmod +x yacc`). Finally, place it on your system
+path, e.g., in /usr/bin or /usr/local/bin.
+
+Tests that use Spin for model checking are configured to search in the path used
+by ./build-deps.sh.  To run a different `spin`, modify `SPINEXE` in
+tests/test-verification.sh
 
 After following the build steps above, do
 
