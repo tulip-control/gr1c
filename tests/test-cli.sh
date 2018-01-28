@@ -72,15 +72,19 @@ done
 if test $VERBOSE -eq 1; then
    echo '\nParsing version message from `gr1c -V`...'
 fi
-VERSION=`gr1c -V | head -1 | cut -d ' ' -f2`
-VERSION_SPLIT=`echo ${VERSION} | sed 's/\./ /g'`
-if test $VERBOSE -eq 1; then
-    echo 'Found version:' ${VERSION}
-fi
-if [ `echo ${VERSION_SPLIT} | wc -w` -ne 3 ]; then
-    echo $PREFACE 'detected version does not have 3 component numbers'
-    echo
-    exit 1
+VERSION_LINE=`gr1c -V | head -1`
+echo $VERSION_LINE | grep devel > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    VERSION=`echo ${VERSION_LINE} | cut -d ' ' -f2`
+    VERSION_SPLIT=`echo ${VERSION} | sed 's/\./ /g'`
+    if test $VERBOSE -eq 1; then
+        echo 'Found version:' ${VERSION}
+    fi
+    if [ `echo ${VERSION_SPLIT} | wc -w` -ne 3 ]; then
+        echo $PREFACE 'detected version does not have 3 component numbers'
+        echo
+        exit 1
+    fi
 fi
 
 

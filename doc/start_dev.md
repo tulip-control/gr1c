@@ -134,11 +134,14 @@ is installed and a release commit is checked-out, then try
 
 ### The checklist
 
+- Assign `RELEASE=1` at the top of the root Makefile.
 - Update the CHANGELOG.
 - Add copyright year where appropriate.
 - Tag and sign.
 - Create release note on GitHub.
 - Build and post API manual of this release.
+- Re-assign `RELEASE=0` at the top of the root Makefile to indicate that commits
+  after the tag are under development.
 
 
 Code style

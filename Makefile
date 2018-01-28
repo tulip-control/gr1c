@@ -2,6 +2,8 @@
 #
 # SCL; 2012-2015.
 
+RELEASE=0
+
 CORE_PROGRAMS = gr1c gr1c-rg
 EXP_PROGRAMS = gr1c-patch
 AUX_PROGRAMS = gr1c-autman
@@ -26,7 +28,7 @@ YFLAGS = -d
 CC = gcc
 LD = ld -r
 
-CFLAGS = -g -Wall -pedantic -std=c99 -I$(deps_prefix)/include -Isrc
+CFLAGS = -Wall -pedantic -std=c99 -I$(deps_prefix)/include -Isrc
 LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 
 # To use and statically link with GNU Readline
@@ -36,6 +38,13 @@ LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 # To measure test coverage
 #CFLAGS += -fprofile-arcs -ftest-coverage
 #LDFLAGS += -lgcov
+
+ifeq ($(RELEASE),0)
+	GR1C_GITHASH := $(shell git describe --dirty)
+	CFLAGS += -g -DGR1C_DEVEL=\"-devel-$(GR1C_GITHASH)\"
+else
+	CFLAGS += -O3
+endif
 
 # N.B., scripted interaction tests, which are invoked if you run "make check",
 # will fail if you build gr1c with GNU Readline.
