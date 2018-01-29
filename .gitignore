@@ -7,6 +7,7 @@
 # GCC gcov files
 *.gcov
 *.gcno
+*.gcda
 
 # temporary object files during C compilation
 *.o
