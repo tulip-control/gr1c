@@ -3,9 +3,9 @@ from __future__ import print_function
 from setuptools import setup
 
 
-# Version; manually keep in sync with src/common.h !
+# This version number is independent of that of gr1c!
 MAJOR = 0
-MINOR = 12
+MINOR = 0
 MICRO = 0
 
 gr1c_version = '{major}.{minor}.{micro}'.format(major=MAJOR, minor=MINOR, micro=MICRO)
