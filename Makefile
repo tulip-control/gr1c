@@ -42,10 +42,14 @@ LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 # To measure test coverage
 #CFLAGS += -fprofile-arcs -ftest-coverage
 #LDFLAGS += -lgcov
-
 ifeq ($(RELEASE),0)
 	GR1C_GITHASH := $(shell git describe --dirty)
-	CFLAGS += -g -DGR1C_DEVEL=\"-devel-$(GR1C_GITHASH)\"
+	ifdef GR1C_GITHASH
+		GR1C_GITHASH := "+$(GR1C_GITHASH)"
+	else
+		GR1C_GITHASH := ""
+	endif
+	CFLAGS += -g -DGR1C_DEVEL=\".dev0$(GR1C_GITHASH)\"
 else
 	CFLAGS += -O3
 endif
