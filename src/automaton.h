@@ -150,12 +150,6 @@ anode_t *aut_prune_deadends( anode_t *head );
 int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
                     FILE *fp );
 
-/** Dump using tulipcon version 0.  DEPRECATED!  Please use
-   tulip_aut_dump() instead.  tulip0_aut_dump() is provided only for
-   legacy code and will soon be removed. */
-int tulip0_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
-                     FILE *fp );
-
 /** Dump DOT file describing the automaton (strategy).  The appearance can be
    configured using \ref DotDumpFlags.  Also read comments for
    tulip_aut_dump().  */
