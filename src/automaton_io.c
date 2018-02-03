@@ -287,6 +287,7 @@ anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
         }
     }
 
+    /* The "gc" label abbreviates "garbage collection". */
   gc:
     free( state );
     free( ID_array );
