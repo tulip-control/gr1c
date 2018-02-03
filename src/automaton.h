@@ -77,27 +77,6 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad,
 /** Delete topmost (head) node from list.  Return pointer to new head. */
 anode_t *pop_anode( anode_t *head );
 
-/** Build the transition array for the first node with given state and mode.
-
-    \deprecated This function will be removed soon. In practice, it is more
-    robust and general to populate the transition array directly. To find nodes
-    of the appropriate next mode (as this function would), use find_anode().
-
-   next_states is an array of state vectors, with length next_len,
-   used to build transitions for this node. All of these states have
-   mode next_mode, and the actual transitions are to the first nodes
-   found with these states and mode.
-
-   If the base node already has a transition array, then it is not
-   replaced until the new array has been successfully built. (That is,
-   if error, the original node should be unaffected.)
-
-   Return given head on success, NULL if one of the needed nodes is
-   not found. */
-anode_t *build_anode_trans( anode_t *head, int mode,
-                            vartype *state, int state_len, int next_mode,
-                            vartype **next_states, int next_len );
-
 /** Append transition to array for the first node with given state and mode.
 
    This function does not check for duplicate outgoing edges.

@@ -50,43 +50,6 @@ anode_t *insert_anode( anode_t *head, int mode, int rgrad,
 }
 
 
-anode_t *build_anode_trans( anode_t *head, int mode,
-                            vartype *state, int state_len, int next_mode,
-                            vartype **next_states, int next_len )
-{
-    int i;
-    anode_t **trans;
-    anode_t *base = find_anode( head, mode, state, state_len );
-
-    /* Handle special case of no next states. */
-    if (next_len == 0) {
-        if (base) {
-            return head;
-        } else {
-            return NULL;
-        }
-    }
-
-    trans = malloc( next_len*sizeof(anode_t *) );
-    if (trans == NULL) {
-        perror( __FILE__ ",  malloc" );
-        exit(-1);
-    }
-    for (i = 0; i < next_len; i++) {
-        *(trans+i) = find_anode( head, next_mode, *(next_states+i), state_len );
-        if (*(trans+i) == NULL) {
-            free( trans );
-            return NULL;
-        }
-    }
-    if (base->trans != NULL)
-        free( base->trans );
-    base->trans = trans;
-    base->trans_len = next_len;
-    return head;
-}
-
-
 anode_t *append_anode_trans( anode_t *head,
                              int mode, vartype *state, int state_len,
                              int next_mode, vartype *next_state )
