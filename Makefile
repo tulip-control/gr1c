@@ -17,6 +17,7 @@ deps_prefix = extern
 # Possibly change to `cp' when `install' is unavailable
 INSTALL = install
 
+INCLUDEDIR = include
 SRCDIR = src
 EXPDIR = exp
 
@@ -28,7 +29,7 @@ YFLAGS = -d
 CC = gcc
 LD = ld -r
 
-CFLAGS = -Wall -pedantic -std=c99 -I$(deps_prefix)/include -Isrc
+CFLAGS = -Wall -pedantic -std=c99 -I$(deps_prefix)/include -I$(INCLUDEDIR)
 LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 
 # To use and statically link with GNU Readline
@@ -81,9 +82,9 @@ grpatch.o: $(EXPDIR)/grpatch.c
 grjit.o: $(EXPDIR)/grjit.c
 	$(CC) $(CFLAGS) -c $^
 
-main.o: $(SRCDIR)/main.c $(SRCDIR)/common.h
+main.o: $(SRCDIR)/main.c $(INCLUDEDIR)/common.h
 	$(CC) $(CFLAGS) -c $<
-rg_main.o: $(SRCDIR)/rg_main.c $(SRCDIR)/common.h
+rg_main.o: $(SRCDIR)/rg_main.c $(INCLUDEDIR)/common.h
 	$(CC) $(CFLAGS) -c $<
 sim.o: $(SRCDIR)/sim.c
 	$(CC) $(CFLAGS) -c $^
@@ -95,9 +96,9 @@ logging.o: $(SRCDIR)/logging.c
 	$(CC) $(CFLAGS) -c $^
 automaton.o: $(SRCDIR)/automaton.c
 	$(CC) $(CFLAGS) -c $^
-automaton_io.o: $(SRCDIR)/automaton_io.c $(SRCDIR)/common.h
+automaton_io.o: $(SRCDIR)/automaton_io.c $(INCLUDEDIR)/common.h
 	$(CC) $(CFLAGS) -c $<
-interactive.o: $(SRCDIR)/interactive.c $(SRCDIR)/common.h
+interactive.o: $(SRCDIR)/interactive.c $(INCLUDEDIR)/common.h
 	$(CC) $(CFLAGS) -c $<
 solve_metric.o: $(SRCDIR)/solve_metric.c
 	$(CC) $(CFLAGS) -c $^

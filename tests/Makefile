@@ -3,8 +3,9 @@
 # SCL; 2012, 2013.
 
 deps_prefix = ../extern
+INCLUDEDIR = include
 
-CFLAGS = -g -Wall -pedantic -std=c99 -I$(deps_prefix)/include -I../src
+CFLAGS = -g -Wall -pedantic -std=c99 -I$(deps_prefix)/include -I../$(INCLUDEDIR)
 LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 
 # To measure test coverage
