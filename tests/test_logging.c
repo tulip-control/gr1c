@@ -35,7 +35,17 @@ int main( int argc, char **argv )
         abort();
     }
 
+    setlogstream( NULL );
+    if (getlogstream() != stdout) {
+        ERRPRINT( "setlogstream( NULL ) failed to select stdout." );
+        abort();
+    }
+
     setlogstream( fp );
+    if (getlogstream() != fp) {
+        ERRPRINT1( "setlogstream() failed to select file pointer to %s.", filename );
+        abort();
+    }
 
     logprint( "Hello, world!" );
     logprint( "%d + %d = %f", 2, 3, 5. );
