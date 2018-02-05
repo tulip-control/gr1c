@@ -51,6 +51,17 @@ int main( int argc, char **argv )
     logprint( "%d + %d = %f", 2, 3, 5. );
     logprint( "%s %d", "ok thx bai", -1 );
 
+    logprint_startline();
+    logprint_raw( "this is a multi-" );
+    logprint_raw( "part entry, on one line" );
+    logprint_endline();
+    logprint_startline();
+    logprint_raw( "%d this is another multi-part en", 5 );
+    logprint_raw( "try,\nbut it spans two lines and has data: %s %f",
+                  "like",
+                  0.25 );
+    logprint_endline();
+
     if (fseek( fp, 0, SEEK_SET )) {
         perror( __FILE__ ",  fseek" );
         abort();
@@ -83,6 +94,38 @@ int main( int argc, char **argv )
         abort();
     }
     result = strstr( data, "ok thx bai -1" );
+    if (result == NULL) {
+        ERRPRINT( "unexpected log output while testing." );
+        abort();
+    }
+
+    result = fgets( data, STRING_MAXLEN, fp );
+    if (result == NULL) {
+        perror( __FILE__ ",  fgets" );
+        abort();
+    }
+    result = strstr( data, "this is a multi-part entry, on one line" );
+    if (result == NULL) {
+        ERRPRINT( "unexpected log output while testing." );
+        abort();
+    }
+
+    result = fgets( data, STRING_MAXLEN, fp );
+    if (result == NULL) {
+        perror( __FILE__ ",  fgets" );
+        abort();
+    }
+    result = strstr( data, "5 this is another multi-part entry," );
+    if (result == NULL) {
+        ERRPRINT( "unexpected log output while testing." );
+        abort();
+    }
+    result = fgets( data, STRING_MAXLEN, fp );
+    if (result == NULL) {
+        perror( __FILE__ ",  fgets" );
+        abort();
+    }
+    result = strstr( data, "but it spans two lines and has data: like 0.25" );
     if (result == NULL) {
         ERRPRINT( "unexpected log output while testing." );
         abort();
