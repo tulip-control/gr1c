@@ -222,10 +222,12 @@ anode_t *aut_prune_deadends( anode_t *head )
     if (head == NULL)
         return NULL;
     do {
-        while (head->trans_len == 0) {
+        while (head && head->trans_len == 0) {
             replace_anode_trans( head, head, NULL );
             head = delete_anode( head, head );
         }
+        if (head == NULL)
+            return NULL;
         node = head->next;
         while (node) {
             if (node->trans_len == 0) {
