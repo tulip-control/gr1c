@@ -135,7 +135,8 @@ anode_t *forward_prune( anode_t *head, anode_t **U, int U_len );
    all dependent transition array lengths are decremented. */
 void replace_anode_trans( anode_t *head, anode_t *old, anode_t *new );
 
-/** Return (possibly new) head pointer. */
+/** Return (possibly new) head pointer. Return NULL if entire automaton is
+   deleted. If head == NULL, then return NULL. */
 anode_t *aut_prune_deadends( anode_t *head );
 
 /** Dump tulipcon XML file describing the automaton (strategy).
