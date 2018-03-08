@@ -23,9 +23,6 @@ int main( int argc, char **argv )
     int mode_counter;
     int num_nodes = 100;
 
-    /* Repeatable random seed */
-    srand( 0 );
-
     /* Construct test fixture */
     nodes_states = malloc( num_nodes*sizeof(vartype *) );
     if (nodes_states == NULL) {
