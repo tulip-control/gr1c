@@ -30,6 +30,12 @@
 "2 0 0 1 0 1 2 3\n" \
 "3 1 1 1 1 1 2 1\n"
 
+/* Trivial reference in gr1caut v0 format; state length of 2. */
+#define REF_GR1CAUT_TRIVIAL_V0 \
+"0 1 0 0 2 1 2\n" \
+"1 0 0 0 1 1 2\n" \
+"2 1 1 1 1 1 0\n"
+
 
 #define STRING_MAXLEN 2048
 anode_t *aut_aut_loads( char *autstr, int state_len )
@@ -210,6 +216,14 @@ int main( int argc, char **argv )
         perror( __FILE__ ", remove" );
         abort();
     }
+
+    delete_aut( head );
+    head = NULL;
+
+    head = aut_aut_loads( REF_GR1CAUT_TRIVIAL_V0, 2 );
+    assert( aut_size( head ) == 3 );
+    delete_aut( head );
+    head = NULL;
 
     return 0;
 }
