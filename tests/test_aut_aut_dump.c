@@ -19,6 +19,10 @@
 "1\n" \
 "0 0 0 0 1 0 -1 0\n"
 
+#define REF_GR1CAUT_SINGLE_LOOP_V0 \
+"0\n" \
+"0 0 0 0 0 -1 0\n"
+
 #define REF_GR1CAUT_SINGLE_LOOP_AND_SUCC \
 "1\n" \
 "0 1 0 0 1 0 -1 1\n" \
@@ -78,6 +82,30 @@ int main(void)
         ERRPRINT( "output of aut_aut_dump does not match expectation" );
         ERRPRINT1( "%s", instr  );
         ERRPRINT1( "%s", REF_GR1CAUT_SINGLE_LOOP );
+        abort();
+    }
+
+    if (fseek( fp, 0, SEEK_SET )) {
+        perror( __FILE__ ", fseek" );
+        abort();
+    }
+    assert( !aut_aut_dumpver( head, state_len, fp, 0 ) );
+
+    if (fseek( fp, 0, SEEK_SET )) {
+        perror( __FILE__ ", fseek" );
+        abort();
+    }
+    /* NB, assumed width may cause problems if we start using Unicode. */
+    if (fread( instr, sizeof(char), strlen(REF_GR1CAUT_SINGLE_LOOP_V0)+1, fp )
+        < strlen(REF_GR1CAUT_SINGLE_LOOP_V0)) {
+        ERRPRINT( "output of aut_aut_dump is too short." );
+        abort();
+    }
+    if (strncmp( instr, REF_GR1CAUT_SINGLE_LOOP_V0,
+                 strlen(REF_GR1CAUT_SINGLE_LOOP_V0) )) {
+        ERRPRINT( "output of aut_aut_dump does not match expectation" );
+        ERRPRINT1( "%s", instr  );
+        ERRPRINT1( "%s", REF_GR1CAUT_SINGLE_LOOP_V0 );
         abort();
     }
 
