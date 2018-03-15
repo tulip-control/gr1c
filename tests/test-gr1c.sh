@@ -133,7 +133,7 @@ if test $VERBOSE -eq 1; then
 fi
 for k in `echo $REFSPECS`; do
     if test $VERBOSE -eq 1; then
-        echo "\tComparing gr1c -i $TESTDIR/specs/${k}.spc < $TESTDIR/interaction_scripts/${k}_IN.txt \n\t\tagainst $TESTDIR/interaction_scripts/${k}_OUT.txt"
+        echo "\tComparing  gr1c -i $TESTDIR/specs/${k}.spc < $TESTDIR/interaction_scripts/${k}_IN.txt \n\t\tagainst $TESTDIR/interaction_scripts/${k}_OUT.txt"
     fi
     if ! $BUILD_ROOT/gr1c -i specs/${k}.spc < interaction_scripts/${k}_IN.txt | diff - interaction_scripts/${k}_OUT.txt > /dev/null; then
         echo $PREFACE "unexpected behavior in scripted interaction using specs/${k}\n"
