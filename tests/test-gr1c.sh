@@ -100,11 +100,17 @@ done
 ################################################################
 # Checking output formats
 
+if test $VERBOSE -eq 1; then
+    echo "\nChecking syntax for examples of DOT output..."
+fi
 if ! ($BUILD_ROOT/gr1c -t dot specs/trivial_2var.spc | dot -Tsvg > /dev/null); then
     echo $PREFACE "syntax error in DOT output from gr1c on specs/trivial_2var.spc\n"
     exit 1
 fi
 
+if test $VERBOSE -eq 1; then
+    echo "\nChecking syntax for examples of JSON output..."
+fi
 if ! ($BUILD_ROOT/gr1c -t json specs/trivial_2var.spc | python -m json.tool > /dev/null); then
     echo $PREFACE "syntax error in JSON output from gr1c on specs/trivial_2var.spc\n"
     exit 1
