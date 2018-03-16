@@ -81,7 +81,9 @@ for k in `echo $REFSPECS`; do
 done
 
 
-# Testing init_flags besides ALL_ENV_EXIST_SYS_INIT
+if test $VERBOSE -eq 1; then
+    echo "\nRegression tests for GR(1) synthesis with other init_flags..."
+fi
 for q in ALL_INIT; do
     for k in count_onestep.spc; do
         if test $VERBOSE -eq 1; then
