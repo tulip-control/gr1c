@@ -103,6 +103,11 @@ if ! ($BUILD_ROOT/gr1c -t dot specs/trivial_2var.spc | dot -Tsvg > /dev/null); t
     exit 1
 fi
 
+if ! ($BUILD_ROOT/gr1c -t json specs/trivial_2var.spc | python -m json.tool > /dev/null); then
+    echo $PREFACE "syntax error in JSON output from gr1c on specs/trivial_2var.spc\n"
+    exit 1
+fi
+
 
 ################################################################
 # Reachability game synthesis regression tests
