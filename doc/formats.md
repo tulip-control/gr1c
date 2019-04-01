@@ -8,7 +8,7 @@ synthesized strategy.  A key to the choices, including functions that provide
 it, is:
 
 - `txt` : simple plaintext format (not standard); list_aut_dump()
-- `dot` : [Graphviz dot](http://www.graphviz.org/); dot_aut_dump()
+- `dot` : [Graphviz dot](https://www.graphviz.org/); dot_aut_dump()
 - `aut` : [gr1c automaton format](#gr1cautformat); aut_aut_dump()
 - `json` : [strategy in JSON](#gr1cjson); json_aut_dump()
 - `tulip` : [tulipcon XML](#tulipconxml); tulip_aut_dump()
@@ -20,7 +20,7 @@ format](#edgechangeset).  The relevant command-line argument is "-e FILE".
 
 <h2 id="gr1cjson">strategy in JSON</h2>
 
-The gross file formatting is [JSON](http://json.org/).  The details of what gr1c
+The gross file formatting is [JSON](https://json.org/).  The details of what gr1c
 provides are versioned.  The current version is 1.  The only difference with
 version 0 is the addition of the node field "initial".  A key to entries is:
 

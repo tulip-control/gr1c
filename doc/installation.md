@@ -10,10 +10,10 @@ executable is built,
 Aside from standard C libraries and a basic development environment (gcc, etc.),
 **gr1c** depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/), the CU
 Decision Diagram package by Fabio Somenzi and others.  Also, gr1c interactive
-mode optionally uses [GNU Readline](http://www.gnu.org/software/readline)
+mode optionally uses [GNU Readline](https://www.gnu.org/software/readline)
 (disabled by default; selected via `USE_READLINE` definition in Makefile).
-The parser generator [Bison](http://www.gnu.org/software/bison/) and the lexical
-analyzer [flex](http://flex.sourceforge.net/) are required to build gr1c.  Other
+The parser generator [Bison](https://www.gnu.org/software/bison/) and the lexical
+analyzer [flex](https://github.com/westes/flex) are required to build gr1c.  Other
 Yacc and lex compatible tools may suffice, but this has not been tested.
 
 If the machine on which you are building has more than one CPU, then building
@@ -45,8 +45,8 @@ We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/).
 
 We mostly follow the steps as performed by the scripts listed above. To begin,
 make a directory called `extern`. At the time of writing, the latest version is
-3.0.0. Below we use [cURL](http://curl.haxx.se) to download it from the
-command-line. Alternatively, [wget](http://www.gnu.org/software/wget/) can be
+3.0.0. Below we use [cURL](https://curl.haxx.se) to download it from the
+command-line. Alternatively, [wget](https://www.gnu.org/software/wget/) can be
 used similarly. You might also try directing your Web browser at
 <ftp://vlsi.colorado.edu/pub/>, or read CUDD documentation for instructions.
 
@@ -79,7 +79,7 @@ Before deploying gr1c and especially if you are building it yourself, run the
 test suite from the source distribution. Testing covers optional features of
 gr1c, so accordingly, optional dependencies become required for the purposes of
 testing. If you were able to build `gr1c` as described above, then it suffices
-to additionally install [Graphviz dot](http://www.graphviz.org/) and
+to additionally install [Graphviz dot](https://www.graphviz.org/) and
 [Spin](http://spinroot.com). Try
 
     ./get-extra-deps.sh
@@ -153,7 +153,7 @@ documentation...including the page you are now reading.  Try
 
 and the result will be under `doc/build`.  Note that Doxygen version 1.8 or
 later is required to build documentation files formatted with
-[Markdown](http://daringfireball.net/projects/markdown), which have names ending
+[Markdown](https://daringfireball.net/projects/markdown), which have names ending
 in `.md` under `doc/`.  For older versions, you can read Markdown files directly
 using any plain text viewer.  E.g., the main page is `doc/api_intro.md`, and
 this page is `doc/installation.md`.
