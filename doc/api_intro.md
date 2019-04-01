@@ -1,7 +1,7 @@
 Introduction        {#mainpage}
 ============
 
-The citable URL is <http://scottman.net/2012/gr1c>.  The public Git repo can be
+The citable URL is <https://scottman.net/2012/gr1c>.  The public Git repo can be
 cloned from
 
     https://github.com/tulip-control/gr1c.git
@@ -69,7 +69,7 @@ check whether the specification is realizable,
 
 A message indicating realizability, such as "Realizable," will be printed. Now, to
 synthesize a strategy for it, output the result into a
-[DOT](http://www.graphviz.org/) file, and create a PNG called `temp.dot.png`
+[DOT](https://www.graphviz.org/) file, and create a PNG called `temp.dot.png`
 from that output, try
 
     gr1c -t dot examples/trivial.spc > temp.dot
@@ -171,6 +171,6 @@ License
 -------
 
 This is free software released under the terms of [the BSD 3-Clause
-License](http://opensource.org/licenses/BSD-3-Clause).  There is no
+License](https://opensource.org/licenses/BSD-3-Clause).  There is no
 warranty; not even for merchantability or fitness for a particular
 purpose.  Consult `LICENSE.txt` for copying conditions.
