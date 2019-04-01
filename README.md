@@ -5,7 +5,7 @@ Introduction
 Its core functionality is checking realizability of and synthesizing strategies
 for GR(1) specifications, though it does much more.
 
-The citable URL is http://scottman.net/2012/gr1c
+The citable URL is https://scottman.net/2012/gr1c
 
 The public Git repo can be cloned from https://github.com/tulip-control/gr1c.git
 Documentation for the latest release is at https://tulip-control.github.io/gr1c
@@ -46,7 +46,7 @@ Dependencies
 The following are optional dependencies. Each item is followed by a summary of
 what is to be gained by building gr1c with it.
 
-- [GNU Readline](http://www.gnu.org/software/readline/), for an enhanced command
+- [GNU Readline](https://www.gnu.org/software/readline/), for an enhanced command
   prompt during interactive sessions. Note that there is a built-in prompt.
 
 
