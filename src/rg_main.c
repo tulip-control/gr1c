@@ -57,7 +57,6 @@ extern anode_t *synthesize_reachgame_BDD( DdManager *manager,
 int main( int argc, char **argv )
 {
     FILE *fp;
-    FILE *stdin_backup = NULL;
     byte run_option = RG_MODE_SYNTHESIS;
     bool help_flag = False;
     bool ptdump_flag = False;
@@ -212,13 +211,11 @@ int main( int argc, char **argv )
     /* If filename for specification given at command-line, then use
        it.  Else, read from stdin. */
     if (input_index > 0) {
-        fp = fopen( argv[input_index], "r" );
+        fp = freopen( argv[input_index], "r", stdin );
         if (fp == NULL) {
             perror( __FILE__ ",  fopen" );
             return -1;
         }
-        stdin_backup = stdin;
-        stdin = fp;
     }
 
     /* Parse the specification. */
@@ -229,9 +226,6 @@ int main( int argc, char **argv )
         return 2;
     if (verbose)
         logprint( "Done." );
-    if (stdin_backup != NULL) {
-        stdin = stdin_backup;
-    }
 
     if (spc.num_sgoals > 1) {
         fprintf( stderr,
