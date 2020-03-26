@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <process.h>
+#endif
 
 #include "common.h"
 #include "logging.h"
@@ -94,43 +97,55 @@ int main( int argc, char **argv )
 
             /* Pass arguments after rg */
             command_argv = malloc( sizeof(char *)*argc );
-            command_argv[0] = strdup( "gr1c rg" );
+            command_argv[0] = strdup( "\"gr1c rg\"" );
             command_argv[argc-1] = NULL;
             for (i = 1; i < argc-1; i++)
                 command_argv[i] = argv[i+1];
 
+#if defined(_WIN32) || defined(_WIN64)
+            return _spawnvp( _P_WAIT, "gr1c-rg", command_argv );
+#else
             if (execvp( "gr1c-rg", command_argv ) < 0) {
                 perror( __FILE__ ",  execvp" );
                 return -1;
             }
+#endif
 
         } else if (!strncmp( argv[1], "patch", strlen( "patch" ) )
                    && argv[1][strlen("patch")] == '\0') {
 
             command_argv = malloc( sizeof(char *)*argc );
-            command_argv[0] = strdup( "gr1c patch" );
+            command_argv[0] = strdup( "\"gr1c patch\"" );
             command_argv[argc-1] = NULL;
             for (i = 1; i < argc-1; i++)
                 command_argv[i] = argv[i+1];
 
+#if defined(_WIN32) || defined(_WIN64)
+            return _spawnvp( _P_WAIT, "gr1c-patch", command_argv );
+#else
             if (execvp( "gr1c-patch", command_argv ) < 0) {
                 perror( __FILE__ ",  execvp" );
                 return -1;
             }
+#endif
 
         } else if (!strncmp( argv[1], "autman", strlen( "autman" ) )
                    && argv[1][strlen("autman")] == '\0') {
 
             command_argv = malloc( sizeof(char *)*argc );
-            command_argv[0] = strdup( "gr1c autman" );
+            command_argv[0] = strdup( "\"gr1c autman\"" );
             command_argv[argc-1] = NULL;
             for (i = 1; i < argc-1; i++)
                 command_argv[i] = argv[i+1];
 
+#if defined(_WIN32) || defined(_WIN64)
+            return _spawnvp( _P_WAIT, "gr1c-autman", command_argv );
+#else
             if (execvp( "gr1c-autman", command_argv ) < 0) {
                 perror( __FILE__ ",  execvp" );
                 return -1;
             }
+#endif
 
         } else if (!strncmp( argv[1], "help", strlen( "help" ) )
                    && argv[1][strlen("help")] == '\0') {
