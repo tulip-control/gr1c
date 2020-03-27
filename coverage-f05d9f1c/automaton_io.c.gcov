@@ -1,0 +1,1183 @@
+        -:    0:Source:src/automaton_io.c
+        -:    0:Graph:automaton_io.gcno
+        -:    0:Data:automaton_io.gcda
+        -:    0:Runs:8
+        -:    0:Programs:8
+        -:    1:/* automaton_io.c -- Definitions for input/output routines on automata.
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2012-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#define _POSIX_C_SOURCE 200809L
+        -:    9:#include <stdlib.h>
+        -:   10:#include <stdio.h>
+        -:   11:#include <string.h>
+        -:   12:#include <time.h>
+        -:   13:
+        -:   14:#include "ptree.h"
+        -:   15:#include "automaton.h"
+        -:   16:
+        -:   17:
+        -:   18:#define INPUT_STRING_LEN 1024
+        -:   19:
+        -:   20:/* Future work: sorting of nodes could be made faster. */
+        2:   21:anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
+        -:   22:{
+        2:   23:    anode_t *head = NULL, *node;
+        -:   24:    vartype *state;
+        -:   25:    int this_trans;
+        -:   26:    int i, j, k;  /* Generic counters */
+        -:   27:    int ia_len;  /* length of ID_array, trans_array, and node_array */
+        -:   28:    int *ID_array;
+        -:   29:    int **trans_array;
+        -:   30:    anode_t **node_array;
+        -:   31:    char line[INPUT_STRING_LEN];
+        -:   32:    char *start, *end;
+        -:   33:    int line_num;
+        2:   34:    int detected_version = -1;
+        -:   35:    int *tmp_intp;
+        -:   36:    int **tmp_intpp;
+        -:   37:    anode_t **tmp_anode_tpp;
+        -:   38:
+        2:   39:    if (fp == NULL)
+    #####:   40:        fp = stdin;
+        -:   41:
+        2:   42:    if (state_len < 1)
+    #####:   43:        return NULL;
+        2:   44:    state = malloc( sizeof(vartype)*state_len );
+        2:   45:    if (state == NULL) {
+    #####:   46:        perror( __FILE__ ",  malloc" );
+    #####:   47:        exit(-1);
+        -:   48:    }
+        -:   49:
+        2:   50:    ia_len = 1;
+        2:   51:    ID_array = malloc( sizeof(int)*ia_len );
+        2:   52:    trans_array = malloc( sizeof(int *)*ia_len );
+        2:   53:    *(trans_array+ia_len-1) = NULL;
+        2:   54:    node_array = malloc( sizeof(anode_t *)*ia_len );
+        2:   55:    *(node_array+ia_len-1) = NULL;
+        2:   56:    if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
+    #####:   57:        free( state );
+    #####:   58:        perror( __FILE__ ",  malloc" );
+    #####:   59:        exit(-1);
+        -:   60:    }
+        -:   61:
+        2:   62:    line_num = 0;
+       11:   63:    while (fgets( line, INPUT_STRING_LEN, fp )) {
+        7:   64:        line_num++;
+        7:   65:        if (strlen( line ) < 1 || *line == '#' || *line == '\n' || *line == '\r')
+    #####:   66:            continue;
+        -:   67:
+        7:   68:        *(ID_array+ia_len-1) = strtol( line, &end, 10 );
+        7:   69:        if (line == end) {
+    #####:   70:            fprintf( stderr,
+        -:   71:                     "Error parsing gr1c automaton line %d.\n", line_num );
+    #####:   72:            head = NULL;
+    #####:   73:            goto gc;
+        7:   74:        } else if (detected_version < 0) {
+        2:   75:            if (*end == '\0' || *end == '\n' || *end == '\r') {
+        1:   76:                detected_version = *(ID_array+ia_len-1);
+        1:   77:                if (detected_version < 0) {
+    #####:   78:                    fprintf( stderr,
+        -:   79:                             "Invalid version number \"%d\" found while"
+        -:   80:                             " parsing gr1c automaton line %d.\n",
+        -:   81:                             detected_version,
+        -:   82:                             line_num );
+    #####:   83:                    head = NULL;
+    #####:   84:                    goto gc;
+        -:   85:                }
+        1:   86:                continue;
+        -:   87:            } else {
+        -:   88:                /* If no explicit version number, then assume 0, and
+        -:   89:                   continue parsing this line accordingly. */
+        1:   90:                detected_version = 0;
+        -:   91:            }
+        -:   92:
+        1:   93:            if (detected_version != 0 && detected_version != 1) {
+    #####:   94:                fprintf( stderr,
+        -:   95:                         "Only gr1c automaton format versions 0 and 1 are supported." );
+    #####:   96:                head = NULL;
+    #####:   97:                goto gc;
+        -:   98:            }
+        -:   99:        }
+        -:  100:
+        6:  101:        start = end;
+       18:  102:        for (i = 0; i < state_len && *end != '\0'; i++) {
+       12:  103:            *(state+i) = strtol( start, &end, 10 );
+       12:  104:            if (start == end)
+    #####:  105:                break;
+       12:  106:            start = end;
+        -:  107:        }
+        6:  108:        if (i != state_len) {
+    #####:  109:            fprintf( stderr,
+        -:  110:                     "Error parsing gr1c automaton line %d.\n", line_num );
+    #####:  111:            head = NULL;
+    #####:  112:            goto gc;
+        -:  113:        }
+        -:  114:
+        6:  115:        *(node_array+ia_len-1) = malloc( sizeof(anode_t) );
+        6:  116:        if (*(node_array+ia_len-1) == NULL) {
+    #####:  117:            perror( __FILE__ ",  malloc" );
+    #####:  118:            exit(-1);
+        -:  119:        }
+        -:  120:
+        6:  121:        if (detected_version == 1) {
+        3:  122:            (*(node_array+ia_len-1))->initial = strtol( start, &end, 10 );
+        3:  123:            if (start == end || *end == '\0') {
+    #####:  124:                fprintf( stderr,
+        -:  125:                         "Error parsing gr1c automaton line %d.\n", line_num );
+    #####:  126:                head = NULL;
+    #####:  127:                goto gc;
+        -:  128:            }
+        3:  129:            if ((*(node_array+ia_len-1))->initial != 0
+        3:  130:                && (*(node_array+ia_len-1))->initial != 1) {
+    #####:  131:                fprintf( stderr,
+        -:  132:                         "Invalid value for node field \"initial\" on line %d.\n", line_num );
+    #####:  133:                head = NULL;
+    #####:  134:                goto gc;
+        -:  135:            }
+        3:  136:            start = end;
+        -:  137:        }
+        -:  138:
+        6:  139:        (*(node_array+ia_len-1))->mode = strtol( start, &end, 10 );
+        6:  140:        if (start == end || *end == '\0') {
+    #####:  141:            fprintf( stderr,
+        -:  142:                     "Error parsing gr1c automaton line %d.\n", line_num );
+    #####:  143:            head = NULL;
+    #####:  144:            goto gc;
+        -:  145:        }
+        6:  146:        start = end;
+        -:  147:
+        6:  148:        (*(node_array+ia_len-1))->rgrad = strtol( start, &end, 10 );
+        6:  149:        if (start == end) {
+    #####:  150:            fprintf( stderr,
+        -:  151:                     "Error parsing gr1c automaton line %d.\n", line_num );
+    #####:  152:            head = NULL;
+    #####:  153:            goto gc;
+        -:  154:        }
+        6:  155:        start = end;
+        -:  156:
+        6:  157:        if (detected_version == 0)
+        3:  158:            (*(node_array+ia_len-1))->initial = False;
+        -:  159:
+        6:  160:        (*(node_array+ia_len-1))->state = state;
+        6:  161:        (*(node_array+ia_len-1))->trans_len = 0;
+        6:  162:        (*(node_array+ia_len-1))->next = NULL;
+        6:  163:        *(trans_array+ia_len-1) = NULL;
+        -:  164:
+        6:  165:        this_trans = strtol( start, &end, 10 );
+       24:  166:        while (start != end) {
+       12:  167:            ((*(node_array+ia_len-1))->trans_len)++;
+       12:  168:            *(trans_array+ia_len-1)
+       24:  169:                = realloc( *(trans_array+ia_len-1),
+       12:  170:                           sizeof(int)*((*(node_array+ia_len-1))->trans_len) );
+       12:  171:            if (*(trans_array+ia_len-1) == NULL) {
+    #####:  172:                perror( __FILE__ ",  realloc" );
+    #####:  173:                exit(-1);
+        -:  174:            }
+       12:  175:            *(*(trans_array+ia_len-1)
+       12:  176:              + (*(node_array+ia_len-1))->trans_len - 1) = this_trans;
+        -:  177:
+       12:  178:            start = end;
+       12:  179:            this_trans = strtol( start, &end, 10 );
+        -:  180:        }
+        -:  181:
+        6:  182:        state = malloc( sizeof(vartype)*state_len );
+        6:  183:        if (state == NULL) {
+    #####:  184:            perror( __FILE__ ",  malloc" );
+    #####:  185:            exit(-1);
+        -:  186:        }
+        6:  187:        ia_len++;
+        -:  188:
+        6:  189:        tmp_intp = realloc( ID_array, sizeof(int)*ia_len );
+        6:  190:        if (tmp_intp == NULL) {
+    #####:  191:            free( ID_array );
+    #####:  192:            ID_array = NULL;
+        -:  193:        } else {
+        6:  194:            ID_array = tmp_intp;
+        -:  195:        }
+        6:  196:        tmp_intpp = realloc( trans_array, sizeof(int *)*ia_len );
+        6:  197:        if (tmp_intpp == NULL) {
+    #####:  198:            free( trans_array );
+    #####:  199:            trans_array = NULL;
+        -:  200:        } else {
+        6:  201:            trans_array = tmp_intpp;
+        -:  202:        }
+        6:  203:        tmp_anode_tpp = realloc( node_array, sizeof(anode_t *)*ia_len );
+        6:  204:        if (tmp_anode_tpp == NULL) {
+    #####:  205:            free( node_array );
+    #####:  206:            node_array = NULL;
+        -:  207:        } else {
+        6:  208:            node_array = tmp_anode_tpp;
+        -:  209:        }
+        6:  210:        if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
+    #####:  211:            perror( __FILE__ ",  realloc" );
+    #####:  212:            exit(-1);
+        -:  213:        }
+        6:  214:        *(trans_array+ia_len-1) = NULL;
+        6:  215:        *(node_array+ia_len-1) = NULL;
+        -:  216:    }
+        2:  217:    free( state );
+        2:  218:    state = NULL;
+        2:  219:    ia_len--;
+        2:  220:    if (ia_len == 0) {
+    #####:  221:        head = NULL;
+    #####:  222:        goto gc;
+        -:  223:    }
+        -:  224:
+        2:  225:    tmp_intp = realloc( ID_array, sizeof(int)*ia_len );
+        2:  226:    if (tmp_intp == NULL) {
+    #####:  227:        free( ID_array );
+    #####:  228:        ID_array = NULL;
+        -:  229:    } else {
+        2:  230:        ID_array = tmp_intp;
+        -:  231:    }
+        2:  232:    tmp_intpp = realloc( trans_array, sizeof(int *)*ia_len );
+        2:  233:    if (tmp_intpp == NULL) {
+    #####:  234:        free( trans_array );
+    #####:  235:        trans_array = NULL;
+        -:  236:    } else {
+        2:  237:        trans_array = tmp_intpp;
+        -:  238:    }
+        2:  239:    tmp_anode_tpp = realloc( node_array, sizeof(anode_t *)*ia_len );
+        2:  240:    if (tmp_anode_tpp == NULL) {
+    #####:  241:        free( node_array );
+    #####:  242:        node_array = NULL;
+        -:  243:    } else {
+        2:  244:        node_array = tmp_anode_tpp;
+        -:  245:    }
+        2:  246:    if (ID_array == NULL || trans_array == NULL || node_array == NULL) {
+    #####:  247:        perror( __FILE__ ",  realloc" );
+    #####:  248:        exit(-1);
+        -:  249:    }
+        -:  250:
+        8:  251:    for (i = 0; i < ia_len; i++) {
+        6:  252:        for (j = 0; j < ia_len && *(ID_array+j) != i; j++) ;
+        6:  253:        if (j == ia_len) {
+    #####:  254:            fprintf( stderr,
+        -:  255:                     "Error parsing gr1c automaton data; missing indices.\n" );
+    #####:  256:            head = NULL;
+    #####:  257:            goto gc;
+        -:  258:        }
+        -:  259:
+        6:  260:        if (i == 0) {
+        2:  261:            head = *(node_array+j);
+        2:  262:            node = head;
+        -:  263:        } else {
+        4:  264:            node->next = *(node_array+j);
+        4:  265:            node = node->next;
+        -:  266:        }
+        -:  267:
+        6:  268:        if (node->trans_len > 0) {
+        6:  269:            node->trans = malloc( sizeof(anode_t *)*(node->trans_len) );
+        6:  270:            if (node->trans == NULL) {
+    #####:  271:                perror( __FILE__ ",  malloc" );
+    #####:  272:                exit(-1);
+        -:  273:            }
+       18:  274:            for (j = 0; j < node->trans_len; j++) {
+       38:  275:                for (k = 0;
+       26:  276:                     k < ia_len && *(ID_array+k) != *(*(trans_array+i)+j);
+       14:  277:                     k++) ;
+       12:  278:                if (k == ia_len) {
+    #####:  279:                    fprintf( stderr,
+        -:  280:                             "Error parsing gr1c automaton data; missing"
+        -:  281:                             " indices.\n" );
+    #####:  282:                    head = NULL;
+    #####:  283:                    goto gc;
+        -:  284:                }
+       12:  285:                *(node->trans+j) = *(node_array+k);
+        -:  286:            }
+        -:  287:        }
+        -:  288:    }
+        -:  289:
+        -:  290:    /* The "gc" label abbreviates "garbage collection". */
+        2:  291:  gc:
+        2:  292:    free( state );
+        2:  293:    free( ID_array );
+        2:  294:    if (head == NULL) {
+    #####:  295:        for (i = 0; i < ia_len; i++)
+    #####:  296:            delete_aut( *(node_array+i) );
+        -:  297:    }
+        2:  298:    free( node_array );
+        8:  299:    for (i = 0; i < ia_len; i++)
+        6:  300:        free( *(trans_array+i) );
+        2:  301:    free( trans_array );
+        -:  302:
+        2:  303:    if (version != NULL && head != NULL)
+    #####:  304:        *version = detected_version;
+        2:  305:    return head;
+        -:  306:}
+        -:  307:
+        2:  308:anode_t *aut_aut_load( int state_len, FILE *fp )
+        -:  309:{
+        2:  310:    return aut_aut_loadver( state_len, fp, NULL );
+        -:  311:}
+        -:  312:
+        -:  313:
+        5:  314:int aut_aut_dumpver( anode_t *head, int state_len, FILE *fp, int version )
+        -:  315:{
+        5:  316:    anode_t *node = head;
+        5:  317:    int node_counter = 0;
+        -:  318:    int i;
+        -:  319:
+        5:  320:    if (fp == NULL)
+    #####:  321:        fp = stdout;
+        -:  322:
+        5:  323:    fprintf( fp, "%d\n", version );
+        5:  324:    switch (version) {
+        1:  325:    case 0:
+        3:  326:        while (node) {
+        1:  327:            fprintf( fp, "%d", node_counter );
+        4:  328:            for (i = 0; i < state_len; i++)
+        3:  329:                fprintf( fp, " %d", *(node->state+i) );
+        1:  330:            fprintf( fp, " %d %d", node->mode, node->rgrad );
+        2:  331:            for (i = 0; i < node->trans_len; i++)
+        1:  332:                fprintf( fp, " %d", anode_index( head, *(node->trans+i) ) );
+        1:  333:            fprintf( fp, "\n" );
+        1:  334:            node = node->next;
+        1:  335:            node_counter++;
+        -:  336:        }
+        1:  337:        break;
+        -:  338:
+        4:  339:    case 1:
+       18:  340:        while (node) {
+       10:  341:            fprintf( fp, "%d", node_counter );
+       36:  342:            for (i = 0; i < state_len; i++)
+       26:  343:                fprintf( fp, " %d", *(node->state+i) );
+       10:  344:            fprintf( fp, " %d %d %d", node->initial, node->mode, node->rgrad );
+       24:  345:            for (i = 0; i < node->trans_len; i++)
+       14:  346:                fprintf( fp, " %d", anode_index( head, *(node->trans+i) ) );
+       10:  347:            fprintf( fp, "\n" );
+       10:  348:            node = node->next;
+       10:  349:            node_counter++;
+        -:  350:        }
+        4:  351:        break;
+        -:  352:
+    #####:  353:    default:
+    #####:  354:        return -1;  /* Unrecognized gr1c automaton format version */
+        -:  355:    }
+        -:  356:
+        5:  357:    return 0;
+        -:  358:}
+        -:  359:
+        -:  360:
+    #####:  361:void aut_aut_dump( anode_t *head, int state_len, FILE *fp )
+        -:  362:{
+    #####:  363:    aut_aut_dumpver( head, state_len, fp, 1 );
+    #####:  364:}
+        -:  365:
+        -:  366:
+    #####:  367:int dot_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+        -:  368:                  unsigned char format_flags, FILE *fp )
+        -:  369:{
+        -:  370:    int i, j, last_nonzero_env, last_nonzero_sys;
+        -:  371:    anode_t *node;
+    #####:  372:    int node_counter = 0;
+        -:  373:    ptree_t *var;
+        -:  374:    int num_env, num_sys;
+        -:  375:    char this_node_str[INPUT_STRING_LEN];
+    #####:  376:    int nb = 0;
+        -:  377:
+    #####:  378:    if (fp == NULL)
+    #####:  379:        fp = stdout;
+        -:  380:
+    #####:  381:    num_env = tree_size( evar_list );
+    #####:  382:    num_sys = tree_size( svar_list );
+        -:  383:
+    #####:  384:    fprintf( fp,
+        -:  385:             "/* created using gr1c, version "
+        -:  386:             GR1C_VERSION " */\n" );
+    #####:  387:    fprintf( fp, "digraph A {\n    \"\" [shape=none]\n" );
+    #####:  388:    node = head;
+    #####:  389:    while (node) {
+        -:  390:        /* Buffer node string */
+    #####:  391:        nb = snprintf( this_node_str, INPUT_STRING_LEN,
+        -:  392:                       "\"%d;\\n", node_counter );
+    #####:  393:        if (nb >= INPUT_STRING_LEN)
+    #####:  394:            return -1;
+    #####:  395:        if (format_flags & DOT_AUT_ATTRIB) {
+    #####:  396:            nb += snprintf( this_node_str+nb, INPUT_STRING_LEN-nb,
+        -:  397:                            "(%d, %d)\\n", node->mode, node->rgrad );
+    #####:  398:            if (nb >= INPUT_STRING_LEN)
+    #####:  399:                return -1;
+        -:  400:        }
+    #####:  401:        if ((format_flags & 0x1) == DOT_AUT_ALL) {
+    #####:  402:            last_nonzero_env = num_env-1;
+    #####:  403:            last_nonzero_sys = num_sys-1;
+        -:  404:        } else {
+    #####:  405:            for (last_nonzero_env = num_env-1; last_nonzero_env >= 0
+    #####:  406:                     && *(node->state+last_nonzero_env) == 0;
+    #####:  407:                 last_nonzero_env--) ;
+    #####:  408:            for (last_nonzero_sys = num_sys-1; last_nonzero_sys >= 0
+    #####:  409:                     && *(node->state+num_env+last_nonzero_sys) == 0;
+    #####:  410:                 last_nonzero_sys--) ;
+        -:  411:        }
+    #####:  412:        if (last_nonzero_env < 0 && last_nonzero_sys < 0) {
+    #####:  413:            nb += snprintf( this_node_str+nb, INPUT_STRING_LEN-nb,
+        -:  414:                            "{}" );
+    #####:  415:            if (nb >= INPUT_STRING_LEN)
+    #####:  416:                return -1;
+        -:  417:        } else {
+    #####:  418:            if (!(format_flags & DOT_AUT_EDGEINPUT)) {
+    #####:  419:                for (j = 0; j < num_env; j++) {
+    #####:  420:                    if ((format_flags & DOT_AUT_BINARY)
+    #####:  421:                        && *(node->state+j) == 0)
+    #####:  422:                        continue;
+    #####:  423:                    var = get_list_item( evar_list, j );
+    #####:  424:                    if (j == last_nonzero_env) {
+    #####:  425:                        if (format_flags & DOT_AUT_BINARY) {
+    #####:  426:                            nb += snprintf( this_node_str+nb,
+    #####:  427:                                            INPUT_STRING_LEN-nb,
+        -:  428:                                            "%s", var->name );
+    #####:  429:                            if (nb >= INPUT_STRING_LEN)
+    #####:  430:                                return -1;
+        -:  431:                        } else {
+    #####:  432:                            nb += snprintf( this_node_str+nb,
+    #####:  433:                                            INPUT_STRING_LEN-nb,
+        -:  434:                                            "%s=%d",
+    #####:  435:                                            var->name, *(node->state+j) );
+    #####:  436:                            if (nb >= INPUT_STRING_LEN)
+    #####:  437:                                return -1;
+        -:  438:                        }
+    #####:  439:                        if ((last_nonzero_sys >= 0
+        -:  440:                             || (format_flags & DOT_AUT_ALL))
+    #####:  441:                            && !(format_flags & DOT_AUT_EDGEINPUT)) {
+    #####:  442:                            nb += snprintf( this_node_str+nb,
+    #####:  443:                                            INPUT_STRING_LEN-nb,
+        -:  444:                                            ", " );
+    #####:  445:                            if (nb >= INPUT_STRING_LEN)
+    #####:  446:                                return -1;
+        -:  447:                        }
+        -:  448:                    } else {
+    #####:  449:                        if (format_flags & DOT_AUT_BINARY) {
+    #####:  450:                            nb += snprintf( this_node_str+nb,
+    #####:  451:                                            INPUT_STRING_LEN-nb,
+        -:  452:                                            "%s, ", var->name );
+    #####:  453:                            if (nb >= INPUT_STRING_LEN)
+    #####:  454:                                return -1;
+        -:  455:                        } else {
+    #####:  456:                            nb += snprintf( this_node_str+nb,
+    #####:  457:                                            INPUT_STRING_LEN-nb,
+        -:  458:                                            "%s=%d, ",
+    #####:  459:                                            var->name, *(node->state+j) );
+    #####:  460:                            if (nb >= INPUT_STRING_LEN)
+    #####:  461:                                return -1;
+        -:  462:                        }
+        -:  463:                    }
+        -:  464:                }
+        -:  465:            }
+    #####:  466:            if (last_nonzero_sys < 0 && (format_flags & DOT_AUT_EDGEINPUT)) {
+    #####:  467:                nb += snprintf( this_node_str+nb,
+    #####:  468:                                INPUT_STRING_LEN-nb,
+        -:  469:                                "{}" );
+    #####:  470:                if (nb >= INPUT_STRING_LEN)
+    #####:  471:                    return -1;
+        -:  472:            } else {
+    #####:  473:                for (j = 0; j < num_sys; j++) {
+    #####:  474:                    if ((format_flags & DOT_AUT_BINARY)
+    #####:  475:                        && *(node->state+num_env+j) == 0)
+    #####:  476:                        continue;
+    #####:  477:                    var = get_list_item( svar_list, j );
+    #####:  478:                    if (j == last_nonzero_sys) {
+    #####:  479:                        if (format_flags & DOT_AUT_BINARY) {
+    #####:  480:                            nb += snprintf( this_node_str+nb,
+    #####:  481:                                            INPUT_STRING_LEN-nb,
+        -:  482:                                            "%s", var->name );
+    #####:  483:                            if (nb >= INPUT_STRING_LEN)
+    #####:  484:                                return -1;
+        -:  485:                        } else {
+    #####:  486:                            nb += snprintf( this_node_str+nb,
+    #####:  487:                                            INPUT_STRING_LEN-nb,
+        -:  488:                                            "%s=%d",
+        -:  489:                                            var->name,
+    #####:  490:                                            *(node->state+num_env+j) );
+    #####:  491:                            if (nb >= INPUT_STRING_LEN)
+    #####:  492:                                return -1;
+        -:  493:                        }
+        -:  494:                    } else {
+    #####:  495:                        if (format_flags & DOT_AUT_BINARY) {
+    #####:  496:                            nb += snprintf( this_node_str+nb,
+    #####:  497:                                            INPUT_STRING_LEN-nb,
+        -:  498:                                            "%s, ", var->name );
+    #####:  499:                            if (nb >= INPUT_STRING_LEN)
+    #####:  500:                                return -1;
+        -:  501:                        } else {
+    #####:  502:                            nb += snprintf( this_node_str+nb,
+    #####:  503:                                            INPUT_STRING_LEN-nb,
+        -:  504:                                            "%s=%d, ",
+        -:  505:                                            var->name,
+    #####:  506:                                            *(node->state+num_env+j) );
+    #####:  507:                            if (nb >= INPUT_STRING_LEN)
+    #####:  508:                                return -1;
+        -:  509:                        }
+        -:  510:                    }
+        -:  511:                }
+        -:  512:            }
+        -:  513:        }
+    #####:  514:        nb += snprintf( this_node_str+nb, INPUT_STRING_LEN-nb, "\"" );
+    #####:  515:        if (nb >= INPUT_STRING_LEN)
+    #####:  516:            return -1;
+        -:  517:
+    #####:  518:        fprintf( fp, "    %s\n", this_node_str );
+        -:  519:
+        -:  520:        /* Next print all outgoing edges from the current node, and a
+        -:  521:           special incoming edge if this node is initial. */
+    #####:  522:        if (node->initial)
+    #####:  523:            fprintf( fp, "    \"\" -> %s\n", this_node_str );
+    #####:  524:        for (i = 0; i < node->trans_len; i++) {
+    #####:  525:            fprintf( fp, "    %s -> ", this_node_str );
+    #####:  526:            fprintf( fp, "\"%d;\\n", anode_index( head, *(node->trans+i) ) );
+    #####:  527:            if (format_flags & DOT_AUT_ATTRIB) {
+    #####:  528:                fprintf( fp,
+        -:  529:                         "(%d, %d)\\n",
+    #####:  530:                         (*(node->trans+i))->mode, (*(node->trans+i))->rgrad);
+        -:  531:            }
+    #####:  532:            if ((format_flags & 0x1) == DOT_AUT_ALL) {
+    #####:  533:                last_nonzero_env = num_env-1;
+    #####:  534:                last_nonzero_sys = num_sys-1;
+        -:  535:            } else {
+    #####:  536:                for (last_nonzero_env = num_env-1; last_nonzero_env >= 0
+    #####:  537:                         && *((*(node->trans+i))->state+last_nonzero_env) == 0;
+    #####:  538:                     last_nonzero_env--) ;
+    #####:  539:                for (last_nonzero_sys = num_sys-1; last_nonzero_sys >= 0
+    #####:  540:                         && *((*(node->trans+i))->state
+    #####:  541:                              +num_env+last_nonzero_sys) == 0;
+    #####:  542:                     last_nonzero_sys--) ;
+        -:  543:            }
+    #####:  544:            if (last_nonzero_env < 0 && last_nonzero_sys < 0) {
+    #####:  545:                fprintf( fp, "{}" );
+        -:  546:            } else {
+    #####:  547:                if (!(format_flags & DOT_AUT_EDGEINPUT)) {
+    #####:  548:                    for (j = 0; j < num_env; j++) {
+    #####:  549:                        if ((format_flags & DOT_AUT_BINARY)
+    #####:  550:                            && *((*(node->trans+i))->state+j) == 0)
+    #####:  551:                            continue;
+    #####:  552:                        var = get_list_item( evar_list, j );
+    #####:  553:                        if (j == last_nonzero_env) {
+    #####:  554:                            if (format_flags & DOT_AUT_BINARY) {
+    #####:  555:                                fprintf( fp, "%s", var->name );
+        -:  556:                            } else {
+    #####:  557:                                fprintf( fp,
+        -:  558:                                         "%s=%d",
+        -:  559:                                         var->name,
+    #####:  560:                                         *((*(node->trans+i))->state+j) );
+        -:  561:                            }
+    #####:  562:                            if ((last_nonzero_sys >= 0
+        -:  563:                                 || (format_flags & DOT_AUT_ALL))
+    #####:  564:                                && !(format_flags & DOT_AUT_EDGEINPUT))
+    #####:  565:                                fprintf( fp, ", " );
+        -:  566:                        } else {
+    #####:  567:                            if (format_flags & DOT_AUT_BINARY) {
+    #####:  568:                                fprintf( fp, "%s, ", var->name );
+        -:  569:                            } else {
+    #####:  570:                                fprintf( fp,
+        -:  571:                                         "%s=%d, ",
+        -:  572:                                         var->name,
+    #####:  573:                                         *((*(node->trans+i))->state+j) );
+        -:  574:                            }
+        -:  575:                        }
+        -:  576:                    }
+        -:  577:                }
+    #####:  578:                if (last_nonzero_sys < 0
+    #####:  579:                    && (format_flags & DOT_AUT_EDGEINPUT)) {
+    #####:  580:                    fprintf( fp, "{}" );
+        -:  581:                } else {
+    #####:  582:                    for (j = 0; j < num_sys; j++) {
+    #####:  583:                        if ((format_flags & DOT_AUT_BINARY)
+    #####:  584:                            && *((*(node->trans+i))->state+num_env+j) == 0)
+    #####:  585:                            continue;
+    #####:  586:                        var = get_list_item( svar_list, j );
+    #####:  587:                        if (j == last_nonzero_sys) {
+    #####:  588:                            if (format_flags & DOT_AUT_BINARY) {
+    #####:  589:                                fprintf( fp, "%s", var->name );
+        -:  590:                            } else {
+    #####:  591:                                fprintf( fp,
+        -:  592:                                         "%s=%d",
+        -:  593:                                         var->name,
+    #####:  594:                                         *((*(node->trans+i))->state
+    #####:  595:                                           +num_env+j) );
+        -:  596:                            }
+        -:  597:                        } else {
+    #####:  598:                            if (format_flags & DOT_AUT_BINARY) {
+    #####:  599:                                fprintf( fp, "%s, ", var->name );
+        -:  600:                            } else {
+    #####:  601:                                fprintf( fp,
+        -:  602:                                         "%s=%d, ",
+        -:  603:                                         var->name,
+    #####:  604:                                         *((*(node->trans+i))->state
+    #####:  605:                                           +num_env+j) );
+        -:  606:                            }
+        -:  607:                        }
+        -:  608:                    }
+        -:  609:                }
+        -:  610:            }
+    #####:  611:            fprintf( fp, "\"" );
+    #####:  612:            if (format_flags & DOT_AUT_EDGEINPUT) {
+    #####:  613:                fprintf( fp, "[label=\"" );
+    #####:  614:                if (last_nonzero_env < 0) {
+    #####:  615:                    fprintf( fp, "{}" );
+        -:  616:                } else {
+    #####:  617:                    for (j = 0; j < num_env; j++) {
+    #####:  618:                        if ((format_flags & DOT_AUT_BINARY)
+    #####:  619:                            && *((*(node->trans+i))->state+j) == 0)
+    #####:  620:                            continue;
+    #####:  621:                        var = get_list_item( evar_list, j );
+    #####:  622:                        if (j == last_nonzero_env) {
+    #####:  623:                            if (format_flags & DOT_AUT_BINARY) {
+    #####:  624:                                fprintf( fp, "%s", var->name );
+        -:  625:                            } else {
+    #####:  626:                                fprintf( fp,
+        -:  627:                                         "%s=%d",
+        -:  628:                                         var->name,
+    #####:  629:                                         *((*(node->trans+i))->state+j) );
+        -:  630:                            }
+        -:  631:                        } else {
+    #####:  632:                            if (format_flags & DOT_AUT_BINARY) {
+    #####:  633:                                fprintf( fp, "%s, ", var->name );
+        -:  634:                            } else {
+    #####:  635:                                fprintf( fp,
+        -:  636:                                         "%s=%d, ",
+        -:  637:                                         var->name,
+    #####:  638:                                         *((*(node->trans+i))->state+j) );
+        -:  639:                            }
+        -:  640:                        }
+        -:  641:                    }
+        -:  642:                }
+    #####:  643:                fprintf( fp, "\"]" );
+        -:  644:            }
+    #####:  645:            fprintf( fp, "\n" );
+        -:  646:        }
+    #####:  647:        node_counter++;
+    #####:  648:        node = node->next;
+        -:  649:    }
+    #####:  650:    fprintf( fp, "}\n" );
+        -:  651:
+    #####:  652:    return 0;
+        -:  653:}
+        -:  654:
+        -:  655:
+    #####:  656:int tulip_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+        -:  657:                    FILE *fp )
+        -:  658:{
+        -:  659:    int i;
+        -:  660:    anode_t *node;
+    #####:  661:    int node_counter = 0;
+        -:  662:    ptree_t *var;
+        -:  663:    int num_env, num_sys;
+        -:  664:
+    #####:  665:    if (fp == NULL)
+    #####:  666:        fp = stdout;
+        -:  667:
+    #####:  668:    num_env = tree_size( evar_list );
+    #####:  669:    num_sys = tree_size( svar_list );
+        -:  670:
+    #####:  671:    fprintf( fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
+    #####:  672:    fprintf( fp,
+        -:  673:             "<tulipcon xmlns=\"http://tulip-control.sourceforge.net/ns/1\""
+        -:  674:             " version=\"1\">\n" );
+    #####:  675:    fprintf( fp, "  <env_vars>\n" );
+    #####:  676:    for (i = 0; i < num_env; i++) {
+    #####:  677:        var = get_list_item( evar_list, i );
+    #####:  678:        if (var->value >= 0) {
+    #####:  679:            fprintf( fp,
+        -:  680:                     "    <item key=\"%s\" value=\"[0,%d]\" />\n",
+        -:  681:                     var->name, var->value );
+        -:  682:        } else {
+    #####:  683:            fprintf( fp,
+        -:  684:                     "    <item key=\"%s\" value=\"boolean\" />\n",
+        -:  685:                     var->name );
+        -:  686:        }
+        -:  687:    }
+    #####:  688:    fprintf( fp, "  </env_vars>\n" );
+    #####:  689:    fprintf( fp, "  <sys_vars>\n" );
+    #####:  690:    for (i = 0; i < num_sys; i++) {
+    #####:  691:        var = get_list_item( svar_list, i );
+    #####:  692:        if (var->value >= 0) {
+    #####:  693:            fprintf( fp,
+        -:  694:                     "    <item key=\"%s\" value=\"[0,%d]\" />\n",
+        -:  695:                     var->name, var->value );
+        -:  696:        } else {
+    #####:  697:            fprintf( fp,
+        -:  698:                     "    <item key=\"%s\" value=\"boolean\" />\n",
+        -:  699:                     var->name );
+        -:  700:        }
+        -:  701:    }
+    #####:  702:    fprintf( fp, "  </sys_vars>\n" );
+    #####:  703:    fprintf( fp,
+        -:  704:             "  <spec>\n    "
+        -:  705:             "<env_init></env_init><env_safety></env_safety>"
+        -:  706:             "<env_prog></env_prog>"
+        -:  707:             "<sys_init></sys_init><sys_safety></sys_safety>"
+        -:  708:             "<sys_prog></sys_prog>\n"
+        -:  709:             "  </spec>\n" );
+        -:  710:
+    #####:  711:    fprintf( fp, "  <aut type=\"basic\">\n" );
+    #####:  712:    node = head;
+    #####:  713:    while (node) {
+    #####:  714:        fprintf( fp, "    <node>\n      <id>%d</id><anno>", node_counter );
+    #####:  715:        if (node->mode != -1 && node->rgrad != -1)
+    #####:  716:            fprintf( fp, "%d %d", node->mode, node->rgrad );
+    #####:  717:        fprintf( fp, "</anno>\n      <child_list>" );
+    #####:  718:        for (i = 0; i < node->trans_len; i++)
+    #####:  719:            fprintf( fp, " %d", anode_index( head, *(node->trans+i) ) );
+    #####:  720:        fprintf( fp, "</child_list>\n      <state>\n" );
+    #####:  721:        for (i = 0; i < num_env; i++) {
+    #####:  722:            var = get_list_item( evar_list, i );
+    #####:  723:            fprintf( fp, "        <item key=\"%s\" value=\"%d\" />\n",
+    #####:  724:                     var->name, *(node->state+i) );
+        -:  725:        }
+    #####:  726:        for (i = 0; i < num_sys; i++) {
+    #####:  727:            var = get_list_item( svar_list, i );
+    #####:  728:            fprintf( fp, "        <item key=\"%s\" value=\"%d\" />\n",
+    #####:  729:                     var->name, *(node->state+num_env+i) );
+        -:  730:        }
+    #####:  731:        fprintf( fp, "      </state>\n    </node>\n" );
+    #####:  732:        node_counter++;
+    #####:  733:        node = node->next;
+        -:  734:    }
+        -:  735:
+    #####:  736:    fprintf( fp, "  </aut>\n" );
+    #####:  737:    fprintf( fp,
+        -:  738:             "  <extra>created using gr1c, version "
+        -:  739:             GR1C_VERSION "</extra>\n</tulipcon>\n" );
+        -:  740:
+    #####:  741:    return 0;
+        -:  742:}
+        -:  743:
+        -:  744:
+    #####:  745:void list_aut_dump( anode_t *head, int state_len, FILE *fp )
+        -:  746:{
+    #####:  747:    anode_t *node = head;
+    #####:  748:    int node_counter = 0;
+        -:  749:    int i;
+    #####:  750:    if (fp == NULL)
+    #####:  751:        fp = stdout;
+    #####:  752:    while (node) {
+    #####:  753:        fprintf( fp, "%4d ", node_counter );
+    #####:  754:        if (node->initial)
+    #####:  755:            fprintf( fp, "(init) " );
+    #####:  756:        fprintf( fp, ": " );
+    #####:  757:        if (state_len > 0) {
+    #####:  758:            for (i = 0; i < state_len-1; i++) {
+    #####:  759:                fprintf( fp, "%d,", *(node->state+i) );
+        -:  760:            }
+    #####:  761:            fprintf( fp, "%d", *(node->state+state_len-1) );
+        -:  762:        } else {
+    #####:  763:            fprintf( fp, "(nil)" );
+        -:  764:        }
+    #####:  765:        fprintf( fp, " - %2d - %2d - [", node->mode, node->rgrad );
+    #####:  766:        for (i = 0; i < node->trans_len; i++)
+    #####:  767:            fprintf( fp, " %d", anode_index( head, *(node->trans+i) ) );
+    #####:  768:        fprintf( fp, "]\n" );
+    #####:  769:        node = node->next;
+    #####:  770:        node_counter++;
+        -:  771:    }
+    #####:  772:}
+        -:  773:
+        -:  774:
+        -:  775:#define TIMESTAMP_LEN 32
+    #####:  776:int json_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+        -:  777:                   FILE *fp )
+        -:  778:{
+        -:  779:    int num_env, num_sys;
+        -:  780:
+        -:  781:    struct tm *timeptr;
+        -:  782:    time_t clock;
+        -:  783:    char timestamp[TIMESTAMP_LEN];
+        -:  784:    int i;
+        -:  785:    ptree_t *var;
+        -:  786:
+    #####:  787:    if (fp == NULL)
+    #####:  788:        fp = stdout;
+        -:  789:
+    #####:  790:    num_env = tree_size( evar_list );
+    #####:  791:    num_sys = tree_size( svar_list );
+        -:  792:
+    #####:  793:    clock = time( NULL );
+    #####:  794:    timeptr = gmtime( &clock );  /* UTC */
+    #####:  795:    if (strftime( timestamp, TIMESTAMP_LEN,
+        -:  796:                  "%Y-%m-%d %H:%M:%S", timeptr ) == 0) {
+    #####:  797:        fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
+    #####:  798:        return -1;
+        -:  799:    }
+        -:  800:
+    #####:  801:    fprintf( fp, "{\"version\": 1,\n" );  /* gr1c JSON format version */
+    #####:  802:    fprintf( fp, " \"gr1c\": \"" GR1C_VERSION "\",\n" );
+    #####:  803:    fprintf( fp, " \"date\": \"%s\",\n", timestamp );
+    #####:  804:    fprintf( fp, " \"extra\": \"\",\n\n" );
+        -:  805:
+    #####:  806:    fprintf( fp, " \"ENV\": [" );
+    #####:  807:    for (i = 0; i < num_env; i++) {
+    #####:  808:        var = get_list_item( evar_list, i );
+    #####:  809:        fprintf( fp, "{\"%s\": ", var->name );
+    #####:  810:        if (var->value >= 0) {
+    #####:  811:            fprintf( fp, "[0,%d]}", var->value );
+        -:  812:        } else {
+    #####:  813:            fprintf( fp, "\"boolean\"}" );
+        -:  814:        }
+    #####:  815:        if (i < num_env-1)
+    #####:  816:            fprintf( fp, ", " );
+        -:  817:    }
+    #####:  818:    fprintf( fp, "],\n \"SYS\": [" );
+    #####:  819:    for (i = 0; i < num_sys; i++) {
+    #####:  820:        var = get_list_item( svar_list, i );
+    #####:  821:        fprintf( fp, "{\"%s\": ", var->name );
+    #####:  822:        if (var->value >= 0) {
+    #####:  823:            fprintf( fp, "[0, %d]}", var->value );
+        -:  824:        } else {
+    #####:  825:            fprintf( fp, "\"boolean\"}" );
+        -:  826:        }
+    #####:  827:        if (i < num_sys-1)
+    #####:  828:            fprintf( fp, ", " );
+        -:  829:    }
+    #####:  830:    fprintf( fp, "],\n\n" );
+        -:  831:
+    #####:  832:    fprintf( fp, " \"nodes\": {\n" );
+    #####:  833:    while (head) {
+    #####:  834:        fprintf( fp, "\"0x%X\": {\n", head );
+    #####:  835:        fprintf( fp, "    \"state\": [" );
+    #####:  836:        for (i = 0; i < num_env+num_sys; i++) {
+    #####:  837:            fprintf( fp, "%d", *(head->state+i) );
+    #####:  838:            if (i < num_env+num_sys-1)
+    #####:  839:                fprintf( fp, ", " );
+        -:  840:        }
+        -:  841:
+    #####:  842:        fprintf( fp,
+        -:  843:                 "],\n    \"mode\": %d,\n    \"rgrad\": %d,\n",
+        -:  844:                 head->mode, head->rgrad );
+    #####:  845:        if (head->initial) {
+    #####:  846:            fprintf( fp, "    \"initial\": true,\n" );
+        -:  847:        } else {
+    #####:  848:            fprintf( fp, "    \"initial\": false,\n" );
+        -:  849:        }
+        -:  850:
+    #####:  851:        fprintf( fp, "    \"trans\": [" );
+    #####:  852:        for (i = 0; i < head->trans_len; i++) {
+    #####:  853:            fprintf( fp, "\"0x%X\"", *(head->trans+i) );
+    #####:  854:            if (i < head->trans_len-1)
+    #####:  855:                fprintf( fp, ", " );
+        -:  856:        }
+    #####:  857:        fprintf( fp, "] }" );
+        -:  858:
+    #####:  859:        head = head->next;
+    #####:  860:        if (head != NULL)
+    #####:  861:            fprintf( fp, "," );
+    #####:  862:        fprintf( fp, "\n" );
+        -:  863:    }
+    #####:  864:    fprintf( fp, "}}\n" );
+    #####:  865:    return 0;
+        -:  866:}
+        -:  867:
+        -:  868:
+    #####:  869:void spin_aut_ltl_formula( int num_env,
+        -:  870:                           ptree_t *env_init, ptree_t *sys_init,
+        -:  871:                           int num_env_goals, int num_sys_goals,
+        -:  872:                           FILE *fp )
+        -:  873:{
+        -:  874:    int i;
+    #####:  875:    if (fp == NULL)
+    #####:  876:        fp = stdout;
+    #####:  877:    if (num_env > 0) {
+    #####:  878:        fprintf( fp, "(" );
+    #####:  879:        if (env_init != NULL)
+    #####:  880:            fprintf( fp, "X envinit && " );
+    #####:  881:        fprintf( fp, "[] (!checketrans || envtrans)" );
+    #####:  882:        for (i = 0; i < num_env_goals; i++)
+    #####:  883:            fprintf( fp, " && []<> envgoal%04d", i );
+    #####:  884:        fprintf( fp, ") -> (" );
+        -:  885:    }
+    #####:  886:    if (sys_init != NULL)
+    #####:  887:        fprintf( fp, "X sysinit && " );
+    #####:  888:    fprintf( fp, "[] (!checkstrans || systrans)" );
+    #####:  889:    for (i = 0; i < num_sys_goals; i++)
+    #####:  890:        fprintf( fp, " && []<> sysgoal%04d", i );
+    #####:  891:    fprintf( fp, " && [] !pmlfault" );
+    #####:  892:    if (num_env > 0)
+    #####:  893:        fprintf( fp, ")" );
+    #####:  894:    fprintf( fp, "\n" );
+    #####:  895:}
+        -:  896:
+    #####:  897:int spin_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+        -:  898:                   ptree_t *env_init, ptree_t *sys_init,
+        -:  899:                   ptree_t **env_trans_array, int et_array_len,
+        -:  900:                   ptree_t **sys_trans_array, int st_array_len,
+        -:  901:                   ptree_t **env_goals, int num_env_goals,
+        -:  902:                   ptree_t **sys_goals, int num_sys_goals,
+        -:  903:                   FILE *fp, FILE *formula_fp )
+        -:  904:{
+        -:  905:    anode_t *node, *next_node;
+        -:  906:    int num_env, num_sys;
+        -:  907:    int node_counter, next_node_counter;
+        -:  908:    vartype *env_counter;
+        -:  909:    ptree_t *tmppt, *var_separator;
+        -:  910:    int i, j;
+        -:  911:
+    #####:  912:    if (fp == NULL)
+    #####:  913:        fp = stdout;
+        -:  914:
+    #####:  915:    if (formula_fp == NULL)
+    #####:  916:        formula_fp = stdout;
+        -:  917:
+    #####:  918:    if (formula_fp == fp)
+    #####:  919:        formula_fp = NULL;
+        -:  920:
+    #####:  921:    num_env = tree_size( evar_list );
+    #####:  922:    num_sys = tree_size( svar_list );
+        -:  923:
+    #####:  924:    env_counter = malloc( num_env*sizeof(int) );
+    #####:  925:    if (env_counter == NULL) {
+    #####:  926:        perror( __FILE__ ",  malloc" );
+    #####:  927:        exit(-1);
+        -:  928:    }
+        -:  929:
+    #####:  930:    fprintf( fp,
+        -:  931:             "/* Spin Promela model created by gr1c, version "
+        -:  932:             GR1C_VERSION " */\n\n" );
+        -:  933:
+    #####:  934:    fprintf( fp, "/* LTL formula\n" );
+    #####:  935:    spin_aut_ltl_formula( num_env, env_init, sys_init,
+        -:  936:                          num_env_goals, num_sys_goals,
+        -:  937:                          fp );
+    #####:  938:    if (formula_fp)
+    #####:  939:        spin_aut_ltl_formula( num_env, env_init, sys_init,
+        -:  940:                              num_env_goals, num_sys_goals,
+        -:  941:                              formula_fp );
+    #####:  942:    fprintf( fp, "*/\n\n" );
+        -:  943:
+    #####:  944:    if (num_env > 0) {
+    #####:  945:        if (env_init != NULL) {
+    #####:  946:            fprintf( fp, "\n#define envinit " );
+    #####:  947:            print_formula( env_init, fp, FORMULA_SYNTAX_SPIN );
+        -:  948:        }
+    #####:  949:        fprintf( fp, "\n#define envtrans " );
+    #####:  950:        if (et_array_len == 0) {
+    #####:  951:            fprintf( fp, "true" );
+        -:  952:        } else {
+    #####:  953:            for (i = 0; i < et_array_len; i++) {
+    #####:  954:                print_formula( *(env_trans_array+i), fp, FORMULA_SYNTAX_SPIN );
+    #####:  955:                if (i < et_array_len-1)
+    #####:  956:                    fprintf( fp, " && " );
+        -:  957:            }
+        -:  958:        }
+    #####:  959:        if (num_env_goals > 0) {
+    #####:  960:            for (i = 0; i < num_env_goals; i++) {
+    #####:  961:                fprintf( fp, "\n#define envgoal%04d ", i );
+    #####:  962:                print_formula( *(env_goals+i), fp, FORMULA_SYNTAX_SPIN );
+        -:  963:            }
+        -:  964:        }
+        -:  965:    }
+    #####:  966:    if (sys_init != NULL) {
+    #####:  967:        fprintf( fp, "\n#define sysinit " );
+    #####:  968:        print_formula( sys_init, fp, FORMULA_SYNTAX_SPIN );
+        -:  969:    }
+    #####:  970:    fprintf( fp, "\n#define systrans " );
+    #####:  971:    if (st_array_len == 0) {
+    #####:  972:        fprintf( fp, "true" );
+        -:  973:    } else {
+    #####:  974:        for (i = 0; i < st_array_len; i++) {
+    #####:  975:            print_formula( *(sys_trans_array+i), fp, FORMULA_SYNTAX_SPIN );
+    #####:  976:            if (i < st_array_len-1)
+    #####:  977:                fprintf( fp, " && " );
+        -:  978:        }
+        -:  979:    }
+    #####:  980:    if (num_sys_goals > 0) {
+    #####:  981:        for (i = 0; i < num_sys_goals; i++) {
+    #####:  982:            fprintf( fp, "\n#define sysgoal%04d ", i );
+    #####:  983:            print_formula( *(sys_goals+i), fp, FORMULA_SYNTAX_SPIN );
+        -:  984:        }
+        -:  985:    }
+    #####:  986:    fprintf( fp, "\n\n" );
+        -:  987:
+    #####:  988:    if (num_env == 0) {
+    #####:  989:        var_separator = NULL;
+    #####:  990:        evar_list = svar_list;
+        -:  991:    } else {
+    #####:  992:        var_separator = get_list_item( evar_list, -1 );
+    #####:  993:        if (var_separator == NULL) {
+    #####:  994:            fprintf( stderr,
+        -:  995:                     "Error: get_list_item failed on environment variables"
+        -:  996:                     " list.\n" );
+    #####:  997:            free( env_counter );
+    #####:  998:            return -1;
+        -:  999:        }
+    #####: 1000:        var_separator->left = svar_list;
+        -: 1001:    }
+        -: 1002:
+    #####: 1003:    tmppt = evar_list;
+    #####: 1004:    while (tmppt) {
+    #####: 1005:        if (tmppt->value == -1) {
+    #####: 1006:            fprintf( fp, "bool " );
+        -: 1007:        } else {
+    #####: 1008:            fprintf( fp, "int " );
+        -: 1009:        }
+    #####: 1010:        fprintf( fp, "%s;\n", tmppt->name );
+        -: 1011:
+    #####: 1012:        if (tmppt->value == -1) {
+    #####: 1013:            fprintf( fp, "bool " );
+        -: 1014:        } else {
+    #####: 1015:            fprintf( fp, "int " );
+        -: 1016:        }
+    #####: 1017:        fprintf( fp, "%s_next;\n", tmppt->name );
+        -: 1018:
+    #####: 1019:        tmppt = tmppt->left;
+        -: 1020:    }
+        -: 1021:
+    #####: 1022:    if (num_env > 0)
+    #####: 1023:        fprintf( fp,
+        -: 1024:                 "\nbool checketrans = false;"
+        -: 1025:                 "  /* Check env transition rule? */" );
+    #####: 1026:    fprintf( fp,
+        -: 1027:             "\nbool checkstrans = false;"
+        -: 1028:             "  /* Check sys transition rule? */\n"
+        -: 1029:             "bool pmlfault = false;\n\n" );
+    #####: 1030:    fprintf( fp, "init\n{\nint current_node;\n\n" );
+        -: 1031:
+        -: 1032:    /* Initial nodes */
+    #####: 1033:    fprintf( fp, "d_step {\nif" );
+    #####: 1034:    node = head;
+    #####: 1035:    node_counter = 0;
+    #####: 1036:    while (node) {
+    #####: 1037:        if (node->initial) {
+    #####: 1038:            fprintf( fp, "\n:: (1) -> current_node=%d",
+        -: 1039:                     node_counter );
+        -: 1040:
+    #####: 1041:            tmppt = evar_list;
+    #####: 1042:            for (i = 0; i < num_env+num_sys; i++) {
+    #####: 1043:                fprintf( fp, "; %s=", tmppt->name );
+    #####: 1044:                if (tmppt->value == -1) {
+    #####: 1045:                    if (*(node->state+i)) {
+    #####: 1046:                        fprintf( fp, "true" );
+        -: 1047:                    } else {
+    #####: 1048:                        fprintf( fp, "false" );
+        -: 1049:                    }
+        -: 1050:                } else {
+    #####: 1051:                    fprintf( fp, "%d", *(node->state+i) );
+        -: 1052:                }
+    #####: 1053:                tmppt = tmppt->left;
+        -: 1054:            }
+        -: 1055:        }
+        -: 1056:
+    #####: 1057:        node = node->next;
+    #####: 1058:        node_counter++;
+        -: 1059:    }
+    #####: 1060:    fprintf( fp, "\nfi\n};\n\n" );
+        -: 1061:
+        -: 1062:    /* Random environment move */
+    #####: 1063:    if (num_env > 0) {
+    #####: 1064:        for (i = 0; i < num_env; i++)
+    #####: 1065:            *(env_counter+i) = 0;
+    #####: 1066:        fprintf( fp, "ENV_MOVE:\nif" );
+        -: 1067:        while (True) {
+    #####: 1068:            fprintf( fp, "\n:: (1) ->" );
+    #####: 1069:            tmppt = evar_list;
+    #####: 1070:            for (i = 0; i < num_env; i++) {
+    #####: 1071:                fprintf( fp, " %s_next=", tmppt->name );
+    #####: 1072:                if (tmppt->value == -1) {
+    #####: 1073:                    if (*(env_counter+i)) {
+    #####: 1074:                        fprintf( fp, "true" );
+        -: 1075:                    } else {
+    #####: 1076:                        fprintf( fp, "false" );
+        -: 1077:                    }
+        -: 1078:                } else {
+    #####: 1079:                    fprintf( fp, "%d", *(env_counter+i) );
+        -: 1080:                }
+    #####: 1081:                if (i < num_env-1)
+    #####: 1082:                    fprintf( fp, ";" );
+    #####: 1083:                tmppt = tmppt->left;
+        -: 1084:            }
+        -: 1085:
+        -: 1086:            /* Attempt to increment env_counter; break out of loop if done. */
+    #####: 1087:            tmppt = evar_list;
+    #####: 1088:            for (i = 0; i < num_env; i++) {
+    #####: 1089:                if ((*(env_counter+i) > 0 && tmppt->value == -1)  /* Bool */
+    #####: 1090:                    || (*(env_counter+i) >= tmppt->value
+    #####: 1091:                        && tmppt->value >= 0)) {  /* Int */
+    #####: 1092:                    *(env_counter+i) = 0;
+        -: 1093:                } else {
+    #####: 1094:                    *(env_counter+i) += 1;
+    #####: 1095:                    break;
+        -: 1096:                }
+    #####: 1097:                tmppt = tmppt->left;
+        -: 1098:            }
+    #####: 1099:            if (i == num_env)  /* Overflow, i.e., done enumerating? */
+    #####: 1100:                break;
+        -: 1101:        }
+    #####: 1102:        fprintf( fp, "\nfi;\nchecketrans = true; checketrans = false;\n\n" );
+        -: 1103:    }
+        -: 1104:
+        -: 1105:    /* Take move according to strategy (FSM), or fault if there is no
+        -: 1106:       consistent edge. */
+    #####: 1107:    fprintf( fp, "SYS_MOVE:\nif" );
+    #####: 1108:    node = head;
+    #####: 1109:    node_counter = 0;
+    #####: 1110:    while (node) {
+    #####: 1111:        for (j = 0; j < node->trans_len; j++) {
+    #####: 1112:            fprintf( fp, "\n:: (current_node == %d", node_counter );
+        -: 1113:
+    #####: 1114:            tmppt = evar_list;
+    #####: 1115:            for (i = 0; i < num_env; i++) {
+    #####: 1116:                fprintf( fp, " && " );
+    #####: 1117:                if (tmppt->value == -1) {
+    #####: 1118:                    if (!(*((*(node->trans+j))->state+i))) {
+    #####: 1119:                        fprintf( fp, "!" );
+        -: 1120:                    }
+    #####: 1121:                    fprintf( fp, "%s_next", tmppt->name );
+        -: 1122:                } else {
+    #####: 1123:                    fprintf( fp, "%s_next == %d",
+    #####: 1124:                             tmppt->name, *((*(node->trans+j))->state+i) );
+        -: 1125:                }
+    #####: 1126:                tmppt = tmppt->left;
+        -: 1127:            }
+        -: 1128:
+    #####: 1129:            next_node_counter = 0;
+    #####: 1130:            next_node = head;
+    #####: 1131:            while (next_node != *(node->trans+j)) {
+    #####: 1132:                next_node = next_node->next;
+    #####: 1133:                next_node_counter++;
+        -: 1134:            }
+    #####: 1135:            fprintf( fp, ") -> current_node=%d", next_node_counter );
+    #####: 1136:            tmppt = svar_list;
+    #####: 1137:            for (i = num_env; i < num_env+num_sys; i++) {
+    #####: 1138:                fprintf( fp, "; %s_next=", tmppt->name );
+    #####: 1139:                if (tmppt->value == -1) {
+    #####: 1140:                    if (*((*(node->trans+j))->state+i)) {
+    #####: 1141:                        fprintf( fp, "true" );
+        -: 1142:                    } else {
+    #####: 1143:                        fprintf( fp, "false" );
+        -: 1144:                    }
+        -: 1145:                } else {
+    #####: 1146:                    fprintf( fp, "%d", *((*(node->trans+j))->state+i) );
+        -: 1147:                }
+    #####: 1148:                tmppt = tmppt->left;
+        -: 1149:            }
+        -: 1150:        }
+        -: 1151:
+    #####: 1152:        node_counter++;
+    #####: 1153:        node = node->next;
+        -: 1154:    }
+    #####: 1155:    fprintf( fp, "\n:: else -> pmlfault=true" );
+    #####: 1156:    fprintf( fp, "\nfi;\ncheckstrans = true; checkstrans = false;\n\n" );
+        -: 1157:
+        -: 1158:    /* Actually apply the moves */
+    #####: 1159:    fprintf( fp, "atomic { " );
+    #####: 1160:    tmppt = evar_list;
+    #####: 1161:    while (tmppt) {
+    #####: 1162:        fprintf( fp, "%s = %s_next", tmppt->name, tmppt->name );
+    #####: 1163:        tmppt = tmppt->left;
+    #####: 1164:        if (tmppt)
+    #####: 1165:            fprintf( fp, "; " );
+        -: 1166:    }
+    #####: 1167:    if (num_env > 0) {
+    #####: 1168:        fprintf( fp, " };\n\ngoto ENV_MOVE\n}\n\n" );
+        -: 1169:    } else {
+    #####: 1170:        fprintf( fp, " };\n\ngoto SYS_MOVE\n}\n\n" );
+        -: 1171:    }
+        -: 1172:
+    #####: 1173:    if (var_separator != NULL)
+    #####: 1174:        var_separator->left = NULL;
+        -: 1175:
+    #####: 1176:    free( env_counter );
+    #####: 1177:    return 0;
+        -: 1178:}

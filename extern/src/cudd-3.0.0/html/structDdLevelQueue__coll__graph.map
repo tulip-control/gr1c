@@ -1,0 +1,13 @@
+<map id="DdLevelQueue" name="DdLevelQueue">
+<area shape="rect" id="node1" title="Level queue." alt="" coords="571,513,688,540"/>
+<area shape="rect" id="node2" href="$structDdManager.html" title="Specialized DD symbol table." alt="" coords="338,379,435,405"/>
+<area shape="rect" id="node3" href="$structDdLocalCache.html" title="Local cache." alt="" coords="115,513,229,540"/>
+<area shape="rect" id="node10" href="$structDdHook.html" title="CUDD hook." alt="" coords="377,513,452,540"/>
+<area shape="rect" id="node4" href="$structDdLocalCacheItem.html" title="Generic local cache item." alt="" coords="5,318,149,345"/>
+<area shape="rect" id="node5" href="$structDdNode.html" title="Decision diagram node." alt="" coords="257,5,332,32"/>
+<area shape="rect" id="node6" href="$structDdChildren.html" title="The two children of a non&#45;terminal node." alt="" coords="227,191,322,218"/>
+<area shape="rect" id="node7" href="$structDdSubtable.html" title="Subtable for one index." alt="" coords="106,191,203,218"/>
+<area shape="rect" id="node9" href="$structDdCache.html" title="Computed table." alt="" coords="347,191,427,218"/>
+<area shape="rect" id="node8" href="$structMtrNode__.html" title="multi&#45;way tree node." alt="" coords="451,191,536,218"/>
+<area shape="rect" id="node11" href="$structDdQueueItem.html" title="Generic level queue item." alt="" coords="620,379,732,405"/>
+</map>

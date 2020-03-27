@@ -1,0 +1,803 @@
+        -:    0:Source:src/util.c
+        -:    0:Graph:util.gcno
+        -:    0:Data:util.gcda
+        -:    0:Runs:8
+        -:    0:Programs:8
+        -:    1:/* util.c -- Small handy routines; declarations appear in gr1c_util.h
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2012-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#define _ISOC99_SOURCE
+        -:    9:#include <math.h>
+        -:   10:#include <stdlib.h>
+        -:   11:#include <stdio.h>
+        -:   12:#include <string.h>
+        -:   13:
+        -:   14:#include "common.h"
+        -:   15:#include "ptree.h"
+        -:   16:#include "solve.h"
+        -:   17:#include "solve_support.h"
+        -:   18:#include "gr1c_util.h"
+        -:   19:#include "logging.h"
+        -:   20:
+        -:   21:
+        5:   22:int bitvec_to_int( vartype *vec, int vec_len )
+        -:   23:{
+        -:   24:    int i;
+        5:   25:    int result = 0;
+       29:   26:    for (i = 0; i < vec_len; i++) {
+       24:   27:        if (*(vec+i))
+       14:   28:            result += (1 << i);
+        -:   29:    }
+        5:   30:    return result;
+        -:   31:}
+        -:   32:
+        -:   33:
+        3:   34:vartype *int_to_bitvec( int x, int vec_len )
+        -:   35:{
+        -:   36:    int i;
+        -:   37:    vartype *vec;
+        3:   38:    if (vec_len < 1)
+        1:   39:        return NULL;
+        2:   40:    vec = malloc( vec_len*sizeof(vartype) );
+        2:   41:    if (vec == NULL) {
+    #####:   42:        perror( __FILE__ ",  malloc" );
+    #####:   43:        exit(-1);
+        -:   44:    }
+        7:   45:    for (i = 0; i < vec_len; i++) {
+        5:   46:        if (x & (1 << i)) {
+        2:   47:            *(vec+i) = 1;
+        -:   48:        } else {
+        3:   49:            *(vec+i) = 0;
+        -:   50:        }
+        -:   51:    }
+        2:   52:    return vec;
+        -:   53:}
+        -:   54:
+        -:   55:
+    #####:   56:ptree_t *expand_nonbool_variables( ptree_t **evar_list, ptree_t **svar_list,
+        -:   57:                                   unsigned char verbose )
+        -:   58:{
+    #####:   59:    ptree_t *nonbool_var_list = NULL;
+        -:   60:    ptree_t *tmppt, *expt, *prevpt, *var_separator;
+        -:   61:
+        -:   62:    /* Make all variables boolean */
+    #####:   63:    if ((*evar_list) == NULL) {
+        -:   64:        /* that this is the deterministic case
+        -:   65:           is indicated by var_separator = NULL. */
+    #####:   66:        var_separator = NULL;
+    #####:   67:        (*evar_list) = (*svar_list);
+        -:   68:    } else {
+    #####:   69:        var_separator = get_list_item( (*evar_list), -1 );
+    #####:   70:        if (var_separator == NULL) {
+    #####:   71:            fprintf( stderr,
+        -:   72:                     "Error: get_list_item failed on environment variables"
+        -:   73:                     " list.\n" );
+    #####:   74:            return NULL;
+        -:   75:        }
+    #####:   76:        var_separator->left = (*svar_list);
+        -:   77:    }
+    #####:   78:    tmppt = (*evar_list);
+    #####:   79:    while (tmppt) {
+    #####:   80:        if (tmppt->value >= 0) {
+    #####:   81:            if (nonbool_var_list == NULL) {
+    #####:   82:                nonbool_var_list = init_ptree( PT_VARIABLE,
+        -:   83:                                               tmppt->name, tmppt->value );
+        -:   84:            } else {
+    #####:   85:                append_list_item( nonbool_var_list, PT_VARIABLE,
+        -:   86:                                  tmppt->name, tmppt->value );
+        -:   87:            }
+        -:   88:
+        -:   89:        }
+    #####:   90:        tmppt = tmppt->left;
+        -:   91:    }
+    #####:   92:    if (var_separator == NULL) {
+    #####:   93:        (*evar_list) = NULL;
+        -:   94:    } else {
+    #####:   95:        var_separator->left = NULL;
+        -:   96:    }
+        -:   97:
+        -:   98:    /* Expand the variable list */
+    #####:   99:    if ((*evar_list) != NULL) {
+    #####:  100:        tmppt = (*evar_list);
+    #####:  101:        if (tmppt->value >= 0) {  /* Handle special case of head node */
+    #####:  102:            expt = var_to_bool( tmppt->name, tmppt->value );
+    #####:  103:            (*evar_list) = expt;
+    #####:  104:            prevpt = get_list_item( expt, -1 );
+    #####:  105:            prevpt->left = tmppt->left;
+    #####:  106:            tmppt->left = NULL;
+    #####:  107:            delete_tree( tmppt );
+    #####:  108:            tmppt = prevpt;
+        -:  109:        } else {
+    #####:  110:            prevpt = tmppt;
+        -:  111:        }
+    #####:  112:        tmppt = tmppt->left;
+    #####:  113:        while (tmppt) {
+    #####:  114:            if (tmppt->value >= 0) {
+    #####:  115:                expt = var_to_bool( tmppt->name, tmppt->value );
+    #####:  116:                prevpt->left = expt;
+    #####:  117:                prevpt = get_list_item( expt, -1 );
+    #####:  118:                prevpt->left = tmppt->left;
+    #####:  119:                tmppt->left = NULL;
+    #####:  120:                delete_tree( tmppt );
+    #####:  121:                tmppt = prevpt;
+        -:  122:            } else {
+    #####:  123:                prevpt = tmppt;
+        -:  124:            }
+    #####:  125:            tmppt = tmppt->left;
+        -:  126:        }
+        -:  127:    }
+        -:  128:
+    #####:  129:    if ((*svar_list) != NULL) {
+    #####:  130:        tmppt = (*svar_list);
+    #####:  131:        if (tmppt->value >= 0) {  /* Handle special case of head node */
+    #####:  132:            expt = var_to_bool( tmppt->name, tmppt->value );
+    #####:  133:            (*svar_list) = expt;
+    #####:  134:            prevpt = get_list_item( expt, -1 );
+    #####:  135:            prevpt->left = tmppt->left;
+    #####:  136:            tmppt->left = NULL;
+    #####:  137:            delete_tree( tmppt );
+    #####:  138:            tmppt = prevpt;
+        -:  139:        } else {
+    #####:  140:            prevpt = tmppt;
+        -:  141:        }
+    #####:  142:        tmppt = tmppt->left;
+    #####:  143:        while (tmppt) {
+    #####:  144:            if (tmppt->value >= 0) {
+    #####:  145:                expt = var_to_bool( tmppt->name, tmppt->value );
+    #####:  146:                prevpt->left = expt;
+    #####:  147:                prevpt = get_list_item( expt, -1 );
+    #####:  148:                prevpt->left = tmppt->left;
+    #####:  149:                tmppt->left = NULL;
+    #####:  150:                delete_tree( tmppt );
+    #####:  151:                tmppt = prevpt;
+        -:  152:            } else {
+    #####:  153:                prevpt = tmppt;
+        -:  154:            }
+    #####:  155:            tmppt = tmppt->left;
+        -:  156:        }
+        -:  157:    }
+        -:  158:
+    #####:  159:    return nonbool_var_list;
+        -:  160:}
+        -:  161:
+        -:  162:
+    #####:  163:vartype *expand_nonbool_state( vartype *state, int *offw, int num_nonbool,
+        -:  164:                               int mapped_len )
+        -:  165:{
+        -:  166:    int i, j, k;
+        -:  167:    vartype *mapped_state, *state_frag;
+        -:  168:
+    #####:  169:    if (mapped_len <= 0 || num_nonbool < 0 || state == NULL)
+    #####:  170:        return NULL;
+        -:  171:
+    #####:  172:    mapped_state = malloc( mapped_len*sizeof(vartype) );
+    #####:  173:    if (mapped_state == NULL) {
+    #####:  174:        perror( __FILE__ ",  malloc" );
+    #####:  175:        exit(-1);
+        -:  176:    }
+        -:  177:
+    #####:  178:    i = j = k = 0;
+    #####:  179:    while (j < mapped_len) {
+    #####:  180:        if (i >= num_nonbool || j < *(offw+2*i)) {
+    #####:  181:            *(mapped_state+j) = *(state+k);
+        -:  182:
+    #####:  183:            j++;
+        -:  184:        } else {
+    #####:  185:            state_frag = int_to_bitvec( *(state+k), *(offw+2*i+1) );
+    #####:  186:            for (j = *(offw+2*i); j < *(offw+2*i)+*(offw+2*i+1); j++)
+    #####:  187:                *(mapped_state+j) = *(state_frag+j-*(offw+2*i));
+    #####:  188:            free( state_frag );
+        -:  189:
+    #####:  190:            i++;
+        -:  191:        }
+    #####:  192:        k++;
+        -:  193:    }
+        -:  194:
+    #####:  195:    return mapped_state;
+        -:  196:}
+        -:  197:
+        -:  198:
+    #####:  199:int expand_nonbool_GR1( ptree_t *evar_list, ptree_t *svar_list,
+        -:  200:                        ptree_t **env_init, ptree_t **sys_init,
+        -:  201:                        ptree_t ***env_trans_array, int *et_array_len,
+        -:  202:                        ptree_t ***sys_trans_array, int *st_array_len,
+        -:  203:                        ptree_t ***env_goals, int num_env_goals,
+        -:  204:                        ptree_t ***sys_goals, int num_sys_goals,
+        -:  205:                        unsigned char init_flags,
+        -:  206:                        unsigned char verbose )
+        -:  207:{
+        -:  208:    int i;
+        -:  209:    ptree_t *tmppt, *prevpt, *var_separator;
+        -:  210:    int maxbitval;
+        -:  211:
+        -:  212:    /* Make nonzero settings of "don't care" bits unreachable */
+    #####:  213:    tmppt = evar_list;
+    #####:  214:    while (tmppt) {
+    #####:  215:        if (tmppt->value == -1) {  /* Ignore Boolean variables */
+    #####:  216:            tmppt = tmppt->left;
+    #####:  217:            continue;
+        -:  218:        }
+        -:  219:
+    #####:  220:        maxbitval = (int)(pow( 2, ceil(log2( tmppt->value > 0 ?
+    #####:  221:                                             tmppt->value+1 : 2 )) ));
+    #####:  222:        if (maxbitval-1 > tmppt->value) {
+    #####:  223:            if (verbose > 1)
+    #####:  224:                logprint( "In mapping %s to a bitvector, blocking values %d-%d",
+    #####:  225:                          tmppt->name, tmppt->value+1, maxbitval-1 );
+        -:  226:
+        -:  227:            /* Initial conditions */
+    #####:  228:            if (init_flags == ONE_SIDE_INIT && *sys_init != NULL) {
+    #####:  229:                prevpt = *sys_init;
+    #####:  230:                *sys_init = init_ptree( PT_AND, NULL, 0 );
+    #####:  231:                (*sys_init)->right
+    #####:  232:                    = unreach_expanded_bool( tmppt->name, tmppt->value+1,
+        -:  233:                                             maxbitval-1, PT_VARIABLE );
+    #####:  234:                (*sys_init)->left = prevpt;
+        -:  235:            } else {
+    #####:  236:                if (*env_init == NULL)
+    #####:  237:                    *env_init = init_ptree( PT_CONSTANT, NULL, 1 );
+    #####:  238:                prevpt = *env_init;
+    #####:  239:                *env_init = init_ptree( PT_AND, NULL, 0 );
+    #####:  240:                (*env_init)->right
+    #####:  241:                    = unreach_expanded_bool( tmppt->name, tmppt->value+1,
+        -:  242:                                             maxbitval-1, PT_VARIABLE );
+    #####:  243:                (*env_init)->left = prevpt;
+        -:  244:            }
+        -:  245:
+        -:  246:            /* Transition rules */
+    #####:  247:            (*et_array_len) += 2;
+    #####:  248:            (*env_trans_array) = realloc( (*env_trans_array),
+    #####:  249:                                          sizeof(ptree_t *)*(*et_array_len) );
+    #####:  250:            if ((*env_trans_array) == NULL ) {
+    #####:  251:                perror( __FILE__ ",  realloc" );
+    #####:  252:                exit(-1);
+        -:  253:            }
+    #####:  254:            *((*env_trans_array)+(*et_array_len)-2)
+    #####:  255:                = unreach_expanded_bool( tmppt->name, tmppt->value+1,
+        -:  256:                                         maxbitval-1, PT_VARIABLE );
+    #####:  257:            *((*env_trans_array)+(*et_array_len)-1)
+    #####:  258:                = unreach_expanded_bool( tmppt->name, tmppt->value+1,
+        -:  259:                                         maxbitval-1, PT_NEXT_VARIABLE );
+        -:  260:        }
+    #####:  261:        tmppt = tmppt->left;
+        -:  262:    }
+        -:  263:
+    #####:  264:    tmppt = svar_list;
+    #####:  265:    while (tmppt) {
+    #####:  266:        if (tmppt->value == -1) {  /* Ignore Boolean variables */
+    #####:  267:            tmppt = tmppt->left;
+    #####:  268:            continue;
+        -:  269:        }
+        -:  270:
+    #####:  271:        maxbitval = (int)(pow( 2, ceil(log2( tmppt->value > 0 ?
+    #####:  272:                                             tmppt->value+1 : 2 )) ));
+    #####:  273:        if (maxbitval-1 > tmppt->value) {
+    #####:  274:            if (verbose > 1)
+    #####:  275:                logprint( "In mapping %s to a bitvector, blocking values %d-%d",
+    #####:  276:                          tmppt->name, tmppt->value+1, maxbitval-1 );
+        -:  277:
+        -:  278:            /* Initial conditions */
+    #####:  279:            if (init_flags == ONE_SIDE_INIT && *sys_init == NULL) {
+    #####:  280:                if (*env_init == NULL)
+    #####:  281:                    *env_init = init_ptree( PT_CONSTANT, NULL, 1 );
+    #####:  282:                prevpt = *env_init;
+    #####:  283:                *env_init = init_ptree( PT_AND, NULL, 0 );
+    #####:  284:                (*env_init)->right
+    #####:  285:                    = unreach_expanded_bool( tmppt->name, tmppt->value+1,
+        -:  286:                                             maxbitval-1, PT_VARIABLE );
+    #####:  287:                (*env_init)->left = prevpt;
+        -:  288:            } else {
+    #####:  289:                if (*sys_init == NULL)
+    #####:  290:                    *sys_init = init_ptree( PT_CONSTANT, NULL, 1 );
+    #####:  291:                prevpt = *sys_init;
+    #####:  292:                *sys_init = init_ptree( PT_AND, NULL, 0 );
+    #####:  293:                (*sys_init)->right
+    #####:  294:                    = unreach_expanded_bool( tmppt->name, tmppt->value+1,
+        -:  295:                                             maxbitval-1, PT_VARIABLE );
+    #####:  296:                (*sys_init)->left = prevpt;
+        -:  297:            }
+        -:  298:
+        -:  299:            /* Transition rules */
+    #####:  300:            (*st_array_len) += 2;
+    #####:  301:            (*sys_trans_array) = realloc( (*sys_trans_array),
+    #####:  302:                                          sizeof(ptree_t *)*(*st_array_len) );
+    #####:  303:            if ((*sys_trans_array) == NULL ) {
+    #####:  304:                perror( __FILE__ ",  realloc" );
+    #####:  305:                exit(-1);
+        -:  306:            }
+    #####:  307:            *((*sys_trans_array)+(*st_array_len)-2)
+    #####:  308:                = unreach_expanded_bool( tmppt->name, tmppt->value+1,
+        -:  309:                                         maxbitval-1, PT_VARIABLE );
+    #####:  310:            *((*sys_trans_array)+(*st_array_len)-1)
+    #####:  311:                = unreach_expanded_bool( tmppt->name, tmppt->value+1,
+        -:  312:                                         maxbitval-1, PT_NEXT_VARIABLE );
+        -:  313:        }
+    #####:  314:        tmppt = tmppt->left;
+        -:  315:    }
+        -:  316:
+    #####:  317:    if (evar_list == NULL) {
+    #####:  318:        var_separator = NULL;
+    #####:  319:        evar_list = svar_list;  /* that this is the deterministic case
+        -:  320:                                   is indicated by var_separator = NULL. */
+        -:  321:    } else {
+    #####:  322:        var_separator = get_list_item( evar_list, -1 );
+    #####:  323:        if (var_separator == NULL) {
+    #####:  324:            fprintf( stderr,
+        -:  325:                     "Error: get_list_item failed on environment variables"
+        -:  326:                     " list.\n" );
+    #####:  327:            return -1;
+        -:  328:        }
+    #####:  329:        var_separator->left = svar_list;
+        -:  330:    }
+    #####:  331:    tmppt = evar_list;
+    #####:  332:    while (tmppt) {
+    #####:  333:        if (tmppt->value >= 0) {
+    #####:  334:            if (*sys_init != NULL) {
+    #####:  335:                if (verbose > 1)
+    #####:  336:                    logprint( "Expanding nonbool variable %s in SYSINIT...",
+        -:  337:                              tmppt->name );
+    #####:  338:                (*sys_init) = expand_to_bool( (*sys_init),
+        -:  339:                                              tmppt->name, tmppt->value );
+    #####:  340:                if ((*sys_init) == NULL) {
+    #####:  341:                    fprintf( stderr,
+        -:  342:                             "Error expand_nonbool_GR1: Failed to convert"
+        -:  343:                             " non-Boolean variable to Boolean in SYSINIT.\n" );
+    #####:  344:                    return -1;
+        -:  345:                }
+    #####:  346:                if (verbose > 1)
+    #####:  347:                    logprint( "Done." );
+        -:  348:            }
+    #####:  349:            if (*env_init != NULL) {
+    #####:  350:                if (verbose > 1)
+    #####:  351:                    logprint( "Expanding nonbool variable %s in ENVINIT...",
+        -:  352:                              tmppt->name );
+    #####:  353:                (*env_init) = expand_to_bool( (*env_init),
+        -:  354:                                              tmppt->name, tmppt->value );
+    #####:  355:                if ((*env_init) == NULL) {
+    #####:  356:                    fprintf( stderr,
+        -:  357:                             "Error expand_nonbool_GR1: Failed to convert"
+        -:  358:                             " non-Boolean variable to Boolean in ENVINIT.\n" );
+    #####:  359:                    return -1;
+        -:  360:                }
+    #####:  361:                if (verbose > 1)
+    #####:  362:                    logprint( "Done." );
+        -:  363:            }
+    #####:  364:            for (i = 0; i < *et_array_len; i++) {
+    #####:  365:                if (verbose > 1)
+    #####:  366:                    logprint( "Expanding nonbool variable %s in ENVTRANS %d...",
+        -:  367:                              tmppt->name, i );
+    #####:  368:                *((*env_trans_array)+i)
+    #####:  369:                    = expand_to_bool( *((*env_trans_array)+i),
+        -:  370:                                      tmppt->name, tmppt->value );
+    #####:  371:                if (*((*env_trans_array)+i) == NULL) {
+    #####:  372:                    fprintf( stderr,
+        -:  373:                             "Error expand_nonbool_GR1: Failed to convert"
+        -:  374:                             " non-Boolean variable to Boolean.\n" );
+    #####:  375:                    return -1;
+        -:  376:                }
+    #####:  377:                if (verbose > 1)
+    #####:  378:                    logprint( "Done." );
+        -:  379:            }
+    #####:  380:            for (i = 0; i < *st_array_len; i++) {
+    #####:  381:                if (verbose > 1)
+    #####:  382:                    logprint( "Expanding nonbool variable %s in SYSTRANS %d...",
+        -:  383:                              tmppt->name, i );
+    #####:  384:                *((*sys_trans_array)+i)
+    #####:  385:                    = expand_to_bool( *((*sys_trans_array)+i),
+        -:  386:                                      tmppt->name, tmppt->value );
+    #####:  387:                if (*((*sys_trans_array)+i) == NULL) {
+    #####:  388:                    fprintf( stderr,
+        -:  389:                             "Error expand_nonbool_GR1: Failed to convert"
+        -:  390:                             " non-Boolean variable to Boolean.\n" );
+    #####:  391:                    return -1;
+        -:  392:                }
+    #####:  393:                if (verbose > 1)
+    #####:  394:                    logprint( "Done." );
+        -:  395:            }
+    #####:  396:            for (i = 0; i < num_env_goals; i++) {
+    #####:  397:                if (verbose > 1)
+    #####:  398:                    logprint( "Expanding nonbool variable %s in ENVGOAL %d...",
+        -:  399:                              tmppt->name, i );
+    #####:  400:                *((*env_goals)+i)
+    #####:  401:                    = expand_to_bool( *((*env_goals)+i),
+        -:  402:                                      tmppt->name, tmppt->value );
+    #####:  403:                if (*((*env_goals)+i) == NULL) {
+    #####:  404:                    fprintf( stderr,
+        -:  405:                             "Error expand_nonbool_GR1: Failed to convert"
+        -:  406:                             " non-Boolean variable to Boolean.\n" );
+    #####:  407:                    return -1;
+        -:  408:                }
+    #####:  409:                if (verbose > 1)
+    #####:  410:                    logprint( "Done." );
+        -:  411:            }
+    #####:  412:            for (i = 0; i < num_sys_goals; i++) {
+    #####:  413:                if (verbose > 1)
+    #####:  414:                    logprint( "Expanding nonbool variable %s in SYSGOAL %d...",
+        -:  415:                              tmppt->name, i );
+    #####:  416:                *((*sys_goals)+i)
+    #####:  417:                    = expand_to_bool( *((*sys_goals)+i),
+        -:  418:                                      tmppt->name, tmppt->value );
+    #####:  419:                if (*((*sys_goals)+i) == NULL) {
+    #####:  420:                    fprintf( stderr,
+        -:  421:                             "Error expand_nonbool_GR1: Failed to convert"
+        -:  422:                             " non-Boolean variable to Boolean.\n" );
+    #####:  423:                    return -1;
+        -:  424:                }
+    #####:  425:                if (verbose > 1)
+    #####:  426:                    logprint( "Done." );
+        -:  427:            }
+        -:  428:        }
+        -:  429:
+    #####:  430:        tmppt = tmppt->left;
+        -:  431:    }
+    #####:  432:    if (var_separator == NULL) {
+    #####:  433:        evar_list = NULL;
+        -:  434:    } else {
+    #####:  435:        var_separator->left = NULL;
+        -:  436:    }
+        -:  437:
+    #####:  438:    return 0;
+        -:  439:}
+        -:  440:
+        -:  441:
+    #####:  442:void print_GR1_spec( ptree_t *evar_list, ptree_t *svar_list,
+        -:  443:                     ptree_t *env_init, ptree_t *sys_init,
+        -:  444:                     ptree_t **env_trans_array, int et_array_len,
+        -:  445:                     ptree_t **sys_trans_array, int st_array_len,
+        -:  446:                     ptree_t **env_goals, int num_env_goals,
+        -:  447:                     ptree_t **sys_goals, int num_sys_goals,
+        -:  448:                     FILE *outf )
+        -:  449:{
+        -:  450:    int i;
+        -:  451:    ptree_t *tmppt;
+        -:  452:    FILE *prev_logf;
+        -:  453:    int prev_logoptions;
+        -:  454:
+    #####:  455:    if (outf != NULL) {
+    #####:  456:        prev_logf = getlogstream();
+    #####:  457:        prev_logoptions = getlogopt();
+    #####:  458:        setlogstream( outf );
+    #####:  459:        setlogopt( LOGOPT_NOTIME );
+        -:  460:    }
+        -:  461:
+    #####:  462:    logprint_startline(); logprint_raw( "ENV:" );
+    #####:  463:    tmppt = evar_list;
+    #####:  464:    while (tmppt) {
+    #####:  465:        logprint_raw( " %s", tmppt->name );
+    #####:  466:        tmppt = tmppt->left;
+        -:  467:    }
+    #####:  468:    logprint_raw( ";" ); logprint_endline();
+        -:  469:
+    #####:  470:    logprint_startline(); logprint_raw( "SYS:" );
+    #####:  471:    tmppt = svar_list;
+    #####:  472:    while (tmppt) {
+    #####:  473:        logprint_raw( " %s", tmppt->name );
+    #####:  474:        tmppt = tmppt->left;
+        -:  475:    }
+    #####:  476:    logprint_raw( ";" ); logprint_endline();
+        -:  477:
+    #####:  478:    logprint_startline(); logprint_raw( "ENV INIT:  " );
+    #####:  479:    if (env_init)
+    #####:  480:        print_formula( env_init, getlogstream(), FORMULA_SYNTAX_GR1C );
+    #####:  481:    logprint_raw( ";" ); logprint_endline();
+        -:  482:
+    #####:  483:    logprint_startline(); logprint_raw( "SYS INIT:  " );
+    #####:  484:    if (sys_init)
+    #####:  485:        print_formula( sys_init, getlogstream(), FORMULA_SYNTAX_GR1C );
+    #####:  486:    logprint_raw( ";" ); logprint_endline();
+        -:  487:
+    #####:  488:    logprint_startline(); logprint_raw( "ENV TRANS:  " );
+    #####:  489:    if (et_array_len == 0) {
+    #####:  490:        logprint_raw( "(none)" );
+        -:  491:    } else {
+    #####:  492:        logprint_raw( "[] " );
+    #####:  493:        print_formula( *env_trans_array, getlogstream(), FORMULA_SYNTAX_GR1C );
+    #####:  494:        for (i = 1; i < et_array_len; i++) {
+    #####:  495:            logprint_raw( " & [] " );
+    #####:  496:            print_formula( *(env_trans_array+i), getlogstream(),
+        -:  497:                           FORMULA_SYNTAX_GR1C);
+        -:  498:        }
+        -:  499:    }
+    #####:  500:    logprint_raw( ";" ); logprint_endline();
+        -:  501:
+    #####:  502:    logprint_startline(); logprint_raw( "SYS TRANS:  " );
+    #####:  503:    if (st_array_len == 0) {
+    #####:  504:        logprint_raw( "(none)" );
+        -:  505:    } else {
+    #####:  506:        logprint_raw( "[] " );
+    #####:  507:        print_formula( *sys_trans_array, getlogstream(), FORMULA_SYNTAX_GR1C );
+    #####:  508:        for (i = 1; i < st_array_len; i++) {
+    #####:  509:            logprint_raw( " & [] " );
+    #####:  510:            print_formula( *(sys_trans_array+i), getlogstream(),
+        -:  511:                           FORMULA_SYNTAX_GR1C );
+        -:  512:        }
+        -:  513:    }
+    #####:  514:    logprint_raw( ";" ); logprint_endline();
+        -:  515:
+    #####:  516:    logprint_startline(); logprint_raw( "ENV GOALS:  " );
+    #####:  517:    if (num_env_goals == 0) {
+    #####:  518:        logprint_raw( "(none)" );
+        -:  519:    } else {
+    #####:  520:        logprint_raw( "[]<> " );
+    #####:  521:        print_formula( *env_goals, getlogstream(), FORMULA_SYNTAX_GR1C );
+    #####:  522:        for (i = 1; i < num_env_goals; i++) {
+    #####:  523:            logprint_raw( " & []<> " );
+    #####:  524:            print_formula( *(env_goals+i), getlogstream(),
+        -:  525:                           FORMULA_SYNTAX_GR1C );
+        -:  526:        }
+        -:  527:    }
+    #####:  528:    logprint_raw( ";" ); logprint_endline();
+        -:  529:
+    #####:  530:    logprint_startline(); logprint_raw( "SYS GOALS:  " );
+    #####:  531:    if (num_sys_goals == 0) {
+    #####:  532:        logprint_raw( "(none)" );
+        -:  533:    } else {
+    #####:  534:        logprint_raw( "[]<> " );
+    #####:  535:        print_formula( *sys_goals, getlogstream(), FORMULA_SYNTAX_GR1C );
+    #####:  536:        for (i = 1; i < num_sys_goals; i++) {
+    #####:  537:            logprint_raw( " & []<> " );
+    #####:  538:            print_formula( *(sys_goals+i), getlogstream(),
+        -:  539:                           FORMULA_SYNTAX_GR1C );
+        -:  540:        }
+        -:  541:    }
+    #####:  542:    logprint_raw( ";" ); logprint_endline();
+        -:  543:
+    #####:  544:    if (outf != NULL) {
+    #####:  545:        setlogstream( prev_logf );
+    #####:  546:        setlogopt( prev_logoptions );
+        -:  547:    }
+    #####:  548:}
+        -:  549:
+        -:  550:
+    #####:  551:int check_gr1c_form( ptree_t *evar_list, ptree_t *svar_list,
+        -:  552:                     ptree_t *env_init, ptree_t *sys_init,
+        -:  553:                     ptree_t **env_trans_array, int et_array_len,
+        -:  554:                     ptree_t **sys_trans_array, int st_array_len,
+        -:  555:                     ptree_t **env_goals, int num_env_goals,
+        -:  556:                     ptree_t **sys_goals, int num_sys_goals,
+        -:  557:                     unsigned char init_flags )
+        -:  558:{
+        -:  559:    ptree_t *tmppt;
+        -:  560:    char *tmpstr;
+        -:  561:    int i;
+        -:  562:
+    #####:  563:    if (tree_size( evar_list ) == 0 && tree_size( svar_list ) == 0) {
+    #####:  564:        fprintf( stderr, "Error: No variables declared.\n" );
+    #####:  565:        return -1;
+        -:  566:    }
+        -:  567:
+    #####:  568:    if (init_flags == ALL_ENV_EXIST_SYS_INIT) {
+    #####:  569:        if (env_init != NULL) {
+    #####:  570:            if ((tmpstr = check_vars( env_init, evar_list, NULL )) != NULL) {
+    #####:  571:                fprintf( stderr,
+        -:  572:                         "Error: ENVINIT in GR(1) spec contains"
+        -:  573:                         " unexpected variable: %s,\ngiven interpretation"
+        -:  574:                         " from init_flags = ALL_ENV_EXIST_SYS_INIT.\n",
+        -:  575:                         tmpstr );
+    #####:  576:                free( tmpstr );
+    #####:  577:                return -1;
+        -:  578:            }
+        -:  579:        }
+        -:  580:
+    #####:  581:        if (sys_init != NULL) {
+    #####:  582:            if ((tmpstr = check_vars( sys_init, svar_list, NULL )) != NULL) {
+    #####:  583:                fprintf( stderr,
+        -:  584:                         "Error: SYSINIT in GR(1) spec contains"
+        -:  585:                         " unexpected variable: %s,\ngiven interpretation"
+        -:  586:                         " from init_flags = ALL_ENV_EXIST_SYS_INIT.\n",
+        -:  587:                         tmpstr );
+    #####:  588:                free( tmpstr );
+    #####:  589:                return -1;
+        -:  590:            }
+        -:  591:        }
+        -:  592:
+    #####:  593:    } else if (init_flags == ONE_SIDE_INIT) {
+    #####:  594:        if (env_init != NULL && sys_init != NULL) {
+    #####:  595:            fprintf( stderr,
+        -:  596:                     "Syntax error: init_flags = ONE_SIDE_INIT and"
+        -:  597:                     " GR(1) specification has\nboth ENV_INIT and"
+        -:  598:                     " SYS_INIT nonempty.\n" );
+    #####:  599:            return -1;
+        -:  600:        }
+        -:  601:    }
+        -:  602:
+    #####:  603:    tmppt = NULL;
+    #####:  604:    if (svar_list == NULL) {
+    #####:  605:        svar_list = evar_list;
+        -:  606:    } else {
+    #####:  607:        tmppt = get_list_item( svar_list, -1 );
+    #####:  608:        tmppt->left = evar_list;
+        -:  609:    }
+    #####:  610:    if (env_init != NULL
+    #####:  611:        && (tmpstr = check_vars( env_init, svar_list, NULL )) != NULL) {
+    #####:  612:        fprintf( stderr,
+        -:  613:                 "Error: ENVINIT in GR(1) spec contains unexpected variable:"
+        -:  614:                 " %s\n", tmpstr );
+    #####:  615:        free( tmpstr );
+    #####:  616:        return -1;
+    #####:  617:    } else if (sys_init != NULL
+    #####:  618:               && (tmpstr = check_vars( sys_init, svar_list, NULL )) != NULL) {
+    #####:  619:        fprintf( stderr,
+        -:  620:                 "Error: SYSINIT in GR(1) spec contains unexpected variable:"
+        -:  621:                 " %s\n", tmpstr );
+    #####:  622:        free( tmpstr );
+    #####:  623:        return -1;
+        -:  624:    }
+    #####:  625:    for (i = 0; i < et_array_len; i++) {
+    #####:  626:        if ((tmpstr = check_vars( *(env_trans_array+i),
+        -:  627:                                  svar_list, evar_list )) != NULL) {
+    #####:  628:            fprintf( stderr,
+        -:  629:                     "Error: part %d of ENVTRANS in GR(1) spec contains"
+        -:  630:                     " unexpected variable: %s\n",
+        -:  631:                     i+1, tmpstr );
+    #####:  632:            free( tmpstr );
+    #####:  633:            return -1;
+        -:  634:        }
+        -:  635:    }
+    #####:  636:    for (i = 0; i < st_array_len; i++) {
+    #####:  637:        if ((tmpstr = check_vars( *(sys_trans_array+i),
+        -:  638:                                  svar_list, svar_list )) != NULL) {
+    #####:  639:            fprintf( stderr,
+        -:  640:                     "Error: part %d of SYSTRANS in GR(1) spec contains"
+        -:  641:                     " unexpected variable: %s\n",
+        -:  642:                     i+1, tmpstr );
+    #####:  643:            free( tmpstr );
+    #####:  644:            return -1;
+        -:  645:        }
+        -:  646:    }
+    #####:  647:    for (i = 0; i < num_env_goals; i++) {
+    #####:  648:        if ((tmpstr = check_vars( *(env_goals+i),
+        -:  649:                                  svar_list, NULL )) != NULL) {
+    #####:  650:            fprintf( stderr,
+        -:  651:                     "Error: part %d of ENVGOAL in GR(1) spec contains"
+        -:  652:                     " unexpected variable: %s\n",
+        -:  653:                     i+1, tmpstr );
+    #####:  654:            free( tmpstr );
+    #####:  655:            return -1;
+        -:  656:        }
+        -:  657:    }
+    #####:  658:    for (i = 0; i < num_sys_goals; i++) {
+    #####:  659:        if ((tmpstr = check_vars( *(sys_goals+i),
+        -:  660:                                  svar_list, NULL )) != NULL) {
+    #####:  661:            fprintf( stderr,
+        -:  662:                     "Error: part %d of SYSGOAL in GR(1) spec contains"
+        -:  663:                     " unexpected variable: %s\n",
+        -:  664:                     i+1, tmpstr );
+    #####:  665:            free( tmpstr );
+    #####:  666:            return -1;
+        -:  667:        }
+        -:  668:    }
+    #####:  669:    if (tmppt != NULL) {
+    #####:  670:        tmppt->left = NULL;
+    #####:  671:        tmppt = NULL;
+        -:  672:    } else {
+    #####:  673:        svar_list = NULL;
+        -:  674:    }
+        -:  675:
+    #####:  676:    return 0;
+        -:  677:}
+        -:  678:
+        -:  679:
+        -:  680:/* N.B., we assume that noonbool_var_list is sorted with respect to
+        -:  681:   the expanded variable list (evar_list followed by svar_list). */
+    #####:  682:int *get_offsets_list( ptree_t *evar_list, ptree_t *svar_list,
+        -:  683:                       ptree_t *nonbool_var_list )
+        -:  684:{
+    #####:  685:    int *offw = NULL;
+        -:  686:    ptree_t *var, *var_tail, *tmppt;
+        -:  687:    int start_index, stop_index;
+        -:  688:    int i;
+        -:  689:
+    #####:  690:    i = 0;
+    #####:  691:    tmppt = nonbool_var_list;
+    #####:  692:    while (tmppt) {
+    #####:  693:        i++;
+    #####:  694:        offw = realloc( offw, 2*i*sizeof(int) );
+    #####:  695:        if (offw == NULL) {
+    #####:  696:            perror( __FILE__ ",  realloc" );
+    #####:  697:            exit(-1);
+        -:  698:        }
+        -:  699:
+    #####:  700:        var = evar_list;
+    #####:  701:        start_index = 0;
+    #####:  702:        while (var) {
+    #####:  703:            if (strstr( var->name, tmppt->name ) == var->name)
+    #####:  704:                break;
+    #####:  705:            var = var->left;
+    #####:  706:            start_index++;
+        -:  707:        }
+    #####:  708:        if (var == NULL) {
+    #####:  709:            var = svar_list;
+    #####:  710:            while (var) {
+    #####:  711:                if (strstr( var->name, tmppt->name ) == var->name)
+    #####:  712:                    break;
+    #####:  713:                var = var->left;
+    #####:  714:                start_index++;
+        -:  715:            }
+    #####:  716:            if (var == NULL) {
+    #####:  717:                fprintf( stderr,
+        -:  718:                         "Error get_offsets_list: Could not find match for"
+        -:  719:                         " \"%s\"\n", tmppt->name );
+    #####:  720:                free( offw );
+    #####:  721:                return NULL;
+        -:  722:            }
+        -:  723:        }
+        -:  724:
+    #####:  725:        var_tail = var;
+    #####:  726:        stop_index = start_index;
+    #####:  727:        while (var_tail->left) {
+    #####:  728:            if (strstr( var_tail->left->name, tmppt->name )
+    #####:  729:                != var_tail->left->name )
+    #####:  730:                break;
+    #####:  731:            var_tail = var_tail->left;
+    #####:  732:            stop_index++;
+        -:  733:        }
+        -:  734:
+    #####:  735:        *(offw+2*(i-1)) = start_index;
+    #####:  736:        *(offw+2*(i-1)+1) = stop_index-start_index+1;
+        -:  737:
+    #####:  738:        tmppt = tmppt->left;
+        -:  739:    }
+        -:  740:
+    #####:  741:    return offw;
+        -:  742:}
+        -:  743:
+        -:  744:
+    #####:  745:void print_support( DdManager *manager, int state_len, DdNode *X, FILE *outf )
+        -:  746:{
+        -:  747:    FILE *prev_logf;
+        -:  748:    int prev_logoptions;
+        -:  749:    vartype *state;
+        -:  750:    int i;
+        -:  751:    DdGen *gen;
+        -:  752:    CUDD_VALUE_TYPE gvalue;
+        -:  753:    int *gcube;
+        -:  754:
+    #####:  755:    if (outf != NULL) {
+    #####:  756:        prev_logf = getlogstream();
+    #####:  757:        prev_logoptions = getlogopt();
+    #####:  758:        setlogstream( outf );
+    #####:  759:        setlogopt( LOGOPT_NOTIME );
+        -:  760:    }
+        -:  761:
+        -:  762:    /* State vector (i.e., valuation of the variables) */
+    #####:  763:    state = malloc( sizeof(vartype)*(state_len) );
+    #####:  764:    if (state == NULL) {
+    #####:  765:        perror( __FILE__ ",  malloc" );
+    #####:  766:        exit(-1);
+        -:  767:    }
+        -:  768:
+    #####:  769:    Cudd_AutodynDisable( manager );
+    #####:  770:    Cudd_ForeachCube( manager, X, gen, gcube, gvalue ) {
+    #####:  771:        initialize_cube( state, gcube, state_len );
+    #####:  772:        while (!saturated_cube( state, gcube, state_len )) {
+    #####:  773:            logprint_startline();
+    #####:  774:            for (i = 0; i < state_len; i++) {
+    #####:  775:                if (i > 0 && i % 4 == 0)
+    #####:  776:                    logprint_raw( " " );
+    #####:  777:                logprint_raw( "%d", *(state+i) );
+        -:  778:            }
+    #####:  779:            logprint_endline();
+    #####:  780:            increment_cube( state, gcube, state_len );
+        -:  781:        }
+    #####:  782:        logprint_startline();
+    #####:  783:        for (i = 0; i < state_len; i++) {
+    #####:  784:            if (i > 0 && i % 4 == 0)
+    #####:  785:                logprint_raw( " " );
+    #####:  786:            logprint_raw( "%d", *(state+i) );
+        -:  787:        }
+    #####:  788:        logprint_endline();
+        -:  789:    }
+    #####:  790:    Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        -:  791:
+    #####:  792:    free( state );
+        -:  793:
+    #####:  794:    if (outf != NULL) {
+    #####:  795:        setlogstream( prev_logf );
+    #####:  796:        setlogopt( prev_logoptions );
+        -:  797:    }
+    #####:  798:}

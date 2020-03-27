@@ -1,0 +1,646 @@
+        -:    0:Source:src/rg_main.c
+        -:    0:Graph:rg_main.gcno
+        -:    0:Data:-
+        -:    0:Runs:0
+        -:    0:Programs:0
+        -:    1:/* rg_main.c -- main entry point for execution of gr1c-rg.
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2012-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#define _POSIX_C_SOURCE 200809L
+        -:    9:#include <stdlib.h>
+        -:   10:#include <string.h>
+        -:   11:#include <stdio.h>
+        -:   12:#include <ctype.h>
+        -:   13:
+        -:   14:#include "common.h"
+        -:   15:#include "logging.h"
+        -:   16:#include "ptree.h"
+        -:   17:#include "automaton.h"
+        -:   18:#include "solve.h"
+        -:   19:#include "patching.h"
+        -:   20:#include "gr1c_util.h"
+        -:   21:extern int yyparse( void );
+        -:   22:
+        -:   23:
+        -:   24:/**************************
+        -:   25: **** Global variables ****/
+        -:   26:
+        -:   27:extern specification_t spc;
+        -:   28:
+        -:   29:/**************************/
+        -:   30:
+        -:   31:
+        -:   32:/* Output formats */
+        -:   33:#define OUTPUT_FORMAT_TEXT 0
+        -:   34:#define OUTPUT_FORMAT_TULIP 1
+        -:   35:#define OUTPUT_FORMAT_DOT 2
+        -:   36:#define OUTPUT_FORMAT_AUT 3
+        -:   37:#define OUTPUT_FORMAT_JSON 5
+        -:   38:
+        -:   39:/* Runtime modes */
+        -:   40:#define RG_MODE_SYNTAX 0
+        -:   41:/* #define RG_MODE_REALIZABLE 1 */
+        -:   42:#define RG_MODE_SYNTHESIS 2
+        -:   43:
+        -:   44:
+        -:   45:#define PRINT_VERSION() \
+        -:   46:    printf( "gr1c-rg (part of gr1c) " GR1C_VERSION "\n\n" GR1C_COPYRIGHT "\n" )
+        -:   47:
+        -:   48:
+        -:   49:extern anode_t *synthesize_reachgame_BDD( DdManager *manager,
+        -:   50:                                          int num_env, int num_sys,
+        -:   51:                                          DdNode *Entry, DdNode *Exit,
+        -:   52:                                          DdNode *etrans, DdNode *strans,
+        -:   53:                                          DdNode **egoals, DdNode *N_BDD,
+        -:   54:                                          unsigned char verbose );
+        -:   55:
+        -:   56:
+    #####:   57:int main( int argc, char **argv )
+        -:   58:{
+        -:   59:    FILE *fp;
+    #####:   60:    FILE *stdin_backup = NULL;
+    #####:   61:    byte run_option = RG_MODE_SYNTHESIS;
+    #####:   62:    bool help_flag = False;
+    #####:   63:    bool ptdump_flag = False;
+    #####:   64:    bool logging_flag = False;
+    #####:   65:    unsigned char init_flags = ALL_INIT;
+    #####:   66:    byte format_option = OUTPUT_FORMAT_JSON;
+    #####:   67:    unsigned char verbose = 0;
+    #####:   68:    bool reading_options = True;  /* For disabling option parsing using "--" */
+    #####:   69:    int input_index = -1;
+    #####:   70:    int output_file_index = -1;  /* For command-line flag "-o". */
+        -:   71:    char dumpfilename[64];
+        -:   72:
+        -:   73:    int i, j, var_index;
+        -:   74:    ptree_t *tmppt;  /* General purpose temporary ptree pointer */
+        -:   75:    DdNode **vars, **pvars;
+    #####:   76:    bool env_nogoal_flag = False;
+        -:   77:    ptree_t *var_separator;
+        -:   78:
+        -:   79:    DdManager *manager;
+    #####:   80:    anode_t *strategy = NULL;
+        -:   81:    int num_env, num_sys;
+        -:   82:
+        -:   83:    DdNode *Entry, *Exit;
+        -:   84:    DdNode *sinit, *einit, *etrans, *strans, **egoals;
+        -:   85:
+        -:   86:    /* Look for flags in command-line arguments. */
+    #####:   87:    for (i = 1; i < argc; i++) {
+    #####:   88:        if (reading_options && argv[i][0] == '-' && argv[i][1] != '-') {
+    #####:   89:            if (argv[i][2] != '\0'
+    #####:   90:                && !(argv[i][1] == 'v' && argv[i][2] == 'v')) {
+    #####:   91:                fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:   92:                return 1;
+        -:   93:            }
+        -:   94:
+    #####:   95:            if (argv[i][1] == 'h') {
+    #####:   96:                help_flag = True;
+    #####:   97:            } else if (argv[i][1] == 'V') {
+    #####:   98:                PRINT_VERSION();
+    #####:   99:                PRINT_LINKED_VERSIONS();
+    #####:  100:                return 0;
+    #####:  101:            } else if (argv[i][1] == 'v') {
+    #####:  102:                verbose++;
+    #####:  103:                j = 2;
+        -:  104:                /* Only support up to "level 2" of verbosity */
+    #####:  105:                while (argv[i][j] == 'v' && j <= 2) {
+    #####:  106:                    verbose++;
+    #####:  107:                    j++;
+        -:  108:                }
+    #####:  109:            } else if (argv[i][1] == 'l') {
+    #####:  110:                logging_flag = True;
+    #####:  111:            } else if (argv[i][1] == 's') {
+    #####:  112:                run_option = RG_MODE_SYNTAX;
+    #####:  113:            } else if (argv[i][1] == 'p') {
+    #####:  114:                ptdump_flag = True;
+        -:  115:            } /*else if (argv[i][1] == 'r') {
+        -:  116:                run_option = RG_MODE_REALIZABLE;
+        -:  117:                } */
+    #####:  118:            else if (argv[i][1] == 't') {
+    #####:  119:                if (i == argc-1) {
+    #####:  120:                    fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  121:                    return 1;
+        -:  122:                }
+    #####:  123:                if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
+    #####:  124:                    format_option = OUTPUT_FORMAT_TEXT;
+    #####:  125:                } else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
+    #####:  126:                    format_option = OUTPUT_FORMAT_TULIP;
+    #####:  127:                } else if (!strncmp( argv[i+1], "dot", strlen( "dot" ) )) {
+    #####:  128:                    format_option = OUTPUT_FORMAT_DOT;
+    #####:  129:                } else if (!strncmp( argv[i+1], "aut", strlen( "aut" ) )) {
+    #####:  130:                    format_option = OUTPUT_FORMAT_AUT;
+    #####:  131:                } else if (!strncmp( argv[i+1], "json", strlen( "json" ) )) {
+    #####:  132:                    format_option = OUTPUT_FORMAT_JSON;
+        -:  133:                } else {
+    #####:  134:                    fprintf( stderr,
+        -:  135:                             "Unrecognized output format. Try \"-h\".\n" );
+    #####:  136:                    return 1;
+        -:  137:                }
+    #####:  138:                i++;
+    #####:  139:            } else if (argv[i][1] == 'n') {
+    #####:  140:                if (i == argc-1) {
+    #####:  141:                    fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  142:                    return 1;
+        -:  143:                }
+    #####:  144:                for (j = 0; j < strlen( argv[i+1] ); j++)
+    #####:  145:                    argv[i+1][j] = tolower( argv[i+1][j] );
+    #####:  146:                if (!strncmp( argv[i+1], "all_init",
+        -:  147:                                     strlen( "all_init" ) )) {
+    #####:  148:                    init_flags = ALL_INIT;
+        -:  149:                } else {
+    #####:  150:                    fprintf( stderr,
+        -:  151:                             "Unrecognized init flags. Try \"-h\".\n" );
+    #####:  152:                    return 1;
+        -:  153:                }
+    #####:  154:                i++;
+    #####:  155:            } else if (argv[i][1] == 'o') {
+    #####:  156:                if (i == argc-1) {
+    #####:  157:                    fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  158:                    return 1;
+        -:  159:                }
+    #####:  160:                output_file_index = i+1;
+    #####:  161:                i++;
+        -:  162:            } else {
+    #####:  163:                fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  164:                return 1;
+        -:  165:            }
+    #####:  166:        } else if (reading_options && argv[i][0] == '-' && argv[i][1] == '-') {
+    #####:  167:            if (argv[i][2] == '\0') {
+    #####:  168:                reading_options = False;
+    #####:  169:            } else if (!strncmp( argv[i]+2, "help", strlen( "help" ) )) {
+    #####:  170:                help_flag = True;
+    #####:  171:            } else if (!strncmp( argv[i]+2, "version", strlen( "version" ) )) {
+    #####:  172:                PRINT_VERSION();
+    #####:  173:                return 0;
+        -:  174:            } else {
+    #####:  175:                fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  176:                return 1;
+        -:  177:            }
+    #####:  178:        } else if (input_index < 0) {
+        -:  179:            /* Use first non-flag argument as filename whence to read
+        -:  180:               specification. */
+    #####:  181:            input_index = i;
+        -:  182:        }
+        -:  183:    }
+        -:  184:
+    #####:  185:    if (help_flag) {
+        -:  186:        /* Split among printf() calls to conform with ISO C90 string length */
+    #####:  187:        printf( "Usage: %s [-hVvls] [-t TYPE] [-o FILE] [[--] FILE]\n\n"
+        -:  188:                "  -h        this help message\n"
+        -:  189:                "  -V        print version and exit\n"
+        -:  190:                "  -v        be verbose\n"
+        -:  191:                "  -l        enable logging\n"
+        -:  192:                "  -t TYPE   strategy output format; default is \"json\";\n"
+        -:  193:                "            supported formats: txt, dot, aut, json, tulip\n", argv[0] );
+    #####:  194:        printf( "  -n INIT   initial condition interpretation; (not case sensitive)\n"
+        -:  195:                "              one of\n"
+        -:  196:                "                  ALL_INIT (default)\n"
+        -:  197:                "  -s        only check specification syntax (return 2 on error)\n"
+        -:  198:/*                "  -r        only check realizability; do not synthesize strategy\n"
+        -:  199:                "            (return 0 if realizable, 3 if not)\n" */
+        -:  200:                "  -o FILE   output strategy to FILE, rather than stdout (default)\n" );
+    #####:  201:        return 0;
+        -:  202:    }
+        -:  203:
+    #####:  204:    if (logging_flag) {
+    #####:  205:        openlogfile( "rg" );
+    #####:  206:        verbose = 1;
+        -:  207:    } else {
+    #####:  208:        setlogstream( stdout );
+    #####:  209:        setlogopt( LOGOPT_NOTIME );
+        -:  210:    }
+        -:  211:
+        -:  212:    /* If filename for specification given at command-line, then use
+        -:  213:       it.  Else, read from stdin. */
+    #####:  214:    if (input_index > 0) {
+    #####:  215:        fp = fopen( argv[input_index], "r" );
+    #####:  216:        if (fp == NULL) {
+    #####:  217:            perror( __FILE__ ",  fopen" );
+    #####:  218:            return -1;
+        -:  219:        }
+    #####:  220:        stdin_backup = stdin;
+    #####:  221:        stdin = fp;
+        -:  222:    }
+        -:  223:
+        -:  224:    /* Parse the specification. */
+    #####:  225:    if (verbose)
+    #####:  226:        logprint( "Parsing input..." );
+    #####:  227:    SPC_INIT( spc );
+    #####:  228:    if (yyparse())
+    #####:  229:        return 2;
+    #####:  230:    if (verbose)
+    #####:  231:        logprint( "Done." );
+    #####:  232:    if (stdin_backup != NULL) {
+    #####:  233:        stdin = stdin_backup;
+        -:  234:    }
+        -:  235:
+    #####:  236:    if (spc.num_sgoals > 1) {
+    #####:  237:        fprintf( stderr,
+        -:  238:                 "Syntax error: reachability game specification has more"
+        -:  239:                 " than 1 system goal.\n" );
+    #####:  240:        return 2;
+        -:  241:    }
+        -:  242:
+    #####:  243:    if (check_gr1c_form( spc.evar_list, spc.svar_list, spc.env_init, spc.sys_init,
+        -:  244:                         spc.env_trans_array, spc.et_array_len,
+        -:  245:                         spc.sys_trans_array, spc.st_array_len,
+        -:  246:                         spc.env_goals, spc.num_egoals, spc.sys_goals, spc.num_sgoals,
+        -:  247:                         init_flags ) < 0)
+    #####:  248:        return 2;
+        -:  249:
+    #####:  250:    if (run_option == RG_MODE_SYNTAX)
+    #####:  251:        return 0;
+        -:  252:
+        -:  253:    /* Close input file, if opened. */
+    #####:  254:    if (input_index > 0)
+    #####:  255:        fclose( fp );
+        -:  256:
+        -:  257:    /* Omission implies empty. */
+    #####:  258:    if (spc.et_array_len == 0) {
+    #####:  259:        spc.et_array_len = 1;
+    #####:  260:        spc.env_trans_array = malloc( sizeof(ptree_t *) );
+    #####:  261:        if (spc.env_trans_array == NULL) {
+    #####:  262:            perror( __FILE__ ",  malloc" );
+    #####:  263:            return -1;
+        -:  264:        }
+    #####:  265:        *spc.env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:  266:    }
+    #####:  267:    if (spc.st_array_len == 0) {
+    #####:  268:        spc.st_array_len = 1;
+    #####:  269:        spc.sys_trans_array = malloc( sizeof(ptree_t *) );
+    #####:  270:        if (spc.sys_trans_array == NULL) {
+    #####:  271:            perror( __FILE__ ",  malloc" );
+    #####:  272:            return -1;
+        -:  273:        }
+    #####:  274:        *spc.sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:  275:    }
+        -:  276:
+        -:  277:
+    #####:  278:    if (ptdump_flag) {
+    #####:  279:        tree_dot_dump( spc.env_init, "env_init_ptree.dot" );
+    #####:  280:        tree_dot_dump( spc.sys_init, "sys_init_ptree.dot" );
+        -:  281:
+    #####:  282:        for (i = 0; i < spc.et_array_len; i++) {
+    #####:  283:            snprintf( dumpfilename, sizeof(dumpfilename),
+        -:  284:                      "env_trans%05d_ptree.dot", i );
+    #####:  285:            tree_dot_dump( *(spc.env_trans_array+i), dumpfilename );
+        -:  286:        }
+    #####:  287:        for (i = 0; i < spc.st_array_len; i++) {
+    #####:  288:            snprintf( dumpfilename, sizeof(dumpfilename),
+        -:  289:                      "sys_trans%05d_ptree.dot", i );
+    #####:  290:            tree_dot_dump( *(spc.sys_trans_array+i), dumpfilename );
+        -:  291:        }
+        -:  292:
+    #####:  293:        if (spc.num_egoals > 0) {
+    #####:  294:            for (i = 0; i < spc.num_egoals; i++) {
+    #####:  295:                snprintf( dumpfilename, sizeof(dumpfilename),
+        -:  296:                         "env_goal%05d_ptree.dot", i );
+    #####:  297:                tree_dot_dump( *(spc.env_goals+i), dumpfilename );
+        -:  298:            }
+        -:  299:        }
+    #####:  300:        if (spc.num_sgoals > 0)
+    #####:  301:            tree_dot_dump( *spc.sys_goals, "sys_goal_ptree.dot" );
+        -:  302:
+    #####:  303:        var_index = 0;
+    #####:  304:        printf( "Environment variables (indices; domains): " );
+    #####:  305:        if (spc.evar_list == NULL) {
+    #####:  306:            printf( "(none)" );
+        -:  307:        } else {
+    #####:  308:            tmppt = spc.evar_list;
+    #####:  309:            while (tmppt) {
+    #####:  310:                if (tmppt->value == -1) {  /* Boolean */
+    #####:  311:                    if (tmppt->left == NULL) {
+    #####:  312:                        printf( "%s (%d; bool)", tmppt->name, var_index );
+        -:  313:                    } else {
+    #####:  314:                        printf( "%s (%d; bool), ", tmppt->name, var_index);
+        -:  315:                    }
+        -:  316:                } else {
+    #####:  317:                    if (tmppt->left == NULL) {
+    #####:  318:                        printf( "%s (%d; {0..%d})",
+        -:  319:                                tmppt->name, var_index, tmppt->value );
+        -:  320:                    } else {
+    #####:  321:                        printf( "%s (%d; {0..%d}), ",
+        -:  322:                                tmppt->name, var_index, tmppt->value );
+        -:  323:                    }
+        -:  324:                }
+    #####:  325:                tmppt = tmppt->left;
+    #####:  326:                var_index++;
+        -:  327:            }
+        -:  328:        }
+    #####:  329:        printf( "\n\n" );
+        -:  330:
+    #####:  331:        printf( "System variables (indices; domains): " );
+    #####:  332:        if (spc.svar_list == NULL) {
+    #####:  333:            printf( "(none)" );
+        -:  334:        } else {
+    #####:  335:            tmppt = spc.svar_list;
+    #####:  336:            while (tmppt) {
+    #####:  337:                if (tmppt->value == -1) {  /* Boolean */
+    #####:  338:                    if (tmppt->left == NULL) {
+    #####:  339:                        printf( "%s (%d; bool)", tmppt->name, var_index );
+        -:  340:                    } else {
+    #####:  341:                        printf( "%s (%d; bool), ", tmppt->name, var_index );
+        -:  342:                    }
+        -:  343:                } else {
+    #####:  344:                    if (tmppt->left == NULL) {
+    #####:  345:                        printf( "%s (%d; {0..%d})",
+        -:  346:                                tmppt->name, var_index, tmppt->value );
+        -:  347:                    } else {
+    #####:  348:                        printf( "%s (%d; {0..%d}), ",
+        -:  349:                                tmppt->name, var_index, tmppt->value );
+        -:  350:                    }
+        -:  351:                }
+    #####:  352:                tmppt = tmppt->left;
+    #####:  353:                var_index++;
+        -:  354:            }
+        -:  355:        }
+    #####:  356:        printf( "\n\n" );
+        -:  357:
+    #####:  358:        printf( "ENV INIT:  " );
+    #####:  359:        print_formula( spc.env_init, stdout, FORMULA_SYNTAX_GR1C );
+    #####:  360:        printf( "\n" );
+        -:  361:
+    #####:  362:        printf( "SYS INIT:  " );
+    #####:  363:        print_formula( spc.sys_init, stdout, FORMULA_SYNTAX_GR1C );
+    #####:  364:        printf( "\n" );
+        -:  365:
+    #####:  366:        printf( "ENV TRANS:  [] " );
+    #####:  367:        print_formula( spc.env_trans, stdout, FORMULA_SYNTAX_GR1C );
+    #####:  368:        printf( "\n" );
+        -:  369:
+    #####:  370:        printf( "SYS TRANS:  [] " );
+    #####:  371:        print_formula( spc.sys_trans, stdout, FORMULA_SYNTAX_GR1C );
+    #####:  372:        printf( "\n" );
+        -:  373:
+    #####:  374:        printf( "ENV GOALS:  " );
+    #####:  375:        if (spc.num_egoals == 0) {
+    #####:  376:            printf( "(none)" );
+        -:  377:        } else {
+    #####:  378:            printf( "[]<> " );
+    #####:  379:            print_formula( *spc.env_goals, stdout, FORMULA_SYNTAX_GR1C );
+    #####:  380:            for (i = 1; i < spc.num_egoals; i++) {
+    #####:  381:                printf( " & []<> " );
+    #####:  382:                print_formula( *(spc.env_goals+i), stdout, FORMULA_SYNTAX_GR1C );
+        -:  383:            }
+        -:  384:        }
+    #####:  385:        printf( "\n" );
+        -:  386:
+    #####:  387:        printf( "SYS GOAL:  " );
+    #####:  388:        if (spc.num_sgoals == 0) {
+    #####:  389:            printf( "(none)" );
+        -:  390:        } else {
+    #####:  391:            printf( "<> " );
+    #####:  392:            print_formula( *spc.sys_goals, stdout, FORMULA_SYNTAX_GR1C );
+        -:  393:        }
+    #####:  394:        printf( "\n" );
+        -:  395:    }
+        -:  396:
+    #####:  397:    if (expand_nonbool_GR1( spc.evar_list, spc.svar_list, &spc.env_init, &spc.sys_init,
+        -:  398:                            &spc.env_trans_array, &spc.et_array_len,
+        -:  399:                            &spc.sys_trans_array, &spc.st_array_len,
+        -:  400:                            &spc.env_goals, spc.num_egoals, &spc.sys_goals, spc.num_sgoals,
+        -:  401:                            init_flags, verbose ) < 0)
+    #####:  402:        return -1;
+    #####:  403:    spc.nonbool_var_list = expand_nonbool_variables( &spc.evar_list, &spc.svar_list,
+        -:  404:                                                     verbose );
+        -:  405:
+        -:  406:    /* Merge component safety (transition) formulas */
+    #####:  407:    if (spc.et_array_len > 1) {
+    #####:  408:        spc.env_trans = merge_ptrees( spc.env_trans_array, spc.et_array_len, PT_AND );
+    #####:  409:    } else if (spc.et_array_len == 1) {
+    #####:  410:        spc.env_trans = *spc.env_trans_array;
+        -:  411:    } else {  /* No restrictions on transitions. */
+    #####:  412:        fprintf( stderr,
+        -:  413:                 "Syntax error: GR(1) specification is missing environment"
+        -:  414:                 " transition rules.\n" );
+    #####:  415:        return 2;
+        -:  416:    }
+    #####:  417:    if (spc.st_array_len > 1) {
+    #####:  418:        spc.sys_trans = merge_ptrees( spc.sys_trans_array, spc.st_array_len, PT_AND );
+    #####:  419:    } else if (spc.st_array_len == 1) {
+    #####:  420:        spc.sys_trans = *spc.sys_trans_array;
+        -:  421:    } else {  /* No restrictions on transitions. */
+    #####:  422:        fprintf( stderr,
+        -:  423:                 "Syntax error: GR(1) specification is missing system"
+        -:  424:                 " transition rules.\n" );
+    #####:  425:        return 2;
+        -:  426:    }
+        -:  427:
+    #####:  428:    if (verbose > 1)
+        -:  429:        /* Dump the spec to show results of conversion (if any). */
+    #####:  430:        print_GR1_spec( spc.evar_list, spc.svar_list, spc.env_init, spc.sys_init,
+        -:  431:                        spc.env_trans_array, spc.et_array_len,
+        -:  432:                        spc.sys_trans_array, spc.st_array_len,
+        -:  433:                        spc.env_goals, spc.num_egoals, spc.sys_goals, spc.num_sgoals, NULL );
+        -:  434:
+        -:  435:
+    #####:  436:    num_env = tree_size( spc.evar_list );
+    #####:  437:    num_sys = tree_size( spc.svar_list );
+        -:  438:
+    #####:  439:    manager = Cudd_Init( 2*(num_env+num_sys),
+        -:  440:                         0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
+    #####:  441:    Cudd_SetMaxCacheHard( manager, (unsigned int)-1 );
+    #####:  442:    Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        -:  443:
+    #####:  444:    if (verbose > 1) {
+    #####:  445:        logprint_startline();
+    #####:  446:        logprint_raw( "rg invoked with init_flags: " );
+    #####:  447:        LOGPRINT_INIT_FLAGS( init_flags );
+    #####:  448:        logprint_endline();
+        -:  449:    }
+    #####:  450:    if (verbose)
+    #####:  451:        logprint( "Synthesizing a reachability game strategy..." );
+        -:  452:
+        -:  453:    /* Set environment goal to True (i.e., any state) if none was
+        -:  454:       given. This simplifies the implementation below. */
+    #####:  455:    if (spc.num_egoals == 0) {
+    #####:  456:        env_nogoal_flag = True;
+    #####:  457:        spc.num_egoals = 1;
+    #####:  458:        spc.env_goals = malloc( sizeof(ptree_t *) );
+    #####:  459:        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:  460:    }
+        -:  461:
+        -:  462:    /* Chain together environment and system variable lists for
+        -:  463:       working with BDD library. */
+    #####:  464:    if (spc.evar_list == NULL) {
+    #####:  465:        var_separator = NULL;
+    #####:  466:        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+        -:  467:                                           is indicated by var_separator = NULL. */
+        -:  468:    } else {
+    #####:  469:        var_separator = get_list_item( spc.evar_list, -1 );
+    #####:  470:        if (var_separator == NULL) {
+    #####:  471:            fprintf( stderr,
+        -:  472:                     "Error: get_list_item failed on environment variables"
+        -:  473:                     " list.\n" );
+    #####:  474:            return -1;
+        -:  475:        }
+    #####:  476:        var_separator->left = spc.svar_list;
+        -:  477:    }
+        -:  478:
+        -:  479:    /* Generate BDDs for the various parse trees from the problem spec. */
+    #####:  480:    if (spc.env_init != NULL) {
+    #####:  481:        einit = ptree_BDD( spc.env_init, spc.evar_list, manager );
+        -:  482:    } else {
+    #####:  483:        einit = Cudd_ReadOne( manager );
+    #####:  484:        Cudd_Ref( einit );
+        -:  485:    }
+    #####:  486:    if (spc.sys_init != NULL) {
+    #####:  487:        sinit = ptree_BDD( spc.sys_init, spc.evar_list, manager );
+        -:  488:    } else {
+    #####:  489:        sinit = Cudd_ReadOne( manager );
+    #####:  490:        Cudd_Ref( sinit );
+        -:  491:    }
+    #####:  492:    if (verbose > 1)
+    #####:  493:        logprint( "Building environment transition BDD..." );
+    #####:  494:    etrans = ptree_BDD( spc.env_trans, spc.evar_list, manager );
+    #####:  495:    if (verbose > 1) {
+    #####:  496:        logprint( "Done." );
+    #####:  497:        logprint( "Building system transition BDD..." );
+        -:  498:    }
+    #####:  499:    strans = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
+    #####:  500:    if (verbose > 1)
+    #####:  501:        logprint( "Done." );
+    #####:  502:    if (spc.num_egoals > 0) {
+    #####:  503:        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+    #####:  504:        for (i = 0; i < spc.num_egoals; i++)
+    #####:  505:            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
+        -:  506:    } else {
+    #####:  507:        egoals = NULL;
+        -:  508:    }
+        -:  509:
+    #####:  510:    Entry = Cudd_bddAnd( manager, einit, sinit );
+    #####:  511:    Cudd_Ref( Entry );
+    #####:  512:    if (spc.num_sgoals > 0) {
+    #####:  513:        Exit = ptree_BDD( *spc.sys_goals, spc.evar_list, manager );
+        -:  514:    } else {
+    #####:  515:        Exit = Cudd_Not( Cudd_ReadOne( manager ) );  /* No exit */
+    #####:  516:        Cudd_Ref( Exit );
+        -:  517:    }
+        -:  518:
+    #####:  519:    if (var_separator == NULL) {
+    #####:  520:        spc.evar_list = NULL;
+        -:  521:    } else {
+    #####:  522:        var_separator->left = NULL;
+        -:  523:    }
+        -:  524:
+        -:  525:    /* Define a map in the manager to easily swap variables with their
+        -:  526:       primed selves. */
+    #####:  527:    vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####:  528:    pvars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####:  529:    for (i = 0; i < num_env+num_sys; i++) {
+    #####:  530:        *(vars+i) = Cudd_bddIthVar( manager, i );
+    #####:  531:        *(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
+        -:  532:    }
+    #####:  533:    if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
+    #####:  534:        fprintf( stderr,
+        -:  535:                 "Error: failed to define variable map in CUDD manager.\n" );
+    #####:  536:        return -1;
+        -:  537:    }
+    #####:  538:    free( vars );
+    #####:  539:    free( pvars );
+        -:  540:
+    #####:  541:    strategy = synthesize_reachgame_BDD( manager, num_env, num_sys,
+        -:  542:                                         Entry, Exit, etrans, strans,
+        -:  543:                                         egoals, Cudd_ReadOne( manager ),
+        -:  544:                                         verbose );
+        -:  545:
+    #####:  546:    if (strategy == NULL) {
+    #####:  547:        fprintf( stderr, "Synthesis failed.\n" );
+    #####:  548:        return -1;
+        -:  549:    } else {
+        -:  550:
+        -:  551:        /* De-expand nonboolean variables */
+    #####:  552:        tmppt = spc.nonbool_var_list;
+    #####:  553:        while (tmppt) {
+    #####:  554:            aut_compact_nonbool( strategy, spc.evar_list, spc.svar_list,
+        -:  555:                                 tmppt->name, tmppt->value );
+    #####:  556:            tmppt = tmppt->left;
+        -:  557:        }
+        -:  558:
+    #####:  559:        num_env = tree_size( spc.evar_list );
+    #####:  560:        num_sys = tree_size( spc.svar_list );
+        -:  561:
+        -:  562:        /* Open output file if specified; else point to stdout. */
+    #####:  563:        if (output_file_index >= 0) {
+    #####:  564:            fp = fopen( argv[output_file_index], "w" );
+    #####:  565:            if (fp == NULL) {
+    #####:  566:                perror( __FILE__ ",  fopen" );
+    #####:  567:                return -1;
+        -:  568:            }
+        -:  569:        } else {
+    #####:  570:            fp = stdout;
+        -:  571:        }
+        -:  572:
+    #####:  573:        if (format_option == OUTPUT_FORMAT_TEXT) {
+    #####:  574:            list_aut_dump( strategy, num_env+num_sys, fp );
+    #####:  575:        } else if (format_option == OUTPUT_FORMAT_DOT) {
+    #####:  576:            if (spc.nonbool_var_list != NULL) {
+    #####:  577:                dot_aut_dump( strategy, spc.evar_list, spc.svar_list,
+        -:  578:                              DOT_AUT_ATTRIB, fp );
+        -:  579:            } else {
+    #####:  580:                dot_aut_dump( strategy, spc.evar_list, spc.svar_list,
+        -:  581:                              DOT_AUT_BINARY | DOT_AUT_ATTRIB, fp );
+        -:  582:            }
+    #####:  583:        } else if (format_option == OUTPUT_FORMAT_AUT) {
+    #####:  584:            aut_aut_dump( strategy, num_env+num_sys, fp );
+    #####:  585:        } else if (format_option == OUTPUT_FORMAT_JSON) {
+    #####:  586:            json_aut_dump( strategy, spc.evar_list, spc.svar_list, fp );
+        -:  587:        } else { /* OUTPUT_FORMAT_TULIP */
+    #####:  588:            tulip_aut_dump( strategy, spc.evar_list, spc.svar_list, fp );
+        -:  589:        }
+        -:  590:
+    #####:  591:        if (fp != stdout)
+    #####:  592:            fclose( fp );
+        -:  593:    }
+        -:  594:
+        -:  595:    /* Clean-up */
+    #####:  596:    delete_tree( spc.evar_list );
+    #####:  597:    delete_tree( spc.svar_list );
+    #####:  598:    delete_tree( spc.env_init );
+    #####:  599:    delete_tree( spc.sys_init );
+    #####:  600:    delete_tree( spc.env_trans );
+    #####:  601:    delete_tree( spc.sys_trans );
+    #####:  602:    if (spc.num_sgoals > 0) {
+    #####:  603:        delete_tree( *spc.sys_goals );
+    #####:  604:        free( spc.sys_goals );
+        -:  605:    }
+    #####:  606:    Cudd_RecursiveDeref( manager, einit );
+    #####:  607:    Cudd_RecursiveDeref( manager, sinit );
+    #####:  608:    Cudd_RecursiveDeref( manager, etrans );
+    #####:  609:    Cudd_RecursiveDeref( manager, strans );
+    #####:  610:    Cudd_RecursiveDeref( manager, Entry );
+    #####:  611:    Cudd_RecursiveDeref( manager, Exit );
+    #####:  612:    for (i = 0; i < spc.num_egoals; i++)
+    #####:  613:        Cudd_RecursiveDeref( manager, *(egoals+i) );
+    #####:  614:    free( egoals );
+    #####:  615:    if (env_nogoal_flag) {
+    #####:  616:        spc.num_egoals = 0;
+    #####:  617:        delete_tree( *spc.env_goals );
+    #####:  618:        free( spc.env_goals );
+        -:  619:    } else {
+    #####:  620:        for (i = 0; i < spc.num_egoals; i++)
+    #####:  621:            delete_tree( *(spc.env_goals+i) );
+    #####:  622:        if (spc.num_egoals > 0)
+    #####:  623:            free( spc.env_goals );
+        -:  624:    }
+    #####:  625:    if (strategy)
+    #####:  626:        delete_aut( strategy );
+    #####:  627:    if (verbose > 1)
+    #####:  628:        logprint( "Cudd_CheckZeroRef -> %d", Cudd_CheckZeroRef( manager ) );
+    #####:  629:    Cudd_Quit(manager);
+    #####:  630:    if (logging_flag)
+    #####:  631:        closelogfile();
+        -:  632:
+        -:  633:    /* Return 0 if realizable, 3 if not realizable. */
+    #####:  634:    if (strategy != NULL) {
+    #####:  635:        return 0;
+        -:  636:    } else {
+    #####:  637:        return 3;
+        -:  638:    }
+        -:  639:
+        -:  640:    return 0;
+        -:  641:}

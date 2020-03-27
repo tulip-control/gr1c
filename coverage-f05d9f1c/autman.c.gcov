@@ -1,0 +1,329 @@
+        -:    0:Source:aux/autman.c
+        -:    0:Graph:autman.gcno
+        -:    0:Data:-
+        -:    0:Runs:0
+        -:    0:Programs:0
+        -:    1:/* autman.c -- entry point for a finite-state machine (automaton) manipulator
+        -:    2: *
+        -:    3: * Try invoking it with "-h"...
+        -:    4: *
+        -:    5: *
+        -:    6: * SCL; 2014-2015
+        -:    7: */
+        -:    8:
+        -:    9:#include <stdlib.h>
+        -:   10:#include <stdio.h>
+        -:   11:#include <string.h>
+        -:   12:
+        -:   13:#include "common.h"
+        -:   14:#include "logging.h"
+        -:   15:#include "automaton.h"
+        -:   16:#include "ptree.h"
+        -:   17:extern int yyparse( void );
+        -:   18:extern void yyrestart( FILE *new_file );
+        -:   19:
+        -:   20:
+        -:   21:/**************************
+        -:   22: **** Global variables ****/
+        -:   23:
+        -:   24:extern specification_t spc;
+        -:   25:
+        -:   26:/**************************/
+        -:   27:
+        -:   28:
+        -:   29:/* Output formats */
+        -:   30:#define OUTPUT_FORMAT_TEXT 0
+        -:   31:#define OUTPUT_FORMAT_TULIP 1
+        -:   32:#define OUTPUT_FORMAT_DOT 2
+        -:   33:#define OUTPUT_FORMAT_AUT 3
+        -:   34:#define OUTPUT_FORMAT_JSON 5
+        -:   35:
+        -:   36:/* Runtime modes */
+        -:   37:#define AUTMAN_SYNTAX 1
+        -:   38:#define AUTMAN_VARTYPES 2
+        -:   39:#define AUTMAN_VERMODEL 3
+        -:   40:#define AUTMAN_CONVERT 4
+        -:   41:
+        -:   42:/* Verification model targets */
+        -:   43:#define VERMODEL_TARGET_SPIN 1
+        -:   44:
+        -:   45:
+    #####:   46:int main( int argc, char **argv )
+        -:   47:{
+        -:   48:    FILE *fp;
+        -:   49:    int i, j;
+    #####:   50:    int in_filename_index = -1;
+    #####:   51:    FILE *in_fp = NULL;
+        -:   52:    anode_t *head;
+        -:   53:    int version;
+    #####:   54:    int state_len = -1;
+    #####:   55:    byte format_option = OUTPUT_FORMAT_JSON;
+    #####:   56:    byte verification_model = 0;  /* For command-line flag "-P". */
+        -:   57:
+    #####:   58:    unsigned char verbose = 0;
+    #####:   59:    bool logging_flag = False;
+    #####:   60:    int run_option = AUTMAN_SYNTAX;
+    #####:   61:    int spc_file_index = -1;
+    #####:   62:    int output_file_index = -1;  /* For command-line flag "-o". */
+        -:   63:    FILE *spc_fp;
+        -:   64:
+    #####:   65:    for (i = 1; i < argc; i++) {
+    #####:   66:        if (argv[i][0] == '-') {
+    #####:   67:            if (argv[i][2] != '\0'
+    #####:   68:                && !(argv[i][1] == 'v' && argv[i][2] == 'v')) {
+    #####:   69:                fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:   70:                return 1;
+        -:   71:            }
+        -:   72:
+    #####:   73:            if (argv[i][1] == 'h') {
+    #####:   74:                printf( "Usage: %s [-hVvlsP] [-t TYPE] [-L N] [-i FILE] [-o FILE] [FILE]\n\n"
+        -:   75:                        "If no input file is given, or if FILE is -, read from stdin.  If no action\n"
+        -:   76:                        "is requested, then assume -s.\n\n"
+        -:   77:                        "  -h          this help message\n"
+        -:   78:                        "  -V          print version and exit\n"
+        -:   79:                        "  -v          be verbose; use -vv to be more verbose\n"
+        -:   80:                        "  -l          enable logging\n"
+        -:   81:                        "  -s          check syntax and get version;\n"
+        -:   82:                        "              print format version number, or -1 if error.\n",
+        -:   83:                        argv[0] );
+        -:   84:/*                        "  -ss         extends -s to also check the number of and values\n"
+        -:   85:                        "              assigned to variables, given specification.\n" */
+    #####:   86:                printf( "  -t TYPE     convert to format: txt, dot, aut, json, tulip\n"
+        -:   87:                        "              some of these require a reference specification.\n"
+        -:   88:                        "  -P          create Spin Promela model of strategy\n"
+        -:   89:                        "              if used with -o, then the LTL formula is printed to stdout.\n"
+        -:   90:                        "  -L N        declare that state vector size is N\n"
+        -:   91:                        "  -i FILE     process strategy with respect to specification FILE\n"
+        -:   92:                        "  -o FILE     output to FILE, rather than stdout (default)\n" );
+    #####:   93:                return 0;
+    #####:   94:            } else if (argv[i][1] == 'V') {
+    #####:   95:                printf( "gr1c-autman (automaton file manipulator, distributed with"
+        -:   96:                        " gr1c v" GR1C_VERSION ")\n\n" GR1C_COPYRIGHT "\n" );
+    #####:   97:                PRINT_LINKED_VERSIONS();
+    #####:   98:                return 0;
+    #####:   99:            } else if (argv[i][1] == 'v') {
+    #####:  100:                verbose++;
+    #####:  101:                j = 2;
+        -:  102:                /* Only support up to "level 2" of verbosity */
+    #####:  103:                while (argv[i][j] == 'v' && j <= 2) {
+    #####:  104:                    verbose++;
+    #####:  105:                    j++;
+        -:  106:                }
+    #####:  107:            } else if (argv[i][1] == 'l') {
+    #####:  108:                logging_flag = True;
+    #####:  109:            } else if (argv[i][1] == 's') {
+    #####:  110:                if (argv[i][2] == 's')
+    #####:  111:                    run_option = AUTMAN_VARTYPES;
+        -:  112:                else
+    #####:  113:                    run_option = AUTMAN_SYNTAX;
+    #####:  114:            } else if (argv[i][1] == 't') {
+    #####:  115:                run_option = AUTMAN_CONVERT;
+    #####:  116:                if (i == argc-1) {
+    #####:  117:                    fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  118:                    return 1;
+        -:  119:                }
+    #####:  120:                if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
+    #####:  121:                    format_option = OUTPUT_FORMAT_TEXT;
+    #####:  122:                } else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
+    #####:  123:                    format_option = OUTPUT_FORMAT_TULIP;
+    #####:  124:                } else if (!strncmp( argv[i+1], "dot", strlen( "dot" ) )) {
+    #####:  125:                    format_option = OUTPUT_FORMAT_DOT;
+    #####:  126:                } else if (!strncmp( argv[i+1], "aut", strlen( "aut" ) )) {
+    #####:  127:                    format_option = OUTPUT_FORMAT_AUT;
+    #####:  128:                } else if (!strncmp( argv[i+1], "json", strlen( "json" ) )) {
+    #####:  129:                    format_option = OUTPUT_FORMAT_JSON;
+        -:  130:                } else {
+    #####:  131:                    fprintf( stderr,
+        -:  132:                             "Unrecognized output format. Try \"-h\".\n" );
+    #####:  133:                    return 1;
+        -:  134:                }
+    #####:  135:                i++;
+    #####:  136:            } else if (argv[i][1] == 'i') {
+    #####:  137:                if (i == argc-1) {
+    #####:  138:                    fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  139:                    return 1;
+        -:  140:                }
+    #####:  141:                spc_file_index = i+1;
+    #####:  142:                i++;
+    #####:  143:            } else if (argv[i][1] == 'L') {
+    #####:  144:                if (i == argc-1) {
+    #####:  145:                    fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  146:                    return 1;
+        -:  147:                }
+    #####:  148:                state_len = strtol( argv[i+1], NULL, 10 );
+    #####:  149:                i++;
+    #####:  150:            } else if (argv[i][1] == 'P') {
+    #####:  151:                run_option = AUTMAN_VERMODEL;
+    #####:  152:                verification_model = VERMODEL_TARGET_SPIN;
+    #####:  153:            } else if (argv[i][1] == 'o') {
+    #####:  154:                if (i == argc-1) {
+    #####:  155:                    fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  156:                    return 1;
+        -:  157:                }
+    #####:  158:                output_file_index = i+1;
+    #####:  159:                i++;
+        -:  160:            } else {
+    #####:  161:                fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  162:                return 1;
+        -:  163:            }
+        -:  164:        } else {
+    #####:  165:            in_filename_index = i;
+        -:  166:        }
+        -:  167:    }
+        -:  168:
+    #####:  169:    if (run_option == AUTMAN_VERMODEL && spc_file_index < 0) {
+    #####:  170:        fprintf( stderr,
+        -:  171:                 "-P flag requires a reference specification to be given"
+        -:  172:                 " (-i switch).\n" );
+    #####:  173:        return 1;
+        -:  174:    }
+        -:  175:
+    #####:  176:    if (run_option == AUTMAN_CONVERT && spc_file_index < 0
+    #####:  177:        && (format_option == OUTPUT_FORMAT_DOT
+    #####:  178:            || format_option == OUTPUT_FORMAT_JSON
+    #####:  179:            || format_option == OUTPUT_FORMAT_TULIP)) {
+    #####:  180:        fprintf( stderr,
+        -:  181:                 "Conversion of output to selected format requires a"
+        -:  182:                 " reference\nspecification to be given (-i switch).\n" );
+    #####:  183:        return 1;
+        -:  184:    }
+        -:  185:
+    #####:  186:    if (spc_file_index < 0 && state_len < 1) {
+    #####:  187:        if (state_len < 0)
+    #####:  188:            fprintf( stderr,
+        -:  189:                     "State vector length must be declared (-L switch)"
+        -:  190:                     " when no reference\nspecification is given.\n" );
+        -:  191:        else
+    #####:  192:            fprintf( stderr,
+        -:  193:                     "State vector length must be at least 1.  Try \"-h\".\n" );
+    #####:  194:        return 1;
+        -:  195:    }
+        -:  196:
+        -:  197:/*    if (run_option == AUTMAN_VARTYPES && spc_file_index < 0) {
+        -:  198:        fprintf( stderr,
+        -:  199:                 "-ss flag requires a reference specification to be given"
+        -:  200:                 " (-i switch).\n" );
+        -:  201:        return 1;
+        -:  202:    } */
+        -:  203:
+    #####:  204:    if (logging_flag) {
+    #####:  205:        openlogfile( NULL );
+    #####:  206:        if (verbose == 0)
+    #####:  207:            verbose = 1;
+        -:  208:    } else {
+    #####:  209:        setlogstream( stdout );
+    #####:  210:        setlogopt( LOGOPT_NOTIME );
+        -:  211:    }
+    #####:  212:    if (verbose > 0)
+    #####:  213:        logprint( "Running with verbosity level %d.", verbose );
+        -:  214:
+        -:  215:    /* Parse the specification file if given. */
+    #####:  216:    if (spc_file_index >= 0) {
+    #####:  217:        if (verbose > 1)
+    #####:  218:            logprint( "Using file \"%s\" for reference specification.",
+    #####:  219:                      argv[spc_file_index] );
+        -:  220:
+    #####:  221:        spc_fp = fopen( argv[spc_file_index], "r" );
+    #####:  222:        if (spc_fp == NULL) {
+    #####:  223:            perror( "gr1c-autman, fopen" );
+    #####:  224:            return -1;
+        -:  225:        }
+    #####:  226:        yyrestart( spc_fp );
+    #####:  227:        if (verbose)
+    #####:  228:            logprint( "Parsing reference specification file..." );
+    #####:  229:        SPC_INIT( spc );
+    #####:  230:        if (yyparse())
+    #####:  231:            return 2;
+    #####:  232:        if (verbose)
+    #####:  233:            logprint( "Done." );
+    #####:  234:        fclose( spc_fp );
+    #####:  235:        spc_fp = NULL;
+        -:  236:
+    #####:  237:        state_len = tree_size( spc.evar_list ) + tree_size( spc.svar_list );
+    #####:  238:        if (verbose)
+    #####:  239:            logprint( "Detected state vector length of %d.", state_len );
+        -:  240:    }
+        -:  241:
+    #####:  242:    if (in_filename_index < 0 || !strncmp( argv[in_filename_index], "-", 1 )) {
+    #####:  243:        if (verbose > 1)
+    #####:  244:            logprint( "Using stdin for input." );
+    #####:  245:        in_fp = stdin;
+        -:  246:    } else {
+    #####:  247:        if (verbose > 1)
+    #####:  248:            logprint( "Using file \"%s\" for input.", argv[in_filename_index] );
+    #####:  249:        in_fp = fopen( argv[in_filename_index], "r" );
+    #####:  250:        if (in_fp == NULL) {
+    #####:  251:            perror( "autman, fopen" );
+    #####:  252:            return -1;
+        -:  253:        }
+        -:  254:    }
+        -:  255:
+    #####:  256:    if (verbose > 1)
+    #####:  257:        logprint( "Loading automaton..." );
+    #####:  258:    head = aut_aut_loadver( state_len, in_fp, &version );
+    #####:  259:    if (head == NULL) {
+    #####:  260:        if (verbose)
+    #####:  261:            fprintf( stderr, "Error: failed to load aut.\n" );
+    #####:  262:        return 3;
+        -:  263:    }
+    #####:  264:    if (verbose > 1)
+    #####:  265:        logprint( "Done." );
+    #####:  266:    if (verbose) {
+    #####:  267:        logprint( "Detected format version %d.", version );
+    #####:  268:        logprint( "Given automaton has size %d.", aut_size( head ) );
+        -:  269:    }
+        -:  270:
+        -:  271:
+        -:  272:    /* Open output file if specified; else point to stdout. */
+    #####:  273:    if (output_file_index >= 0) {
+    #####:  274:        fp = fopen( argv[output_file_index], "w" );
+    #####:  275:        if (fp == NULL) {
+    #####:  276:            perror( "gr1c, fopen" );
+    #####:  277:            return -1;
+        -:  278:        }
+        -:  279:    } else {
+    #####:  280:        fp = stdout;
+        -:  281:    }
+        -:  282:
+    #####:  283:    switch (run_option) {
+    #####:  284:    case AUTMAN_SYNTAX:
+    #####:  285:        printf( "%d\n", version );
+    #####:  286:        return 0;
+        -:  287:
+    #####:  288:    case AUTMAN_VERMODEL:
+        -:  289:        /* Currently, only target supported is Spin Promela,
+        -:  290:           so the variable verification_model is not checked. */
+    #####:  291:        spin_aut_dump( head, spc.evar_list, spc.svar_list,
+        -:  292:                       spc.env_init, spc.sys_init,
+        -:  293:                       spc.env_trans_array, spc.et_array_len,
+        -:  294:                       spc.sys_trans_array, spc.st_array_len,
+        -:  295:                       spc.env_goals, spc.num_egoals,
+        -:  296:                       spc.sys_goals, spc.num_sgoals,
+        -:  297:                       fp, stdout );
+    #####:  298:        break;
+        -:  299:
+    #####:  300:    case AUTMAN_CONVERT:
+    #####:  301:        if (format_option == OUTPUT_FORMAT_TEXT) {
+    #####:  302:            list_aut_dump( head, state_len, fp );
+    #####:  303:        } else if (format_option == OUTPUT_FORMAT_DOT) {
+    #####:  304:            dot_aut_dump( head, spc.evar_list, spc.svar_list,
+        -:  305:                          DOT_AUT_ATTRIB, fp );
+    #####:  306:        } else if (format_option == OUTPUT_FORMAT_AUT) {
+    #####:  307:            aut_aut_dump( head, state_len, fp );
+    #####:  308:        } else if (format_option == OUTPUT_FORMAT_JSON) {
+    #####:  309:            json_aut_dump( head, spc.evar_list, spc.svar_list, fp );
+        -:  310:        } else { /* OUTPUT_FORMAT_TULIP */
+    #####:  311:            tulip_aut_dump( head, spc.evar_list, spc.svar_list, fp );
+        -:  312:        }
+    #####:  313:        break;
+        -:  314:
+    #####:  315:    default:
+    #####:  316:        fprintf( stderr, "Unrecognized run option.  Try \"-h\".\n" );
+    #####:  317:        return 1;
+        -:  318:    }
+        -:  319:
+    #####:  320:    if (fp != stdout)
+    #####:  321:        fclose( fp );
+        -:  322:
+    #####:  323:    return 0;
+        -:  324:}

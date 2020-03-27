@@ -1,0 +1,219 @@
+        -:    0:Source:src/logging.c
+        -:    0:Graph:logging.gcno
+        -:    0:Data:logging.gcda
+        -:    0:Runs:9
+        -:    0:Programs:9
+        -:    1:/* logging.c -- Definitions for signatures appearing in logging.h.
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2012-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#define _POSIX_C_SOURCE 200809L
+        -:    9:#include "logging.h"
+        -:   10:#include <stdlib.h>
+        -:   11:#include <stdio.h>
+        -:   12:#include <string.h>
+        -:   13:#include <time.h>
+        -:   14:#include <stdarg.h>
+        -:   15:#include <sys/types.h>
+        -:   16:#include <unistd.h>
+        -:   17:
+        -:   18:
+        -:   19:#define TIMESTAMP_LEN 32
+        -:   20:#define FILENAME_LEN 256
+        -:   21:char logfilename[FILENAME_LEN];
+        -:   22:FILE *logfp = NULL;
+        -:   23:int logopt = 0;
+        -:   24:
+        -:   25:
+        2:   26:void setlogstream( FILE *fp )
+        -:   27:{
+        2:   28:    *logfilename = '\0';
+        2:   29:    if (fp == NULL) {
+        1:   30:        logfp = stdout;
+        -:   31:    } else {
+        1:   32:        logfp = fp;
+        -:   33:    }
+        2:   34:}
+        -:   35:
+        2:   36:FILE *getlogstream()
+        -:   37:{
+        2:   38:    return logfp;
+        -:   39:}
+        -:   40:
+        -:   41:
+    #####:   42:void setlogopt( int options )
+        -:   43:{
+    #####:   44:    logopt = options;
+    #####:   45:}
+        -:   46:
+    #####:   47:int getlogopt()
+        -:   48:{
+    #####:   49:    return logopt;
+        -:   50:}
+        -:   51:
+        -:   52:
+    #####:   53:FILE *openlogfile( char *prefix )
+        -:   54:{
+        -:   55:    struct tm *timeptr;
+        -:   56:    time_t clock;
+        -:   57:
+    #####:   58:    if (prefix != NULL) {
+    #####:   59:        strncpy( logfilename, prefix, FILENAME_LEN );
+        -:   60:    } else {
+    #####:   61:        strncpy( logfilename, "gr1c", FILENAME_LEN );
+    #####:   62:        snprintf( logfilename+4, FILENAME_LEN-4, "-%d", getpid() );
+        -:   63:    }
+    #####:   64:    logfilename[FILENAME_LEN-1] = '\0';
+        -:   65:
+    #####:   66:    clock = time( NULL );
+    #####:   67:    timeptr = gmtime( &clock );  /* UTC */
+    #####:   68:    if (strftime( logfilename+strlen(logfilename),
+    #####:   69:                  FILENAME_LEN-strlen(logfilename),
+        -:   70:                  "-%Y%m%d.log", timeptr ) == 0) {
+    #####:   71:        fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
+    #####:   72:        return NULL;
+        -:   73:    }
+    #####:   74:    logfilename[FILENAME_LEN-1] = '\0';
+        -:   75:
+    #####:   76:    if (closelogfile())
+    #####:   77:        return NULL;
+        -:   78:
+    #####:   79:    logfp = fopen( logfilename, "a" );
+    #####:   80:    if (logfp == NULL) {
+    #####:   81:        perror( __FILE__ ",  fopen" );
+    #####:   82:        exit(-1);
+        -:   83:    }
+        -:   84:
+    #####:   85:    return logfp;
+        -:   86:}
+        -:   87:
+        1:   88:int closelogfile()
+        -:   89:{
+        1:   90:    if (logfp != NULL && logfp != stdout) {
+        1:   91:        if (fclose( logfp ) == EOF) {
+    #####:   92:            perror( __FILE__ ",  fclose" );
+    #####:   93:            exit(-1);
+        -:   94:        }
+        -:   95:    }
+        1:   96:    return 0;
+        -:   97:}
+        -:   98:
+        3:   99:void logprint( char *fmt, ... )
+        -:  100:{
+        -:  101:    va_list ap;
+        -:  102:    struct tm *timeptr;
+        -:  103:    time_t clock;
+        -:  104:    char timestamp[TIMESTAMP_LEN];
+        -:  105:
+        3:  106:    if (logfp == NULL) {
+    #####:  107:        fprintf( stderr, "WARNING: Attempted to write to non-existent log." );
+    #####:  108:        return;
+        -:  109:    }
+        -:  110:
+        3:  111:    if ((logopt & 0x1) == LOGOPT_TIME) {
+        3:  112:        clock = time( NULL );
+        3:  113:        timeptr = gmtime( &clock );  /* UTC */
+        3:  114:        if (strftime( timestamp, TIMESTAMP_LEN,
+        -:  115:                      "%Y-%m-%d %H:%M:%S", timeptr ) == 0) {
+    #####:  116:            fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
+    #####:  117:            return;
+        -:  118:        }
+        3:  119:        fprintf( logfp, "%s ", timestamp );
+        -:  120:    }
+        -:  121:
+        3:  122:    va_start( ap, fmt );
+        -:  123:
+       31:  124:    while (*fmt != '\0') {
+       25:  125:        if (*fmt == '%') {
+        5:  126:            fmt++;
+        5:  127:            switch(*fmt) {
+        1:  128:            case 'f':
+        1:  129:                fprintf( logfp, "%f", va_arg( ap, double ) );
+        1:  130:                break;
+        3:  131:            case 'd':
+        3:  132:                fprintf( logfp, "%d", va_arg( ap, int ) );
+        3:  133:                break;
+        1:  134:            case 's':
+        1:  135:                fprintf( logfp, "%s", va_arg( ap, char * ) );
+        1:  136:                break;
+    #####:  137:            default:
+    #####:  138:                fputc( *fmt, logfp );
+        -:  139:            }
+        -:  140:        } else {
+       20:  141:            fputc( *fmt, logfp );
+        -:  142:        }
+       25:  143:        fmt++;
+        -:  144:    }
+        3:  145:    fputc( '\n', logfp );
+        -:  146:
+        3:  147:    va_end( ap );
+        3:  148:    fflush( logfp );
+        -:  149:}
+        -:  150:
+        -:  151:
+        2:  152:void logprint_startline()
+        -:  153:{
+        -:  154:    struct tm *timeptr;
+        -:  155:    time_t clock;
+        -:  156:    char timestamp[TIMESTAMP_LEN];
+        -:  157:
+        2:  158:    if (logfp == NULL) {
+    #####:  159:        fprintf( stderr, "WARNING: Attempted to write to non-existent log." );
+    #####:  160:        return;
+        -:  161:    }
+        -:  162:
+        2:  163:    if ((logopt & 0x1) == LOGOPT_TIME) {
+        2:  164:        clock = time( NULL );
+        2:  165:        timeptr = gmtime( &clock );  /* UTC */
+        2:  166:        if (strftime( timestamp, TIMESTAMP_LEN,
+        -:  167:                      "%Y-%m-%d %H:%M:%S", timeptr ) == 0) {
+    #####:  168:            fprintf( stderr, "ERROR: strftime() failed to create timestamp." );
+    #####:  169:            return;
+        -:  170:        }
+        2:  171:        fprintf( logfp, "%s ", timestamp );
+        -:  172:    }
+        -:  173:}
+        -:  174:
+        2:  175:void logprint_endline()
+        -:  176:{
+        2:  177:    fputc( '\n', logfp );
+        2:  178:    fflush( logfp );
+        2:  179:}
+        -:  180:
+        4:  181:void logprint_raw( char *fmt, ... )
+        -:  182:{
+        -:  183:    va_list ap;
+        -:  184:
+        4:  185:    if (logfp == NULL) {
+    #####:  186:        fprintf( stderr, "WARNING: Attempted to write to non-existent log." );
+    #####:  187:        return;
+        -:  188:    }
+        -:  189:
+        4:  190:    va_start( ap, fmt );
+      123:  191:    while (*fmt != '\0') {
+      115:  192:        if (*fmt == '%') {
+        3:  193:            fmt++;
+        3:  194:            switch(*fmt) {
+        1:  195:            case 'f':
+        1:  196:                fprintf( logfp, "%f", va_arg( ap, double ) );
+        1:  197:                break;
+        1:  198:            case 'd':
+        1:  199:                fprintf( logfp, "%d", va_arg( ap, int ) );
+        1:  200:                break;
+        1:  201:            case 's':
+        1:  202:                fprintf( logfp, "%s", va_arg( ap, char * ) );
+        1:  203:                break;
+    #####:  204:            default:
+    #####:  205:                fputc( *fmt, logfp );
+        -:  206:            }
+        -:  207:        } else {
+      112:  208:            fputc( *fmt, logfp );
+        -:  209:        }
+      115:  210:        fmt++;
+        -:  211:    }
+        -:  212:
+        4:  213:    va_end( ap );
+        -:  214:}

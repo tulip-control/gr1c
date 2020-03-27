@@ -1,0 +1,14 @@
+<map id="ABDD" name="ABDD">
+<area shape="rect" id="node1" title="Class for ADDs and BDDs." alt="" coords="117,676,177,703"/>
+<area shape="rect" id="node2" href="$classDD.html" title="Base class for all decision diagrams in CUDD." alt="" coords="125,600,168,627"/>
+<area shape="rect" id="node3" href="$classCapsule.html" title="Class for reference counting of CUDD managers." alt="" coords="503,511,577,537"/>
+<area shape="rect" id="node4" href="$structDdManager.html" title="Specialized DD symbol table." alt="" coords="311,377,409,404"/>
+<area shape="rect" id="node5" href="$structDdLocalCache.html" title="Local cache." alt="" coords="84,511,199,537"/>
+<area shape="rect" id="node12" href="$structDdHook.html" title="CUDD hook." alt="" coords="323,511,397,537"/>
+<area shape="rect" id="node6" href="$structDdLocalCacheItem.html" title="Generic local cache item." alt="" coords="25,318,169,345"/>
+<area shape="rect" id="node7" href="$structDdNode.html" title="Decision diagram node." alt="" coords="164,5,239,32"/>
+<area shape="rect" id="node8" href="$structDdChildren.html" title="The two children of a non&#45;terminal node." alt="" coords="198,191,293,218"/>
+<area shape="rect" id="node9" href="$structDdSubtable.html" title="Subtable for one index." alt="" coords="639,191,737,218"/>
+<area shape="rect" id="node11" href="$structDdCache.html" title="Computed table." alt="" coords="93,191,173,218"/>
+<area shape="rect" id="node10" href="$structMtrNode__.html" title="multi&#45;way tree node." alt="" coords="317,191,403,218"/>
+</map>

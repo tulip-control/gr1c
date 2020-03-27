@@ -1,0 +1,531 @@
+        -:    0:Source:src/solve_metric.c
+        -:    0:Graph:solve_metric.gcno
+        -:    0:Data:-
+        -:    0:Runs:0
+        -:    0:Programs:0
+        -:    1:/* solve_metric.c -- Mostly definitions for signatures in solve_metric.h.
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2012-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#define _POSIX_C_SOURCE 200809L
+        -:    9:#include <string.h>
+        -:   10:#include <stdio.h>
+        -:   11:#include <stdlib.h>
+        -:   12:#include <math.h>
+        -:   13:
+        -:   14:#include "common.h"
+        -:   15:#include "logging.h"
+        -:   16:#include "gr1c_util.h"
+        -:   17:#include "ptree.h"
+        -:   18:#include "solve.h"
+        -:   19:#include "solve_support.h"
+        -:   20:#include "solve_metric.h"
+        -:   21:
+        -:   22:
+        -:   23:extern specification_t spc;
+        -:   24:
+        -:   25:
+    #####:   26:int *get_offsets( char *metric_vars, int *num_vars )
+        -:   27:{
+    #####:   28:    char *var_str, *tok = NULL;
+    #####:   29:    int *offw = NULL;
+        -:   30:    ptree_t *var, *var_tail;
+        -:   31:    int start_index, stop_index;
+        -:   32:
+    #####:   33:    if (metric_vars == NULL)
+    #####:   34:        return NULL;
+    #####:   35:    var_str = strdup( metric_vars );
+    #####:   36:    if (var_str == NULL) {
+    #####:   37:        perror( __FILE__ ",  strdup" );
+    #####:   38:        exit(-1);
+        -:   39:    }
+        -:   40:
+    #####:   41:    *num_vars = 0;
+    #####:   42:    tok = strtok( var_str, " " );
+    #####:   43:    if (tok == NULL) {
+    #####:   44:        free( var_str );
+    #####:   45:        return NULL;
+        -:   46:    }
+        -:   47:    do {
+    #####:   48:        (*num_vars)++;
+    #####:   49:        offw = realloc( offw, 2*(*num_vars)*sizeof(int) );
+    #####:   50:        if (offw == NULL) {
+    #####:   51:            perror( __FILE__ ",  realloc" );
+    #####:   52:            exit(-1);
+        -:   53:        }
+        -:   54:
+    #####:   55:        var = spc.evar_list;
+    #####:   56:        start_index = 0;
+    #####:   57:        while (var) {
+    #####:   58:            if (strstr( var->name, tok ) == var->name)
+    #####:   59:                break;
+    #####:   60:            var = var->left;
+    #####:   61:            start_index++;
+        -:   62:        }
+    #####:   63:        if (var == NULL) {
+    #####:   64:            var = spc.svar_list;
+    #####:   65:            while (var) {
+    #####:   66:                if (strstr( var->name, tok ) == var->name)
+    #####:   67:                    break;
+    #####:   68:                var = var->left;
+    #####:   69:                start_index++;
+        -:   70:            }
+    #####:   71:            if (var == NULL) {
+    #####:   72:                fprintf( stderr, "Could not find match for \"%s\"\n", tok );
+    #####:   73:                free( offw );
+    #####:   74:                free( var_str );
+    #####:   75:                return NULL;
+        -:   76:            }
+        -:   77:        }
+        -:   78:
+    #####:   79:        var_tail = var;
+    #####:   80:        stop_index = start_index;
+    #####:   81:        while (var_tail->left) {
+    #####:   82:            if (strstr( var_tail->left->name, tok ) != var_tail->left->name )
+    #####:   83:                break;
+    #####:   84:            var_tail = var_tail->left;
+    #####:   85:            stop_index++;
+        -:   86:        }
+        -:   87:
+    #####:   88:        *(offw+2*((*num_vars)-1)) = start_index;
+    #####:   89:        *(offw+2*((*num_vars)-1)+1) = stop_index-start_index+1;
+    #####:   90:    } while ((tok = strtok( NULL, " " )));
+        -:   91:
+    #####:   92:    free( var_str );
+    #####:   93:    return offw;
+        -:   94:}
+        -:   95:
+        -:   96:
+    #####:   97:int bounds_state( DdManager *manager, DdNode *T, vartype *ref_state,
+        -:   98:                  int *offw, int num_metric_vars,
+        -:   99:                  double *Min, double *Max, unsigned char verbose )
+        -:  100:{
+        -:  101:    vartype *state;
+        -:  102:    double dist;
+        -:  103:    int num_env, num_sys;
+        -:  104:    int i;
+        -:  105:    int *ref_mapped, *this_mapped;
+        -:  106:
+        -:  107:    /* Variables used during CUDD generation (state enumeration). */
+        -:  108:    DdGen *gen;
+        -:  109:    CUDD_VALUE_TYPE gvalue;
+        -:  110:    int *gcube;
+        -:  111:
+    #####:  112:    num_env = tree_size( spc.evar_list );
+    #####:  113:    num_sys = tree_size( spc.svar_list );
+        -:  114:
+        -:  115:    /* State vector (i.e., valuation of the variables) */
+    #####:  116:    state = malloc( sizeof(vartype)*(num_env+num_sys) );
+    #####:  117:    if (state == NULL) {
+    #####:  118:        perror( __FILE__ ",  malloc" );
+    #####:  119:        exit(-1);
+        -:  120:    }
+        -:  121:
+        -:  122:    /* Reference and particular integral vectors */
+    #####:  123:    ref_mapped = malloc( num_metric_vars*sizeof(int) );
+    #####:  124:    this_mapped = malloc( num_metric_vars*sizeof(int) );
+    #####:  125:    if (ref_mapped == NULL || this_mapped == NULL) {
+    #####:  126:        perror( __FILE__ ",  malloc" );
+    #####:  127:        exit(-1);
+        -:  128:    }
+        -:  129:
+    #####:  130:    for (i = 0; i < num_metric_vars; i++)
+    #####:  131:        *(ref_mapped+i) = bitvec_to_int( ref_state+(*(offw+2*i)),
+    #####:  132:                                         *(offw+2*i+1) );
+    #####:  133:    *Min = *Max = -1.;  /* Distance is non-negative; thus use -1 as "unset". */
+        -:  134:
+    #####:  135:    Cudd_AutodynDisable( manager );
+    #####:  136:    Cudd_ForeachCube( manager, T, gen, gcube, gvalue ) {
+    #####:  137:        initialize_cube( state, gcube, num_env+num_sys );
+    #####:  138:        while (!saturated_cube( state, gcube, num_env+num_sys )) {
+        -:  139:
+    #####:  140:            for (i = 0; i < num_metric_vars; i++)
+    #####:  141:                *(this_mapped+i) = bitvec_to_int( state+(*(offw+2*i)),
+    #####:  142:                                                  *(offw+2*i+1) );
+        -:  143:
+        -:  144:            /* 2-norm derived metric */
+        -:  145:            /* dist = 0.; */
+        -:  146:            /* for (i = 0; i < num_metric_vars; i++) */
+        -:  147:            /*     dist += pow(*(this_mapped+i) - *(ref_mapped+i), 2); */
+        -:  148:            /* dist = sqrt( dist ); */
+        -:  149:
+        -:  150:            /* 1-norm derived metric */
+    #####:  151:            dist = 0.;
+    #####:  152:            for (i = 0; i < num_metric_vars; i++)
+    #####:  153:                dist += fabs(*(this_mapped+i) - *(ref_mapped+i));
+    #####:  154:            if (*Min == -1. || dist < *Min)
+    #####:  155:                *Min = dist;
+    #####:  156:            if (*Max == -1. || dist > *Max)
+    #####:  157:                *Max = dist;
+        -:  158:
+    #####:  159:            increment_cube( state, gcube, num_env+num_sys );
+        -:  160:        }
+        -:  161:
+    #####:  162:        for (i = 0; i < num_metric_vars; i++)
+    #####:  163:            *(this_mapped+i) = bitvec_to_int( state+(*(offw+2*i)),
+    #####:  164:                                              *(offw+2*i+1) );
+        -:  165:
+        -:  166:        /* 2-norm derived metric */
+        -:  167:        /* dist = 0.; */
+        -:  168:        /* for (i = 0; i < num_metric_vars; i++) */
+        -:  169:        /*     dist += pow(*(this_mapped+i) - *(ref_mapped+i), 2); */
+        -:  170:        /* dist = sqrt( dist ); */
+        -:  171:
+        -:  172:        /* 1-norm derived metric */
+    #####:  173:        dist = 0.;
+    #####:  174:        for (i = 0; i < num_metric_vars; i++)
+    #####:  175:            dist += fabs(*(this_mapped+i) - *(ref_mapped+i));
+    #####:  176:        if (*Min == -1. || dist < *Min)
+    #####:  177:            *Min = dist;
+    #####:  178:        if (*Max == -1. || dist > *Max)
+    #####:  179:            *Max = dist;
+        -:  180:
+        -:  181:    }
+    #####:  182:    Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        -:  183:
+    #####:  184:    free( state );
+    #####:  185:    free( ref_mapped );
+    #####:  186:    free( this_mapped );
+    #####:  187:    return 0;
+        -:  188:}
+        -:  189:
+        -:  190:
+    #####:  191:int bounds_DDset( DdManager *manager, DdNode *T, DdNode *G,
+        -:  192:                  int *offw, int num_metric_vars,
+        -:  193:                  double *Min, double *Max, unsigned char verbose )
+        -:  194:{
+    #####:  195:    vartype **states = NULL;
+    #####:  196:    int num_states = 0;
+        -:  197:    vartype *state;
+        -:  198:    double tMin, tMax;  /* Particular distance to goal set */
+        -:  199:    int num_env, num_sys;
+        -:  200:    int i, k;
+        -:  201:    int *mapped_state;
+        -:  202:
+        -:  203:    /* Variables used during CUDD generation (state enumeration). */
+        -:  204:    DdGen *gen;
+        -:  205:    CUDD_VALUE_TYPE gvalue;
+        -:  206:    int *gcube;
+        -:  207:
+    #####:  208:    num_env = tree_size( spc.evar_list );
+    #####:  209:    num_sys = tree_size( spc.svar_list );
+        -:  210:
+    #####:  211:    state = malloc( (num_env+num_sys)*sizeof(vartype) );
+    #####:  212:    if (state == NULL) {
+    #####:  213:        perror( __FILE__ ",  malloc" );
+    #####:  214:        exit(-1);
+        -:  215:    }
+        -:  216:
+    #####:  217:    *Min = *Max = -1.;  /* Distance is non-negative; thus use -1 as "unset". */
+        -:  218:
+    #####:  219:    Cudd_AutodynDisable( manager );
+    #####:  220:    Cudd_ForeachCube( manager, T, gen, gcube, gvalue ) {
+    #####:  221:        initialize_cube( state, gcube, num_env+num_sys );
+    #####:  222:        while (!saturated_cube( state, gcube, num_env+num_sys )) {
+        -:  223:
+    #####:  224:            num_states++;
+    #####:  225:            states = realloc( states, num_states*sizeof(vartype *) );
+    #####:  226:            if (states == NULL) {
+    #####:  227:                perror( __FILE__ ",  realloc" );
+    #####:  228:                exit(-1);
+        -:  229:            }
+    #####:  230:            *(states+num_states-1) = malloc( (num_env+num_sys)
+        -:  231:                                             *sizeof(vartype) );
+    #####:  232:            if (*(states+num_states-1) == NULL) {
+    #####:  233:                perror( __FILE__ ",  malloc" );
+    #####:  234:                exit(-1);
+        -:  235:            }
+    #####:  236:            for (i = 0; i < num_env+num_sys; i++)
+    #####:  237:                *(*(states+num_states-1)+i) = *(state+i);
+        -:  238:
+    #####:  239:            increment_cube( state, gcube, num_env+num_sys );
+        -:  240:        }
+        -:  241:
+    #####:  242:        num_states++;
+    #####:  243:        states = realloc( states, num_states*sizeof(vartype *) );
+    #####:  244:        if (states == NULL) {
+    #####:  245:            perror( __FILE__ ",  realloc" );
+    #####:  246:            exit(-1);
+        -:  247:        }
+        -:  248:
+    #####:  249:        *(states+num_states-1) = malloc( (num_env+num_sys)*sizeof(vartype) );
+    #####:  250:        if (*(states+num_states-1) == NULL) {
+    #####:  251:            perror( __FILE__ ",  malloc" );
+    #####:  252:            exit(-1);
+        -:  253:        }
+    #####:  254:        for (i = 0; i < num_env+num_sys; i++)
+    #####:  255:            *(*(states+num_states-1)+i) = *(state+i);
+        -:  256:
+        -:  257:    }
+    #####:  258:    Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        -:  259:
+    #####:  260:    mapped_state = malloc( num_metric_vars*sizeof(int) );
+    #####:  261:    if (mapped_state == NULL) {
+    #####:  262:        perror( __FILE__ ",  malloc" );
+    #####:  263:        exit(-1);
+        -:  264:    }
+    #####:  265:    for (k = 0; k < num_states; k++) {
+    #####:  266:        bounds_state( manager, G, *(states+k), offw, num_metric_vars,
+        -:  267:                      &tMin, &tMax, verbose );
+    #####:  268:        if (*Min == -1. || tMin < *Min)
+    #####:  269:            *Min = tMin;
+    #####:  270:        if (*Max == -1. || tMin > *Max)
+    #####:  271:            *Max = tMin;
+        -:  272:
+    #####:  273:        if (verbose > 1) {
+    #####:  274:            for (i = 0; i < num_metric_vars; i++)
+    #####:  275:                *(mapped_state+i) = bitvec_to_int( *(states+k)+(*(offw+2*i)),
+    #####:  276:                                                   *(offw+2*i+1) );
+    #####:  277:            logprint_startline();
+    #####:  278:            logprint_raw( "\t" );
+    #####:  279:            for (i = 0; i < num_metric_vars; i++)
+    #####:  280:                logprint_raw( "%d, ", *(mapped_state+i) );
+    #####:  281:            logprint_raw( "mi = %f", tMin );
+    #####:  282:            logprint_endline();
+        -:  283:        }
+        -:  284:    }
+        -:  285:
+    #####:  286:    free( mapped_state );
+    #####:  287:    for (i = 0; i < num_states; i++)
+    #####:  288:        free( *(states+i) );
+    #####:  289:    free( states );
+    #####:  290:    free( state );
+    #####:  291:    return 0;
+        -:  292:}
+        -:  293:
+        -:  294:
+        -:  295:/* Construct BDDs (characteristic functions of) etrans, strans,
+        -:  296:   egoals, and sgoals as required by compute_winning_set_BDD() but
+        -:  297:   save the result.  The motivating use-case is to compute these once
+        -:  298:   and then provide them to later functions as needed. */
+    #####:  299:DdNode *compute_winning_set_saveBDDs( DdManager *manager,
+        -:  300:                                      DdNode **etrans, DdNode **strans,
+        -:  301:                                      DdNode ***egoals, DdNode ***sgoals,
+        -:  302:                                      unsigned char verbose )
+        -:  303:{
+        -:  304:    int i;
+        -:  305:    ptree_t *var_separator;
+        -:  306:    DdNode *W;
+        -:  307:
+    #####:  308:    if (spc.num_egoals == 0) {
+    #####:  309:        spc.num_egoals = 1;
+    #####:  310:        spc.env_goals = malloc( sizeof(ptree_t *) );
+    #####:  311:        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:  312:    }
+        -:  313:
+    #####:  314:    if (spc.evar_list == NULL) {
+    #####:  315:        var_separator = NULL;
+    #####:  316:        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+        -:  317:                                           is indicated by var_separator = NULL. */
+        -:  318:    } else {
+    #####:  319:        var_separator = get_list_item( spc.evar_list, -1 );
+    #####:  320:        if (var_separator == NULL) {
+    #####:  321:            fprintf( stderr,
+        -:  322:                     "Error: get_list_item failed on environment variables"
+        -:  323:                     " list.\n" );
+    #####:  324:            return NULL;
+        -:  325:        }
+    #####:  326:        var_separator->left = spc.svar_list;
+        -:  327:    }
+        -:  328:
+    #####:  329:    if (verbose > 1)
+    #####:  330:        logprint( "Building environment transition BDD..." );
+    #####:  331:    (*etrans) = ptree_BDD( spc.env_trans, spc.evar_list, manager );
+    #####:  332:    if (verbose > 1) {
+    #####:  333:        logprint( "Done." );
+    #####:  334:        logprint( "Building system transition BDD..." );
+        -:  335:    }
+    #####:  336:    (*strans) = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
+    #####:  337:    if (verbose > 1)
+    #####:  338:        logprint( "Done." );
+        -:  339:
+        -:  340:    /* Build goal BDDs, if present. */
+    #####:  341:    if (spc.num_egoals > 0) {
+    #####:  342:        (*egoals) = malloc( spc.num_egoals*sizeof(DdNode *) );
+    #####:  343:        for (i = 0; i < spc.num_egoals; i++)
+    #####:  344:            *((*egoals)+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
+        -:  345:    } else {
+    #####:  346:        (*egoals) = NULL;
+        -:  347:    }
+    #####:  348:    if (spc.num_sgoals > 0) {
+    #####:  349:        (*sgoals) = malloc( spc.num_sgoals*sizeof(DdNode *) );
+    #####:  350:        for (i = 0; i < spc.num_sgoals; i++)
+    #####:  351:            *((*sgoals)+i) = ptree_BDD( *(spc.sys_goals+i), spc.evar_list, manager );
+        -:  352:    } else {
+    #####:  353:        (*sgoals) = NULL;
+        -:  354:    }
+        -:  355:
+    #####:  356:    if (var_separator == NULL) {
+    #####:  357:        spc.evar_list = NULL;
+        -:  358:    } else {
+    #####:  359:        var_separator->left = NULL;
+        -:  360:    }
+        -:  361:
+    #####:  362:    W = compute_winning_set_BDD( manager,
+        -:  363:                                 (*etrans), (*strans), (*egoals), (*sgoals),
+        -:  364:                                 verbose );
+    #####:  365:    if (W == NULL) {
+    #####:  366:        fprintf( stderr,
+        -:  367:                 "Error compute_winning_set_saveBDDs: failed to construct"
+        -:  368:                 " winning set.\n" );
+    #####:  369:        return NULL;
+        -:  370:    }
+        -:  371:
+    #####:  372:    return W;
+        -:  373:}
+        -:  374:
+        -:  375:
+    #####:  376:int compute_minmax( DdManager *manager,DdNode **W,
+        -:  377:                    DdNode **etrans, DdNode **strans, DdNode ***sgoals,
+        -:  378:                    int **num_sublevels, double ***Min, double ***Max,
+        -:  379:                    int *offw, int num_metric_vars,
+        -:  380:                    unsigned char verbose )
+        -:  381:{
+        -:  382:    DdNode **egoals;
+    #####:  383:    DdNode ***Y = NULL;
+    #####:  384:    DdNode ****X_ijr = NULL;
+    #####:  385:    bool env_nogoal_flag = False;
+        -:  386:    int i, j, r;
+        -:  387:    DdNode *tmp, *tmp2;
+        -:  388:
+    #####:  389:    if (spc.num_egoals == 0)
+    #####:  390:        env_nogoal_flag = True;
+        -:  391:
+    #####:  392:    *W = compute_winning_set_saveBDDs( manager, etrans, strans, &egoals, sgoals,
+        -:  393:                                       verbose );
+    #####:  394:    Y = compute_sublevel_sets( manager, *W, (*etrans), (*strans),
+        -:  395:                               egoals, spc.num_egoals,
+        -:  396:                               (*sgoals), spc.num_sgoals,
+        -:  397:                               num_sublevels, &X_ijr, verbose );
+    #####:  398:    if (Y == NULL) {
+    #####:  399:        fprintf( stderr,
+        -:  400:                 "Error compute_minmax: failed to construct sublevel sets.\n" );
+    #####:  401:        return -1;
+        -:  402:    }
+        -:  403:
+    #####:  404:    *Min = malloc( spc.num_sgoals*sizeof(double *) );
+    #####:  405:    *Max = malloc( spc.num_sgoals*sizeof(double *) );
+    #####:  406:    if (*Min == NULL || *Max == NULL) {
+    #####:  407:        perror( __FILE__ ",  malloc" );
+    #####:  408:        exit(-1);
+        -:  409:    }
+        -:  410:
+    #####:  411:    for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  412:        *(*Min + i) = malloc( (*(*num_sublevels+i)-1)*sizeof(double) );
+    #####:  413:        *(*Max + i) = malloc( (*(*num_sublevels+i)-1)*sizeof(double) );
+    #####:  414:        if (*(*Min + i) == NULL || *(*Max + i) == NULL) {
+    #####:  415:            perror( __FILE__ ",  malloc" );
+    #####:  416:            exit(-1);
+        -:  417:        }
+        -:  418:
+    #####:  419:        *(*(*Min+i)) = *(*(*Max+i)) = 0;
+    #####:  420:        for (j = 1; j < *(*num_sublevels+i)-1; j++) {
+    #####:  421:            if (verbose > 1)
+    #####:  422:                logprint( "goal %d, level %d...", i, j );
+    #####:  423:            tmp = Cudd_bddAnd( manager,
+    #####:  424:                               *(*(Y+i)+j+1), Cudd_Not( *(*(Y+i)+j) ) );
+    #####:  425:            Cudd_Ref( tmp );
+    #####:  426:            tmp2 = Cudd_bddAnd( manager, *((*sgoals)+i), *W );
+    #####:  427:            Cudd_Ref( tmp2 );
+    #####:  428:            if (bounds_DDset( manager, tmp, tmp2, offw, num_metric_vars,
+    #####:  429:                              *(*Min+i)+j, *(*Max+i)+j, verbose )) {
+    #####:  430:                *(*(*Min+i)+j) = *(*(*Max+i)+j) = -1.;
+        -:  431:            }
+    #####:  432:            Cudd_RecursiveDeref( manager, tmp );
+    #####:  433:            Cudd_RecursiveDeref( manager, tmp2 );
+        -:  434:        }
+        -:  435:    }
+        -:  436:
+        -:  437:
+        -:  438:    /* Pre-exit clean-up */
+    #####:  439:    for (i = 0; i < spc.num_egoals; i++)
+    #####:  440:        Cudd_RecursiveDeref( manager, *(egoals+i) );
+    #####:  441:    if (spc.num_egoals > 0)
+    #####:  442:        free( egoals );
+        -:  443:
+    #####:  444:    for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  445:        for (j = 0; j < *(*num_sublevels+i); j++) {
+    #####:  446:            Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
+    #####:  447:            for (r = 0; r < spc.num_egoals; r++) {
+    #####:  448:                Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i)+j)+r) );
+        -:  449:            }
+    #####:  450:            free( *(*(X_ijr+i)+j) );
+        -:  451:        }
+    #####:  452:        if (*(*num_sublevels+i) > 0) {
+    #####:  453:            free( *(Y+i) );
+    #####:  454:            free( *(X_ijr+i) );
+        -:  455:        }
+        -:  456:    }
+    #####:  457:    if (env_nogoal_flag) {
+    #####:  458:        spc.num_egoals = 0;
+    #####:  459:        delete_tree( *spc.env_goals );
+    #####:  460:        free( spc.env_goals );
+        -:  461:    }
+        -:  462:
+    #####:  463:    if (spc.num_sgoals > 0) {
+    #####:  464:        free( Y );
+    #####:  465:        free( X_ijr );
+        -:  466:    }
+        -:  467:
+    #####:  468:    return 0;
+        -:  469:}
+        -:  470:
+        -:  471:
+    #####:  472:int compute_horizon( DdManager *manager, DdNode **W,
+        -:  473:                     DdNode **etrans, DdNode **strans, DdNode ***sgoals,
+        -:  474:                     char *metric_vars, unsigned char verbose )
+        -:  475:{
+    #####:  476:    int horizon = -1, horiz_j;
+        -:  477:    int *num_sublevels;
+        -:  478:    double **Min, **Max;
+        -:  479:    int i, j, k;
+        -:  480:    int *offw, num_metric_vars;
+        -:  481:
+    #####:  482:    offw = get_offsets( metric_vars, &num_metric_vars );
+    #####:  483:    if (offw == NULL)
+    #####:  484:        return -1;
+        -:  485:
+    #####:  486:    if (compute_minmax( manager, W, etrans, strans, sgoals,
+        -:  487:                        &num_sublevels, &Min, &Max, offw, num_metric_vars,
+        -:  488:                        verbose ))
+    #####:  489:        return -1;  /* Error in compute_minmax() */
+        -:  490:
+    #####:  491:    if (verbose) {
+    #####:  492:        for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  493:            for (j = 0; j < *(num_sublevels+i)-1; j++) {
+    #####:  494:                logprint_startline();
+    #####:  495:                logprint_raw( "goal %d, level %d: ", i, j );
+    #####:  496:                logprint_raw( "%f, %f", *(*(Min+i)+j), *(*(Max+i)+j) );
+    #####:  497:                logprint_endline();
+        -:  498:            }
+        -:  499:        }
+        -:  500:    }
+        -:  501:
+    #####:  502:    for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  503:        for (j = 3; j < *(num_sublevels+i); j++) {
+    #####:  504:            horiz_j = 1;
+    #####:  505:            for (k = j-2; k >= 1; k--) {
+    #####:  506:                if (*(*(Max+i)+k-1) >= *(*(Min+i)+j-1))
+    #####:  507:                    horiz_j = j-k;
+        -:  508:            }
+    #####:  509:            if (horiz_j > horizon)
+    #####:  510:                horizon = horiz_j;
+        -:  511:        }
+        -:  512:    }
+        -:  513:
+    #####:  514:    if (spc.num_sgoals > 0) {
+    #####:  515:        free( num_sublevels );
+    #####:  516:        for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  517:            free( *(Min+i) );
+    #####:  518:            free( *(Max+i) );
+        -:  519:        }
+    #####:  520:        free( Min );
+    #####:  521:        free( Max );
+        -:  522:    }
+        -:  523:
+    #####:  524:    free( offw );
+    #####:  525:    return horizon;
+        -:  526:}

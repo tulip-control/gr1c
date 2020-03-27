@@ -1,0 +1,13 @@
+<map id="DdHashTable" name="DdHashTable">
+<area shape="rect" id="node1" title="Local hash table." alt="" coords="585,528,692,555"/>
+<area shape="rect" id="node2" href="$structDdManager.html" title="Specialized DD symbol table." alt="" coords="305,386,402,413"/>
+<area shape="rect" id="node3" href="$structDdLocalCache.html" title="Local cache." alt="" coords="89,528,204,555"/>
+<area shape="rect" id="node10" href="$structDdHook.html" title="CUDD hook." alt="" coords="372,528,447,555"/>
+<area shape="rect" id="node4" href="$structDdLocalCacheItem.html" title="Generic local cache item." alt="" coords="5,318,149,345"/>
+<area shape="rect" id="node5" href="$structDdNode.html" title="Decision diagram node." alt="" coords="239,5,313,32"/>
+<area shape="rect" id="node6" href="$structDdChildren.html" title="The two children of a non&#45;terminal node." alt="" coords="185,191,279,218"/>
+<area shape="rect" id="node7" href="$structDdSubtable.html" title="Subtable for one index." alt="" coords="626,191,723,218"/>
+<area shape="rect" id="node9" href="$structDdCache.html" title="Computed table." alt="" coords="80,191,160,218"/>
+<area shape="rect" id="node11" href="$structDdHashItem.html" title="Local hash table item." alt="" coords="645,318,747,345"/>
+<area shape="rect" id="node8" href="$structMtrNode__.html" title="multi&#45;way tree node." alt="" coords="439,191,524,218"/>
+</map>

@@ -1,0 +1,362 @@
+        -:    0:Source:src/solve_support.c
+        -:    0:Graph:solve_support.gcno
+        -:    0:Data:solve_support.gcda
+        -:    0:Runs:8
+        -:    0:Programs:8
+        -:    1:/* solve_support.c -- Definitions for signatures appearing in solve_support.h.
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2012-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#include <stdlib.h>
+        -:    9:#include <stdio.h>
+        -:   10:#include <string.h>
+        -:   11:
+        -:   12:#include "solve_support.h"
+        -:   13:
+        -:   14:
+    #####:   15:int read_state_str( char *input, vartype **state, int max_len )
+        -:   16:{
+        -:   17:    int i;
+        -:   18:    char *start;
+        -:   19:    char *end;
+    #####:   20:    *state = NULL;
+    #####:   21:    if (max_len == 0 || strlen( input ) < 1)
+    #####:   22:        return 0;
+    #####:   23:    if (max_len > 0) {
+    #####:   24:        *state = malloc( sizeof(vartype)*max_len );
+    #####:   25:        if (*state == NULL) {
+    #####:   26:            perror( __FILE__ ",  malloc" );
+    #####:   27:            exit(-1);
+        -:   28:        }
+        -:   29:    }
+        -:   30:
+    #####:   31:    start = input;
+    #####:   32:    end = input;
+    #####:   33:    for (i = 0; (max_len < 0 || i < max_len) && *end != '\0'; i++) {
+    #####:   34:        if (max_len < 0) {
+    #####:   35:            *state = realloc( *state, sizeof(vartype)*(i+1) );
+    #####:   36:            if (*state == NULL) {
+    #####:   37:                perror( __FILE__ ",  realloc" );
+    #####:   38:                exit(-1);
+        -:   39:            }
+        -:   40:        }
+    #####:   41:        *((*state)+i) = strtol( start, &end, 10 );
+    #####:   42:        if (start == end)
+    #####:   43:            break;
+    #####:   44:        start = end;
+        -:   45:    }
+        -:   46:
+    #####:   47:    if (i == 0) {
+    #####:   48:        free( *state );
+    #####:   49:        *state = NULL;
+    #####:   50:        return 0;
+        -:   51:    }
+        -:   52:
+    #####:   53:    if (max_len > 0) {
+    #####:   54:        *state = realloc( *state, sizeof(vartype)*i );
+    #####:   55:        if (*state == NULL) {
+    #####:   56:            perror( __FILE__ ",  realloc" );
+    #####:   57:            exit(-1);
+        -:   58:        }
+        -:   59:    }
+    #####:   60:    return i;
+        -:   61:}
+        -:   62:
+        -:   63:
+        7:   64:void initialize_cube( vartype *cube, int *gcube, int len )
+        -:   65:{
+        -:   66:    int i;
+       24:   67:    for (i = 0; i < len; i++) {
+       17:   68:        if (*(gcube+i) == 2) {
+       10:   69:            *(cube+i) = 0;
+        -:   70:        } else {
+        7:   71:            *(cube+i) = *(gcube+i);
+        -:   72:        }
+        -:   73:    }
+        7:   74:}
+        -:   75:
+       14:   76:void increment_cube( vartype *cube, int *gcube, int len )
+        -:   77:{
+        -:   78:    int i;
+       21:   79:    for (i = len-1; i >= 0; i--) {
+       21:   80:        if (*(gcube+i) == 2) {
+       20:   81:            (*(cube+i))++;
+       20:   82:            if (*(cube+i) > 1) {
+        6:   83:                *(cube+i) = 0;
+        -:   84:            } else {
+       14:   85:                return;
+        -:   86:            }
+        -:   87:        }
+        -:   88:    }
+        -:   89:}
+        -:   90:
+       17:   91:bool saturated_cube( vartype *cube, int *gcube, int len )
+        -:   92:{
+        -:   93:    int i;
+       39:   94:    for (i = 0; i < len; i++) {
+       34:   95:        if (*(gcube+i) == 2 && *(cube+i) == 0)
+       12:   96:            return False;
+        -:   97:    }
+        5:   98:    return True;
+        -:   99:}
+        -:  100:
+        2:  101:void state_to_cube( vartype *state, int *cube, int len )
+        -:  102:{
+        -:  103:    int i;
+        6:  104:    for (i = 0; i < len; i++)
+        4:  105:        *(cube+i) = *(state+i);
+        6:  106:    for (i = len; i < 2*len; i++)
+        4:  107:        *(cube+i) = 2;
+        2:  108:}
+        -:  109:
+        -:  110:
+    #####:  111:void cube_env( int *cube, int num_env, int num_sys )
+        -:  112:{
+        -:  113:    int i;
+    #####:  114:    for (i = num_env; i < 2*(num_env+num_sys); i++)
+    #####:  115:        *(cube+i) = 2;
+        -:  116:
+    #####:  117:    for (i = 0; i < num_env; i++)
+    #####:  118:        *(cube+i) = 1;
+    #####:  119:}
+        -:  120:
+    #####:  121:void cube_sys( int *cube, int num_env, int num_sys )
+        -:  122:{
+        -:  123:    int i;
+    #####:  124:    for (i = 0; i < 2*(num_env+num_sys); i++)
+    #####:  125:        *(cube+i) = 2;
+        -:  126:
+    #####:  127:    for (i = num_env; i < num_env+num_sys; i++)
+    #####:  128:        *(cube+i) = 1;
+    #####:  129:}
+        -:  130:
+        3:  131:void cube_prime_env( int *cube, int num_env, int num_sys )
+        -:  132:{
+        -:  133:    int i;
+       15:  134:    for (i = 0; i < 2*(num_env+num_sys); i++)
+       12:  135:        *(cube+i) = 2;
+        -:  136:
+        6:  137:    for (i = num_env+num_sys; i < 2*num_env+num_sys; i++)
+        3:  138:        *(cube+i) = 1;
+        3:  139:}
+        -:  140:
+        6:  141:void cube_prime_sys( int *cube, int num_env, int num_sys )
+        -:  142:{
+        -:  143:    int i;
+       32:  144:    for (i = 0; i < 2*num_env+num_sys; i++)
+       26:  145:        *(cube+i) = 2;
+        -:  146:
+       12:  147:    for (i = 2*num_env+num_sys; i < 2*(num_env+num_sys); i++)
+        6:  148:        *(cube+i) = 1;
+        6:  149:}
+        -:  150:
+        -:  151:
+        2:  152:bool statecmp( vartype *state1, vartype *state2, int state_len )
+        -:  153:{
+        -:  154:    int i;
+     1026:  155:    for (i = 0; i < state_len; i++) {
+     1025:  156:        if (*(state1+i) != *(state2+i))
+        1:  157:            return False;
+        -:  158:    }
+        1:  159:    return True;
+        -:  160:}
+        -:  161:
+        -:  162:
+       11:  163:DdNode *state_to_cof( DdManager *manager, int *cube, int cube_len,
+        -:  164:                   vartype *state, DdNode *trans, int offset, int len )
+        -:  165:{
+        -:  166:    int i;
+        -:  167:    DdNode *tmp;
+        -:  168:    DdNode *ddcube;
+        -:  169:
+       63:  170:    for (i = 0; i < cube_len; i++)
+       52:  171:        *(cube+i) = 2;
+       33:  172:    for (i = 0; i < len; i++)
+       22:  173:        *(cube+offset+i) = *(state+i);
+        -:  174:
+       11:  175:    ddcube = Cudd_CubeArrayToBdd( manager, cube );
+       11:  176:    if (ddcube == NULL) {
+    #####:  177:        fprintf( stderr, "Error in generating cube for cofactor." );
+    #####:  178:        return NULL;
+        -:  179:    }
+       11:  180:    Cudd_Ref( ddcube );
+        -:  181:
+       11:  182:    tmp = Cudd_Cofactor( manager, trans, ddcube );
+       11:  183:    if (tmp == NULL) {
+    #####:  184:        fprintf( stderr, "Error in computing cofactor." );
+    #####:  185:        return NULL;
+        -:  186:    }
+       11:  187:    Cudd_Ref( tmp );
+       11:  188:    Cudd_RecursiveDeref( manager, ddcube );
+       11:  189:    return tmp;
+        -:  190:}
+        -:  191:
+        -:  192:
+        4:  193:DdNode *state_to_BDD( DdManager *manager, vartype *state, int offset, int len )
+        -:  194:{
+        -:  195:    DdNode *v, *tmp;
+        -:  196:    int i;
+        4:  197:    v = Cudd_ReadOne( manager );
+        4:  198:    Cudd_Ref( v );
+       12:  199:    for (i = 0; i < len; i++) {
+        8:  200:        if (*(state+i)) {
+        4:  201:            tmp = Cudd_bddAnd( manager, v,
+        -:  202:                               Cudd_bddIthVar( manager, offset+i ) );
+        -:  203:        } else {
+        4:  204:            tmp = Cudd_bddAnd( manager, v,
+        4:  205:                               Cudd_Not(Cudd_bddIthVar( manager, offset+i )) );
+        -:  206:        }
+        8:  207:        Cudd_Ref( tmp );
+        8:  208:        Cudd_RecursiveDeref( manager, v );
+        8:  209:        v = tmp;
+        -:  210:    }
+        4:  211:    return v;
+        -:  212:}
+        -:  213:
+        -:  214:
+        3:  215:vartype **get_env_moves( DdManager *manager, int *cube,
+        -:  216:                         vartype *state, DdNode *etrans,
+        -:  217:                         int num_env, int num_sys, int *emoves_len )
+        -:  218:{
+        -:  219:    DdNode *tmp, *tmp2, *ddcube;
+        3:  220:    vartype **env_moves = NULL;
+        -:  221:    DdGen *gen;
+        -:  222:    CUDD_VALUE_TYPE gvalue;
+        -:  223:    int *gcube;
+        -:  224:    int i;
+        -:  225:
+        3:  226:    tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
+        -:  227:                     state, etrans, 0, num_env+num_sys );
+        3:  228:    cube_prime_sys( cube, num_env, num_sys );
+        3:  229:    ddcube = Cudd_CubeArrayToBdd( manager, cube );
+        3:  230:    if (ddcube == NULL) {
+    #####:  231:        fprintf( stderr, "Error in generating cube for quantification." );
+    #####:  232:        return NULL;
+        -:  233:    }
+        3:  234:    Cudd_Ref( ddcube );
+        3:  235:    tmp2 = Cudd_bddExistAbstract( manager, tmp, ddcube );
+        3:  236:    if (tmp2 == NULL) {
+    #####:  237:        fprintf( stderr, "Error in performing quantification." );
+    #####:  238:        return NULL;
+        -:  239:    }
+        3:  240:    Cudd_Ref( tmp2 );
+        3:  241:    Cudd_RecursiveDeref( manager, tmp );
+        3:  242:    Cudd_RecursiveDeref( manager, ddcube );
+        -:  243:
+        3:  244:    state = malloc( num_env*sizeof(vartype) );
+        3:  245:    if (state == NULL) {
+    #####:  246:        fprintf( stderr, "Error in building next environment moves list." );
+    #####:  247:        return NULL;
+        -:  248:    }
+        -:  249:
+        3:  250:    *emoves_len = 0;
+        3:  251:    Cudd_AutodynDisable( manager );
+        6:  252:    Cudd_ForeachCube( manager, tmp2, gen, gcube, gvalue ) {
+        3:  253:        initialize_cube( state, gcube+num_env+num_sys, num_env );
+       17:  254:        while (!saturated_cube( state, gcube+num_env+num_sys, num_env )) {
+       11:  255:            (*emoves_len)++;
+       11:  256:            env_moves = realloc( env_moves, (*emoves_len)*sizeof(vartype *) );
+       11:  257:            if (env_moves == NULL) {
+    #####:  258:                fprintf( stderr,
+        -:  259:                         "Error in building next environment moves list." );
+    #####:  260:                return NULL;
+        -:  261:            }
+       11:  262:            *(env_moves+*emoves_len-1) = malloc( num_env*sizeof(vartype) );
+       11:  263:            if (*(env_moves+*emoves_len-1) == NULL) {
+    #####:  264:                fprintf( stderr,
+        -:  265:                         "Error in building next environment moves list." );
+    #####:  266:                return NULL;
+        -:  267:            }
+        -:  268:
+       42:  269:            for (i = 0; i < num_env; i++)
+       31:  270:                *(*(env_moves+*emoves_len-1)+i) = *(state+i);
+        -:  271:
+       11:  272:            increment_cube( state, gcube+num_env+num_sys, num_env );
+        -:  273:        }
+        3:  274:        (*emoves_len)++;
+        3:  275:        env_moves = realloc( env_moves, (*emoves_len)*sizeof(vartype *) );
+        3:  276:        if (env_moves == NULL) {
+    #####:  277:            fprintf( stderr, "Error in building next environment moves list." );
+    #####:  278:            return NULL;
+        -:  279:        }
+        3:  280:        *(env_moves+*emoves_len-1) = malloc( num_env*sizeof(vartype) );
+        3:  281:        if (*(env_moves+*emoves_len-1) == NULL) {
+    #####:  282:            fprintf( stderr, "Error in building next environment moves list." );
+    #####:  283:            return NULL;
+        -:  284:        }
+        -:  285:
+       10:  286:        for (i = 0; i < num_env; i++)
+        7:  287:            *(*(env_moves+*emoves_len-1)+i) = *(state+i);
+        -:  288:    }
+        3:  289:    free( state );
+        3:  290:    Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        3:  291:    Cudd_RecursiveDeref( manager, tmp2 );
+        3:  292:    return env_moves;
+        -:  293:}
+        -:  294:
+        -:  295:
+        -:  296:/* Compute exists modal operator applied to set C. */
+        3:  297:DdNode *compute_existsmodal( DdManager *manager, DdNode *C,
+        -:  298:                             DdNode *etrans, DdNode *strans,
+        -:  299:                             int num_env, int num_sys, int *cube )
+        -:  300:{
+        -:  301:    DdNode *tmp, *tmp2;
+        -:  302:    DdNode *ddcube;
+        -:  303:
+        3:  304:    C = Cudd_bddVarMap( manager, C );
+        3:  305:    if (C == NULL) {
+    #####:  306:        fprintf( stderr,
+        -:  307:                 "compute_existsmodal: Error in swapping variables with"
+        -:  308:                 " primed forms." );
+    #####:  309:        return NULL;
+        -:  310:    }
+        3:  311:    Cudd_Ref( C );
+        -:  312:
+        3:  313:    tmp = Cudd_bddAnd( manager, strans, C );
+        3:  314:    Cudd_Ref( tmp );
+        3:  315:    Cudd_RecursiveDeref( manager, C );
+        3:  316:    cube_prime_sys( cube, num_env, num_sys );
+        3:  317:    ddcube = Cudd_CubeArrayToBdd( manager, cube );
+        3:  318:    if (ddcube == NULL) {
+    #####:  319:        fprintf( stderr,
+        -:  320:                 "compute_existsmodal: Error in generating cube for"
+        -:  321:                 " quantification." );
+    #####:  322:        return NULL;
+        -:  323:    }
+        3:  324:    Cudd_Ref( ddcube );
+        3:  325:    tmp2 = Cudd_bddExistAbstract( manager, tmp, ddcube );
+        3:  326:    if (tmp2 == NULL) {
+    #####:  327:        fprintf( stderr,
+        -:  328:                 "compute_existsmodal: Error in performing quantification." );
+    #####:  329:        return NULL;
+        -:  330:    }
+        3:  331:    Cudd_Ref( tmp2 );
+        3:  332:    Cudd_RecursiveDeref( manager, ddcube );
+        3:  333:    Cudd_RecursiveDeref( manager, tmp );
+        -:  334:
+        3:  335:    tmp = Cudd_bddOr( manager, Cudd_Not( etrans ), tmp2 );
+        3:  336:    Cudd_Ref( tmp );
+        3:  337:    Cudd_RecursiveDeref( manager, tmp2 );
+        3:  338:    cube_prime_env( cube, num_env, num_sys );
+        3:  339:    ddcube = Cudd_CubeArrayToBdd( manager, cube );
+        3:  340:    if (ddcube == NULL) {
+    #####:  341:        fprintf( stderr,
+        -:  342:                 "compute_existsmodal: Error in generating cube for"
+        -:  343:                 " quantification." );
+    #####:  344:        return NULL;
+        -:  345:    }
+        3:  346:    Cudd_Ref( ddcube );
+        3:  347:    tmp2 = Cudd_bddUnivAbstract( manager, tmp, ddcube );
+        3:  348:    if (tmp2 == NULL) {
+    #####:  349:        fprintf( stderr,
+        -:  350:                 "compute_existsmodal: Error in performing quantification." );
+    #####:  351:        return NULL;
+        -:  352:    }
+        3:  353:    Cudd_Ref( tmp2 );
+        3:  354:    Cudd_RecursiveDeref( manager, ddcube );
+        3:  355:    Cudd_RecursiveDeref( manager, tmp );
+        3:  356:    return tmp2;
+        -:  357:}

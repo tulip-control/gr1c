@@ -1,0 +1,5 @@
+<map id="DdSubtable" name="DdSubtable">
+<area shape="rect" id="node1" title="Subtable for one index." alt="" coords="5,109,103,136"/>
+<area shape="rect" id="node2" href="$structDdNode.html" title="Decision diagram node." alt="" coords="105,5,179,32"/>
+<area shape="rect" id="node3" href="$structDdChildren.html" title="The two children of a non&#45;terminal node." alt="" coords="132,109,227,136"/>
+</map>

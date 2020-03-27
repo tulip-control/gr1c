@@ -1,0 +1,558 @@
+        -:    0:Source:src/solve_operators.c
+        -:    0:Graph:solve_operators.gcno
+        -:    0:Data:-
+        -:    0:Runs:0
+        -:    0:Programs:0
+        -:    1:/* solve_operators.c -- Functions for several mu-calculus operations.
+        -:    2: *                      Also consider solve.c
+        -:    3: *
+        -:    4: *
+        -:    5: * SCL; 2012-2015
+        -:    6: */
+        -:    7:
+        -:    8:
+        -:    9:#include <string.h>
+        -:   10:#include <stdio.h>
+        -:   11:#include <stdlib.h>
+        -:   12:
+        -:   13:#include "logging.h"
+        -:   14:#include "solve.h"
+        -:   15:#include "solve_support.h"
+        -:   16:
+        -:   17:
+        -:   18:extern specification_t spc;
+        -:   19:
+        -:   20:
+    #####:   21:DdNode *compute_winning_set( DdManager *manager, unsigned char verbose )
+        -:   22:{
+        -:   23:    int i;
+        -:   24:    ptree_t *var_separator;
+        -:   25:    DdNode *W;  /* Characteristic function of winning set */
+        -:   26:    DdNode *etrans, *strans, **egoals, **sgoals;
+    #####:   27:    bool env_nogoal_flag = False;  /* Indicate environment has no goals */
+        -:   28:
+        -:   29:    /* Set environment goal to True (i.e., any state) if none was
+        -:   30:       given. This simplifies the implementation below. */
+    #####:   31:    if (spc.num_egoals == 0) {
+    #####:   32:        env_nogoal_flag = True;
+    #####:   33:        spc.num_egoals = 1;
+    #####:   34:        spc.env_goals = malloc( sizeof(ptree_t *) );
+    #####:   35:        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:   36:    }
+        -:   37:
+        -:   38:    /* Chain together environment and system variable lists for
+        -:   39:       working with BDD library. */
+    #####:   40:    if (spc.evar_list == NULL) {
+    #####:   41:        var_separator = NULL;
+    #####:   42:        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+        -:   43:                                           is indicated by var_separator = NULL. */
+        -:   44:    } else {
+    #####:   45:        var_separator = get_list_item( spc.evar_list, -1 );
+    #####:   46:        if (var_separator == NULL) {
+    #####:   47:            fprintf( stderr,
+        -:   48:                     "Error: get_list_item failed on environment variables"
+        -:   49:                     " list.\n" );
+    #####:   50:            return NULL;
+        -:   51:        }
+    #####:   52:        var_separator->left = spc.svar_list;
+        -:   53:    }
+        -:   54:
+        -:   55:    /* Generate BDDs for the various parse trees from the problem spec. */
+    #####:   56:    if (verbose > 1)
+    #####:   57:        logprint( "Building environment transition BDD..." );
+    #####:   58:    etrans = ptree_BDD( spc.env_trans, spc.evar_list, manager );
+    #####:   59:    if (verbose > 1) {
+    #####:   60:        logprint( "Done." );
+    #####:   61:        logprint( "Building system transition BDD..." );
+        -:   62:    }
+    #####:   63:    strans = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
+    #####:   64:    if (verbose > 1)
+    #####:   65:        logprint( "Done." );
+        -:   66:
+        -:   67:    /* Build goal BDDs, if present. */
+    #####:   68:    if (spc.num_egoals > 0) {
+    #####:   69:        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+    #####:   70:        for (i = 0; i < spc.num_egoals; i++)
+    #####:   71:            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
+        -:   72:    } else {
+    #####:   73:        egoals = NULL;
+        -:   74:    }
+    #####:   75:    if (spc.num_sgoals > 0) {
+    #####:   76:        sgoals = malloc( spc.num_sgoals*sizeof(DdNode *) );
+    #####:   77:        for (i = 0; i < spc.num_sgoals; i++)
+    #####:   78:            *(sgoals+i) = ptree_BDD( *(spc.sys_goals+i), spc.evar_list, manager );
+        -:   79:    } else {
+    #####:   80:        sgoals = NULL;
+        -:   81:    }
+        -:   82:
+        -:   83:    /* Break the link that appended the system variables list to the
+        -:   84:       environment variables list. */
+    #####:   85:    if (var_separator == NULL) {
+    #####:   86:        spc.evar_list = NULL;
+        -:   87:    } else {
+    #####:   88:        var_separator->left = NULL;
+        -:   89:    }
+        -:   90:
+    #####:   91:    W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals,
+        -:   92:                                 verbose );
+        -:   93:
+    #####:   94:    Cudd_RecursiveDeref( manager, etrans );
+    #####:   95:    Cudd_RecursiveDeref( manager, strans );
+    #####:   96:    for (i = 0; i < spc.num_egoals; i++)
+    #####:   97:        Cudd_RecursiveDeref( manager, *(egoals+i) );
+    #####:   98:    for (i = 0; i < spc.num_sgoals; i++)
+    #####:   99:        Cudd_RecursiveDeref( manager, *(sgoals+i) );
+    #####:  100:    if (spc.num_egoals > 0)
+    #####:  101:        free( egoals );
+    #####:  102:    if (spc.num_sgoals > 0)
+    #####:  103:        free( sgoals );
+    #####:  104:    if (env_nogoal_flag) {
+    #####:  105:        spc.num_egoals = 0;
+    #####:  106:        delete_tree( *spc.env_goals );
+    #####:  107:        free( spc.env_goals );
+        -:  108:    }
+        -:  109:
+    #####:  110:    return W;
+        -:  111:}
+        -:  112:
+        -:  113:
+    #####:  114:DdNode *compute_winning_set_BDD( DdManager *manager,
+        -:  115:                                 DdNode *etrans, DdNode *strans,
+        -:  116:                                 DdNode **egoals, DdNode **sgoals,
+        -:  117:                                 unsigned char verbose )
+        -:  118:{
+    #####:  119:    DdNode *X = NULL, *X_prev = NULL;
+    #####:  120:    DdNode *Y = NULL, *Y_exmod = NULL, *Y_prev = NULL;
+    #####:  121:    DdNode **Z = NULL, **Z_prev = NULL;
+        -:  122:    bool Z_changed;  /* Use to detect occurrence of fixpoint for all Z_i */
+        -:  123:
+        -:  124:    /* Fixpoint iteration counters */
+        -:  125:    int num_it_Z, num_it_Y, num_it_X;
+        -:  126:
+        -:  127:    DdNode *tmp, *tmp2;
+        -:  128:    int i, j;  /* Generic counters */
+        -:  129:
+        -:  130:    DdNode **vars, **pvars;
+        -:  131:    int num_env, num_sys;
+        -:  132:    int *cube;  /* length will be twice total number of variables (to
+        -:  133:                   account for both variables and their primes). */
+        -:  134:
+    #####:  135:    num_env = tree_size( spc.evar_list );
+    #####:  136:    num_sys = tree_size( spc.svar_list );
+        -:  137:
+        -:  138:    /* Allocate cube array, used later for quantifying over variables. */
+    #####:  139:    cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
+    #####:  140:    if (cube == NULL) {
+    #####:  141:        perror( __FILE__ ",  malloc" );
+    #####:  142:        exit(-1);
+        -:  143:    }
+        -:  144:
+        -:  145:    /* Define a map in the manager to easily swap variables with their
+        -:  146:       primed selves. */
+    #####:  147:    vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####:  148:    pvars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####:  149:    for (i = 0; i < num_env+num_sys; i++) {
+    #####:  150:        *(vars+i) = Cudd_bddIthVar( manager, i );
+    #####:  151:        *(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
+        -:  152:    }
+    #####:  153:    if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
+    #####:  154:        fprintf( stderr,
+        -:  155:                 "Error: failed to define variable map in CUDD manager.\n" );
+    #####:  156:        free( cube );
+    #####:  157:        return NULL;
+        -:  158:    }
+    #####:  159:    free( vars );
+    #####:  160:    free( pvars );
+        -:  161:
+    #####:  162:    if (spc.num_sgoals > 0) {
+    #####:  163:        Z = malloc( spc.num_sgoals*sizeof(DdNode *) );
+    #####:  164:        Z_prev = malloc( spc.num_sgoals*sizeof(DdNode *) );
+    #####:  165:        for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  166:            *(Z+i) = NULL;
+    #####:  167:            *(Z_prev+i) = NULL;
+        -:  168:        }
+        -:  169:    }
+        -:  170:
+        -:  171:    /* Initialize */
+    #####:  172:    for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  173:        *(Z+i) = Cudd_ReadOne( manager );
+    #####:  174:        Cudd_Ref( *(Z+i) );
+        -:  175:    }
+        -:  176:
+    #####:  177:    num_it_Z = 0;
+        -:  178:    do {
+    #####:  179:        num_it_Z++;
+    #####:  180:        if (verbose > 1) {
+    #####:  181:            logprint( "Z iteration %d", num_it_Z );
+    #####:  182:            logprint( "Cudd_ReadMemoryInUse (bytes): %d",
+        -:  183:                      Cudd_ReadMemoryInUse( manager ) );
+        -:  184:        }
+        -:  185:
+    #####:  186:        for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  187:            if (*(Z_prev+i) != NULL)
+    #####:  188:                Cudd_RecursiveDeref( manager, *(Z_prev+i) );
+    #####:  189:            *(Z_prev+i) = *(Z+i);
+        -:  190:        }
+        -:  191:
+    #####:  192:        for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  193:            if (i == spc.num_sgoals-1) {
+    #####:  194:                *(Z+i) = compute_existsmodal( manager, *Z_prev, etrans, strans,
+        -:  195:                                              num_env, num_sys, cube );
+        -:  196:            } else {
+    #####:  197:                *(Z+i) = compute_existsmodal( manager, *(Z_prev+i+1),
+        -:  198:                                              etrans, strans, num_env, num_sys,
+        -:  199:                                              cube );
+        -:  200:            }
+    #####:  201:            if (*(Z+i) == NULL) {
+        -:  202:                /* fatal error */
+    #####:  203:                return NULL;
+        -:  204:            }
+        -:  205:
+        -:  206:            /* (Re)initialize Y */
+    #####:  207:            if (Y != NULL)
+    #####:  208:                Cudd_RecursiveDeref( manager, Y );
+    #####:  209:            Y = Cudd_Not( Cudd_ReadOne( manager ) );
+    #####:  210:            Cudd_Ref( Y );
+        -:  211:
+    #####:  212:            num_it_Y = 0;
+        -:  213:            do {
+    #####:  214:                num_it_Y++;
+    #####:  215:                if (verbose > 1) {
+    #####:  216:                    logprint( "\tY iteration %d", num_it_Y );
+    #####:  217:                    logprint( "\tCudd_ReadMemoryInUse (bytes): %d",
+        -:  218:                              Cudd_ReadMemoryInUse( manager ) );
+        -:  219:                }
+        -:  220:
+    #####:  221:                if (Y_prev != NULL)
+    #####:  222:                    Cudd_RecursiveDeref( manager, Y_prev );
+    #####:  223:                Y_prev = Y;
+    #####:  224:                if (Y_exmod != NULL)
+    #####:  225:                    Cudd_RecursiveDeref( manager, Y_exmod );
+    #####:  226:                Y_exmod = compute_existsmodal( manager, Y_prev, etrans, strans,
+        -:  227:                                               num_env, num_sys, cube );
+    #####:  228:                if (Y_exmod == NULL) {
+        -:  229:                    /* fatal error */
+    #####:  230:                    return NULL;
+        -:  231:                }
+        -:  232:
+    #####:  233:                Y = Cudd_Not( Cudd_ReadOne( manager ) );
+    #####:  234:                Cudd_Ref( Y );
+    #####:  235:                for (j = 0; j < spc.num_egoals; j++) {
+        -:  236:
+        -:  237:                    /* (Re)initialize X */
+    #####:  238:                    if (X != NULL)
+    #####:  239:                        Cudd_RecursiveDeref( manager, X );
+    #####:  240:                    X = Cudd_ReadOne( manager );
+    #####:  241:                    Cudd_Ref( X );
+        -:  242:
+        -:  243:                    /* Greatest fixpoint for X, for this env goal */
+    #####:  244:                    num_it_X = 0;
+        -:  245:                    do {
+    #####:  246:                        num_it_X++;
+    #####:  247:                        if (verbose > 1) {
+    #####:  248:                            logprint( "\t\tX iteration %d", num_it_X );
+    #####:  249:                            logprint( "\t\tCudd_ReadMemoryInUse (bytes): %d",
+        -:  250:                                      Cudd_ReadMemoryInUse( manager ) );
+        -:  251:                        }
+        -:  252:
+    #####:  253:                        if (X_prev != NULL)
+    #####:  254:                            Cudd_RecursiveDeref( manager, X_prev );
+    #####:  255:                        X_prev = X;
+    #####:  256:                        X = compute_existsmodal( manager, X_prev,
+        -:  257:                                                 etrans, strans,
+        -:  258:                                                 num_env, num_sys, cube );
+    #####:  259:                        if (X == NULL) {
+        -:  260:                            /* fatal error */
+    #####:  261:                            return NULL;
+        -:  262:                        }
+        -:  263:
+    #####:  264:                        tmp = Cudd_bddAnd( manager, *(sgoals+i), *(Z+i) );
+    #####:  265:                        Cudd_Ref( tmp );
+    #####:  266:                        tmp2 = Cudd_bddOr( manager, tmp, Y_exmod );
+    #####:  267:                        Cudd_Ref( tmp2 );
+    #####:  268:                        Cudd_RecursiveDeref( manager, tmp );
+        -:  269:
+    #####:  270:                        tmp = Cudd_bddAnd( manager,
+    #####:  271:                                           X, Cudd_Not( *(egoals+j) ) );
+    #####:  272:                        Cudd_Ref( tmp );
+    #####:  273:                        Cudd_RecursiveDeref( manager, X );
+        -:  274:
+    #####:  275:                        X = Cudd_bddOr( manager, tmp2, tmp );
+    #####:  276:                        Cudd_Ref( X );
+    #####:  277:                        Cudd_RecursiveDeref( manager, tmp );
+    #####:  278:                        Cudd_RecursiveDeref( manager, tmp2 );
+        -:  279:
+    #####:  280:                        tmp = X;
+    #####:  281:                        X = Cudd_bddAnd( manager, X, X_prev );
+    #####:  282:                        Cudd_Ref( X );
+    #####:  283:                        Cudd_RecursiveDeref( manager, tmp );
+        -:  284:
+    #####:  285:                    } while (!Cudd_bddLeq( manager, X, X_prev )
+    #####:  286:                             || !Cudd_bddLeq( manager, X_prev, X ));
+        -:  287:
+    #####:  288:                    tmp = Y;
+    #####:  289:                    Y = Cudd_bddOr( manager, Y, X );
+    #####:  290:                    Cudd_Ref( Y );
+    #####:  291:                    Cudd_RecursiveDeref( manager, tmp );
+        -:  292:
+    #####:  293:                    Cudd_RecursiveDeref( manager, X );
+    #####:  294:                    X = NULL;
+    #####:  295:                    Cudd_RecursiveDeref( manager, X_prev );
+    #####:  296:                    X_prev = NULL;
+        -:  297:                }
+        -:  298:
+    #####:  299:                tmp2 = Y;
+    #####:  300:                Y = Cudd_bddOr( manager, Y, Y_prev );
+    #####:  301:                Cudd_Ref( Y );
+    #####:  302:                Cudd_RecursiveDeref( manager, tmp2 );
+        -:  303:
+    #####:  304:            } while (!Cudd_bddLeq( manager, Y, Y_prev )
+    #####:  305:                     || !Cudd_bddLeq( manager, Y_prev, Y ));
+        -:  306:
+    #####:  307:            Cudd_RecursiveDeref( manager, *(Z+i) );
+    #####:  308:            *(Z+i) = Cudd_bddAnd( manager, Y, *(Z_prev+i) );
+    #####:  309:            Cudd_Ref( *(Z+i) );
+        -:  310:
+    #####:  311:            Cudd_RecursiveDeref( manager, Y );
+    #####:  312:            Y = NULL;
+    #####:  313:            Cudd_RecursiveDeref( manager, Y_prev );
+    #####:  314:            Y_prev = NULL;
+    #####:  315:            Cudd_RecursiveDeref( manager, Y_exmod );
+    #####:  316:            Y_exmod = NULL;
+        -:  317:
+        -:  318:        }
+        -:  319:
+    #####:  320:        Z_changed = False;
+    #####:  321:        for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  322:            if (!Cudd_bddLeq( manager, *(Z+i), *(Z_prev+i) )
+    #####:  323:                || !Cudd_bddLeq( manager, *(Z_prev+i), *(Z+i) )) {
+    #####:  324:                Z_changed = True;
+    #####:  325:                break;
+        -:  326:            }
+        -:  327:        }
+    #####:  328:    } while (Z_changed);
+        -:  329:
+        -:  330:    /* Pre-exit clean-up */
+    #####:  331:    tmp = *Z;
+    #####:  332:    Cudd_RecursiveDeref( manager, *Z_prev );
+    #####:  333:    for (i = 1; i < spc.num_sgoals; i++) {
+    #####:  334:        Cudd_RecursiveDeref( manager, *(Z+i) );
+    #####:  335:        Cudd_RecursiveDeref( manager, *(Z_prev+i) );
+        -:  336:    }
+    #####:  337:    free( Z );
+    #####:  338:    free( Z_prev );
+    #####:  339:    free( cube );
+        -:  340:
+    #####:  341:    return tmp;
+        -:  342:}
+        -:  343:
+        -:  344:
+    #####:  345:DdNode ***compute_sublevel_sets( DdManager *manager,
+        -:  346:                                 DdNode *W,
+        -:  347:                                 DdNode *etrans, DdNode *strans,
+        -:  348:                                 DdNode **egoals, int num_env_goals,
+        -:  349:                                 DdNode **sgoals, int num_sys_goals,
+        -:  350:                                 int **num_sublevels,
+        -:  351:                                 DdNode *****X_ijr,
+        -:  352:                                 unsigned char verbose )
+        -:  353:{
+    #####:  354:    DdNode ***Y = NULL, *Y_exmod = NULL;
+    #####:  355:    DdNode *X = NULL, *X_prev = NULL;
+        -:  356:
+        -:  357:    DdNode **vars, **pvars;
+        -:  358:    int num_env, num_sys;
+        -:  359:    int *cube;
+        -:  360:
+        -:  361:    DdNode *tmp, *tmp2;
+        -:  362:    int i, r;
+        -:  363:
+    #####:  364:    num_env = tree_size( spc.evar_list );
+    #####:  365:    num_sys = tree_size( spc.svar_list );
+        -:  366:
+    #####:  367:    cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
+    #####:  368:    if (cube == NULL) {
+    #####:  369:        perror( __FILE__ ",  malloc" );
+    #####:  370:        exit(-1);
+        -:  371:    }
+        -:  372:
+        -:  373:    /* Define a map in the manager to easily swap variables with their
+        -:  374:       primed selves. */
+    #####:  375:    vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####:  376:    pvars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####:  377:    for (i = 0; i < num_env+num_sys; i++) {
+    #####:  378:        *(vars+i) = Cudd_bddIthVar( manager, i );
+    #####:  379:        *(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
+        -:  380:    }
+    #####:  381:    if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
+    #####:  382:        fprintf( stderr,
+        -:  383:                 "Error: failed to define variable map in CUDD manager.\n" );
+    #####:  384:        free( cube );
+    #####:  385:        return NULL;
+        -:  386:    }
+    #####:  387:    free( vars );
+    #####:  388:    free( pvars );
+        -:  389:
+    #####:  390:    if (num_sys_goals > 0) {
+    #####:  391:        Y = malloc( num_sys_goals*sizeof(DdNode **) );
+    #####:  392:        *num_sublevels = malloc( num_sys_goals*sizeof(int) );
+    #####:  393:        if (Y == NULL || *num_sublevels == NULL) {
+    #####:  394:            perror( __FILE__ ",  malloc" );
+    #####:  395:            exit(-1);
+        -:  396:        }
+    #####:  397:        *X_ijr = malloc( num_sys_goals*sizeof(DdNode ***) );
+    #####:  398:        if (*X_ijr == NULL) {
+    #####:  399:            perror( __FILE__ ",  malloc" );
+    #####:  400:            exit(-1);
+        -:  401:        }
+        -:  402:
+    #####:  403:        for (i = 0; i < num_sys_goals; i++) {
+    #####:  404:            *(*num_sublevels+i) = 1;
+    #####:  405:            *(Y+i) = malloc( *(*num_sublevels+i)*sizeof(DdNode *) );
+    #####:  406:            if (*(Y+i) == NULL) {
+    #####:  407:                perror( __FILE__ ",  malloc" );
+    #####:  408:                exit(-1);
+        -:  409:            }
+    #####:  410:            **(Y+i) = Cudd_Not( Cudd_ReadOne( manager ) );
+    #####:  411:            Cudd_Ref( **(Y+i) );
+        -:  412:
+    #####:  413:            *(*X_ijr+i) = malloc( *(*num_sublevels+i)*sizeof(DdNode **) );
+    #####:  414:            if (*(*X_ijr+i) == NULL) {
+    #####:  415:                perror( __FILE__ ",  malloc" );
+    #####:  416:                exit(-1);
+        -:  417:            }
+    #####:  418:            **(*X_ijr+i) = malloc( num_env_goals*sizeof(DdNode *) );
+    #####:  419:            if (**(*X_ijr+i) == NULL) {
+    #####:  420:                perror( __FILE__ ",  malloc" );
+    #####:  421:                exit(-1);
+        -:  422:            }
+    #####:  423:            for (r = 0; r < num_env_goals; r++) {
+    #####:  424:                *(**(*X_ijr+i) + r) = Cudd_Not( Cudd_ReadOne( manager ) );
+    #####:  425:                Cudd_Ref( *(**(*X_ijr+i) + r) );
+        -:  426:            }
+        -:  427:        }
+        -:  428:    } else {
+    #####:  429:        free( cube );
+    #####:  430:        return NULL;
+        -:  431:    }
+        -:  432:
+        -:  433:    /* Build list of Y_i sets from iterations of the fixpoint formula. */
+    #####:  434:    for (i = 0; i < num_sys_goals; i++) {
+        -:  435:        while (True) {
+    #####:  436:            (*(*num_sublevels+i))++;
+    #####:  437:            *(Y+i) = realloc( *(Y+i), *(*num_sublevels+i)*sizeof(DdNode *) );
+    #####:  438:            *(*X_ijr+i) = realloc( *(*X_ijr+i),
+    #####:  439:                                   *(*num_sublevels+i)*sizeof(DdNode **) );
+    #####:  440:            if (*(Y+i) == NULL || *(*X_ijr+i) == NULL) {
+    #####:  441:                perror( __FILE__ ",  realloc" );
+    #####:  442:                exit(-1);
+        -:  443:            }
+        -:  444:
+    #####:  445:            *(*(*X_ijr+i) + *(*num_sublevels+i)-1)
+    #####:  446:                = malloc( num_env_goals*sizeof(DdNode *) );
+    #####:  447:            if (*(*(*X_ijr+i) + *(*num_sublevels+i)-1) == NULL) {
+    #####:  448:                perror( __FILE__ ",  malloc" );
+    #####:  449:                exit(-1);
+        -:  450:            }
+        -:  451:
+    #####:  452:            Y_exmod = compute_existsmodal( manager,
+    #####:  453:                                           *(*(Y+i)+*(*num_sublevels+i)-2),
+        -:  454:                                           etrans, strans, num_env, num_sys,
+        -:  455:                                           cube );
+        -:  456:
+    #####:  457:            *(*(Y+i)+*(*num_sublevels+i)-1) = Cudd_Not(Cudd_ReadOne( manager ));
+    #####:  458:            Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
+    #####:  459:            for (r = 0; r < num_env_goals; r++) {
+        -:  460:
+        -:  461:                /* (Re)initialize X */
+    #####:  462:                if (X != NULL)
+    #####:  463:                    Cudd_RecursiveDeref( manager, X );
+    #####:  464:                X = Cudd_ReadOne( manager );
+    #####:  465:                Cudd_Ref( X );
+        -:  466:
+        -:  467:                /* Greatest fixpoint for X, for this env goal */
+        -:  468:                do {
+    #####:  469:                    if (X_prev != NULL)
+    #####:  470:                        Cudd_RecursiveDeref( manager, X_prev );
+    #####:  471:                    X_prev = X;
+    #####:  472:                    X = compute_existsmodal( manager, X_prev, etrans, strans,
+        -:  473:                                             num_env, num_sys, cube );
+    #####:  474:                    if (X == NULL) {
+        -:  475:                        /* fatal error */
+    #####:  476:                        return NULL;
+        -:  477:                    }
+        -:  478:
+    #####:  479:                    tmp = Cudd_bddAnd( manager, *(sgoals+i), W );
+    #####:  480:                    Cudd_Ref( tmp );
+    #####:  481:                    tmp2 = Cudd_bddOr( manager, tmp, Y_exmod );
+    #####:  482:                    Cudd_Ref( tmp2 );
+    #####:  483:                    Cudd_RecursiveDeref( manager, tmp );
+        -:  484:
+    #####:  485:                    tmp = Cudd_bddAnd( manager, X, Cudd_Not( *(egoals+r) ) );
+    #####:  486:                    Cudd_Ref( tmp );
+    #####:  487:                    Cudd_RecursiveDeref( manager, X );
+        -:  488:
+    #####:  489:                    X = Cudd_bddOr( manager, tmp2, tmp );
+    #####:  490:                    Cudd_Ref( X );
+    #####:  491:                    Cudd_RecursiveDeref( manager, tmp );
+    #####:  492:                    Cudd_RecursiveDeref( manager, tmp2 );
+        -:  493:
+    #####:  494:                    tmp = X;
+    #####:  495:                    X = Cudd_bddAnd( manager, X, X_prev );
+    #####:  496:                    Cudd_Ref( X );
+    #####:  497:                    Cudd_RecursiveDeref( manager, tmp );
+        -:  498:
+    #####:  499:                } while (!Cudd_bddLeq( manager, X, X_prev )
+    #####:  500:                         || !Cudd_bddLeq( manager, X_prev, X ));
+        -:  501:
+    #####:  502:                *(*(*(*X_ijr+i) + *(*num_sublevels+i)-1) + r) = X;
+    #####:  503:                Cudd_Ref( *(*(*(*X_ijr+i) + *(*num_sublevels+i)-1) + r) );
+        -:  504:
+    #####:  505:                tmp = *(*(Y+i)+*(*num_sublevels+i)-1);
+    #####:  506:                *(*(Y+i)+*(*num_sublevels+i)-1)
+    #####:  507:                    = Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1), X );
+    #####:  508:                Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
+    #####:  509:                Cudd_RecursiveDeref( manager, tmp );
+        -:  510:
+    #####:  511:                Cudd_RecursiveDeref( manager, X );
+    #####:  512:                X = NULL;
+    #####:  513:                Cudd_RecursiveDeref( manager, X_prev );
+    #####:  514:                X_prev = NULL;
+        -:  515:            }
+        -:  516:
+    #####:  517:            tmp = *(*(Y+i)+*(*num_sublevels+i)-1);
+    #####:  518:            *(*(Y+i)+*(*num_sublevels+i)-1)
+    #####:  519:                = Cudd_bddOr( manager, *(*(Y+i)+*(*num_sublevels+i)-1),
+    #####:  520:                              *(*(Y+i)+*(*num_sublevels+i)-2) );
+    #####:  521:            Cudd_Ref( *(*(Y+i)+*(*num_sublevels+i)-1) );
+    #####:  522:            Cudd_RecursiveDeref( manager, tmp );
+        -:  523:
+    #####:  524:            if (Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-1),
+    #####:  525:                             *(*(Y+i)+*(*num_sublevels+i)-2))
+    #####:  526:                && Cudd_bddLeq( manager, *(*(Y+i)+*(*num_sublevels+i)-2),
+    #####:  527:                                *(*(Y+i)+*(*num_sublevels+i)-1) )) {
+    #####:  528:                Cudd_RecursiveDeref( manager, *(*(Y+i)+*(*num_sublevels+i)-1) );
+    #####:  529:                for (r = 0; r < num_env_goals; r++) {
+    #####:  530:                    Cudd_RecursiveDeref( manager, *(*(*(*X_ijr+i)
+    #####:  531:                                                      + *(*num_sublevels+i)-1)
+    #####:  532:                                                    + r) );
+        -:  533:                }
+    #####:  534:                free( *(*(*X_ijr+i) + *(*num_sublevels+i)-1) );
+    #####:  535:                (*(*num_sublevels+i))--;
+    #####:  536:                *(Y+i) = realloc( *(Y+i),
+    #####:  537:                                  *(*num_sublevels+i)*sizeof(DdNode *) );
+    #####:  538:                *(*X_ijr+i) = realloc( *(*X_ijr+i),
+    #####:  539:                                       *(*num_sublevels+i)*sizeof(DdNode **) );
+    #####:  540:                if (*(Y+i) == NULL || *(*X_ijr+i) == NULL) {
+    #####:  541:                    perror( __FILE__ ",  realloc" );
+    #####:  542:                    exit(-1);
+        -:  543:                }
+    #####:  544:                break;
+        -:  545:            }
+    #####:  546:            Cudd_RecursiveDeref( manager, Y_exmod );
+        -:  547:        }
+    #####:  548:        Cudd_RecursiveDeref( manager, Y_exmod );
+        -:  549:    }
+        -:  550:
+    #####:  551:    free( cube );
+    #####:  552:    return Y;
+        -:  553:}

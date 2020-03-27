@@ -1,0 +1,714 @@
+        -:    0:Source:src/main.c
+        -:    0:Graph:main.gcno
+        -:    0:Data:-
+        -:    0:Runs:0
+        -:    0:Programs:0
+        -:    1:/* main.c -- main entry point for execution.
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2012-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#define _POSIX_C_SOURCE 200809L
+        -:    9:#include <unistd.h>
+        -:   10:#include <string.h>
+        -:   11:#include <stdio.h>
+        -:   12:#include <stdlib.h>
+        -:   13:#include <ctype.h>
+        -:   14:
+        -:   15:#include "common.h"
+        -:   16:#include "logging.h"
+        -:   17:#include "ptree.h"
+        -:   18:#include "solve.h"
+        -:   19:#include "automaton.h"
+        -:   20:#include "gr1c_util.h"
+        -:   21:extern int yyparse( void );
+        -:   22:extern void yyrestart( FILE *new_file );
+        -:   23:
+        -:   24:
+        -:   25:/**************************
+        -:   26: **** Global variables ****/
+        -:   27:
+        -:   28:extern specification_t spc;
+        -:   29:
+        -:   30:/**************************/
+        -:   31:
+        -:   32:
+        -:   33:/* Output formats */
+        -:   34:#define OUTPUT_FORMAT_TEXT 0
+        -:   35:#define OUTPUT_FORMAT_TULIP 1
+        -:   36:#define OUTPUT_FORMAT_DOT 2
+        -:   37:#define OUTPUT_FORMAT_AUT 3
+        -:   38:#define OUTPUT_FORMAT_JSON 5
+        -:   39:
+        -:   40:/* Verification model targets */
+        -:   41:#define VERMODEL_TARGET_SPIN 1
+        -:   42:
+        -:   43:/* Runtime modes */
+        -:   44:#define GR1C_MODE_SYNTAX 0
+        -:   45:#define GR1C_MODE_REALIZABLE 1
+        -:   46:#define GR1C_MODE_SYNTHESIS 2
+        -:   47:#define GR1C_MODE_INTERACTIVE 3
+        -:   48:
+        -:   49:
+        -:   50:#define PRINT_VERSION() \
+        -:   51:    printf( "gr1c " GR1C_VERSION "\n\n" GR1C_COPYRIGHT "\n" )
+        -:   52:
+        -:   53:
+    #####:   54:int main( int argc, char **argv )
+        -:   55:{
+        -:   56:    FILE *fp;
+    #####:   57:    byte run_option = GR1C_MODE_SYNTHESIS;
+    #####:   58:    bool help_flag = False;
+    #####:   59:    bool ptdump_flag = False;
+    #####:   60:    bool logging_flag = False;
+    #####:   61:    unsigned char init_flags = ALL_ENV_EXIST_SYS_INIT;
+    #####:   62:    byte format_option = OUTPUT_FORMAT_JSON;
+    #####:   63:    unsigned char verbose = 0;
+    #####:   64:    bool reading_options = True;  /* For disabling option parsing using "--" */
+    #####:   65:    int input_index = -1;
+    #####:   66:    int output_file_index = -1;  /* For command-line flag "-o". */
+        -:   67:    char dumpfilename[64];
+    #####:   68:    char **command_argv = NULL;
+        -:   69:
+    #####:   70:    byte verification_model = 0;  /* For command-line flag "-P". */
+    #####:   71:    ptree_t *original_env_init = NULL;
+    #####:   72:    ptree_t *original_sys_init = NULL;
+    #####:   73:    ptree_t **original_env_goals = NULL;
+    #####:   74:    ptree_t **original_sys_goals = NULL;
+    #####:   75:    int original_num_egoals = 0;
+    #####:   76:    int original_num_sgoals = 0;
+    #####:   77:    ptree_t **original_env_trans_array = NULL;
+    #####:   78:    ptree_t **original_sys_trans_array = NULL;
+    #####:   79:    int original_et_array_len = 0;
+    #####:   80:    int original_st_array_len = 0;
+        -:   81:
+        -:   82:    int i, j, var_index;
+        -:   83:    ptree_t *tmppt;  /* General purpose temporary ptree pointer */
+        -:   84:
+        -:   85:    DdManager *manager;
+    #####:   86:    DdNode *T = NULL;
+    #####:   87:    anode_t *strategy = NULL;
+        -:   88:    int num_env, num_sys;
+        -:   89:
+        -:   90:    /* Try to handle sub-commands first */
+    #####:   91:    if (argc >= 2) {
+    #####:   92:        if (!strncmp( argv[1], "rg", strlen( "rg" ) )
+    #####:   93:            && argv[1][strlen("rg")] == '\0') {
+        -:   94:
+        -:   95:            /* Pass arguments after rg */
+    #####:   96:            command_argv = malloc( sizeof(char *)*argc );
+    #####:   97:            command_argv[0] = strdup( "gr1c rg" );
+    #####:   98:            command_argv[argc-1] = NULL;
+    #####:   99:            for (i = 1; i < argc-1; i++)
+    #####:  100:                command_argv[i] = argv[i+1];
+        -:  101:
+    #####:  102:            if (execvp( "gr1c-rg", command_argv ) < 0) {
+    #####:  103:                perror( __FILE__ ",  execvp" );
+    #####:  104:                return -1;
+        -:  105:            }
+        -:  106:
+    #####:  107:        } else if (!strncmp( argv[1], "patch", strlen( "patch" ) )
+    #####:  108:                   && argv[1][strlen("patch")] == '\0') {
+        -:  109:
+    #####:  110:            command_argv = malloc( sizeof(char *)*argc );
+    #####:  111:            command_argv[0] = strdup( "gr1c patch" );
+    #####:  112:            command_argv[argc-1] = NULL;
+    #####:  113:            for (i = 1; i < argc-1; i++)
+    #####:  114:                command_argv[i] = argv[i+1];
+        -:  115:
+    #####:  116:            if (execvp( "gr1c-patch", command_argv ) < 0) {
+    #####:  117:                perror( __FILE__ ",  execvp" );
+    #####:  118:                return -1;
+        -:  119:            }
+        -:  120:
+    #####:  121:        } else if (!strncmp( argv[1], "autman", strlen( "autman" ) )
+    #####:  122:                   && argv[1][strlen("autman")] == '\0') {
+        -:  123:
+    #####:  124:            command_argv = malloc( sizeof(char *)*argc );
+    #####:  125:            command_argv[0] = strdup( "gr1c autman" );
+    #####:  126:            command_argv[argc-1] = NULL;
+    #####:  127:            for (i = 1; i < argc-1; i++)
+    #####:  128:                command_argv[i] = argv[i+1];
+        -:  129:
+    #####:  130:            if (execvp( "gr1c-autman", command_argv ) < 0) {
+    #####:  131:                perror( __FILE__ ",  execvp" );
+    #####:  132:                return -1;
+        -:  133:            }
+        -:  134:
+    #####:  135:        } else if (!strncmp( argv[1], "help", strlen( "help" ) )
+    #####:  136:                   && argv[1][strlen("help")] == '\0') {
+    #####:  137:            reading_options = False;
+    #####:  138:            help_flag = True;
+        -:  139:        }
+        -:  140:    }
+        -:  141:
+        -:  142:    /* Look for flags in command-line arguments. */
+    #####:  143:    for (i = 1; i < argc; i++) {
+    #####:  144:        if (reading_options && argv[i][0] == '-' && argv[i][1] != '-') {
+    #####:  145:            if (argv[i][2] != '\0'
+    #####:  146:                && !(argv[i][1] == 'v' && argv[i][2] == 'v')) {
+    #####:  147:                fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  148:                return 1;
+        -:  149:            }
+        -:  150:
+    #####:  151:            if (argv[i][1] == 'h') {
+    #####:  152:                help_flag = True;
+    #####:  153:            } else if (argv[i][1] == 'V') {
+    #####:  154:                PRINT_VERSION();
+    #####:  155:                PRINT_LINKED_VERSIONS();
+    #####:  156:                return 0;
+    #####:  157:            } else if (argv[i][1] == 'v') {
+    #####:  158:                verbose++;
+    #####:  159:                j = 2;
+        -:  160:                /* Only support up to "level 2" of verbosity */
+    #####:  161:                while (argv[i][j] == 'v' && j <= 2) {
+    #####:  162:                    verbose++;
+    #####:  163:                    j++;
+        -:  164:                }
+    #####:  165:            } else if (argv[i][1] == 'l') {
+    #####:  166:                logging_flag = True;
+    #####:  167:            } else if (argv[i][1] == 's') {
+    #####:  168:                run_option = GR1C_MODE_SYNTAX;
+    #####:  169:            } else if (argv[i][1] == 'p') {
+    #####:  170:                ptdump_flag = True;
+    #####:  171:            } else if (argv[i][1] == 'r') {
+    #####:  172:                run_option = GR1C_MODE_REALIZABLE;
+    #####:  173:            } else if (argv[i][1] == 'i') {
+    #####:  174:                run_option = GR1C_MODE_INTERACTIVE;
+    #####:  175:            } else if (argv[i][1] == 't') {
+    #####:  176:                if (i == argc-1) {
+    #####:  177:                    fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  178:                    return 1;
+        -:  179:                }
+    #####:  180:                if (!strncmp( argv[i+1], "txt", strlen( "txt" ) )) {
+    #####:  181:                    format_option = OUTPUT_FORMAT_TEXT;
+    #####:  182:                } else if (!strncmp( argv[i+1], "tulip", strlen( "tulip" ) )) {
+    #####:  183:                    format_option = OUTPUT_FORMAT_TULIP;
+    #####:  184:                } else if (!strncmp( argv[i+1], "dot", strlen( "dot" ) )) {
+    #####:  185:                    format_option = OUTPUT_FORMAT_DOT;
+    #####:  186:                } else if (!strncmp( argv[i+1], "aut", strlen( "aut" ) )) {
+    #####:  187:                    format_option = OUTPUT_FORMAT_AUT;
+    #####:  188:                } else if (!strncmp( argv[i+1], "json", strlen( "json" ) )) {
+    #####:  189:                    format_option = OUTPUT_FORMAT_JSON;
+        -:  190:                } else {
+    #####:  191:                    fprintf( stderr,
+        -:  192:                             "Unrecognized output format. Try \"-h\".\n" );
+    #####:  193:                    return 1;
+        -:  194:                }
+    #####:  195:                i++;
+    #####:  196:            } else if (argv[i][1] == 'n') {
+    #####:  197:                if (i == argc-1) {
+    #####:  198:                    fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  199:                    return 1;
+        -:  200:                }
+    #####:  201:                for (j = 0; j < strlen( argv[i+1] ); j++)
+    #####:  202:                    argv[i+1][j] = tolower( argv[i+1][j] );
+    #####:  203:                if (!strncmp( argv[i+1], "all_env_exist_sys_init",
+        -:  204:                              strlen( "all_env_exist_sys_init" ) )) {
+    #####:  205:                    init_flags = ALL_ENV_EXIST_SYS_INIT;
+    #####:  206:                } else if (!strncmp( argv[i+1], "all_init",
+        -:  207:                                     strlen( "all_init" ) )) {
+    #####:  208:                    init_flags = ALL_INIT;
+    #####:  209:                } else if (!strncmp( argv[i+1], "one_side_init",
+        -:  210:                                     strlen( "one_side_init" ) )) {
+    #####:  211:                    init_flags = ONE_SIDE_INIT;
+        -:  212:                } else {
+    #####:  213:                    fprintf( stderr,
+        -:  214:                             "Unrecognized init flags. Try \"-h\".\n" );
+    #####:  215:                    return 1;
+        -:  216:                }
+    #####:  217:                i++;
+    #####:  218:            } else if (argv[i][1] == 'o') {
+    #####:  219:                if (i == argc-1) {
+    #####:  220:                    fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  221:                    return 1;
+        -:  222:                }
+    #####:  223:                output_file_index = i+1;
+    #####:  224:                i++;
+    #####:  225:            } else if (argv[i][1] == 'P') {
+    #####:  226:                verification_model = VERMODEL_TARGET_SPIN;
+        -:  227:            } else {
+    #####:  228:                fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  229:                return 1;
+        -:  230:            }
+    #####:  231:        } else if (reading_options && argv[i][0] == '-' && argv[i][1] == '-') {
+    #####:  232:            if (argv[i][2] == '\0') {
+    #####:  233:                reading_options = False;
+    #####:  234:            } else if (!strncmp( argv[i]+2, "help", strlen( "help" ) )) {
+    #####:  235:                help_flag = True;
+    #####:  236:            } else if (!strncmp( argv[i]+2, "version", strlen( "version" ) )) {
+    #####:  237:                PRINT_VERSION();
+    #####:  238:                return 0;
+        -:  239:            } else {
+    #####:  240:                fprintf( stderr, "Invalid flag given. Try \"-h\".\n" );
+    #####:  241:                return 1;
+        -:  242:            }
+    #####:  243:        } else if (input_index < 0) {
+        -:  244:            /* Use first non-flag argument as filename whence to read
+        -:  245:               specification. */
+    #####:  246:            if (i < argc-1) {
+    #####:  247:                fprintf( stderr,
+        -:  248:                         "Unexpected arguments after filename. Try \"-h\".\n" );
+    #####:  249:                return 1;
+        -:  250:            }
+    #####:  251:            input_index = i;
+        -:  252:        }
+        -:  253:    }
+        -:  254:
+    #####:  255:    if (help_flag) {
+        -:  256:        /* Split among printf() calls to conform with ISO C90 string length */
+    #####:  257:        printf( "Usage: %s [-hVvlspriP] [-n INIT] [-t TYPE] [-o FILE] [[--] FILE]\n\n"
+        -:  258:                "  -h          this help message\n"
+        -:  259:                "  -V          print version and exit\n"
+        -:  260:                "  -v          be verbose; use -vv to be more verbose\n"
+        -:  261:                "  -l          enable logging\n"
+        -:  262:                "  -t TYPE     strategy output format; default is \"json\";\n"
+        -:  263:                "              supported formats: txt, dot, aut, json, tulip\n", argv[0] );
+    #####:  264:        printf( "  -n INIT     initial condition interpretation; (not case sensitive)\n"
+        -:  265:                "              one of\n"
+        -:  266:                "                  ALL_ENV_EXIST_SYS_INIT (default)\n"
+        -:  267:                "                  ALL_INIT\n"
+        -:  268:                "                  ONE_SIDE_INIT\n"
+        -:  269:                "  -s          only check specification syntax (return 2 on error)\n" );
+    #####:  270:        printf( "  -p          dump parse trees to DOT files, and echo formulas to screen\n"
+        -:  271:                "  -r          only check realizability; do not synthesize strategy\n"
+        -:  272:                "              (return 0 if realizable, 3 if not)\n"
+        -:  273:                "  -i          interactive mode\n"
+        -:  274:                "  -o FILE     output strategy to FILE, rather than stdout (default)\n"
+        -:  275:                "  -P          create Spin Promela model of strategy;\n"
+        -:  276:                "              output to stdout, so requires -o flag to also be used\n" );
+    #####:  277:        printf( "\nFor other commands, use: %s COMMAND [...]\n\n"
+        -:  278:                "  rg          solve reachability game\n"
+        -:  279:                "  autman      manipulate finite-memory strategies\n"
+        -:  280:                "  patch       patch or modify a given strategy (incremental synthesis)\n"
+        -:  281:                "  help        this help message (equivalent to -h)\n\n"
+        -:  282:                "When applicable, any arguments after COMMAND are passed on to the\n"
+        -:  283:                "appropriate program. Use -h to get the corresponding help message.\n", argv[0] );
+    #####:  284:        return 0;
+        -:  285:    }
+        -:  286:
+    #####:  287:    if (input_index < 0 && (run_option == GR1C_MODE_INTERACTIVE)) {
+    #####:  288:        printf( "Reading spec from stdin in interactive mode is not yet"
+        -:  289:                " implemented.\n" );
+    #####:  290:        return 1;
+        -:  291:    }
+    #####:  292:    if (verification_model > 0 && output_file_index < 0) {
+    #####:  293:        printf( "-P flag can only be used with -o flag because the"
+        -:  294:                " verification model is\noutput to stdout.\n" );
+    #####:  295:        return 1;
+        -:  296:    }
+        -:  297:
+    #####:  298:    if (logging_flag) {
+    #####:  299:        openlogfile( NULL );  /* Use default filename prefix */
+        -:  300:        /* Only change verbosity level if user did not specify it */
+    #####:  301:        if (verbose == 0)
+    #####:  302:            verbose = 1;
+        -:  303:    } else {
+    #####:  304:        setlogstream( stdout );
+    #####:  305:        setlogopt( LOGOPT_NOTIME );
+        -:  306:    }
+    #####:  307:    if (verbose > 0)
+    #####:  308:        logprint( "Running with verbosity level %d.", verbose );
+        -:  309:
+        -:  310:    /* If filename for specification given at command-line, then use
+        -:  311:       it.  Else, read from stdin. */
+    #####:  312:    if (input_index > 0) {
+    #####:  313:        fp = fopen( argv[input_index], "r" );
+    #####:  314:        if (fp == NULL) {
+    #####:  315:            perror( __FILE__ ",  fopen" );
+    #####:  316:            return -1;
+        -:  317:        }
+    #####:  318:        yyrestart( fp );
+        -:  319:    } else {
+    #####:  320:        yyrestart( stdin );
+        -:  321:    }
+        -:  322:
+        -:  323:    /* Parse the specification. */
+    #####:  324:    if (verbose)
+    #####:  325:        logprint( "Parsing input..." );
+    #####:  326:    SPC_INIT( spc );
+    #####:  327:    if (yyparse())
+    #####:  328:        return 2;
+    #####:  329:    if (verbose)
+    #####:  330:        logprint( "Done." );
+        -:  331:
+    #####:  332:    if (check_gr1c_form( spc.evar_list, spc.svar_list, spc.env_init, spc.sys_init,
+        -:  333:                         spc.env_trans_array, spc.et_array_len,
+        -:  334:                         spc.sys_trans_array, spc.st_array_len,
+        -:  335:                         spc.env_goals, spc.num_egoals, spc.sys_goals, spc.num_sgoals,
+        -:  336:                         init_flags ) < 0)
+    #####:  337:        return 2;
+        -:  338:
+    #####:  339:    if (run_option == GR1C_MODE_SYNTAX)
+    #####:  340:        return 0;
+        -:  341:
+        -:  342:    /* Close input file, if opened. */
+    #####:  343:    if (input_index > 0)
+    #####:  344:        fclose( fp );
+        -:  345:
+        -:  346:    /* Omission implies empty. */
+    #####:  347:    if (spc.et_array_len == 0) {
+    #####:  348:        spc.et_array_len = 1;
+    #####:  349:        spc.env_trans_array = malloc( sizeof(ptree_t *) );
+    #####:  350:        if (spc.env_trans_array == NULL) {
+    #####:  351:            perror( __FILE__ ",  malloc" );
+    #####:  352:            return -1;
+        -:  353:        }
+    #####:  354:        *spc.env_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:  355:    }
+    #####:  356:    if (spc.st_array_len == 0) {
+    #####:  357:        spc.st_array_len = 1;
+    #####:  358:        spc.sys_trans_array = malloc( sizeof(ptree_t *) );
+    #####:  359:        if (spc.sys_trans_array == NULL) {
+    #####:  360:            perror( __FILE__ ",  malloc" );
+    #####:  361:            return -1;
+        -:  362:        }
+    #####:  363:        *spc.sys_trans_array = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:  364:    }
+    #####:  365:    if (spc.num_sgoals == 0) {
+    #####:  366:        spc.num_sgoals = 1;
+    #####:  367:        spc.sys_goals = malloc( sizeof(ptree_t *) );
+    #####:  368:        if (spc.sys_goals == NULL) {
+    #####:  369:            perror( __FILE__ ",  malloc" );
+    #####:  370:            return -1;
+        -:  371:        }
+    #####:  372:        *spc.sys_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:  373:    }
+        -:  374:
+        -:  375:
+    #####:  376:    if (ptdump_flag) {
+    #####:  377:        tree_dot_dump( spc.env_init, "env_init_ptree.dot" );
+    #####:  378:        tree_dot_dump( spc.sys_init, "sys_init_ptree.dot" );
+        -:  379:
+    #####:  380:        for (i = 0; i < spc.et_array_len; i++) {
+    #####:  381:            snprintf( dumpfilename, sizeof(dumpfilename),
+        -:  382:                      "env_trans%05d_ptree.dot", i );
+    #####:  383:            tree_dot_dump( *(spc.env_trans_array+i), dumpfilename );
+        -:  384:        }
+    #####:  385:        for (i = 0; i < spc.st_array_len; i++) {
+    #####:  386:            snprintf( dumpfilename, sizeof(dumpfilename),
+        -:  387:                      "sys_trans%05d_ptree.dot", i );
+    #####:  388:            tree_dot_dump( *(spc.sys_trans_array+i), dumpfilename );
+        -:  389:        }
+        -:  390:
+    #####:  391:        if (spc.num_egoals > 0) {
+    #####:  392:            for (i = 0; i < spc.num_egoals; i++) {
+    #####:  393:                snprintf( dumpfilename, sizeof(dumpfilename),
+        -:  394:                         "env_goal%05d_ptree.dot", i );
+    #####:  395:                tree_dot_dump( *(spc.env_goals+i), dumpfilename );
+        -:  396:            }
+        -:  397:        }
+    #####:  398:        if (spc.num_sgoals > 0) {
+    #####:  399:            for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  400:                snprintf( dumpfilename, sizeof(dumpfilename),
+        -:  401:                         "sys_goal%05d_ptree.dot", i );
+    #####:  402:                tree_dot_dump( *(spc.sys_goals+i), dumpfilename );
+        -:  403:            }
+        -:  404:        }
+        -:  405:
+    #####:  406:        var_index = 0;
+    #####:  407:        printf( "Environment variables (indices; domains): " );
+    #####:  408:        if (spc.evar_list == NULL) {
+    #####:  409:            printf( "(none)" );
+        -:  410:        } else {
+    #####:  411:            tmppt = spc.evar_list;
+    #####:  412:            while (tmppt) {
+    #####:  413:                if (tmppt->value == -1) {  /* Boolean */
+    #####:  414:                    if (tmppt->left == NULL) {
+    #####:  415:                        printf( "%s (%d; bool)", tmppt->name, var_index );
+        -:  416:                    } else {
+    #####:  417:                        printf( "%s (%d; bool), ", tmppt->name, var_index);
+        -:  418:                    }
+        -:  419:                } else {
+    #####:  420:                    if (tmppt->left == NULL) {
+    #####:  421:                        printf( "%s (%d; {0..%d})",
+        -:  422:                                tmppt->name, var_index, tmppt->value );
+        -:  423:                    } else {
+    #####:  424:                        printf( "%s (%d; {0..%d}), ",
+        -:  425:                                tmppt->name, var_index, tmppt->value );
+        -:  426:                    }
+        -:  427:                }
+    #####:  428:                tmppt = tmppt->left;
+    #####:  429:                var_index++;
+        -:  430:            }
+        -:  431:        }
+    #####:  432:        printf( "\n\n" );
+        -:  433:
+    #####:  434:        printf( "System variables (indices; domains): " );
+    #####:  435:        if (spc.svar_list == NULL) {
+    #####:  436:            printf( "(none)" );
+        -:  437:        } else {
+    #####:  438:            tmppt = spc.svar_list;
+    #####:  439:            while (tmppt) {
+    #####:  440:                if (tmppt->value == -1) {  /* Boolean */
+    #####:  441:                    if (tmppt->left == NULL) {
+    #####:  442:                        printf( "%s (%d; bool)", tmppt->name, var_index );
+        -:  443:                    } else {
+    #####:  444:                        printf( "%s (%d; bool), ", tmppt->name, var_index );
+        -:  445:                    }
+        -:  446:                } else {
+    #####:  447:                    if (tmppt->left == NULL) {
+    #####:  448:                        printf( "%s (%d; {0..%d})",
+        -:  449:                                tmppt->name, var_index, tmppt->value );
+        -:  450:                    } else {
+    #####:  451:                        printf( "%s (%d; {0..%d}), ",
+        -:  452:                                tmppt->name, var_index, tmppt->value );
+        -:  453:                    }
+        -:  454:                }
+    #####:  455:                tmppt = tmppt->left;
+    #####:  456:                var_index++;
+        -:  457:            }
+        -:  458:        }
+    #####:  459:        printf( "\n\n" );
+        -:  460:
+    #####:  461:        print_GR1_spec( spc.evar_list, spc.svar_list, spc.env_init, spc.sys_init,
+        -:  462:                        spc.env_trans_array, spc.et_array_len,
+        -:  463:                        spc.sys_trans_array, spc.st_array_len,
+        -:  464:                        spc.env_goals, spc.num_egoals, spc.sys_goals, spc.num_sgoals, stdout );
+        -:  465:    }
+        -:  466:
+        -:  467:    /* If verification model will be created, then save copy of
+        -:  468:       pristine ptrees, before nonbool expansion. */
+    #####:  469:    if (verification_model > 0) {
+    #####:  470:        original_num_egoals = spc.num_egoals;
+    #####:  471:        original_num_sgoals = spc.num_sgoals;
+    #####:  472:        original_et_array_len = spc.et_array_len;
+    #####:  473:        original_st_array_len = spc.st_array_len;
+    #####:  474:        original_env_goals = malloc( original_num_egoals*sizeof(ptree_t *) );
+    #####:  475:        original_sys_goals = malloc( original_num_sgoals*sizeof(ptree_t *) );
+    #####:  476:        original_env_trans_array = malloc( original_et_array_len*sizeof(ptree_t *) );
+    #####:  477:        original_sys_trans_array = malloc( original_st_array_len*sizeof(ptree_t *) );
+    #####:  478:        if (original_env_goals == NULL || original_sys_goals == NULL
+    #####:  479:            || original_env_trans_array == NULL || original_sys_trans_array == NULL) {
+    #####:  480:            perror( __FILE__ ",  malloc" );
+    #####:  481:            return -1;
+        -:  482:        }
+    #####:  483:        original_env_init = copy_ptree( spc.env_init );
+    #####:  484:        original_sys_init = copy_ptree( spc.sys_init );
+    #####:  485:        for (i = 0; i < original_num_egoals; i++)
+    #####:  486:            *(original_env_goals+i) = copy_ptree( *(spc.env_goals+i) );
+    #####:  487:        for (i = 0; i < original_num_sgoals; i++)
+    #####:  488:            *(original_sys_goals+i) = copy_ptree( *(spc.sys_goals+i) );
+    #####:  489:        for (i = 0; i < original_et_array_len; i++)
+    #####:  490:            *(original_env_trans_array+i) = copy_ptree( *(spc.env_trans_array+i) );
+    #####:  491:        for (i = 0; i < original_st_array_len; i++)
+    #####:  492:            *(original_sys_trans_array+i) = copy_ptree( *(spc.sys_trans_array+i) );
+        -:  493:    }
+        -:  494:
+    #####:  495:    if (expand_nonbool_GR1( spc.evar_list, spc.svar_list, &spc.env_init, &spc.sys_init,
+        -:  496:                            &spc.env_trans_array, &spc.et_array_len,
+        -:  497:                            &spc.sys_trans_array, &spc.st_array_len,
+        -:  498:                            &spc.env_goals, spc.num_egoals, &spc.sys_goals, spc.num_sgoals,
+        -:  499:                            init_flags, verbose ) < 0) {
+    #####:  500:        if (verification_model > 0) {
+    #####:  501:            for (j = 0; j < original_num_egoals; j++)
+    #####:  502:                free( *(original_env_goals+j) );
+    #####:  503:            free( original_env_goals );
+    #####:  504:            for (j = 0; j < original_num_sgoals; j++)
+    #####:  505:                free( *(original_sys_goals+j) );
+    #####:  506:            free( original_sys_goals );
+    #####:  507:            for (j = 0; j < original_et_array_len; j++)
+    #####:  508:                free( *(original_env_trans_array+j) );
+    #####:  509:            free( original_env_trans_array );
+    #####:  510:            for (j = 0; j < original_st_array_len; j++)
+    #####:  511:                free( *(original_sys_trans_array+j) );
+    #####:  512:            free( original_sys_trans_array );
+        -:  513:        }
+    #####:  514:        return -1;
+        -:  515:    }
+    #####:  516:    spc.nonbool_var_list = expand_nonbool_variables( &spc.evar_list, &spc.svar_list,
+        -:  517:                                                     verbose );
+        -:  518:
+        -:  519:    /* Merge component safety (transition) formulas */
+    #####:  520:    if (spc.et_array_len > 1) {
+    #####:  521:        spc.env_trans = merge_ptrees( spc.env_trans_array, spc.et_array_len, PT_AND );
+    #####:  522:    } else if (spc.et_array_len == 1) {
+    #####:  523:        spc.env_trans = *spc.env_trans_array;
+        -:  524:    } else {
+    #####:  525:        fprintf( stderr,
+        -:  526:                 "Syntax error: GR(1) specification is missing environment"
+        -:  527:                 " transition rules.\n" );
+    #####:  528:        return 2;
+        -:  529:    }
+    #####:  530:    if (spc.st_array_len > 1) {
+    #####:  531:        spc.sys_trans = merge_ptrees( spc.sys_trans_array, spc.st_array_len, PT_AND );
+    #####:  532:    } else if (spc.st_array_len == 1) {
+    #####:  533:        spc.sys_trans = *spc.sys_trans_array;
+        -:  534:    } else {
+    #####:  535:        fprintf( stderr,
+        -:  536:                 "Syntax error: GR(1) specification is missing system"
+        -:  537:                 " transition rules.\n" );
+    #####:  538:        return 2;
+        -:  539:    }
+        -:  540:
+    #####:  541:    if (verbose > 1)
+        -:  542:        /* Dump the spec to show results of conversion (if any). */
+    #####:  543:        print_GR1_spec( spc.evar_list, spc.svar_list, spc.env_init, spc.sys_init,
+        -:  544:                        spc.env_trans_array, spc.et_array_len,
+        -:  545:                        spc.sys_trans_array, spc.st_array_len,
+        -:  546:                        spc.env_goals, spc.num_egoals, spc.sys_goals, spc.num_sgoals, NULL );
+        -:  547:
+        -:  548:
+    #####:  549:    num_env = tree_size( spc.evar_list );
+    #####:  550:    num_sys = tree_size( spc.svar_list );
+        -:  551:
+    #####:  552:    manager = Cudd_Init( 2*(num_env+num_sys),
+        -:  553:                         0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
+    #####:  554:    Cudd_SetMaxCacheHard( manager, (unsigned int)-1 );
+    #####:  555:    Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        -:  556:
+    #####:  557:    if (run_option == GR1C_MODE_INTERACTIVE) {
+        -:  558:
+        -:  559:        /* NOT IMPLEMENTED YET FOR NONBOOL VARIABLES */
+    #####:  560:        if (spc.nonbool_var_list != NULL) {
+    #####:  561:            fprintf( stderr,
+        -:  562:                     "gr1c interaction does not yet support specifications"
+        -:  563:                     " with nonboolean domains.\n" );
+    #####:  564:            return -1;
+        -:  565:        }
+        -:  566:
+    #####:  567:        i = levelset_interactive( manager, init_flags, stdin, stdout, verbose );
+    #####:  568:        if (i == 0) {
+    #####:  569:            printf( "Not realizable.\n" );
+    #####:  570:            return 3;
+    #####:  571:        } else if (i < 0) {
+    #####:  572:            printf( "Failure during interaction.\n" );
+    #####:  573:            return -1;
+        -:  574:        }
+        -:  575:
+    #####:  576:        T = NULL;  /* To avoid seg faults by the generic clean-up code. */
+        -:  577:    } else {
+        -:  578:
+    #####:  579:        T = check_realizable( manager, init_flags, verbose );
+    #####:  580:        if (run_option == GR1C_MODE_REALIZABLE) {
+    #####:  581:            if ((verbose == 0) || (getlogstream() != stdout)) {
+    #####:  582:                if (T != NULL) {
+    #####:  583:                    printf( "Realizable.\n" );
+        -:  584:                } else {
+    #####:  585:                    printf( "Not realizable.\n" );
+        -:  586:                }
+        -:  587:            }
+        -:  588:        }
+        -:  589:
+    #####:  590:        if (verbose) {
+    #####:  591:            if (T != NULL) {
+    #####:  592:                logprint( "Realizable." );
+        -:  593:            } else {
+    #####:  594:                logprint( "Not realizable." );
+        -:  595:            }
+        -:  596:        }
+        -:  597:
+    #####:  598:        if (run_option == GR1C_MODE_SYNTHESIS && T != NULL) {
+        -:  599:
+    #####:  600:            if (verbose)
+    #####:  601:                logprint( "Synthesizing a strategy..." );
+    #####:  602:            strategy = synthesize( manager, init_flags, verbose );
+    #####:  603:            if (verbose)
+    #####:  604:                logprint( "Done." );
+    #####:  605:            if (strategy == NULL) {
+    #####:  606:                fprintf( stderr, "Error while attempting synthesis.\n" );
+    #####:  607:                return -1;
+        -:  608:            }
+        -:  609:
+        -:  610:        }
+        -:  611:    }
+        -:  612:
+    #####:  613:    if (strategy != NULL) {  /* De-expand nonboolean variables */
+    #####:  614:        tmppt = spc.nonbool_var_list;
+    #####:  615:        while (tmppt) {
+    #####:  616:            aut_compact_nonbool( strategy, spc.evar_list, spc.svar_list,
+        -:  617:                                 tmppt->name, tmppt->value );
+    #####:  618:            tmppt = tmppt->left;
+        -:  619:        }
+        -:  620:
+    #####:  621:        num_env = tree_size( spc.evar_list );
+    #####:  622:        num_sys = tree_size( spc.svar_list );
+        -:  623:    }
+        -:  624:
+    #####:  625:    if (strategy != NULL) {
+        -:  626:        /* Open output file if specified; else point to stdout. */
+    #####:  627:        if (output_file_index >= 0) {
+    #####:  628:            fp = fopen( argv[output_file_index], "w" );
+    #####:  629:            if (fp == NULL) {
+    #####:  630:                perror( __FILE__ ",  fopen" );
+    #####:  631:                return -1;
+        -:  632:            }
+        -:  633:        } else {
+    #####:  634:            fp = stdout;
+        -:  635:        }
+        -:  636:
+    #####:  637:        if (verbose)
+    #####:  638:            logprint( "Dumping automaton of size %d...", aut_size( strategy ) );
+        -:  639:
+    #####:  640:        if (format_option == OUTPUT_FORMAT_TEXT) {
+    #####:  641:            list_aut_dump( strategy, num_env+num_sys, fp );
+    #####:  642:        } else if (format_option == OUTPUT_FORMAT_DOT) {
+    #####:  643:            if (spc.nonbool_var_list != NULL) {
+    #####:  644:                dot_aut_dump( strategy, spc.evar_list, spc.svar_list,
+        -:  645:                              DOT_AUT_ATTRIB, fp );
+        -:  646:            } else {
+    #####:  647:                dot_aut_dump( strategy, spc.evar_list, spc.svar_list,
+        -:  648:                              DOT_AUT_BINARY | DOT_AUT_ATTRIB, fp );
+        -:  649:            }
+    #####:  650:        } else if (format_option == OUTPUT_FORMAT_AUT) {
+    #####:  651:            aut_aut_dump( strategy, num_env+num_sys, fp );
+    #####:  652:        } else if (format_option == OUTPUT_FORMAT_JSON) {
+    #####:  653:            json_aut_dump( strategy, spc.evar_list, spc.svar_list, fp );
+        -:  654:        } else { /* OUTPUT_FORMAT_TULIP */
+    #####:  655:            tulip_aut_dump( strategy, spc.evar_list, spc.svar_list, fp );
+        -:  656:        }
+        -:  657:
+    #####:  658:        if (fp != stdout)
+    #####:  659:            fclose( fp );
+        -:  660:
+    #####:  661:        if (verification_model > 0) {
+        -:  662:            /* Currently, only target supported is Spin Promela */
+    #####:  663:            spin_aut_dump( strategy, spc.evar_list, spc.svar_list,
+        -:  664:                           original_env_init, original_sys_init,
+        -:  665:                           original_env_trans_array, original_et_array_len,
+        -:  666:                           original_sys_trans_array, original_st_array_len,
+        -:  667:                           original_env_goals, original_num_egoals,
+        -:  668:                           original_sys_goals, original_num_sgoals,
+        -:  669:                           stdout, NULL );
+        -:  670:        }
+        -:  671:    }
+        -:  672:
+        -:  673:    /* Clean-up */
+    #####:  674:    delete_tree( spc.evar_list );
+    #####:  675:    delete_tree( spc.svar_list );
+    #####:  676:    delete_tree( spc.nonbool_var_list );
+    #####:  677:    delete_tree( spc.env_init );
+    #####:  678:    delete_tree( spc.sys_init );
+    #####:  679:    delete_tree( spc.env_trans );
+    #####:  680:    free( spc.env_trans_array );
+    #####:  681:    delete_tree( spc.sys_trans );
+    #####:  682:    free( spc.sys_trans_array );
+    #####:  683:    for (i = 0; i < spc.num_egoals; i++)
+    #####:  684:        delete_tree( *(spc.env_goals+i) );
+    #####:  685:    if (spc.num_egoals > 0)
+    #####:  686:        free( spc.env_goals );
+    #####:  687:    for (i = 0; i < spc.num_sgoals; i++)
+    #####:  688:        delete_tree( *(spc.sys_goals+i) );
+    #####:  689:    if (spc.num_sgoals > 0)
+    #####:  690:        free( spc.sys_goals );
+    #####:  691:    if (T != NULL)
+    #####:  692:        Cudd_RecursiveDeref( manager, T );
+    #####:  693:    if (strategy)
+    #####:  694:        delete_aut( strategy );
+    #####:  695:    if (verbose > 1)
+    #####:  696:        logprint( "Cudd_CheckZeroRef -> %d", Cudd_CheckZeroRef( manager ) );
+    #####:  697:    Cudd_Quit(manager);
+    #####:  698:    if (logging_flag)
+    #####:  699:        closelogfile();
+        -:  700:
+        -:  701:    /* Return 0 if realizable, 1 if not realizable. */
+    #####:  702:    if (run_option == GR1C_MODE_INTERACTIVE || T != NULL) {
+    #####:  703:        return 0;
+        -:  704:    } else {
+    #####:  705:        return 3;
+        -:  706:    }
+        -:  707:
+        -:  708:    return 0;
+        -:  709:}

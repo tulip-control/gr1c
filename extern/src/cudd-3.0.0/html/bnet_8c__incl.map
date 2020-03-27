@@ -1,0 +1,19 @@
+<map id="nanotrav/bnet.c" name="nanotrav/bnet.c">
+<area shape="rect" id="node1" title="Functions to read in a boolean network." alt="" coords="243,5,367,32"/>
+<area shape="rect" id="node2" href="$cuddInt_8h.html" title="Internal data structures of the CUDD package." alt="" coords="216,80,299,107"/>
+<area shape="rect" id="node11" href="$bnet_8h.html" title="Simple&#45;minded package to read a blif file." alt="" coords="355,80,418,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="223,155,291,181"/>
+<area shape="rect" id="node4" title=" " alt="" coords="5,229,80,256"/>
+<area shape="rect" id="node5" href="$st_8h.html" title="Symbol table package." alt="" coords="315,155,362,181"/>
+<area shape="rect" id="node6" href="$mtr_8h.html" title="Multiway&#45;branch tree manipulation." alt="" coords="58,155,115,181"/>
+<area shape="rect" id="node8" href="$epd_8h.html" title="The University of Colorado extended double precision package." alt="" coords="140,155,199,181"/>
+<area shape="rect" id="node9" href="$cudd_8h.html" title="The University of Colorado decision diagram package." alt="" coords="386,155,451,181"/>
+<area shape="rect" id="node7" title=" " alt="" coords="147,229,213,256"/>
+<area shape="rect" id="node10" title=" " alt="" coords="259,229,346,256"/>
+<area shape="rect" id="node12" href="$util_8h.html" title="Low&#45;level utilities." alt="" coords="475,155,530,181"/>
+<area shape="rect" id="node13" title=" " alt="" coords="465,229,540,256"/>
+<area shape="rect" id="node14" title=" " alt="" coords="564,229,639,256"/>
+<area shape="rect" id="node15" title=" " alt="" coords="663,229,734,256"/>
+<area shape="rect" id="node16" title=" " alt="" coords="758,229,829,256"/>
+<area shape="rect" id="node17" title=" " alt="" coords="370,229,441,256"/>
+</map>

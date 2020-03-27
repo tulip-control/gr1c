@@ -1,0 +1,5 @@
+<map id="LocalQueueItem" name="LocalQueueItem">
+<area shape="rect" id="node1" title="Type of the item of the local queue." alt="" coords="5,111,133,137"/>
+<area shape="rect" id="node2" href="$structDdNode.html" title="Decision diagram node." alt="" coords="189,5,264,32"/>
+<area shape="rect" id="node3" href="$structDdChildren.html" title="The two children of a non&#45;terminal node." alt="" coords="223,111,318,137"/>
+</map>

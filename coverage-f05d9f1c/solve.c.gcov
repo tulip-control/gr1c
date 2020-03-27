@@ -1,0 +1,986 @@
+        -:    0:Source:src/solve.c
+        -:    0:Graph:solve.gcno
+        -:    0:Data:-
+        -:    0:Runs:0
+        -:    0:Programs:0
+        -:    1:/* solve.c -- Definitions for signatures appearing in solve.h.
+        -:    2: *            Also consider solve_operators.c
+        -:    3: *
+        -:    4: *
+        -:    5: * SCL; 2012-2015
+        -:    6: */
+        -:    7:
+        -:    8:
+        -:    9:#include <string.h>
+        -:   10:#include <stdio.h>
+        -:   11:#include <stdlib.h>
+        -:   12:#include <assert.h>
+        -:   13:
+        -:   14:#include "logging.h"
+        -:   15:#include "solve.h"
+        -:   16:#include "solve_support.h"
+        -:   17:#include "automaton.h"
+        -:   18:
+        -:   19:
+        -:   20:extern specification_t spc;
+        -:   21:
+        -:   22:
+        -:   23:DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
+        -:   24:                                   unsigned char init_flags,
+        -:   25:                                   unsigned char verbose );
+        -:   26:
+        -:   27:
+    #####:   28:void logprint_state( vartype *state ) {
+        -:   29:    int i;
+        -:   30:    int num_env, num_sys;
+    #####:   31:    num_env = tree_size( spc.evar_list );
+    #####:   32:    num_sys = tree_size( spc.svar_list );
+    #####:   33:    for (i = 0; i < num_env+num_sys; i++) {
+    #####:   34:        logprint( "\t%s = %d;",
+        -:   35:                  (i < num_env ?
+    #####:   36:                   (get_list_item( spc.evar_list, i ))->name
+    #####:   37:                   : (get_list_item( spc.svar_list, i-num_env ))->name),
+    #####:   38:                  *(state+i) );
+        -:   39:    }
+    #####:   40:}
+        -:   41:
+        -:   42:
+    #####:   43:anode_t *synthesize( DdManager *manager,  unsigned char init_flags,
+        -:   44:                     unsigned char verbose )
+        -:   45:{
+    #####:   46:    anode_t *strategy = NULL;
+    #####:   47:    anode_t *this_node_stack = NULL;
+        -:   48:    anode_t *node, *new_node;
+        -:   49:    bool initial;
+        -:   50:    vartype *state;
+        -:   51:    vartype **env_moves;
+        -:   52:    int emoves_len;
+        -:   53:
+        -:   54:    ptree_t *var_separator;
+        -:   55:    DdNode *W;
+        -:   56:    DdNode *strans_into_W;
+        -:   57:
+        -:   58:    DdNode *einit, *sinit, *etrans, *strans, **egoals, **sgoals;
+        -:   59:
+        -:   60:    DdNode *ddval;  /* Store result of evaluating a BDD */
+    #####:   61:    DdNode ***Y = NULL;
+        -:   62:    DdNode *Y_i_primed;
+        -:   63:    int *num_sublevels;
+    #####:   64:    DdNode ****X_ijr = NULL;
+        -:   65:
+        -:   66:    DdNode *tmp, *tmp2;
+        -:   67:    int i, j, r, k;  /* Generic counters */
+        -:   68:    int offset;
+    #####:   69:    bool env_nogoal_flag = False;  /* Indicate environment has no goals */
+        -:   70:    int loop_mode;
+        -:   71:    int next_mode;
+        -:   72:
+        -:   73:    int num_env, num_sys;
+        -:   74:    int *cube;  /* length will be twice total number of variables (to
+        -:   75:                   account for both variables and their primes). */
+        -:   76:
+        -:   77:    /* Variables used during CUDD generation (state enumeration). */
+        -:   78:    DdGen *gen;
+        -:   79:    CUDD_VALUE_TYPE gvalue;
+        -:   80:    int *gcube;
+        -:   81:
+        -:   82:    /* Set environment goal to True (i.e., any state) if none was
+        -:   83:       given. This simplifies the implementation below. */
+    #####:   84:    if (spc.num_egoals == 0) {
+    #####:   85:        env_nogoal_flag = True;
+    #####:   86:        spc.num_egoals = 1;
+    #####:   87:        spc.env_goals = malloc( sizeof(ptree_t *) );
+    #####:   88:        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:   89:    }
+        -:   90:
+    #####:   91:    num_env = tree_size( spc.evar_list );
+    #####:   92:    num_sys = tree_size( spc.svar_list );
+        -:   93:
+        -:   94:    /* State vector (i.e., valuation of the variables) */
+    #####:   95:    state = malloc( sizeof(vartype)*(num_env+num_sys) );
+    #####:   96:    if (state == NULL) {
+    #####:   97:        perror( __FILE__ ",  malloc" );
+    #####:   98:        exit(-1);
+        -:   99:    }
+        -:  100:
+        -:  101:    /* Allocate cube array, used later for quantifying over variables. */
+    #####:  102:    cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
+    #####:  103:    if (cube == NULL) {
+    #####:  104:        perror( __FILE__ ",  malloc" );
+    #####:  105:        exit(-1);
+        -:  106:    }
+        -:  107:
+        -:  108:    /* Chain together environment and system variable lists for
+        -:  109:       working with BDD library. */
+    #####:  110:    if (spc.evar_list == NULL) {
+    #####:  111:        var_separator = NULL;
+    #####:  112:        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+        -:  113:                                           is indicated by var_separator = NULL. */
+        -:  114:    } else {
+    #####:  115:        var_separator = get_list_item( spc.evar_list, -1 );
+    #####:  116:        if (var_separator == NULL) {
+    #####:  117:            fprintf( stderr,
+        -:  118:                     "Error: get_list_item failed on environment variables"
+        -:  119:                     " list.\n" );
+    #####:  120:            free( state );
+    #####:  121:            free( cube );
+    #####:  122:            return NULL;
+        -:  123:        }
+    #####:  124:        var_separator->left = spc.svar_list;
+        -:  125:    }
+        -:  126:
+        -:  127:    /* Generate BDDs for the various parse trees from the problem spec. */
+    #####:  128:    if (spc.env_init != NULL) {
+    #####:  129:        einit = ptree_BDD( spc.env_init, spc.evar_list, manager );
+        -:  130:    } else {
+    #####:  131:        einit = Cudd_ReadOne( manager );
+    #####:  132:        Cudd_Ref( einit );
+        -:  133:    }
+    #####:  134:    if (spc.sys_init != NULL) {
+    #####:  135:        sinit = ptree_BDD( spc.sys_init, spc.evar_list, manager );
+        -:  136:    } else {
+    #####:  137:        sinit = Cudd_ReadOne( manager );
+    #####:  138:        Cudd_Ref( sinit );
+        -:  139:    }
+    #####:  140:    if (verbose > 1)
+    #####:  141:        logprint( "Building environment transition BDD..." );
+    #####:  142:    etrans = ptree_BDD( spc.env_trans, spc.evar_list, manager );
+    #####:  143:    if (verbose > 1) {
+    #####:  144:        logprint( "Done." );
+    #####:  145:        logprint( "Building system transition BDD..." );
+        -:  146:    }
+    #####:  147:    strans = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
+    #####:  148:    if (verbose > 1)
+    #####:  149:        logprint( "Done." );
+        -:  150:
+        -:  151:    /* Build goal BDDs, if present. */
+    #####:  152:    if (spc.num_egoals > 0) {
+    #####:  153:        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+    #####:  154:        for (i = 0; i < spc.num_egoals; i++)
+    #####:  155:            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
+        -:  156:    } else {
+    #####:  157:        egoals = NULL;
+        -:  158:    }
+    #####:  159:    if (spc.num_sgoals > 0) {
+    #####:  160:        sgoals = malloc( spc.num_sgoals*sizeof(DdNode *) );
+    #####:  161:        for (i = 0; i < spc.num_sgoals; i++)
+    #####:  162:            *(sgoals+i) = ptree_BDD( *(spc.sys_goals+i), spc.evar_list, manager );
+        -:  163:    } else {
+    #####:  164:        sgoals = NULL;
+        -:  165:    }
+        -:  166:
+    #####:  167:    if (var_separator == NULL) {
+    #####:  168:        spc.evar_list = NULL;
+        -:  169:    } else {
+    #####:  170:        var_separator->left = NULL;
+        -:  171:    }
+        -:  172:
+    #####:  173:    W = compute_winning_set_BDD( manager, etrans, strans, egoals, sgoals,
+        -:  174:                                 verbose );
+    #####:  175:    if (W == NULL) {
+    #####:  176:        fprintf( stderr,
+        -:  177:                 "Error synthesize: failed to construct winning set.\n" );
+    #####:  178:        free( state );
+    #####:  179:        free( cube );
+    #####:  180:        return NULL;
+        -:  181:    }
+    #####:  182:    Y = compute_sublevel_sets( manager, W, etrans, strans,
+        -:  183:                               egoals, spc.num_egoals,
+        -:  184:                               sgoals, spc.num_sgoals,
+        -:  185:                               &num_sublevels, &X_ijr, verbose );
+    #####:  186:    if (Y == NULL) {
+    #####:  187:        fprintf( stderr,
+        -:  188:                 "Error synthesize: failed to construct sublevel sets.\n" );
+    #####:  189:        free( state );
+    #####:  190:        free( cube );
+    #####:  191:        return NULL;
+        -:  192:    }
+        -:  193:
+        -:  194:    /* The sublevel sets are exactly as resulting from the vanilla
+        -:  195:       fixed point formula.  Thus for each system goal i, Y_0 = \emptyset,
+        -:  196:       and Y_1 is a union of i-goal states and environment-blocking states.
+        -:  197:
+        -:  198:       For the purpose of synthesis, it is enough to delete Y_0 and
+        -:  199:       replace Y_1 with the intersection of i-goal states and the
+        -:  200:       winning set, and then shift the indices down (so that Y_1 is
+        -:  201:       now called Y_0, Y_2 is now called Y_1, etc.) */
+    #####:  202:    for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  203:        Cudd_RecursiveDeref( manager, *(*(Y+i)) );
+    #####:  204:        Cudd_RecursiveDeref( manager, *(*(Y+i)+1) );
+    #####:  205:        for (r = 0; r < spc.num_egoals; r++)
+    #####:  206:            Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i))+r) );
+    #####:  207:        free( *(*(X_ijr+i)) );
+        -:  208:
+    #####:  209:        *(*(Y+i)+1) = Cudd_bddAnd( manager, *(sgoals+i), W );
+    #####:  210:        Cudd_Ref( *(*(Y+i)+1) );
+        -:  211:
+    #####:  212:        (*(num_sublevels+i))--;
+    #####:  213:        for (j = 0; j < *(num_sublevels+i); j++) {
+    #####:  214:            *(*(Y+i)+j) = *(*(Y+i)+j+1);
+    #####:  215:            *(*(X_ijr+i)+j) = *(*(X_ijr+i)+j+1);
+        -:  216:        }
+        -:  217:
+    #####:  218:        assert( *(num_sublevels+i) > 0 );
+    #####:  219:        *(Y+i) = realloc( *(Y+i), (*(num_sublevels+i))*sizeof(DdNode *) );
+    #####:  220:        *(X_ijr+i) = realloc( *(X_ijr+i),
+    #####:  221:                              (*(num_sublevels+i))*sizeof(DdNode **) );
+    #####:  222:        if (*(Y+i) == NULL || *(X_ijr+i) == NULL) {
+    #####:  223:            perror( __FILE__ ",  realloc" );
+    #####:  224:            exit(-1);
+        -:  225:        }
+        -:  226:    }
+        -:  227:
+        -:  228:    /* Make primed form of W and take conjunction with system
+        -:  229:       transition (safety) formula, for use while stepping down Y_i
+        -:  230:       sets.  Note that we assume the variable map has been
+        -:  231:       appropriately defined in the CUDD manager, after the call to
+        -:  232:       compute_winning_set_BDD above. */
+    #####:  233:    tmp = Cudd_bddVarMap( manager, W );
+    #####:  234:    if (tmp == NULL) {
+    #####:  235:        fprintf( stderr,
+        -:  236:                 "Error synthesize: Error in swapping variables with primed"
+        -:  237:                 " forms.\n" );
+    #####:  238:        free( state );
+    #####:  239:        free( cube );
+    #####:  240:        return NULL;
+        -:  241:    }
+    #####:  242:    Cudd_Ref( tmp );
+    #####:  243:    strans_into_W = Cudd_bddAnd( manager, strans, tmp );
+    #####:  244:    Cudd_Ref( strans_into_W );
+    #####:  245:    Cudd_RecursiveDeref( manager, tmp );
+        -:  246:
+        -:  247:    /* From each initial state, build strategy by propagating forward
+        -:  248:       toward the next goal (current target goal specified by "mode"
+        -:  249:       of a state), and iterating until every reached state and mode
+        -:  250:       combination has already been encountered (whence the
+        -:  251:       strategy already built). */
+    #####:  252:    if (init_flags == ALL_INIT
+    #####:  253:        || (init_flags == ONE_SIDE_INIT && spc.sys_init == NULL)) {
+    #####:  254:        if (init_flags == ALL_INIT) {
+    #####:  255:            if (verbose > 1)
+    #####:  256:                logprint( "Enumerating initial states, given init_flags ="
+        -:  257:                          " ALL_INIT" );
+    #####:  258:            tmp = Cudd_bddAnd( manager, einit, sinit );
+        -:  259:        } else {
+    #####:  260:            if (verbose > 1)
+    #####:  261:                logprint( "Enumerating initial states, given init_flags ="
+        -:  262:                          " ONE_SIDE_INIT and empty SYSINIT" );
+    #####:  263:            tmp = einit;
+    #####:  264:            Cudd_Ref( tmp );
+        -:  265:        }
+    #####:  266:        Cudd_Ref( tmp );
+    #####:  267:        Cudd_AutodynDisable( manager );
+    #####:  268:        Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
+    #####:  269:            initialize_cube( state, gcube, num_env+num_sys );
+    #####:  270:            while (!saturated_cube( state, gcube, num_env+num_sys )) {
+    #####:  271:                this_node_stack = insert_anode( this_node_stack, 0, -1, False,
+        -:  272:                                                state, num_env+num_sys );
+    #####:  273:                if (this_node_stack == NULL) {
+    #####:  274:                    fprintf( stderr,
+        -:  275:                             "Error synthesize: building list of initial"
+        -:  276:                             " states.\n" );
+    #####:  277:                    return NULL;
+        -:  278:                }
+    #####:  279:                increment_cube( state, gcube, num_env+num_sys );
+        -:  280:            }
+    #####:  281:            this_node_stack = insert_anode( this_node_stack, 0, -1, False,
+        -:  282:                                            state, num_env+num_sys );
+    #####:  283:            if (this_node_stack == NULL) {
+    #####:  284:                fprintf( stderr,
+        -:  285:                         "Error synthesize: building list of initial"
+        -:  286:                         " states.\n" );
+    #####:  287:                return NULL;
+        -:  288:            }
+        -:  289:        }
+    #####:  290:        Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+    #####:  291:        Cudd_RecursiveDeref( manager, tmp );
+        -:  292:
+    #####:  293:    } else if (init_flags == ALL_ENV_EXIST_SYS_INIT) {
+    #####:  294:        if (verbose > 1)
+    #####:  295:            logprint( "Enumerating initial states, given init_flags ="
+        -:  296:                      " ALL_ENV_EXIST_SYS_INIT" );
+        -:  297:
+        -:  298:        /* Generate initial environment states */
+    #####:  299:        for (i = 0; i < num_env; i++)
+    #####:  300:            *(cube+i) = 2;
+    #####:  301:        for (i = num_env; i < 2*(num_sys+num_env); i++)
+    #####:  302:            *(cube+i) = 1;
+    #####:  303:        tmp2 = Cudd_CubeArrayToBdd( manager, cube );
+    #####:  304:        if (tmp2 == NULL) {
+    #####:  305:            fprintf( stderr, "Error in generating cube for quantification.\n" );
+    #####:  306:            return NULL;
+        -:  307:        }
+    #####:  308:        Cudd_Ref( tmp2 );
+    #####:  309:        tmp = Cudd_bddExistAbstract( manager, einit, tmp2 );
+    #####:  310:        if (tmp == NULL) {
+    #####:  311:            fprintf( stderr, "Error in performing quantification.\n" );
+    #####:  312:            return NULL;
+        -:  313:        }
+    #####:  314:        Cudd_Ref( tmp );
+    #####:  315:        Cudd_RecursiveDeref( manager, tmp2 );
+        -:  316:
+    #####:  317:        Cudd_AutodynDisable( manager );
+    #####:  318:        Cudd_ForeachCube( manager, tmp, gen, gcube, gvalue ) {
+    #####:  319:            initialize_cube( state, gcube, num_env );
+    #####:  320:            while (!saturated_cube( state, gcube, num_env )) {
+    #####:  321:                this_node_stack = insert_anode( this_node_stack, 0, -1, False,
+        -:  322:                                                state, num_env+num_sys );
+    #####:  323:                if (this_node_stack == NULL) {
+    #####:  324:                    fprintf( stderr,
+        -:  325:                             "Error synthesize: building list of initial"
+        -:  326:                             " states.\n" );
+    #####:  327:                    return NULL;
+        -:  328:                }
+    #####:  329:                increment_cube( state, gcube, num_env );
+        -:  330:            }
+    #####:  331:            this_node_stack = insert_anode( this_node_stack, 0, -1, False,
+        -:  332:                                            state, num_env+num_sys );
+    #####:  333:            if (this_node_stack == NULL) {
+    #####:  334:                fprintf( stderr,
+        -:  335:                         "Error synthesize: building list of initial"
+        -:  336:                         " states.\n" );
+    #####:  337:                return NULL;
+        -:  338:            }
+        -:  339:        }
+    #####:  340:        Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+    #####:  341:        Cudd_RecursiveDeref( manager, tmp );
+        -:  342:
+        -:  343:        /* For each initial environment state, find a system state in
+        -:  344:           the winning set W. */
+    #####:  345:        node = this_node_stack;
+    #####:  346:        while (node) {
+    #####:  347:            for (i = num_env; i < 2*(num_env+num_sys); i++)
+    #####:  348:                *(cube+i) = 2;
+    #####:  349:            for (i = 0; i < num_env; i++)
+    #####:  350:                *(cube+i) = *(node->state+i);
+        -:  351:
+    #####:  352:            tmp2 = Cudd_CubeArrayToBdd( manager, cube );
+    #####:  353:            if (tmp2 == NULL) {
+    #####:  354:                fprintf( stderr, "Error in generating cube for cofactor.\n" );
+    #####:  355:                return NULL;
+        -:  356:            }
+    #####:  357:            Cudd_Ref( tmp2 );
+        -:  358:
+    #####:  359:            tmp = Cudd_Cofactor( manager, W, tmp2 );
+    #####:  360:            if (tmp == NULL) {
+    #####:  361:                fprintf( stderr, "Error in computing cofactor.\n" );
+    #####:  362:                return NULL;
+        -:  363:            }
+    #####:  364:            Cudd_Ref( tmp );
+    #####:  365:            Cudd_RecursiveDeref( manager, tmp2 );
+        -:  366:
+    #####:  367:            tmp2 = Cudd_bddAnd( manager, tmp, sinit );
+    #####:  368:            Cudd_Ref( tmp2 );
+    #####:  369:            Cudd_RecursiveDeref( manager, tmp );
+        -:  370:
+    #####:  371:            Cudd_AutodynDisable( manager );
+    #####:  372:            gen = Cudd_FirstCube( manager, tmp2, &gcube, &gvalue );
+    #####:  373:            if (gen == NULL) {
+    #####:  374:                fprintf( stderr, "Error synthesize: failed to find cube.\n" );
+    #####:  375:                return NULL;
+        -:  376:            }
+    #####:  377:            if (Cudd_IsGenEmpty( gen )) {
+    #####:  378:                fprintf( stderr,
+        -:  379:                         "Error synthesize: unexpected losing initial"
+        -:  380:                         " environment state found.\n" );
+    #####:  381:                return NULL;
+        -:  382:            }
+    #####:  383:            initialize_cube( state, gcube, num_env+num_sys );
+    #####:  384:            for (i = num_env; i < num_env+num_sys; i++)
+    #####:  385:                *(node->state+i) = *(state+i);
+    #####:  386:            Cudd_GenFree( gen );
+    #####:  387:            Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+    #####:  388:            Cudd_RecursiveDeref( manager, tmp2 );
+        -:  389:
+    #####:  390:            node = node->next;
+        -:  391:        }
+        -:  392:
+    #####:  393:    } else if (init_flags == ONE_SIDE_INIT) {
+        -:  394:        /* N.B., case of sys_init==NULL is treated above */
+    #####:  395:        if (verbose > 1)
+    #####:  396:            logprint( "Enumerating initial states, given init_flags ="
+        -:  397:                      " ONE_SIDE_INIT and empty ENVINIT" );
+        -:  398:
+    #####:  399:        tmp = Cudd_bddAnd( manager, sinit, W );
+    #####:  400:        Cudd_Ref( tmp );
+    #####:  401:        Cudd_AutodynDisable( manager );
+    #####:  402:        gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
+    #####:  403:        if (gen == NULL) {
+    #####:  404:            fprintf( stderr, "Error synthesize: failed to find cube.\n" );
+    #####:  405:            return NULL;
+        -:  406:        }
+    #####:  407:        if (Cudd_IsGenEmpty( gen )) {
+    #####:  408:            fprintf( stderr,
+        -:  409:                     "Error synthesize: no winning initial state found.\n" );
+    #####:  410:            return NULL;
+        -:  411:        }
+    #####:  412:        initialize_cube( state, gcube, num_env+num_sys );
+    #####:  413:        this_node_stack = insert_anode( this_node_stack, 0, -1, False,
+        -:  414:                                        state, num_env+num_sys );
+    #####:  415:        if (this_node_stack == NULL) {
+    #####:  416:            fprintf( stderr,
+        -:  417:                     "Error synthesize: building list of initial states.\n" );
+    #####:  418:            return NULL;
+        -:  419:        }
+    #####:  420:        Cudd_GenFree( gen );
+    #####:  421:        Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+    #####:  422:        Cudd_RecursiveDeref( manager, tmp );
+        -:  423:    } else {
+    #####:  424:        fprintf( stderr, "Error: Unrecognized init_flags %d", init_flags );
+    #####:  425:        return NULL;
+        -:  426:    }
+        -:  427:
+        -:  428:    /* Insert all stacked, initial nodes into strategy. */
+    #####:  429:    node = this_node_stack;
+    #####:  430:    while (node) {
+    #####:  431:        if (verbose > 1) {
+    #####:  432:            logprint( "Insert initial state: {" );
+    #####:  433:            logprint_state( node->state );
+    #####:  434:            logprint( "}" );
+        -:  435:        }
+    #####:  436:        strategy = insert_anode( strategy, node->mode, node->rgrad, True,
+        -:  437:                                 node->state, num_env+num_sys );
+    #####:  438:        if (strategy == NULL) {
+    #####:  439:            fprintf( stderr,
+        -:  440:                     "Error synthesize: inserting state node into"
+        -:  441:                     " strategy.\n" );
+    #####:  442:            return NULL;
+        -:  443:        }
+    #####:  444:        node = node->next;
+        -:  445:    }
+        -:  446:
+    #####:  447:    if (verbose > 1) {
+    #####:  448:        logprint( "Constructing enumerative strategy..." );
+    #####:  449:        logprint( "Beginning with node stack size %d.",
+        -:  450:                  aut_size( this_node_stack ) );
+        -:  451:    }
+    #####:  452:    while (this_node_stack) {
+        -:  453:        /* Find smallest Y_j set containing node. */
+    #####:  454:        for (k = num_env+num_sys; k < 2*(num_env+num_sys); k++)
+    #####:  455:            *(cube+k) = 2;
+    #####:  456:        state_to_cube( this_node_stack->state, cube, num_env+num_sys );
+    #####:  457:        loop_mode = this_node_stack->mode;
+        -:  458:        do {
+    #####:  459:            j = *(num_sublevels+this_node_stack->mode);
+        -:  460:            do {
+    #####:  461:                j--;
+    #####:  462:                ddval = Cudd_Eval( manager,
+    #####:  463:                                   *(*(Y+this_node_stack->mode)+j), cube );
+    #####:  464:                if (Cudd_IsComplement( ddval )) {
+    #####:  465:                    j++;
+    #####:  466:                    break;
+        -:  467:                }
+    #####:  468:            } while (j > 0);
+    #####:  469:            if (j == 0) {
+    #####:  470:                if (this_node_stack->mode == spc.num_sgoals-1) {
+    #####:  471:                    this_node_stack->mode = 0;
+        -:  472:                } else {
+    #####:  473:                    (this_node_stack->mode)++;
+        -:  474:                }
+        -:  475:            } else {
+    #####:  476:                break;
+        -:  477:            }
+    #####:  478:        } while (loop_mode != this_node_stack->mode);
+    #####:  479:        if (this_node_stack->mode == loop_mode) {
+    #####:  480:            node = find_anode( strategy, this_node_stack->mode,
+        -:  481:                               this_node_stack->state, num_env+num_sys );
+    #####:  482:            if (node->trans_len > 0) {
+        -:  483:                /* This state and mode combination is already in strategy. */
+    #####:  484:                this_node_stack = pop_anode( this_node_stack );
+    #####:  485:                continue;
+        -:  486:            }
+        -:  487:        } else {
+        -:  488:
+    #####:  489:            node = find_anode( strategy, loop_mode, this_node_stack->state,
+        -:  490:                               num_env+num_sys );
+    #####:  491:            if (node->trans_len > 0) {
+        -:  492:                /* This state and mode combination is already in strategy. */
+    #####:  493:                this_node_stack = pop_anode( this_node_stack );
+    #####:  494:                continue;
+        -:  495:            } else {
+    #####:  496:                if (verbose > 1) {
+    #####:  497:                    logprint( "Delete node with mode %d and state: {",
+        -:  498:                              node->mode );
+    #####:  499:                    logprint_state( node->state );
+    #####:  500:                    logprint( "}" );
+        -:  501:                }
+    #####:  502:                initial = node->initial;
+    #####:  503:                strategy = delete_anode( strategy, node );
+    #####:  504:                new_node = find_anode( strategy, this_node_stack->mode,
+        -:  505:                                       this_node_stack->state,
+        -:  506:                                       num_env+num_sys );
+    #####:  507:                if (new_node == NULL) {
+    #####:  508:                    if (verbose > 1) {
+    #####:  509:                        logprint( "Insert node with mode %d and state: {",
+        -:  510:                                  this_node_stack->mode );
+    #####:  511:                        logprint_state( this_node_stack->state );
+    #####:  512:                        logprint( "}" );
+        -:  513:                    }
+    #####:  514:                    strategy = insert_anode( strategy,
+        -:  515:                                             this_node_stack->mode, -1, initial,
+        -:  516:                                             this_node_stack->state,
+        -:  517:                                             num_env+num_sys );
+    #####:  518:                    if (strategy == NULL) {
+    #####:  519:                        fprintf( stderr,
+        -:  520:                                 "Error synthesize: inserting state node into"
+        -:  521:                                 " strategy.\n" );
+    #####:  522:                        return NULL;
+        -:  523:                    }
+    #####:  524:                    new_node = find_anode( strategy, this_node_stack->mode,
+        -:  525:                                           this_node_stack->state,
+        -:  526:                                           num_env+num_sys );
+    #####:  527:                } else if (new_node->trans_len > 0) {
+    #####:  528:                    replace_anode_trans( strategy, node, new_node );
+    #####:  529:                    this_node_stack = pop_anode( this_node_stack );
+    #####:  530:                    continue;
+        -:  531:                }
+    #####:  532:                replace_anode_trans( strategy, node, new_node );
+        -:  533:            }
+        -:  534:
+    #####:  535:            node = new_node;
+        -:  536:        }
+    #####:  537:        this_node_stack = pop_anode( this_node_stack );
+    #####:  538:        node->rgrad = j;
+        -:  539:
+    #####:  540:        if (num_env > 0) {
+    #####:  541:            env_moves = get_env_moves( manager, cube,
+        -:  542:                                       node->state, etrans,
+        -:  543:                                       num_env, num_sys,
+        -:  544:                                       &emoves_len );
+        -:  545:        } else {
+    #####:  546:            emoves_len = 1;  /* This allows one iteration of the for-loop */
+        -:  547:        }
+    #####:  548:        for (k = 0; k < emoves_len; k++) {
+        -:  549:            /* Note that we assume the variable map has been
+        -:  550:               appropriately defined in the CUDD manager, after the
+        -:  551:               call to compute_winning_set above. */
+    #####:  552:            if (j == 0) {
+    #####:  553:                Y_i_primed = Cudd_bddVarMap( manager, **(Y+node->mode) );
+        -:  554:            } else {
+    #####:  555:                Y_i_primed = Cudd_bddVarMap( manager, *(*(Y+node->mode)+j-1) );
+        -:  556:            }
+    #####:  557:            if (Y_i_primed == NULL) {
+    #####:  558:                fprintf( stderr,
+        -:  559:                         "Error synthesize: Error in swapping variables with"
+        -:  560:                         " primed forms.\n" );
+    #####:  561:                return NULL;
+        -:  562:            }
+    #####:  563:            Cudd_Ref( Y_i_primed );
+        -:  564:
+    #####:  565:            tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
+    #####:  566:            Cudd_Ref( tmp );
+    #####:  567:            tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
+        -:  568:                              node->state,
+        -:  569:                              tmp, 0, num_env+num_sys );
+    #####:  570:            Cudd_RecursiveDeref( manager, tmp );
+    #####:  571:            if (num_env > 0) {
+    #####:  572:                tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
+    #####:  573:                                 *(env_moves+k),
+        -:  574:                                 tmp2, num_env+num_sys, num_env );
+    #####:  575:                Cudd_RecursiveDeref( manager, tmp2 );
+        -:  576:            } else {
+    #####:  577:                tmp = tmp2;
+        -:  578:            }
+        -:  579:
+    #####:  580:            Cudd_AutodynDisable( manager );
+    #####:  581:            gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
+    #####:  582:            if (gen == NULL) {
+    #####:  583:                fprintf( stderr, "Error synthesize: failed to find cube.\n" );
+    #####:  584:                return NULL;
+        -:  585:            }
+    #####:  586:            if (Cudd_IsGenEmpty( gen )) {
+        -:  587:                /* Cannot step closer to system goal, so must be in
+        -:  588:                   goal state or able to block environment goal. */
+    #####:  589:                Cudd_GenFree( gen );
+    #####:  590:                Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+    #####:  591:                if (j > 0) {
+    #####:  592:                    for (offset = 1; offset >= 0; offset--) {
+    #####:  593:                    for (r = 0; r < spc.num_egoals; r++) {
+    #####:  594:                        Cudd_RecursiveDeref( manager, tmp );
+    #####:  595:                        Cudd_RecursiveDeref( manager, Y_i_primed );
+        -:  596:                        Y_i_primed
+    #####:  597:                            = Cudd_bddVarMap( manager,
+    #####:  598:                                              *(*(*(X_ijr+node->mode)+j - offset)+r) );
+    #####:  599:                        if (Y_i_primed == NULL) {
+    #####:  600:                            fprintf( stderr,
+        -:  601:                                     "Error synthesize: Error in swapping"
+        -:  602:                                     " variables with primed forms.\n" );
+    #####:  603:                            return NULL;
+        -:  604:                        }
+    #####:  605:                        Cudd_Ref( Y_i_primed );
+    #####:  606:                        tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
+    #####:  607:                        Cudd_Ref( tmp );
+    #####:  608:                        tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
+        -:  609:                                          node->state,
+        -:  610:                                          tmp, 0, num_sys+num_env );
+    #####:  611:                        Cudd_RecursiveDeref( manager, tmp );
+    #####:  612:                        if (num_env > 0) {
+    #####:  613:                            tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
+    #####:  614:                                             *(env_moves+k),
+        -:  615:                                             tmp2, num_sys+num_env, num_env );
+    #####:  616:                            Cudd_RecursiveDeref( manager, tmp2 );
+        -:  617:                        } else {
+    #####:  618:                            tmp = tmp2;
+        -:  619:                        }
+        -:  620:
+    #####:  621:                        if (!Cudd_bddLeq( manager, tmp,
+    #####:  622:                                          Cudd_Not( Cudd_ReadOne( manager ) ) )
+    #####:  623:                            || !Cudd_bddLeq( manager,
+    #####:  624:                                             Cudd_Not( Cudd_ReadOne( manager ) ),
+        -:  625:                                             tmp ))
+        -:  626:                            break;
+        -:  627:                    }
+    #####:  628:                    if (r < spc.num_egoals)
+    #####:  629:                        break;
+        -:  630:                    }
+    #####:  631:                    if (r >= spc.num_egoals) {
+    #####:  632:                        fprintf( stderr,
+        -:  633:                                 "Error synthesize: unexpected losing"
+        -:  634:                                 " state.\n" );
+    #####:  635:                        return NULL;
+        -:  636:                    }
+        -:  637:                } else {
+    #####:  638:                    Cudd_RecursiveDeref( manager, tmp );
+    #####:  639:                    Cudd_RecursiveDeref( manager, Y_i_primed );
+    #####:  640:                    Y_i_primed = Cudd_ReadOne( manager );
+    #####:  641:                    Cudd_Ref( Y_i_primed );
+    #####:  642:                    tmp = Cudd_bddAnd( manager, strans_into_W, Y_i_primed );
+    #####:  643:                    Cudd_Ref( tmp );
+    #####:  644:                    tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
+        -:  645:                                         node->state,
+        -:  646:                                         tmp, 0, num_sys+num_env );
+    #####:  647:                    Cudd_RecursiveDeref( manager, tmp );
+    #####:  648:                    if (num_env > 0) {
+    #####:  649:                        tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
+    #####:  650:                                            *(env_moves+k),
+        -:  651:                                            tmp2, num_sys+num_env, num_env );
+    #####:  652:                        Cudd_RecursiveDeref( manager, tmp2 );
+        -:  653:                    } else {
+    #####:  654:                        tmp = tmp2;
+        -:  655:                    }
+        -:  656:                }
+        -:  657:
+    #####:  658:                Cudd_AutodynDisable( manager );
+    #####:  659:                gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
+    #####:  660:                if (gen == NULL) {
+    #####:  661:                    fprintf( stderr,
+        -:  662:                             "Error synthesize: failed to find cube.\n" );
+    #####:  663:                    return NULL;
+        -:  664:                }
+    #####:  665:                if (Cudd_IsGenEmpty( gen )) {
+    #####:  666:                    Cudd_GenFree( gen );
+    #####:  667:                    fprintf( stderr,
+        -:  668:                             "Error synthesize: unexpected losing state.\n" );
+    #####:  669:                    return NULL;
+        -:  670:                }
+    #####:  671:                for (i = 0; i < 2*(num_env+num_sys); i++)
+    #####:  672:                    *(cube+i) = *(gcube+i);
+    #####:  673:                Cudd_GenFree( gen );
+    #####:  674:                Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        -:  675:            } else {
+    #####:  676:                for (i = 0; i < 2*(num_env+num_sys); i++)
+    #####:  677:                    *(cube+i) = *(gcube+i);
+    #####:  678:                Cudd_GenFree( gen );
+    #####:  679:                Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        -:  680:            }
+        -:  681:
+    #####:  682:            Cudd_RecursiveDeref( manager, tmp );
+    #####:  683:            initialize_cube( state, cube+num_env+num_sys, num_env+num_sys );
+    #####:  684:            for (i = 0; i < num_env; i++)
+    #####:  685:                *(state+i) = *(*(env_moves+k)+i);
+        -:  686:
+    #####:  687:            state_to_cube( state, cube, num_env+num_sys );
+    #####:  688:            ddval = Cudd_Eval( manager, **(Y+node->mode), cube );
+    #####:  689:            if (Cudd_IsComplement( ddval )) {
+    #####:  690:                next_mode = node->mode;
+        -:  691:            } else {
+    #####:  692:                if (node->mode == spc.num_sgoals-1) {
+    #####:  693:                    next_mode = 0;
+        -:  694:                } else {
+    #####:  695:                    next_mode = node->mode + 1;
+        -:  696:                }
+        -:  697:            }
+        -:  698:
+    #####:  699:            new_node = find_anode( strategy, next_mode,
+        -:  700:                                   state, num_env+num_sys );
+    #####:  701:            if (new_node == NULL) {
+    #####:  702:                if (verbose > 1) {
+    #####:  703:                    logprint( "Insert node with mode %d and state: {",
+        -:  704:                              next_mode );
+    #####:  705:                    logprint_state( state );
+    #####:  706:                    logprint( "}" );
+        -:  707:                }
+    #####:  708:                strategy = insert_anode( strategy, next_mode, -1, False,
+        -:  709:                                         state, num_env+num_sys );
+    #####:  710:                if (strategy == NULL) {
+    #####:  711:                    fprintf( stderr,
+        -:  712:                             "Error synthesize: inserting new node into"
+        -:  713:                             " strategy.\n" );
+    #####:  714:                    return NULL;
+        -:  715:                }
+    #####:  716:                this_node_stack = insert_anode( this_node_stack, next_mode, -1,
+        -:  717:                                                False,
+        -:  718:                                                state, num_env+num_sys );
+    #####:  719:                if (this_node_stack == NULL) {
+    #####:  720:                    fprintf( stderr,
+        -:  721:                             "Error synthesize: pushing node onto stack"
+        -:  722:                             " failed.\n" );
+    #####:  723:                    return NULL;
+        -:  724:                }
+        -:  725:            }
+        -:  726:
+    #####:  727:            strategy = append_anode_trans( strategy,
+        -:  728:                                           node->mode, node->state,
+        -:  729:                                           num_env+num_sys,
+        -:  730:                                           next_mode, state );
+    #####:  731:            if (strategy == NULL) {
+    #####:  732:                fprintf( stderr,
+        -:  733:                         "Error synthesize: inserting new transition into"
+        -:  734:                         " strategy.\n" );
+    #####:  735:                return NULL;
+        -:  736:            }
+        -:  737:
+    #####:  738:            Cudd_RecursiveDeref( manager, Y_i_primed );
+        -:  739:        }
+    #####:  740:        if (num_env > 0) {
+    #####:  741:            for (k = 0; k < emoves_len; k++)
+    #####:  742:                free( *(env_moves+k) );
+    #####:  743:            free( env_moves );
+        -:  744:        } else {
+    #####:  745:            emoves_len = 0;
+        -:  746:        }
+        -:  747:    }
+        -:  748:
+        -:  749:    /* Pre-exit clean-up */
+    #####:  750:    Cudd_RecursiveDeref( manager, W );
+    #####:  751:    Cudd_RecursiveDeref( manager, strans_into_W );
+    #####:  752:    Cudd_RecursiveDeref( manager, einit );
+    #####:  753:    Cudd_RecursiveDeref( manager, sinit );
+    #####:  754:    Cudd_RecursiveDeref( manager, etrans );
+    #####:  755:    Cudd_RecursiveDeref( manager, strans );
+    #####:  756:    for (i = 0; i < spc.num_egoals; i++)
+    #####:  757:        Cudd_RecursiveDeref( manager, *(egoals+i) );
+    #####:  758:    for (i = 0; i < spc.num_sgoals; i++)
+    #####:  759:        Cudd_RecursiveDeref( manager, *(sgoals+i) );
+    #####:  760:    if (spc.num_egoals > 0)
+    #####:  761:        free( egoals );
+    #####:  762:    if (spc.num_sgoals > 0)
+    #####:  763:        free( sgoals );
+    #####:  764:    free( cube );
+    #####:  765:    free( state );
+    #####:  766:    for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  767:        for (j = 0; j < *(num_sublevels+i); j++) {
+    #####:  768:            Cudd_RecursiveDeref( manager, *(*(Y+i)+j) );
+    #####:  769:            for (r = 0; r < spc.num_egoals; r++) {
+    #####:  770:                Cudd_RecursiveDeref( manager, *(*(*(X_ijr+i)+j)+r) );
+        -:  771:            }
+    #####:  772:            free( *(*(X_ijr+i)+j) );
+        -:  773:        }
+    #####:  774:        if (*(num_sublevels+i) > 0) {
+    #####:  775:            free( *(Y+i) );
+    #####:  776:            free( *(X_ijr+i) );
+        -:  777:        }
+        -:  778:    }
+    #####:  779:    if (spc.num_sgoals > 0) {
+    #####:  780:        free( Y );
+    #####:  781:        free( X_ijr );
+    #####:  782:        free( num_sublevels );
+        -:  783:    }
+    #####:  784:    if (env_nogoal_flag) {
+    #####:  785:        spc.num_egoals = 0;
+    #####:  786:        delete_tree( *spc.env_goals );
+    #####:  787:        free( spc.env_goals );
+        -:  788:    }
+        -:  789:
+        -:  790:
+    #####:  791:    return strategy;
+        -:  792:}
+        -:  793:
+        -:  794:
+    #####:  795:DdNode *check_realizable( DdManager *manager, unsigned char init_flags,
+        -:  796:                          unsigned char verbose )
+        -:  797:{
+    #####:  798:    DdNode *W = compute_winning_set( manager, verbose );
+    #####:  799:    return check_realizable_internal( manager, W, init_flags, verbose );
+        -:  800:}
+        -:  801:
+        -:  802:
+    #####:  803:DdNode *check_realizable_internal( DdManager *manager, DdNode *W,
+        -:  804:                                   unsigned char init_flags,
+        -:  805:                                   unsigned char verbose )
+        -:  806:{
+        -:  807:    bool realizable;
+        -:  808:    DdNode *tmp, *tmp2, *tmp3;
+    #####:  809:    DdNode *einit = NULL, *sinit = NULL;
+        -:  810:
+        -:  811:    ptree_t *var_separator;
+        -:  812:    int num_env, num_sys;
+        -:  813:    int *cube;  /* length will be twice total number of variables (to
+        -:  814:                   account for both variables and their primes). */
+        -:  815:    DdNode *ddcube;
+        -:  816:
+    #####:  817:    if (verbose > 1) {
+    #####:  818:        logprint_startline();
+    #####:  819:        logprint_raw( "check_realizable_internal invoked with init_flags: " );
+    #####:  820:        LOGPRINT_INIT_FLAGS( init_flags );
+    #####:  821:        logprint_endline();
+        -:  822:    }
+        -:  823:
+    #####:  824:    num_env = tree_size( spc.evar_list );
+    #####:  825:    num_sys = tree_size( spc.svar_list );
+        -:  826:
+        -:  827:    /* Allocate cube array, used later for quantifying over variables. */
+    #####:  828:    cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
+    #####:  829:    if (cube == NULL) {
+    #####:  830:        perror( __FILE__ ",  malloc" );
+    #####:  831:        exit(-1);
+        -:  832:    }
+        -:  833:
+        -:  834:    /* Chain together environment and system variable lists for
+        -:  835:       working with BDD library. */
+    #####:  836:    if (spc.evar_list == NULL) {
+    #####:  837:        var_separator = NULL;
+    #####:  838:        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+        -:  839:                                           is indicated by var_separator = NULL. */
+        -:  840:    } else {
+    #####:  841:        var_separator = get_list_item( spc.evar_list, -1 );
+    #####:  842:        if (var_separator == NULL) {
+    #####:  843:            fprintf( stderr,
+        -:  844:                     "Error: get_list_item failed on environment variables"
+        -:  845:                     " list.\n" );
+    #####:  846:            free( cube );
+    #####:  847:            return NULL;
+        -:  848:        }
+    #####:  849:        var_separator->left = spc.svar_list;
+        -:  850:    }
+        -:  851:
+    #####:  852:    if (spc.env_init != NULL) {
+    #####:  853:        einit = ptree_BDD( spc.env_init, spc.evar_list, manager );
+        -:  854:    } else {
+    #####:  855:        einit = Cudd_ReadOne( manager );
+    #####:  856:        Cudd_Ref( einit );
+        -:  857:    }
+    #####:  858:    if (spc.sys_init != NULL) {
+    #####:  859:        sinit = ptree_BDD( spc.sys_init, spc.evar_list, manager );
+        -:  860:    } else {
+    #####:  861:        sinit = Cudd_ReadOne( manager );
+    #####:  862:        Cudd_Ref( sinit );
+        -:  863:    }
+        -:  864:
+        -:  865:    /* Break the link that appended the system variables list to the
+        -:  866:       environment variables list. */
+    #####:  867:    if (var_separator == NULL) {
+    #####:  868:        spc.evar_list = NULL;
+        -:  869:    } else {
+    #####:  870:        var_separator->left = NULL;
+        -:  871:    }
+        -:  872:
+        -:  873:    /* Does winning set contain all initial states?
+        -:  874:
+        -:  875:       We assume that the initial condition formulae, i.e., env_init
+        -:  876:       and sys_init, are appropriate for the given init_flags.  This
+        -:  877:       can be checked with check_gr1c_form() (cf. gr1c_util.h). */
+    #####:  878:    if (init_flags == ALL_INIT) {
+        -:  879:
+    #####:  880:        tmp = Cudd_bddAnd( manager, einit, sinit );
+    #####:  881:        Cudd_Ref( tmp );
+    #####:  882:        tmp2 = Cudd_bddAnd( manager, tmp, W );
+    #####:  883:        Cudd_Ref( tmp2 );
+    #####:  884:        if (tmp == Cudd_Not( Cudd_ReadOne( manager ) )
+    #####:  885:            || !Cudd_bddLeq( manager, tmp, tmp2 )
+    #####:  886:            || !Cudd_bddLeq( manager, tmp2, tmp )) {
+    #####:  887:            realizable = False;
+        -:  888:        } else {
+    #####:  889:            realizable = True;
+        -:  890:        }
+    #####:  891:        Cudd_RecursiveDeref( manager, tmp );
+    #####:  892:        Cudd_RecursiveDeref( manager, tmp2 );
+        -:  893:
+    #####:  894:    } else if (init_flags == ALL_ENV_EXIST_SYS_INIT) {
+        -:  895:
+    #####:  896:        tmp = Cudd_bddAnd( manager, sinit, einit );
+    #####:  897:        Cudd_Ref( tmp );
+        -:  898:
+    #####:  899:        tmp3 = Cudd_bddAnd( manager, tmp, W );
+    #####:  900:        Cudd_Ref( tmp3 );
+        -:  901:
+    #####:  902:        cube_sys( cube, num_env, num_sys );
+    #####:  903:        ddcube = Cudd_CubeArrayToBdd( manager, cube );
+    #####:  904:        if (ddcube == NULL) {
+    #####:  905:            fprintf( stderr, "Error in generating cube for quantification." );
+    #####:  906:            return NULL;
+        -:  907:        }
+    #####:  908:        Cudd_Ref( ddcube );
+    #####:  909:        tmp2 = Cudd_bddExistAbstract( manager, tmp, ddcube );
+    #####:  910:        if (tmp2 == NULL) {
+    #####:  911:            fprintf( stderr, "Error in performing quantification." );
+    #####:  912:            return NULL;
+        -:  913:        }
+    #####:  914:        Cudd_Ref( tmp2 );
+    #####:  915:        Cudd_RecursiveDeref( manager, tmp );
+        -:  916:
+    #####:  917:        tmp = Cudd_bddExistAbstract( manager, tmp3, ddcube );
+    #####:  918:        if (tmp == NULL) {
+    #####:  919:            fprintf( stderr, "Error in performing quantification." );
+    #####:  920:            return NULL;
+        -:  921:        }
+    #####:  922:        Cudd_Ref( tmp );
+    #####:  923:        Cudd_RecursiveDeref( manager, ddcube );
+    #####:  924:        Cudd_RecursiveDeref( manager, tmp3 );
+        -:  925:
+    #####:  926:        if (!Cudd_bddLeq( manager, tmp, tmp2 )
+    #####:  927:            || !Cudd_bddLeq( manager, tmp2, tmp )) {
+    #####:  928:            realizable = False;
+        -:  929:        } else {
+    #####:  930:            realizable = True;
+        -:  931:        }
+    #####:  932:        Cudd_RecursiveDeref( manager, tmp );
+    #####:  933:        Cudd_RecursiveDeref( manager, tmp2 );
+        -:  934:
+    #####:  935:    } else if (init_flags == ONE_SIDE_INIT) {
+    #####:  936:        if (spc.sys_init == NULL) {
+        -:  937:
+    #####:  938:            tmp = Cudd_bddAnd( manager, einit, W );
+    #####:  939:            Cudd_Ref( tmp );
+    #####:  940:            if (!Cudd_bddLeq( manager, tmp, einit )
+    #####:  941:                || !Cudd_bddLeq( manager, einit, tmp )) {
+    #####:  942:                realizable = False;
+        -:  943:            } else {
+    #####:  944:                realizable = True;
+        -:  945:            }
+    #####:  946:            Cudd_RecursiveDeref( manager, tmp );
+        -:  947:
+        -:  948:        } else {
+        -:  949:            /* If env_init and sys_init were both NULL, we would still
+        -:  950:               want to treat env_init as True.  Cf. ONE_SIDE_INIT
+        -:  951:               option for init_flags in documentation for
+        -:  952:               check_realizable(). */
+        -:  953:
+    #####:  954:            tmp = Cudd_bddAnd( manager, sinit, W );
+    #####:  955:            Cudd_Ref( tmp );
+    #####:  956:            if (!Cudd_bddLeq( manager, tmp, Cudd_Not( Cudd_ReadOne( manager ) ) )
+    #####:  957:                || !Cudd_bddLeq( manager, Cudd_Not( Cudd_ReadOne( manager ) ), tmp )) {
+    #####:  958:                realizable = True;
+        -:  959:            } else {
+    #####:  960:                realizable = False;
+        -:  961:            }
+    #####:  962:            Cudd_RecursiveDeref( manager, tmp );
+        -:  963:        }
+        -:  964:
+        -:  965:    } else {
+    #####:  966:        fprintf( stderr, "Error: Unrecognized init_flags %d", init_flags );
+    #####:  967:        free( cube );
+    #####:  968:        return NULL;
+        -:  969:    }
+        -:  970:
+    #####:  971:    Cudd_RecursiveDeref( manager, einit );
+    #####:  972:    Cudd_RecursiveDeref( manager, sinit );
+    #####:  973:    free( cube );
+        -:  974:
+    #####:  975:    if (realizable) {
+    #####:  976:        return W;
+        -:  977:    } else {
+    #####:  978:        Cudd_RecursiveDeref( manager, W );
+    #####:  979:        return NULL;
+        -:  980:    }
+        -:  981:}

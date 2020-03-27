@@ -1,0 +1,545 @@
+        -:    0:Source:src/patching_support.c
+        -:    0:Graph:patching_support.gcno
+        -:    0:Data:patching_support.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:/* patching_support.c -- More definitions for signatures in patching.h.
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2012-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#include <stdlib.h>
+        -:    9:#include <stdio.h>
+        -:   10:
+        -:   11:#include "common.h"
+        -:   12:#include "patching.h"
+        -:   13:#include "solve_support.h"
+        -:   14:
+        -:   15:
+        -:   16:extern specification_t spc;
+        -:   17:
+        -:   18:
+        1:   19:anode_t *synthesize_reachgame_BDD( DdManager *manager, int num_env, int num_sys,
+        -:   20:                                   DdNode *Entry, DdNode *Exit,
+        -:   21:                                   DdNode *etrans, DdNode *strans,
+        -:   22:                                   DdNode **egoals, DdNode *N_BDD,
+        -:   23:                                   unsigned char verbose )
+        -:   24:{
+        1:   25:    anode_t *strategy = NULL;
+        1:   26:    anode_t *this_node_stack = NULL;
+        -:   27:    anode_t *node, *new_node;
+        -:   28:    vartype *state;
+        -:   29:    int *cube;
+        -:   30:    vartype **env_moves;
+        -:   31:    int emoves_len;
+        -:   32:
+        -:   33:    DdNode *strans_into_N;
+        1:   34:    DdNode **Y = NULL, *Y_exmod;
+        1:   35:    DdNode *X = NULL, *X_prev = NULL;
+        -:   36:    DdNode *Y_i_primed;
+        -:   37:    int num_sublevels;
+        1:   38:    DdNode ***X_jr = NULL;
+        -:   39:
+        -:   40:    DdNode *tmp, *tmp2;
+        -:   41:    int i, j, r, k;  /* Generic counters */
+        -:   42:    int offset;
+        -:   43:    DdNode *ddval;  /* Store result of evaluating a BDD */
+        -:   44:
+        -:   45:    /* Variables used during CUDD generation (state enumeration). */
+        -:   46:    DdGen *gen;
+        -:   47:    CUDD_VALUE_TYPE gvalue;
+        -:   48:    int *gcube;
+        -:   49:
+        1:   50:    state = malloc( sizeof(vartype)*(num_env+num_sys) );
+        1:   51:    if (state == NULL) {
+    #####:   52:        perror( __FILE__ ",  malloc" );
+    #####:   53:        exit(-1);
+        -:   54:    }
+        1:   55:    cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
+        1:   56:    if (cube == NULL) {
+    #####:   57:        perror( __FILE__ ",  malloc" );
+    #####:   58:        exit(-1);
+        -:   59:    }
+        -:   60:
+        1:   61:    num_sublevels = 1;
+        1:   62:    Y = malloc( num_sublevels*sizeof(DdNode *) );
+        1:   63:    if (Y == NULL) {
+    #####:   64:        perror( __FILE__ ",  malloc" );
+    #####:   65:        exit(-1);
+        -:   66:    }
+        1:   67:    *Y = Exit;
+        1:   68:    Cudd_Ref( *Y );
+        -:   69:
+        1:   70:    X_jr = malloc( num_sublevels*sizeof(DdNode **) );
+        1:   71:    if (X_jr == NULL) {
+    #####:   72:        perror( __FILE__ ",  malloc" );
+    #####:   73:        exit(-1);
+        -:   74:    }
+        -:   75:
+        1:   76:    *X_jr = malloc( spc.num_egoals*sizeof(DdNode *) );
+        1:   77:    if (*X_jr == NULL) {
+    #####:   78:        perror( __FILE__ ",  malloc" );
+    #####:   79:        exit(-1);
+        -:   80:    }
+        2:   81:    for (r = 0; r < spc.num_egoals; r++) {
+        1:   82:        *(*X_jr+r) = Cudd_Not( Cudd_ReadOne( manager ) );
+        1:   83:        Cudd_Ref( *(*X_jr+r) );
+        -:   84:    }
+        -:   85:
+        -:   86:    while (True) {
+        1:   87:        num_sublevels++;
+        1:   88:        Y = realloc( Y, num_sublevels*sizeof(DdNode *) );
+        1:   89:        X_jr = realloc( X_jr, num_sublevels*sizeof(DdNode **) );
+        1:   90:        if (Y == NULL || X_jr == NULL) {
+    #####:   91:            perror( __FILE__ ",  realloc" );
+    #####:   92:            exit(-1);
+        -:   93:        }
+        -:   94:
+        1:   95:        *(X_jr + num_sublevels-1) = malloc( spc.num_egoals*sizeof(DdNode *) );
+        1:   96:        if (*(X_jr + num_sublevels-1) == NULL) {
+    #####:   97:            perror( __FILE__ ",  malloc" );
+    #####:   98:            exit(-1);
+        -:   99:        }
+        -:  100:
+        1:  101:        Y_exmod = compute_existsmodal( manager, *(Y+num_sublevels-2),
+        -:  102:                                       etrans, strans,
+        -:  103:                                       num_env, num_sys, cube );
+        1:  104:        if (Y_exmod == NULL)
+    #####:  105:            return NULL;  /* Fatal error */
+        1:  106:        tmp = Cudd_bddAnd( manager, Y_exmod, N_BDD );
+        1:  107:        Cudd_Ref( tmp );
+        1:  108:        Cudd_RecursiveDeref( manager, Y_exmod );
+        1:  109:        Y_exmod = tmp;
+        -:  110:
+        1:  111:        *(Y+num_sublevels-1) = Cudd_Not( Cudd_ReadOne( manager ) );
+        1:  112:        Cudd_Ref( *(Y+num_sublevels-1) );
+        2:  113:        for (r = 0; r < spc.num_egoals; r++) {
+        -:  114:
+        -:  115:            /* (Re)initialize X */
+        1:  116:            if (X != NULL)
+    #####:  117:                Cudd_RecursiveDeref( manager, X );
+        1:  118:            X = Cudd_ReadOne( manager );
+        1:  119:            Cudd_Ref( X );
+        -:  120:
+        -:  121:            /* Greatest fixpoint for X, for this env goal */
+        -:  122:            do {
+        2:  123:                if (X_prev != NULL)
+        1:  124:                    Cudd_RecursiveDeref( manager, X_prev );
+        2:  125:                X_prev = X;
+        2:  126:                X = compute_existsmodal( manager, X_prev, etrans, strans,
+        -:  127:                                         num_env, num_sys, cube );
+        2:  128:                if (X == NULL)
+    #####:  129:                    return NULL;  /* Fatal error */
+        2:  130:                tmp = Cudd_bddAnd( manager, X, N_BDD );
+        2:  131:                Cudd_Ref( tmp );
+        2:  132:                Cudd_RecursiveDeref( manager, X );
+        2:  133:                X = tmp;
+        -:  134:
+        2:  135:                tmp2 = Cudd_bddOr( manager, Exit, Y_exmod );
+        2:  136:                Cudd_Ref( tmp2 );
+        -:  137:
+        2:  138:                tmp = Cudd_bddAnd( manager, X, Cudd_Not( *(egoals+r) ) );
+        2:  139:                Cudd_Ref( tmp );
+        2:  140:                Cudd_RecursiveDeref( manager, X );
+        -:  141:
+        2:  142:                X = Cudd_bddOr( manager, tmp2, tmp );
+        2:  143:                Cudd_Ref( X );
+        2:  144:                Cudd_RecursiveDeref( manager, tmp );
+        2:  145:                Cudd_RecursiveDeref( manager, tmp2 );
+        -:  146:
+        2:  147:                tmp = X;
+        2:  148:                X = Cudd_bddAnd( manager, X, X_prev );
+        2:  149:                Cudd_Ref( X );
+        2:  150:                Cudd_RecursiveDeref( manager, tmp );
+        -:  151:
+        2:  152:            } while (!Cudd_bddLeq( manager, X, X_prev )
+        2:  153:                     || !Cudd_bddLeq( manager, X_prev, X ));
+        -:  154:
+        1:  155:            *(*(X_jr+num_sublevels-1) + r) = X;
+        1:  156:            Cudd_Ref( *(*(X_jr+num_sublevels-1) + r) );
+        -:  157:
+        1:  158:            tmp = *(Y+num_sublevels-1);
+        1:  159:            *(Y+num_sublevels-1) = Cudd_bddOr( manager,
+        1:  160:                                               *(Y+num_sublevels-1), X );
+        1:  161:            Cudd_Ref( *(Y+num_sublevels-1) );
+        1:  162:            Cudd_RecursiveDeref( manager, tmp );
+        -:  163:
+        1:  164:            Cudd_RecursiveDeref( manager, X );
+        1:  165:            X = NULL;
+        1:  166:            Cudd_RecursiveDeref( manager, X_prev );
+        1:  167:            X_prev = NULL;
+        -:  168:        }
+        1:  169:        Cudd_RecursiveDeref( manager, Y_exmod );
+        -:  170:
+        1:  171:        tmp = *(Y+num_sublevels-1);
+        1:  172:        *(Y+num_sublevels-1) = Cudd_bddOr( manager, *(Y+num_sublevels-1),
+        1:  173:                                           *(Y+num_sublevels-2) );
+        1:  174:        Cudd_Ref( *(Y+num_sublevels-1) );
+        1:  175:        Cudd_RecursiveDeref( manager, tmp );
+        -:  176:
+        1:  177:        tmp = Cudd_bddOr( manager, Entry, *(Y+num_sublevels-1) );
+        1:  178:        Cudd_Ref( tmp );
+        1:  179:        if (Cudd_bddLeq( manager, tmp, *(Y+num_sublevels-1) )
+        1:  180:            && Cudd_bddLeq( manager, *(Y+num_sublevels-1), tmp )) {
+        1:  181:            Cudd_RecursiveDeref( manager, tmp );
+        1:  182:            if (Cudd_bddLeq( manager, *(Y+num_sublevels-1),
+        1:  183:                             *(Y+num_sublevels-2) )
+    #####:  184:                && Cudd_bddLeq( manager, *(Y+num_sublevels-2),
+    #####:  185:                                *(Y+num_sublevels-1) )) {
+    #####:  186:                Cudd_RecursiveDeref( manager, *(Y+num_sublevels-1) );
+    #####:  187:                for (r = 0; r < spc.num_egoals; r++) {
+    #####:  188:                    Cudd_RecursiveDeref( manager,
+    #####:  189:                                         *(*(X_jr+num_sublevels-1) + r) );
+        -:  190:                }
+    #####:  191:                free( *(X_jr+num_sublevels-1) );
+    #####:  192:                num_sublevels--;
+    #####:  193:                Y = realloc( Y, num_sublevels*sizeof(DdNode *) );
+    #####:  194:                X_jr = realloc( X_jr, num_sublevels*sizeof(DdNode **) );
+    #####:  195:                if (Y == NULL || X_jr == NULL) {
+    #####:  196:                    perror( __FILE__ ",  realloc" );
+    #####:  197:                    exit(-1);
+        -:  198:                }
+        -:  199:            }
+        1:  200:            break;
+        -:  201:        }
+    #####:  202:        Cudd_RecursiveDeref( manager, tmp );
+        -:  203:
+    #####:  204:        if (Cudd_bddLeq( manager, *(Y+num_sublevels-1),
+    #####:  205:                         *(Y+num_sublevels-2) )
+    #####:  206:            && Cudd_bddLeq( manager, *(Y+num_sublevels-2),
+    #####:  207:                            *(Y+num_sublevels-1) )) {
+    #####:  208:            return NULL;  /* Local synthesis failed */
+        -:  209:        }
+        -:  210:    }
+        -:  211:
+        -:  212:
+        -:  213:    /* Note that we assume the variable map has been appropriately defined
+        -:  214:       in the CUDD manager before invocation of synthesize_reachgame_BDD. */
+        1:  215:    tmp = Cudd_bddVarMap( manager, N_BDD );
+        1:  216:    if (tmp == NULL) {
+    #####:  217:        fprintf( stderr,
+        -:  218:                 "Error synthesize_reachgame_BDD: Error in swapping variables"
+        -:  219:                 " with primed forms.\n" );
+    #####:  220:        return NULL;
+        -:  221:    }
+        1:  222:    Cudd_Ref( tmp );
+        1:  223:    strans_into_N = Cudd_bddAnd( manager, strans, tmp );
+        1:  224:    Cudd_Ref( strans_into_N );
+        1:  225:    Cudd_RecursiveDeref( manager, tmp );
+        -:  226:
+        -:  227:    /* Synthesize local strategy */
+        1:  228:    Cudd_AutodynDisable( manager );
+        2:  229:    Cudd_ForeachCube( manager, Entry, gen, gcube, gvalue ) {
+        1:  230:        initialize_cube( state, gcube, num_env+num_sys );
+        2:  231:        while (!saturated_cube( state, gcube, num_env+num_sys )) {
+    #####:  232:            this_node_stack = insert_anode( this_node_stack, -1, -1, False,
+        -:  233:                                            state, num_env+num_sys );
+    #####:  234:            if (this_node_stack == NULL) {
+    #####:  235:                fprintf( stderr,
+        -:  236:                         "Error synthesize_reachgame_BDD: building list of"
+        -:  237:                         " initial states.\n" );
+    #####:  238:                return NULL;
+        -:  239:            }
+    #####:  240:            increment_cube( state, gcube, num_env+num_sys );
+        -:  241:        }
+        1:  242:        this_node_stack = insert_anode( this_node_stack, -1, -1, False,
+        -:  243:                                        state, num_env+num_sys );
+        1:  244:        if (this_node_stack == NULL) {
+    #####:  245:            fprintf( stderr,
+        -:  246:                     "Error synthesize_reachgame_BDD: building list of"
+        -:  247:                     " initial states.\n" );
+    #####:  248:            return NULL;
+        -:  249:        }
+        -:  250:    }
+        1:  251:    Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        -:  252:
+        -:  253:    /* Insert all stacked, initial nodes into strategy. */
+        1:  254:    node = this_node_stack;
+        3:  255:    while (node) {
+        1:  256:        strategy = insert_anode( strategy, -1, node->rgrad, False,
+        -:  257:                                 node->state, num_env+num_sys );
+        1:  258:        if (strategy == NULL) {
+    #####:  259:            fprintf( stderr,
+        -:  260:                     "Error synthesize_reachgame_BDD: inserting state node"
+        -:  261:                     " into strategy.\n" );
+    #####:  262:            return NULL;
+        -:  263:        }
+        1:  264:        node = node->next;
+        -:  265:    }
+        -:  266:
+        4:  267:    while (this_node_stack) {
+        -:  268:        /* Find smallest Y_j set containing node. */
+        6:  269:        for (k = num_env+num_sys; k < 2*(num_env+num_sys); k++)
+        4:  270:            *(cube+k) = 2;
+        2:  271:        state_to_cube( this_node_stack->state, cube, num_env+num_sys );
+        2:  272:        j = num_sublevels;
+        -:  273:        do {
+        4:  274:            j--;
+        4:  275:            ddval = Cudd_Eval( manager, *(Y+j), cube );
+        4:  276:            if (Cudd_IsComplement( ddval )) {
+        1:  277:                j++;
+        1:  278:                break;
+        -:  279:            }
+        3:  280:        } while (j > 0);
+        2:  281:        node = find_anode( strategy, -1, this_node_stack->state,
+        -:  282:                           num_env+num_sys );
+        2:  283:        node->rgrad = j;
+        2:  284:        this_node_stack = pop_anode( this_node_stack );
+        2:  285:        if (node->trans_len > 0 || j == 0) {
+        -:  286:            /* This state and mode combination is already in strategy. */
+        1:  287:            continue;
+        -:  288:        }
+        -:  289:
+        1:  290:        Y_i_primed = Cudd_bddVarMap( manager, *(Y+j-1) );
+        1:  291:        if (Y_i_primed == NULL) {
+    #####:  292:            fprintf( stderr,
+        -:  293:                     "Error synthesize_reachgame_BDD: swapping variables with"
+        -:  294:                     " primed forms.\n" );
+    #####:  295:            return NULL;
+        -:  296:        }
+        1:  297:        Cudd_Ref( Y_i_primed );
+        -:  298:
+        1:  299:        if (num_env > 0) {
+        1:  300:            env_moves = get_env_moves( manager, cube,
+        -:  301:                                       node->state, etrans,
+        -:  302:                                       num_env, num_sys,
+        -:  303:                                       &emoves_len );
+        -:  304:        } else {
+    #####:  305:            emoves_len = 1;  /* This allows one iteration of the for-loop */
+        -:  306:        }
+        3:  307:        for (k = 0; k < emoves_len; k++) {
+        2:  308:            tmp = Cudd_bddAnd( manager, strans_into_N, Y_i_primed );
+        2:  309:            Cudd_Ref( tmp );
+        2:  310:            tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
+        -:  311:                              node->state,
+        -:  312:                              tmp, 0, num_env+num_sys );
+        2:  313:            Cudd_RecursiveDeref( manager, tmp );
+        2:  314:            if (num_env > 0) {
+        4:  315:                tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
+        2:  316:                                 *(env_moves+k),
+        -:  317:                                 tmp2, num_env+num_sys, num_env );
+        2:  318:                Cudd_RecursiveDeref( manager, tmp2 );
+        -:  319:            } else {
+    #####:  320:                tmp = tmp2;
+        -:  321:            }
+        -:  322:
+        2:  323:            Cudd_AutodynDisable( manager );
+        2:  324:            gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
+        2:  325:            if (gen == NULL) {
+    #####:  326:                fprintf( stderr,
+        -:  327:                         "Error synthesize_reachgame_BDD: failed to find"
+        -:  328:                         " cube.\n" );
+    #####:  329:                return NULL;
+        -:  330:            }
+        2:  331:            if (Cudd_IsGenEmpty( gen )) {
+        -:  332:                /* Cannot step closer to target set, so must be able
+        -:  333:                   to block environment liveness. */
+        1:  334:                Cudd_GenFree( gen );
+        1:  335:                Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        1:  336:                if (j > 0) {
+        2:  337:                    for (offset = 1; offset >= 0; offset--) {
+        3:  338:                    for (r = 0; r < spc.num_egoals; r++) {
+        2:  339:                        Cudd_RecursiveDeref( manager, tmp );
+        2:  340:                        Cudd_RecursiveDeref( manager, Y_i_primed );
+        2:  341:                        Y_i_primed = Cudd_bddVarMap( manager, *(*(X_jr+j - offset)+r) );
+        2:  342:                        if (Y_i_primed == NULL) {
+    #####:  343:                            fprintf( stderr,
+        -:  344:                                     "Error synthesize_reachgame_BDD: Error"
+        -:  345:                                     " in swapping variables with primed"
+        -:  346:                                     " forms.\n" );
+    #####:  347:                            return NULL;
+        -:  348:                        }
+        2:  349:                        Cudd_Ref( Y_i_primed );
+        2:  350:                        tmp = Cudd_bddAnd( manager, strans_into_N, Y_i_primed );
+        2:  351:                        Cudd_Ref( tmp );
+        2:  352:                        tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
+        -:  353:                                          node->state,
+        -:  354:                                          tmp, 0, num_sys+num_env );
+        2:  355:                        Cudd_RecursiveDeref( manager, tmp );
+        2:  356:                        if (num_env > 0) {
+        4:  357:                            tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
+        2:  358:                                             *(env_moves+k),
+        -:  359:                                             tmp2, num_sys+num_env, num_env );
+        2:  360:                            Cudd_RecursiveDeref( manager, tmp2 );
+        -:  361:                        } else {
+    #####:  362:                            tmp = tmp2;
+        -:  363:                        }
+        -:  364:
+        2:  365:                        if (!Cudd_bddLeq( manager,
+        -:  366:                                          tmp,
+        2:  367:                                          Cudd_Not( Cudd_ReadOne( manager ) ) )
+        1:  368:                            || ! Cudd_bddLeq( manager,
+        1:  369:                                              Cudd_Not( Cudd_ReadOne( manager ) ),
+        -:  370:                                              tmp ))
+        -:  371:                            break;
+        -:  372:                    }
+        2:  373:                    if (r < spc.num_egoals)
+        1:  374:                        break;
+        -:  375:                    }
+        1:  376:                    if (r >= spc.num_egoals) {
+    #####:  377:                        fprintf( stderr,
+        -:  378:                                 "Error synthesize_reachgame_BDD: unexpected"
+        -:  379:                                 " losing state.\n" );
+    #####:  380:                        return NULL;
+        -:  381:                    }
+        -:  382:                } else {
+    #####:  383:                    Cudd_RecursiveDeref( manager, tmp );
+    #####:  384:                    Cudd_RecursiveDeref( manager, Y_i_primed );
+    #####:  385:                    Y_i_primed = Cudd_ReadOne( manager );
+    #####:  386:                    Cudd_Ref( Y_i_primed );
+    #####:  387:                    tmp = Cudd_bddAnd( manager, strans_into_N, Y_i_primed );
+    #####:  388:                    Cudd_Ref( tmp );
+    #####:  389:                    tmp2 = state_to_cof( manager, cube, 2*(num_env+num_sys),
+        -:  390:                                      node->state,
+        -:  391:                                      tmp, 0, num_sys+num_env );
+    #####:  392:                    Cudd_RecursiveDeref( manager, tmp );
+    #####:  393:                    if (num_env > 0) {
+    #####:  394:                        tmp = state_to_cof( manager, cube, 2*(num_env+num_sys),
+    #####:  395:                                         *(env_moves+k),
+        -:  396:                                         tmp2, num_sys+num_env, num_env );
+    #####:  397:                        Cudd_RecursiveDeref( manager, tmp2 );
+        -:  398:                    } else {
+    #####:  399:                        tmp = tmp2;
+        -:  400:                    }
+        -:  401:                }
+        -:  402:
+        1:  403:                Cudd_AutodynDisable( manager );
+        1:  404:                gen = Cudd_FirstCube( manager, tmp, &gcube, &gvalue );
+        1:  405:                if (gen == NULL) {
+    #####:  406:                    fprintf( stderr,
+        -:  407:                             "Error synthesize_reachgame_BDD: failed to find"
+        -:  408:                             " cube.\n" );
+    #####:  409:                    return NULL;
+        -:  410:                }
+        1:  411:                if (Cudd_IsGenEmpty( gen )) {
+    #####:  412:                    Cudd_GenFree( gen );
+    #####:  413:                    fprintf( stderr,
+        -:  414:                             "Error synthesize_reachgame_BDD: unexpected"
+        -:  415:                             " losing state.\n" );
+    #####:  416:                    return NULL;
+        -:  417:                }
+        5:  418:                for (i = 0; i < 2*(num_env+num_sys); i++)
+        4:  419:                    *(cube+i) = *(gcube+i);
+        1:  420:                Cudd_GenFree( gen );
+        1:  421:                Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        -:  422:            } else {
+        5:  423:                for (i = 0; i < 2*(num_env+num_sys); i++)
+        4:  424:                    *(cube+i) = *(gcube+i);
+        1:  425:                Cudd_GenFree( gen );
+        1:  426:                Cudd_AutodynEnable( manager, CUDD_REORDER_SAME );
+        -:  427:            }
+        -:  428:
+        2:  429:            Cudd_RecursiveDeref( manager, tmp );
+        2:  430:            initialize_cube( state, cube+num_env+num_sys, num_env+num_sys );
+        4:  431:            for (i = 0; i < num_env; i++)
+        2:  432:                *(state+i) = *(*(env_moves+k)+i);
+        -:  433:
+        2:  434:            new_node = find_anode( strategy, -1, state, num_env+num_sys );
+        2:  435:            if (new_node == NULL) {
+        1:  436:                strategy = insert_anode( strategy, -1, -1, False,
+        -:  437:                                         state, num_env+num_sys );
+        1:  438:                if (strategy == NULL) {
+    #####:  439:                    fprintf( stderr,
+        -:  440:                             "Error synthesize_reachgame_BDD: inserting new"
+        -:  441:                             " node into strategy.\n" );
+    #####:  442:                    return NULL;
+        -:  443:                }
+        1:  444:                this_node_stack = insert_anode( this_node_stack, -1, -1, False,
+        -:  445:                                                state, num_env+num_sys );
+        1:  446:                if (this_node_stack == NULL) {
+    #####:  447:                    fprintf( stderr,
+        -:  448:                             "Error synthesize_reachgame_BDD: pushing node"
+        -:  449:                             " onto stack failed.\n" );
+    #####:  450:                    return NULL;
+        -:  451:                }
+        -:  452:            }
+        -:  453:
+        2:  454:            strategy = append_anode_trans( strategy, -1, node->state,
+        -:  455:                                           num_env+num_sys,
+        -:  456:                                           -1, state );
+        2:  457:            if (strategy == NULL) {
+    #####:  458:                fprintf( stderr,
+        -:  459:                         "Error synthesize_reachgame_BDD: inserting new"
+        -:  460:                         " transition into strategy.\n" );
+    #####:  461:                return NULL;
+        -:  462:            }
+        -:  463:        }
+        1:  464:        if (num_env > 0) {
+        3:  465:            for (k = 0; k < emoves_len; k++)
+        2:  466:                free( *(env_moves+k) );
+        1:  467:            free( env_moves );
+        -:  468:        } else {
+    #####:  469:            emoves_len = 0;
+        -:  470:        }
+        1:  471:        Cudd_RecursiveDeref( manager, Y_i_primed );
+        -:  472:    }
+        -:  473:
+        -:  474:
+        -:  475:    /* Pre-exit clean-up */
+        1:  476:    Cudd_RecursiveDeref( manager, strans_into_N );
+        1:  477:    free( cube );
+        1:  478:    free( state );
+        3:  479:    for (i = 0; i < num_sublevels; i++) {
+        2:  480:        Cudd_RecursiveDeref( manager, *(Y+i) );
+        4:  481:        for (j = 0; j < spc.num_egoals; j++) {
+        2:  482:            Cudd_RecursiveDeref( manager, *(*(X_jr+i)+j) );
+        -:  483:        }
+        2:  484:        free( *(X_jr+i) );
+        -:  485:    }
+        1:  486:    free( Y );
+        1:  487:    free( X_jr );
+        -:  488:
+        1:  489:    return strategy;
+        -:  490:}
+        -:  491:
+        -:  492:
+        1:  493:anode_t *synthesize_reachgame( DdManager *manager, int num_env, int num_sys,
+        -:  494:                               anode_t **Entry, int Entry_len,
+        -:  495:                               anode_t **Exit, int Exit_len,
+        -:  496:                               DdNode *etrans, DdNode *strans, DdNode **egoals,
+        -:  497:                               DdNode *N_BDD,
+        -:  498:                               unsigned char verbose )
+        -:  499:{
+        -:  500:    DdNode *Entry_BDD;
+        -:  501:    DdNode *Exit_BDD;
+        -:  502:    anode_t *strategy;
+        -:  503:    DdNode *tmp, *tmp2;
+        -:  504:    int i;
+        -:  505:
+        -:  506:    /* Build characteristic functions (as BDDs) for Entry and Exit sets. */
+        1:  507:    Entry_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
+        1:  508:    Cudd_Ref( Entry_BDD );
+        2:  509:    for (i = 0; i < Entry_len; i++) {
+        1:  510:        tmp2 = state_to_BDD( manager, (*(Entry+i))->state, 0, num_env+num_sys );
+        1:  511:        tmp = Cudd_bddOr( manager, Entry_BDD, tmp2 );
+        1:  512:        Cudd_Ref( tmp );
+        1:  513:        Cudd_RecursiveDeref( manager, Entry_BDD );
+        1:  514:        Cudd_RecursiveDeref( manager, tmp2 );
+        1:  515:        Entry_BDD = tmp;
+        -:  516:    }
+        1:  517:    tmp2 = NULL;
+        -:  518:
+        1:  519:    Exit_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
+        1:  520:    Cudd_Ref( Exit_BDD );
+        2:  521:    for (i = 0; i < Exit_len; i++) {
+        1:  522:        tmp2 = state_to_BDD( manager, (*(Exit+i))->state, 0, num_env+num_sys );
+        1:  523:        tmp = Cudd_bddOr( manager, Exit_BDD, tmp2 );
+        1:  524:        Cudd_Ref( tmp );
+        1:  525:        Cudd_RecursiveDeref( manager, Exit_BDD );
+        1:  526:        Cudd_RecursiveDeref( manager, tmp2 );
+        1:  527:        Exit_BDD = tmp;
+        -:  528:    }
+        1:  529:    tmp2 = NULL;
+        -:  530:
+        1:  531:    strategy =  synthesize_reachgame_BDD( manager, num_env, num_sys,
+        -:  532:                                          Entry_BDD, Exit_BDD, etrans, strans,
+        -:  533:                                          egoals, N_BDD, verbose );
+        -:  534:
+        -:  535:    /* Pre-exit clean-up */
+        1:  536:    Cudd_RecursiveDeref( manager, Exit_BDD );
+        1:  537:    Cudd_RecursiveDeref( manager, Entry_BDD );
+        -:  538:
+        1:  539:    return strategy;
+        -:  540:}

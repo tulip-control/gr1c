@@ -1,0 +1,14 @@
+<map id="mtr/mtrBasic.c" name="mtr/mtrBasic.c">
+<area shape="rect" id="node1" title="Basic manipulation of multiway branching trees." alt="" coords="475,5,594,32"/>
+<area shape="rect" id="node2" href="$util_8h.html" title="Low&#45;level utilities." alt="" coords="357,80,411,107"/>
+<area shape="rect" id="node11" href="$mtrInt_8h.html" title="Internal data structures of the mtr package." alt="" coords="649,80,724,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="649,155,724,181"/>
+<area shape="rect" id="node4" title=" " alt="" coords="5,155,80,181"/>
+<area shape="rect" id="node5" title=" " alt="" coords="104,155,179,181"/>
+<area shape="rect" id="node6" title=" " alt="" coords="463,229,529,256"/>
+<area shape="rect" id="node7" title=" " alt="" coords="254,155,325,181"/>
+<area shape="rect" id="node8" title=" " alt="" coords="349,155,419,181"/>
+<area shape="rect" id="node9" title=" " alt="" coords="443,155,514,181"/>
+<area shape="rect" id="node10" title=" " alt="" coords="538,155,625,181"/>
+<area shape="rect" id="node12" href="$mtr_8h.html" title="Multiway&#45;branch tree manipulation." alt="" coords="749,155,806,181"/>
+</map>

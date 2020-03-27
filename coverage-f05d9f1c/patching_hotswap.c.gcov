@@ -1,0 +1,917 @@
+        -:    0:Source:src/patching_hotswap.c
+        -:    0:Graph:patching_hotswap.gcno
+        -:    0:Data:-
+        -:    0:Runs:0
+        -:    0:Programs:0
+        -:    1:/* patching_hotswap.c -- More definitions for signatures in patching.h.
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2013-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#include <stdlib.h>
+        -:    9:#include <stdio.h>
+        -:   10:#include <string.h>
+        -:   11:
+        -:   12:#include "common.h"
+        -:   13:#include "logging.h"
+        -:   14:#include "automaton.h"
+        -:   15:#include "ptree.h"
+        -:   16:#include "patching.h"
+        -:   17:#include "solve.h"
+        -:   18:#include "solve_support.h"
+        -:   19:#include "solve_metric.h"
+        -:   20:
+        -:   21:
+        -:   22:extern specification_t spc;
+        -:   23:
+        -:   24:
+        -:   25:/* Defined in patching.c */
+        -:   26:extern void pprint_state( vartype *state, int num_env, int num_sys, FILE *fp );
+        -:   27:
+        -:   28:/* Defined in patching_support.c */
+        -:   29:extern anode_t *synthesize_reachgame_BDD( DdManager *manager,
+        -:   30:                                          int num_env, int num_sys,
+        -:   31:                                          DdNode *Entry, DdNode *Exit,
+        -:   32:                                          DdNode *etrans, DdNode *strans,
+        -:   33:                                          DdNode **egoals, DdNode *N_BDD,
+        -:   34:                                          unsigned char verbose );
+        -:   35:
+        -:   36:
+    #####:   37:anode_t *add_metric_sysgoal( DdManager *manager, FILE *strategy_fp,
+        -:   38:                             int original_num_env, int original_num_sys,
+        -:   39:                             int *offw, int num_metric_vars,
+        -:   40:                             ptree_t *new_sysgoal, unsigned char verbose )
+        -:   41:{
+        -:   42:    ptree_t *var_separator;
+        -:   43:    DdNode *etrans, *strans, **egoals, **sgoals;
+    #####:   44:    bool env_nogoal_flag = False;  /* Indicate environment has no goals */
+        -:   45:
+    #####:   46:    anode_t *strategy = NULL, *component_strategy;
+        -:   47:    int num_env, num_sys;
+        -:   48:    anode_t *node1, *node2;
+        -:   49:
+        -:   50:    double *Min, *Max;  /* One (Min, Max) pair per original system goal */
+        -:   51:
+        -:   52:    int Gi_len[2];
+        -:   53:    anode_t **Gi[2];  /* Array of two pointers to arrays of nodes in
+        -:   54:                         the given strategy between which we wish to
+        -:   55:                         insert the new system goal. */
+        -:   56:    int istar[2];  /* Indices of system goals between which to insert. */
+    #####:   57:    DdNode *Gi_BDD = NULL;
+    #####:   58:    DdNode *new_sgoal = NULL;
+    #####:   59:    anode_t **new_reached = NULL;
+    #####:   60:    int new_reached_len = 0;
+        -:   61:
+    #####:   62:    anode_t **Gi_succ = NULL;
+    #####:   63:    int Gi_succ_len = 0;
+        -:   64:
+        -:   65:    int i, j, k;  /* Generic counters */
+        -:   66:    bool found_flag;
+        -:   67:    int node_counter;
+        -:   68:    DdNode *tmp, *tmp2;
+        -:   69:    DdNode **vars, **pvars;
+        -:   70:
+    #####:   71:    if (strategy_fp == NULL)
+    #####:   72:        strategy_fp = stdin;
+        -:   73:
+    #####:   74:    num_env = tree_size( spc.evar_list );
+    #####:   75:    num_sys = tree_size( spc.svar_list );
+        -:   76:
+    #####:   77:    strategy = aut_aut_load( original_num_env+original_num_sys, strategy_fp );
+    #####:   78:    if (strategy == NULL) {
+    #####:   79:        return NULL;
+        -:   80:    }
+    #####:   81:    if (verbose)
+    #####:   82:        logprint( "Read in strategy of size %d", aut_size( strategy ) );
+        -:   83:
+    #####:   84:    if (verbose > 1)
+    #####:   85:        logprint( "Expanding nonbool variables in the given strategy"
+        -:   86:                  " automaton..." );
+    #####:   87:    if (aut_expand_bool( strategy, spc.evar_list, spc.svar_list, spc.nonbool_var_list )) {
+    #####:   88:        fprintf( stderr,
+        -:   89:                 "Error add_metric_sysgoal: Failed to expand nonboolean"
+        -:   90:                 " variables in given automaton." );
+    #####:   91:        return NULL;
+        -:   92:    }
+    #####:   93:    if (verbose > 1) {
+    #####:   94:        logprint( "Given strategy after variable expansion:" );
+    #####:   95:        logprint_startline();
+    #####:   96:        dot_aut_dump( strategy, spc.evar_list, spc.svar_list, DOT_AUT_ATTRIB,
+        -:   97:                      getlogstream() );
+    #####:   98:        logprint_endline();
+        -:   99:    }
+        -:  100:
+        -:  101:    /* Set environment goal to True (i.e., any state) if none was
+        -:  102:       given. This simplifies the implementation below. */
+    #####:  103:    if (spc.num_egoals == 0) {
+    #####:  104:        env_nogoal_flag = True;
+    #####:  105:        spc.num_egoals = 1;
+    #####:  106:        spc.env_goals = malloc( sizeof(ptree_t *) );
+    #####:  107:        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:  108:    }
+        -:  109:
+        -:  110:    /* Chain together environment and system variable lists for
+        -:  111:       working with BDD library. */
+    #####:  112:    if (spc.evar_list == NULL) {
+    #####:  113:        var_separator = NULL;
+    #####:  114:        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+        -:  115:                                           is indicated by var_separator = NULL. */
+        -:  116:    } else {
+    #####:  117:        var_separator = get_list_item( spc.evar_list, -1 );
+    #####:  118:        if (var_separator == NULL) {
+    #####:  119:            fprintf( stderr,
+        -:  120:                     "Error: get_list_item failed on environment variables"
+        -:  121:                     " list.\n" );
+    #####:  122:            return NULL;
+        -:  123:        }
+    #####:  124:        var_separator->left = spc.svar_list;
+        -:  125:    }
+        -:  126:
+        -:  127:    /* Generate BDDs for the various parse trees from the problem spec. */
+    #####:  128:    if (verbose > 1)
+    #####:  129:        logprint( "Building environment transition BDD..." );
+    #####:  130:    etrans = ptree_BDD( spc.env_trans, spc.evar_list, manager );
+    #####:  131:    if (verbose > 1) {
+    #####:  132:        logprint( "Done." );
+    #####:  133:        logprint( "Building system transition BDD..." );
+        -:  134:    }
+    #####:  135:    strans = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
+    #####:  136:    if (verbose > 1)
+    #####:  137:        logprint( "Done." );
+        -:  138:
+        -:  139:    /* Build goal BDDs, if present. */
+    #####:  140:    if (spc.num_egoals > 0) {
+    #####:  141:        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+    #####:  142:        for (i = 0; i < spc.num_egoals; i++)
+    #####:  143:            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
+        -:  144:    } else {
+    #####:  145:        egoals = NULL;
+        -:  146:    }
+    #####:  147:    if (spc.num_sgoals > 0) {
+    #####:  148:        sgoals = malloc( spc.num_sgoals*sizeof(DdNode *) );
+    #####:  149:        for (i = 0; i < spc.num_sgoals; i++)
+    #####:  150:            *(sgoals+i) = ptree_BDD( *(spc.sys_goals+i), spc.evar_list, manager );
+        -:  151:    } else {
+    #####:  152:        sgoals = NULL;
+        -:  153:    }
+        -:  154:
+    #####:  155:    new_sgoal = ptree_BDD( new_sysgoal, spc.evar_list, manager );
+        -:  156:
+    #####:  157:    if (var_separator == NULL) {
+    #####:  158:        spc.evar_list = NULL;
+        -:  159:    } else {
+    #####:  160:        var_separator->left = NULL;
+        -:  161:    }
+        -:  162:
+        -:  163:
+        -:  164:    /* Find which original system goal is closest to the new one */
+    #####:  165:    if (offw != NULL && num_metric_vars > 0) {
+    #####:  166:        Min = malloc( spc.num_sgoals*sizeof(double) );
+    #####:  167:        Max = malloc( spc.num_sgoals*sizeof(double) );
+    #####:  168:        if (Min == NULL || Max == NULL) {
+    #####:  169:            perror( __FILE__ ",  malloc" );
+    #####:  170:            exit(-1);
+        -:  171:        }
+    #####:  172:        for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  173:            if (bounds_DDset( manager, *(sgoals+i), new_sgoal,
+    #####:  174:                              offw, num_metric_vars, Min+i, Max+i, verbose )) {
+    #####:  175:                fprintf( stderr,
+        -:  176:                         "Error add_metric_sysgoal: bounds_DDset() failed to"
+        -:  177:                         " compute distance from original goal %d",
+        -:  178:                         i );
+    #####:  179:                return NULL;
+        -:  180:            }
+        -:  181:        }
+    #####:  182:        istar[0] = 0;
+    #####:  183:        for (i = 1; i < spc.num_sgoals; i++) {
+    #####:  184:            if (*(Min+i) < *(Min+istar[0]))
+    #####:  185:                istar[0] = i;
+        -:  186:        }
+    #####:  187:        if (verbose)
+    #####:  188:            logprint( "add_metric_sysgoal: The original system goal with"
+        -:  189:                      " index %d has minimum distance",
+        -:  190:                      istar[0] );
+        -:  191:    } else {
+    #####:  192:        Min = Max = NULL;
+    #####:  193:        istar[0] = spc.num_sgoals-1;
+        -:  194:
+    #####:  195:        if (verbose)
+    #####:  196:            logprint( "No metric variables given, so using sys goal mode i* = %d", istar[0] );
+        -:  197:    }
+        -:  198:
+    #####:  199:    if (istar[0] == spc.num_sgoals-1) {
+    #####:  200:        istar[1] = 0;
+        -:  201:    } else {
+    #####:  202:        istar[1] = istar[0]+1;
+        -:  203:    }
+    #####:  204:    Gi[0] = Gi[1] = NULL;
+    #####:  205:    Gi_len[0] = Gi_len[1] = 0;
+        -:  206:
+        -:  207:    /* Find i* and i*+1 nodes */
+    #####:  208:    for (i = 0; i < 2; i++) {
+    #####:  209:        if (verbose > 1)
+    #####:  210:            logprint( "Adding nodes to set G_{%d}:", istar[i] );
+    #####:  211:        node_counter = 0;
+    #####:  212:        node1 = strategy;
+    #####:  213:        while (node1) {
+    #####:  214:            node2 = strategy;
+    #####:  215:            found_flag = False;
+    #####:  216:            while (node2 && !found_flag) {
+    #####:  217:                for (j = 0; j < node2->trans_len; j++) {
+    #####:  218:                    if (*(node2->trans+j) == node1) {
+    #####:  219:                        if ((node2->mode < node1->mode
+    #####:  220:                             && node2->mode <= istar[i]
+    #####:  221:                             && node1->mode > istar[i])
+    #####:  222:                            || (node2->mode > node1->mode
+    #####:  223:                                && (node1->mode > istar[i]
+    #####:  224:                                    || node2->mode <= istar[i]))) {
+        -:  225:
+    #####:  226:                            Gi_len[i]++;
+    #####:  227:                            Gi[i] = realloc( Gi[i],
+    #####:  228:                                             Gi_len[i]*sizeof(anode_t *) );
+    #####:  229:                            if (Gi[i] == NULL) {
+    #####:  230:                                perror( __FILE__ ",  realloc" );
+    #####:  231:                                exit(-1);
+        -:  232:                            }
+        -:  233:
+    #####:  234:                            if (verbose > 1) {
+    #####:  235:                                logprint_startline();
+    #####:  236:                                logprint_raw( "\t%d : ", node_counter );
+    #####:  237:                                pprint_state( node1->state, num_env, num_sys,
+        -:  238:                                              getlogstream() );
+    #####:  239:                                logprint_raw( " - %d", node1->mode );
+    #####:  240:                                logprint_endline();
+        -:  241:                            }
+    #####:  242:                            *(Gi[i]+Gi_len[i]-1) = node1;
+        -:  243:
+    #####:  244:                            found_flag = True;
+        -:  245:                        }
+    #####:  246:                        break;
+        -:  247:                    }
+        -:  248:                }
+        -:  249:
+    #####:  250:                node2 = node2->next;
+        -:  251:            }
+        -:  252:
+    #####:  253:            node_counter++;
+    #####:  254:            node1 = node1->next;
+        -:  255:        }
+        -:  256:    }
+        -:  257:
+        -:  258:    /* Define a map in the manager to easily swap variables with their
+        -:  259:       primed selves. */
+    #####:  260:    vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####:  261:    pvars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####:  262:    for (i = 0; i < num_env+num_sys; i++) {
+    #####:  263:        *(vars+i) = Cudd_bddIthVar( manager, i );
+    #####:  264:        *(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
+        -:  265:    }
+    #####:  266:    if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
+    #####:  267:        fprintf( stderr,
+        -:  268:                 "Error: failed to define variable map in CUDD manager.\n" );
+    #####:  269:        return NULL;
+        -:  270:    }
+    #####:  271:    free( vars );
+    #####:  272:    free( pvars );
+        -:  273:
+        -:  274:
+        -:  275:    /* Build characteristic function for G_{i*} set. */
+    #####:  276:    Gi_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
+    #####:  277:    Cudd_Ref( Gi_BDD );
+    #####:  278:    for (i = 0; i < Gi_len[0]; i++) {
+    #####:  279:        tmp2 = state_to_BDD( manager, (*(Gi[0]+i))->state, 0, num_env+num_sys );
+    #####:  280:        tmp = Cudd_bddOr( manager, Gi_BDD, tmp2 );
+    #####:  281:        Cudd_Ref( tmp );
+    #####:  282:        Cudd_RecursiveDeref( manager, Gi_BDD );
+    #####:  283:        Cudd_RecursiveDeref( manager, tmp2 );
+    #####:  284:        Gi_BDD = tmp;
+        -:  285:    }
+    #####:  286:    tmp2 = NULL;
+        -:  287:
+    #####:  288:    tmp = Cudd_ReadOne( manager );
+    #####:  289:    Cudd_Ref( tmp );
+    #####:  290:    component_strategy = synthesize_reachgame_BDD( manager, num_env, num_sys,
+        -:  291:                                                   Gi_BDD, new_sgoal,
+        -:  292:                                                   etrans, strans, egoals, tmp,
+        -:  293:                                                   verbose );
+    #####:  294:    Cudd_RecursiveDeref( manager, tmp );
+    #####:  295:    if (component_strategy == NULL) {
+    #####:  296:        delete_aut( strategy );
+    #####:  297:        return NULL;  /* Failure */
+        -:  298:    }
+    #####:  299:    if (verbose > 1) {
+    #####:  300:        logprint( "Component strategy to reach the new system goal from"
+        -:  301:                  " G_{i*}:" );
+    #####:  302:        logprint_startline();
+    #####:  303:        dot_aut_dump( component_strategy, spc.evar_list, spc.svar_list,
+        -:  304:                      DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
+    #####:  305:        logprint_endline();
+        -:  306:    }
+        -:  307:
+    #####:  308:    Cudd_RecursiveDeref( manager, Gi_BDD );
+    #####:  309:    Gi_BDD = NULL;
+        -:  310:
+        -:  311:
+        -:  312:    /* Find which states were actually reached before building
+        -:  313:       component strategy back into the given (original) strategy. */
+    #####:  314:    node1 = component_strategy;
+    #####:  315:    while (node1) {
+    #####:  316:        if (node1->trans_len == 0) {
+    #####:  317:            new_reached_len++;
+    #####:  318:            new_reached = realloc(new_reached,
+        -:  319:                                  new_reached_len*sizeof(anode_t *) );
+    #####:  320:            if (new_reached == NULL) {
+    #####:  321:                perror( __FILE__ ",  realloc" );
+    #####:  322:                exit(-1);
+        -:  323:            }
+    #####:  324:            *(new_reached+new_reached_len-1) = node1;
+        -:  325:        }
+        -:  326:
+    #####:  327:        node1 = node1->next;
+        -:  328:    }
+        -:  329:
+        -:  330:
+    #####:  331:    node1 = component_strategy;
+    #####:  332:    while (node1) {
+        -:  333:        /* Temporary mode label for this component. */
+    #####:  334:        node1->mode = spc.num_sgoals+1;
+    #####:  335:        node1 = node1->next;
+        -:  336:    }
+        -:  337:
+        -:  338:    /* From original to first component... */
+    #####:  339:    for (i = 0; i < Gi_len[0]; i++) {
+    #####:  340:        if ((*(Gi[0]+i))->trans_len > 0) {
+    #####:  341:            Gi_succ = realloc( Gi_succ,
+    #####:  342:                               (Gi_succ_len + (*(Gi[0]+i))->trans_len)
+        -:  343:                               *sizeof(anode_t *) );
+    #####:  344:            if (Gi_succ == NULL) {
+    #####:  345:                perror( __FILE__ ",  realloc" );
+    #####:  346:                exit(-1);
+        -:  347:            }
+    #####:  348:            for (j = 0; j < (*(Gi[0]+i))->trans_len; j++) {
+    #####:  349:                for (k = 0; k < Gi_len[0]; k++) {
+    #####:  350:                    if (*((*(Gi[0]+i))->trans+j) == *(Gi[0]+k))
+    #####:  351:                        break;
+        -:  352:                }
+    #####:  353:                if (k < Gi_len[0])
+    #####:  354:                    continue;  /* Do not prune members of Gi */
+    #####:  355:                *(Gi_succ+Gi_succ_len) = *((*(Gi[0]+i))->trans+j);
+    #####:  356:                Gi_succ_len++;
+        -:  357:            }
+        -:  358:        }
+        -:  359:
+    #####:  360:        (*(Gi[0]+i))->trans_len = 0;
+    #####:  361:        free( (*(Gi[0]+i))->trans );
+    #####:  362:        (*(Gi[0]+i))->trans = NULL;
+        -:  363:
+        -:  364:        /* Temporary mode label for this component. */
+    #####:  365:        (*(Gi[0]+i))->mode = spc.num_sgoals+1;
+        -:  366:
+    #####:  367:        node1 = component_strategy;
+    #####:  368:        while (node1) {
+    #####:  369:            if (statecmp( node1->state, (*(Gi[0]+i))->state,
+        -:  370:                          num_env+num_sys )) {
+    #####:  371:                (*(Gi[0]+i))->trans_len = node1->trans_len;
+    #####:  372:                (*(Gi[0]+i))->trans = node1->trans;
+    #####:  373:                node1->trans = NULL;
+    #####:  374:                node1->trans_len = 0;
+    #####:  375:                break;
+        -:  376:            }
+    #####:  377:            node1 = node1->next;
+        -:  378:        }
+    #####:  379:        if (node1 == NULL) {
+    #####:  380:            fprintf( stderr,
+        -:  381:                     "Error add_metric_sysgoal: component automaton is not"
+        -:  382:                     " compatible with original." );
+    #####:  383:            delete_aut( strategy );
+    #####:  384:            return NULL;
+        -:  385:        }
+        -:  386:
+        -:  387:        /* Delete the replaced node */
+    #####:  388:        replace_anode_trans( strategy, node1, *(Gi[0]+i) );
+    #####:  389:        replace_anode_trans( component_strategy, node1, *(Gi[0]+i) );
+    #####:  390:        component_strategy = delete_anode( component_strategy, node1 );
+        -:  391:    }
+        -:  392:
+    #####:  393:    node1 = strategy;
+    #####:  394:    while (node1->next)
+    #####:  395:        node1 = node1->next;
+    #####:  396:    node1->next = component_strategy;
+        -:  397:
+    #####:  398:    if (verbose > 1) {
+    #####:  399:        logprint( "Partially patched strategy before de-expanding variables:" );
+    #####:  400:        logprint_startline();
+    #####:  401:        dot_aut_dump( strategy, spc.evar_list, spc.svar_list,
+        -:  402:                      DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
+    #####:  403:        logprint_endline();
+        -:  404:    }
+        -:  405:
+        -:  406:
+    #####:  407:    tmp = Cudd_ReadOne( manager );
+    #####:  408:    Cudd_Ref( tmp );
+    #####:  409:    component_strategy = synthesize_reachgame( manager, num_env, num_sys,
+        -:  410:                                               new_reached, new_reached_len,
+        -:  411:                                               Gi[1], Gi_len[1],
+        -:  412:                                               etrans, strans, egoals, tmp,
+        -:  413:                                               verbose );
+    #####:  414:    Cudd_RecursiveDeref( manager, tmp );
+    #####:  415:    if (component_strategy == NULL) {
+    #####:  416:        delete_aut( strategy );
+    #####:  417:        return NULL;  /* Failure */
+        -:  418:    }
+    #####:  419:    if (verbose > 1) {
+    #####:  420:        logprint( "Component strategy to reach G_{i*+1} from the new system"
+        -:  421:                  " goal:" );
+    #####:  422:        logprint_startline();
+    #####:  423:        dot_aut_dump( component_strategy, spc.evar_list, spc.svar_list,
+        -:  424:                      DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
+    #####:  425:        logprint_endline();
+        -:  426:    }
+        -:  427:
+        -:  428:    /* From first component to second component... */
+    #####:  429:    for (i = 0; i < new_reached_len; i++) {
+        -:  430:        /* Temporary mode label for this component. */
+    #####:  431:        (*(new_reached+i))->mode = -1;
+    #####:  432:        node1 = component_strategy;
+    #####:  433:        while (node1) {
+    #####:  434:            if (statecmp( node1->state, (*(new_reached+i))->state,
+        -:  435:                          num_env+num_sys )) {
+    #####:  436:                (*(new_reached+i))->trans_len = node1->trans_len;
+    #####:  437:                (*(new_reached+i))->trans = node1->trans;
+    #####:  438:                node1->trans = NULL;
+    #####:  439:                node1->trans_len = 0;
+    #####:  440:                (*(new_reached+i))->rgrad = node1->rgrad;
+    #####:  441:                break;
+        -:  442:            }
+    #####:  443:            node1 = node1->next;
+        -:  444:        }
+    #####:  445:        if (node1 == NULL) {
+    #####:  446:            fprintf( stderr,
+        -:  447:                     "Error add_metric_sysgoal: component automata are not"
+        -:  448:                     " compatible." );
+    #####:  449:            delete_aut( strategy );
+    #####:  450:            return NULL;
+        -:  451:        }
+        -:  452:
+    #####:  453:        replace_anode_trans( strategy, node1, *(new_reached+i) );
+    #####:  454:        replace_anode_trans( component_strategy, node1, *(new_reached+i) );
+    #####:  455:        component_strategy = delete_anode( component_strategy, node1 );
+        -:  456:    }
+        -:  457:
+        -:  458:    /* From second component into original... */
+    #####:  459:    node1 = component_strategy;
+    #####:  460:    while (node1) {
+    #####:  461:        if (node1->trans_len == 0) {
+        -:  462:
+    #####:  463:            for (i = 0; i < Gi_len[1]; i++) {
+    #####:  464:                if (statecmp( (*(Gi[1]+i))->state, node1->state,
+        -:  465:                              num_env+num_sys )) {
+        -:  466:
+    #####:  467:                    node1->trans_len = (*(Gi[1]+i))->trans_len;
+    #####:  468:                    node1->trans = (*(Gi[1]+i))->trans;
+    #####:  469:                    (*(Gi[1]+i))->trans_len = 0;
+    #####:  470:                    (*(Gi[1]+i))->trans = NULL;
+    #####:  471:                    node1->rgrad = (*(Gi[1]+i))->rgrad;
+    #####:  472:                    node1->mode = (*(Gi[1]+i))->mode;
+    #####:  473:                    break;
+        -:  474:                }
+        -:  475:            }
+    #####:  476:            if (i == Gi_len[1]) {
+    #####:  477:                fprintf( stderr,
+        -:  478:                         "Error add_metric_sysgoal: component automata are"
+        -:  479:                         " not compatible." );
+    #####:  480:                delete_aut( strategy );
+    #####:  481:                return NULL;
+        -:  482:            }
+        -:  483:
+    #####:  484:            replace_anode_trans( strategy, *(Gi[1]+i), node1 );
+    #####:  485:            replace_anode_trans( component_strategy, *(Gi[1]+i), node1 );
+    #####:  486:            strategy = delete_anode( strategy, *(Gi[1]+i) );
+        -:  487:
+        -:  488:        }
+    #####:  489:        node1 = node1->next;
+        -:  490:    }
+        -:  491:
+    #####:  492:    node1 = strategy;
+    #####:  493:    while (node1->next)
+    #####:  494:        node1 = node1->next;
+    #####:  495:    node1->next = component_strategy;
+        -:  496:
+    #####:  497:    strategy = forward_prune( strategy, Gi_succ, Gi_succ_len );
+    #####:  498:    if (strategy == NULL) {
+    #####:  499:        fprintf( stderr, "Error add_metric_sysgoal: pruning failed.\n" );
+    #####:  500:        return NULL;
+        -:  501:    }
+    #####:  502:    Gi_succ = NULL;
+        -:  503:
+        -:  504:    /* Update labels, thus completing the insertion process */
+    #####:  505:    if (istar[0] == spc.num_sgoals-1) {
+    #####:  506:        node1 = strategy;
+    #####:  507:        while (node1) {
+    #####:  508:            if (node1->mode == spc.num_sgoals+1) {
+    #####:  509:                node1->mode = spc.num_sgoals;
+    #####:  510:            } else if (node1->mode == -1) {
+    #####:  511:                node1->mode = 0;
+        -:  512:            }
+    #####:  513:            node1 = node1->next;
+        -:  514:        }
+        -:  515:    } else {  /* istar[0] < istar[1] */
+    #####:  516:        for (i = spc.num_sgoals-1; i >= istar[1]; i--) {
+    #####:  517:            node1 = strategy;
+    #####:  518:            while (node1) {
+    #####:  519:                if (node1->mode == i)
+    #####:  520:                    (node1->mode)++;
+    #####:  521:                node1 = node1->next;
+        -:  522:            }
+        -:  523:        }
+    #####:  524:        node1 = strategy;
+    #####:  525:        while (node1) {
+    #####:  526:            if (node1->mode == spc.num_sgoals+1) {
+    #####:  527:                node1->mode = istar[1];
+    #####:  528:            } else if (node1->mode == -1) {
+    #####:  529:                node1->mode = istar[1]+1;
+        -:  530:            }
+    #####:  531:            node1 = node1->next;
+        -:  532:        }
+        -:  533:    }
+        -:  534:
+        -:  535:
+        -:  536:    /* Pre-exit clean-up */
+    #####:  537:    free( Min );
+    #####:  538:    free( Max );
+    #####:  539:    free( Gi[0] );
+    #####:  540:    free( Gi[1] );
+    #####:  541:    free( new_reached );
+    #####:  542:    Cudd_RecursiveDeref( manager, etrans );
+    #####:  543:    Cudd_RecursiveDeref( manager, strans );
+    #####:  544:    for (i = 0; i < spc.num_egoals; i++)
+    #####:  545:        Cudd_RecursiveDeref( manager, *(egoals+i) );
+    #####:  546:    for (i = 0; i < spc.num_sgoals; i++)
+    #####:  547:        Cudd_RecursiveDeref( manager, *(sgoals+i) );
+    #####:  548:    if (spc.num_egoals > 0)
+    #####:  549:        free( egoals );
+    #####:  550:    if (spc.num_sgoals > 0)
+    #####:  551:        free( sgoals );
+    #####:  552:    if (env_nogoal_flag) {
+    #####:  553:        spc.num_egoals = 0;
+    #####:  554:        delete_tree( *spc.env_goals );
+    #####:  555:        free( spc.env_goals );
+        -:  556:    }
+        -:  557:
+    #####:  558:    return strategy;
+        -:  559:}
+        -:  560:
+        -:  561:
+    #####:  562:anode_t *rm_sysgoal( DdManager *manager, FILE *strategy_fp,
+        -:  563:                     int original_num_env, int original_num_sys,
+        -:  564:                     int delete_i, unsigned char verbose )
+        -:  565:{
+        -:  566:    ptree_t *var_separator;
+        -:  567:    DdNode *etrans, *strans, **egoals;
+    #####:  568:    bool env_nogoal_flag = False;  /* Indicate environment has no goals */
+        -:  569:
+    #####:  570:    anode_t *strategy = NULL;
+        -:  571:    int num_env, num_sys;
+    #####:  572:    int num_del_nodes = 0;
+        -:  573:
+        -:  574:    anode_t *substrategy;
+        -:  575:    anode_t **Entry;
+        -:  576:    anode_t **Exit;
+    #####:  577:    int Entry_len = 0, Exit_len = 0;
+        -:  578:    anode_t *node;
+        -:  579:
+        -:  580:    int i, j;
+        -:  581:    DdNode **vars, **pvars;
+        -:  582:    DdNode *tmp;
+        -:  583:
+    #####:  584:    if (strategy_fp == NULL)
+    #####:  585:        strategy_fp = stdin;
+        -:  586:
+    #####:  587:    if (delete_i < 0 || delete_i >= spc.num_sgoals) {
+    #####:  588:        logprint( "Error rm_sysgoal: invoked with goal index %d outside"
+        -:  589:                  " bounds [0,%d]",
+        -:  590:                  delete_i,
+    #####:  591:                  spc.num_sgoals-1 );
+    #####:  592:        return NULL;
+        -:  593:    }
+    #####:  594:    if (spc.num_sgoals < 3) {
+    #####:  595:        logprint( "Error rm_sysgoal: Current implementation requires at"
+        -:  596:                  " least 3 initial system goals." );
+    #####:  597:        return NULL;
+        -:  598:    }
+        -:  599:
+    #####:  600:    num_env = tree_size( spc.evar_list );
+    #####:  601:    num_sys = tree_size( spc.svar_list );
+        -:  602:
+    #####:  603:    strategy = aut_aut_load( original_num_env+original_num_sys, strategy_fp );
+    #####:  604:    if (strategy == NULL) {
+    #####:  605:        return NULL;
+        -:  606:    }
+    #####:  607:    if (verbose)
+    #####:  608:        logprint( "Read in strategy of size %d", aut_size( strategy ) );
+        -:  609:
+    #####:  610:    if (verbose > 1)
+    #####:  611:        logprint( "Expanding nonbool variables in the given strategy"
+        -:  612:                  " automaton..." );
+    #####:  613:    if (aut_expand_bool( strategy,
+        -:  614:                         spc.evar_list, spc.svar_list, spc.nonbool_var_list )) {
+    #####:  615:        fprintf( stderr,
+        -:  616:                 "Error rm_sysgoal: Failed to expand nonboolean variables"
+        -:  617:                 " in given automaton." );
+    #####:  618:        return NULL;
+        -:  619:    }
+    #####:  620:    if (verbose > 1) {
+    #####:  621:        logprint( "Given strategy after variable expansion:" );
+    #####:  622:        logprint_startline();
+    #####:  623:        dot_aut_dump( strategy, spc.evar_list, spc.svar_list, DOT_AUT_ATTRIB,
+        -:  624:                      getlogstream() );
+    #####:  625:        logprint_endline();
+        -:  626:    }
+        -:  627:
+        -:  628:    /* Set environment goal to True (i.e., any state) if none was
+        -:  629:       given. This simplifies the implementation below. */
+    #####:  630:    if (spc.num_egoals == 0) {
+    #####:  631:        env_nogoal_flag = True;
+    #####:  632:        spc.num_egoals = 1;
+    #####:  633:        spc.env_goals = malloc( sizeof(ptree_t *) );
+    #####:  634:        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:  635:    }
+        -:  636:
+        -:  637:    /* Chain together environment and system variable lists for
+        -:  638:       working with BDD library. */
+    #####:  639:    if (spc.evar_list == NULL) {
+    #####:  640:        var_separator = NULL;
+    #####:  641:        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+        -:  642:                                           is indicated by var_separator = NULL. */
+        -:  643:    } else {
+    #####:  644:        var_separator = get_list_item( spc.evar_list, -1 );
+    #####:  645:        if (var_separator == NULL) {
+    #####:  646:            fprintf( stderr,
+        -:  647:                     "Error: get_list_item failed on environment variables"
+        -:  648:                     " list.\n" );
+    #####:  649:            return NULL;
+        -:  650:        }
+    #####:  651:        var_separator->left = spc.svar_list;
+        -:  652:    }
+        -:  653:
+        -:  654:    /* Generate BDDs for the various parse trees from the problem spec. */
+    #####:  655:    if (verbose > 1)
+    #####:  656:        logprint( "Building environment transition BDD..." );
+    #####:  657:    etrans = ptree_BDD( spc.env_trans, spc.evar_list, manager );
+    #####:  658:    if (verbose > 1) {
+    #####:  659:        logprint( "Done." );
+    #####:  660:        logprint( "Building system transition BDD..." );
+        -:  661:    }
+    #####:  662:    strans = ptree_BDD( spc.sys_trans, spc.evar_list, manager );
+    #####:  663:    if (verbose > 1)
+    #####:  664:        logprint( "Done." );
+        -:  665:
+        -:  666:    /* Build goal BDDs, if present. */
+    #####:  667:    if (spc.num_egoals > 0) {
+    #####:  668:        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+    #####:  669:        for (i = 0; i < spc.num_egoals; i++)
+    #####:  670:            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
+        -:  671:    } else {
+    #####:  672:        egoals = NULL;
+        -:  673:    }
+        -:  674:
+    #####:  675:    if (var_separator == NULL) {
+    #####:  676:        spc.evar_list = NULL;
+        -:  677:    } else {
+    #####:  678:        var_separator->left = NULL;
+        -:  679:    }
+        -:  680:
+        -:  681:
+    #####:  682:    node = strategy;
+    #####:  683:    num_del_nodes = 0;
+    #####:  684:    while (node) {
+    #####:  685:        if (node->mode == delete_i || node->mode == (delete_i+1)%spc.num_sgoals)
+    #####:  686:            num_del_nodes++;
+    #####:  687:        node = node->next;
+        -:  688:    }
+    #####:  689:    if (verbose)
+    #####:  690:        logprint( "rm_sysgoal: Found %d automaton nodes annotated with mode"
+        -:  691:                  " to-be-deleted (%d) or successor (%d)",
+        -:  692:                  num_del_nodes,
+        -:  693:                  delete_i,
+    #####:  694:                  (delete_i+1)%spc.num_sgoals );
+        -:  695:
+    #####:  696:    if (num_del_nodes == 0) {
+    #####:  697:        if (verbose)
+    #####:  698:            logprint( "rm_sysgoal: Did not find nodes to be deleted "
+        -:  699:                      "nor nodes of successor mode." );
+    #####:  700:        return NULL;
+        -:  701:    }
+        -:  702:
+        -:  703:    /* Pre-allocate space for Entry and Exit sets; the number of
+        -:  704:       elements actually used is tracked by Entry_len and Exit_len,
+        -:  705:       respectively. */
+    #####:  706:    Entry = malloc( sizeof(anode_t *)*num_del_nodes );
+    #####:  707:    if (Entry == NULL) {
+    #####:  708:        perror( __FILE__ ",  malloc" );
+    #####:  709:        exit(-1);
+        -:  710:
+        -:  711:    }
+    #####:  712:    Exit = malloc( sizeof(anode_t *)*num_del_nodes );
+    #####:  713:    if (Exit == NULL) {
+    #####:  714:        perror( __FILE__ ",  malloc" );
+    #####:  715:        exit(-1);
+        -:  716:    }
+        -:  717:
+    #####:  718:    node = strategy;
+    #####:  719:    while (node) {
+    #####:  720:        if (node->mode == delete_i || node->mode == (delete_i+1)%spc.num_sgoals) {
+        -:  721:
+    #####:  722:            for (i = 0; i < node->trans_len; i++) {
+    #####:  723:                if ((*(node->trans+i))->mode != (delete_i+1)%spc.num_sgoals
+    #####:  724:                    && (*(node->trans+i))->mode != delete_i) {
+    #####:  725:                    for (j = 0; j < Exit_len; j++)
+    #####:  726:                        if (*(Exit+j) == *(node->trans+i))
+    #####:  727:                            break;
+    #####:  728:                    if (j == Exit_len) {
+    #####:  729:                        Exit_len++;
+    #####:  730:                        *(Exit+Exit_len-1) = *(node->trans+i);
+        -:  731:                    }
+        -:  732:                }
+        -:  733:            }
+        -:  734:
+        -:  735:        }
+    #####:  736:        if (node->mode != delete_i) {
+        -:  737:
+    #####:  738:            for (i = 0; i < node->trans_len; i++) {
+    #####:  739:                if ((*(node->trans+i))->mode == delete_i) {
+    #####:  740:                    for (j = 0; j < Entry_len; j++)
+    #####:  741:                        if (*(Entry+j) == *(node->trans+i))
+    #####:  742:                            break;
+    #####:  743:                    if (j == Entry_len) {
+    #####:  744:                        Entry_len++;
+    #####:  745:                        *(Entry+Entry_len-1) = *(node->trans+i);
+        -:  746:                    }
+        -:  747:                }
+        -:  748:            }
+        -:  749:
+        -:  750:        }
+        -:  751:
+    #####:  752:        node = node->next;
+        -:  753:    }
+        -:  754:
+    #####:  755:    if (verbose) {
+    #####:  756:        logprint( "Entry set:" );
+    #####:  757:        for (i = 0; i < Entry_len; i++) {
+    #####:  758:            logprint_startline();
+    #####:  759:            fprintf( getlogstream(),
+    #####:  760:                     " node with mode %d and state ", (*(Entry+i))->mode );
+    #####:  761:            pprint_state( (*(Entry+i))->state, num_env, num_sys,
+        -:  762:                          getlogstream() );
+    #####:  763:            logprint_endline();
+        -:  764:        }
+    #####:  765:        logprint( "Exit set:" );
+    #####:  766:        for (i = 0; i < Exit_len; i++) {
+    #####:  767:            logprint_startline();
+    #####:  768:            fprintf( getlogstream(),
+    #####:  769:                     " node with mode %d and state ", (*(Exit+i))->mode );
+    #####:  770:            pprint_state( (*(Exit+i))->state, num_env, num_sys,
+        -:  771:                          getlogstream() );
+    #####:  772:            logprint_endline();
+        -:  773:        }
+        -:  774:    }
+        -:  775:
+        -:  776:    /* Define a map in the manager to easily swap variables with their
+        -:  777:       primed selves. */
+    #####:  778:    vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####:  779:    pvars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####:  780:    for (i = 0; i < num_env+num_sys; i++) {
+    #####:  781:        *(vars+i) = Cudd_bddIthVar( manager, i );
+    #####:  782:        *(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
+        -:  783:    }
+    #####:  784:    if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
+    #####:  785:        fprintf( stderr,
+        -:  786:                 "Error: failed to define variable map in CUDD manager.\n" );
+    #####:  787:        free( Entry );
+    #####:  788:        free( Exit );
+    #####:  789:        return NULL;
+        -:  790:    }
+    #####:  791:    free( vars );
+    #####:  792:    free( pvars );
+        -:  793:
+        -:  794:
+    #####:  795:    tmp = Cudd_ReadOne( manager );
+    #####:  796:    Cudd_Ref( tmp );
+    #####:  797:    substrategy = synthesize_reachgame( manager, num_env, num_sys,
+        -:  798:                                        Entry, Entry_len, Exit, Exit_len,
+        -:  799:                                        etrans, strans, egoals, tmp,
+        -:  800:                                        verbose );
+    #####:  801:    Cudd_RecursiveDeref( manager, tmp );
+    #####:  802:    if (substrategy == NULL) {
+    #####:  803:        free( Exit );
+    #####:  804:        free( Entry );
+        -:  805:        /* XXX Need to free other resources, e.g., etrans */
+    #####:  806:        return NULL;
+        -:  807:    }
+    #####:  808:    if (verbose > 1) {
+    #####:  809:        logprint( "rm_sysgoal: substrategy from Entry to Exit:" );
+    #####:  810:        logprint_startline();
+    #####:  811:        dot_aut_dump( substrategy, spc.evar_list, spc.svar_list,
+        -:  812:                      DOT_AUT_BINARY | DOT_AUT_ATTRIB, getlogstream() );
+    #####:  813:        logprint_endline();
+        -:  814:    }
+        -:  815:
+        -:  816:    /* Connect local strategy to original */
+    #####:  817:    for (i = 0; i < Entry_len; i++) {
+    #####:  818:        node = substrategy;
+    #####:  819:        while (node && !statecmp( (*(Entry+i))->state, node->state,
+        -:  820:                                  num_env+num_sys ))
+    #####:  821:            node = node->next;
+    #####:  822:        if (node == NULL) {
+    #####:  823:            fprintf( stderr,
+        -:  824:                     "Error rm_sysgoal: expected Entry node"
+        -:  825:                     " missing from local strategy" );
+    #####:  826:            return NULL;
+        -:  827:        }
+        -:  828:
+    #####:  829:        node->initial = (*(Entry+i))->initial;
+    #####:  830:        replace_anode_trans( strategy, *(Entry+i), node );
+        -:  831:    }
+        -:  832:
+    #####:  833:    node = substrategy;
+    #####:  834:    while (node) {
+    #####:  835:        if (node->trans_len == 0) {  /* Terminal node of the local strategy? */
+    #####:  836:            for (i = 0; i < Exit_len; i++) {
+    #####:  837:                if (*(Exit+i) == NULL)
+    #####:  838:                    continue;
+    #####:  839:                if (statecmp( node->state, (*(Exit+i))->state,
+        -:  840:                              num_env+num_sys ))
+    #####:  841:                    break;
+        -:  842:            }
+    #####:  843:            if (i == Exit_len) {
+    #####:  844:                fprintf( stderr,
+        -:  845:                         "Error rm_sysgoal: terminal node in"
+        -:  846:                         " local strategy does not have a\nmatch in Exit\n" );
+    #####:  847:                return NULL;
+        -:  848:            }
+        -:  849:
+    #####:  850:            node->mode = (*(Exit+i))->mode;
+    #####:  851:            node->rgrad = (*(Exit+i))->rgrad;
+    #####:  852:            node->initial = (*(Exit+i))->initial;
+    #####:  853:            node->trans = (*(Exit+i))->trans;
+    #####:  854:            node->trans_len = (*(Exit+i))->trans_len;
+    #####:  855:            (*(Exit+i))->trans = NULL;
+    #####:  856:            (*(Exit+i))->trans_len = 0;
+    #####:  857:            replace_anode_trans( strategy, *(Exit+i), node );
+    #####:  858:            replace_anode_trans( substrategy, *(Exit+i), node );
+    #####:  859:            strategy = delete_anode( strategy, *(Exit+i) );
+    #####:  860:            *(Exit+i) = NULL;
+        -:  861:        }
+    #####:  862:        node = node->next;
+        -:  863:    }
+        -:  864:
+        -:  865:    /* Delete nodes of the deleted and superseded goal modes */
+    #####:  866:    node = strategy;
+    #####:  867:    while (node) {
+    #####:  868:        if (node->mode == delete_i || node->mode == (delete_i+1)%spc.num_sgoals) {
+    #####:  869:            replace_anode_trans( strategy, node, NULL );
+    #####:  870:            replace_anode_trans( substrategy, node, NULL );
+    #####:  871:            strategy = delete_anode( strategy, node );
+    #####:  872:            node = strategy;
+        -:  873:        } else {
+    #####:  874:            node = node->next;
+        -:  875:        }
+        -:  876:    }
+        -:  877:
+    #####:  878:    node = substrategy;
+    #####:  879:    while (node) {
+    #####:  880:        if (node->mode == -1) {
+    #####:  881:            node->mode = (delete_i+1)%spc.num_sgoals;
+        -:  882:        }
+    #####:  883:        node = node->next;
+        -:  884:    }
+        -:  885:
+        -:  886:    /* Append new substrategy */
+    #####:  887:    if (strategy == NULL) {
+    #####:  888:        strategy = substrategy;
+        -:  889:    } else {
+    #####:  890:        node = strategy;
+    #####:  891:        while (node->next)
+    #####:  892:            node = node->next;
+    #####:  893:        node->next = substrategy;
+        -:  894:    }
+        -:  895:
+        -:  896:
+    #####:  897:    Cudd_RecursiveDeref( manager, etrans );
+    #####:  898:    Cudd_RecursiveDeref( manager, strans );
+    #####:  899:    for (i = 0; i < spc.num_egoals; i++)
+    #####:  900:        Cudd_RecursiveDeref( manager, *(egoals+i) );
+    #####:  901:    if (spc.num_egoals > 0)
+    #####:  902:        free( egoals );
+    #####:  903:    if (env_nogoal_flag) {
+    #####:  904:        spc.num_egoals = 0;
+    #####:  905:        delete_tree( *spc.env_goals );
+    #####:  906:        free( spc.env_goals );
+        -:  907:    }
+    #####:  908:    free( Exit );
+    #####:  909:    free( Entry );
+        -:  910:
+    #####:  911:    return strategy;
+        -:  912:}

@@ -1,0 +1,1077 @@
+        -:    0:Source:src/patching.c
+        -:    0:Graph:patching.gcno
+        -:    0:Data:patching.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:/* patching.c -- Definitions for signatures appearing in patching.h.
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2012-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#include <stdlib.h>
+        -:    9:#include <stdio.h>
+        -:   10:#include <string.h>
+        -:   11:
+        -:   12:#include "common.h"
+        -:   13:#include "logging.h"
+        -:   14:#include "automaton.h"
+        -:   15:#include "ptree.h"
+        -:   16:#include "patching.h"
+        -:   17:#include "solve_support.h"
+        -:   18:#include "gr1c_util.h"
+        -:   19:
+        -:   20:
+        -:   21:extern specification_t spc;
+        -:   22:
+        -:   23:
+        -:   24:/* Pretty print state vector, default is to list nonzero variables.
+        -:   25:   Output written to fp if not NULL, otherwise to stdout.  If num_env
+        -:   26:   (respectively, num_sys) is -1, then only the system variables
+        -:   27:   (resp. environment variables) are printed.  */
+    #####:   28:void pprint_state( vartype *state, int num_env, int num_sys, FILE *fp )
+        -:   29:{
+    #####:   30:    int i, nnz = 0;
+        -:   31:    ptree_t *node;
+        -:   32:
+    #####:   33:    if (fp == NULL)
+    #####:   34:        fp = stdout;
+        -:   35:
+    #####:   36:    node = spc.evar_list;
+    #####:   37:    for (i = 0; i < num_env; i++) {
+    #####:   38:        if (*(state+i)) {
+    #####:   39:            fprintf( fp, " %s", node->name );
+    #####:   40:            nnz++;
+        -:   41:        }
+    #####:   42:        node = node->left;
+        -:   43:    }
+        -:   44:
+    #####:   45:    if (num_sys == -1) {
+    #####:   46:        if (nnz == 0)
+    #####:   47:            fprintf( fp, " (nil)" );
+    #####:   48:        return;
+        -:   49:    }
+        -:   50:
+    #####:   51:    if (num_env == -1)
+    #####:   52:        num_env = tree_size( spc.evar_list );
+        -:   53:
+    #####:   54:    node = spc.svar_list;
+    #####:   55:    for (i = num_env; i < num_sys+num_env; i++) {
+    #####:   56:        if (*(state+i)) {
+    #####:   57:            fprintf( fp, " %s", node->name );
+    #####:   58:            nnz++;
+        -:   59:        }
+    #####:   60:        node = node->left;
+        -:   61:    }
+        -:   62:
+    #####:   63:    if (nnz == 0)
+    #####:   64:        fprintf( fp, " (nil)" );
+        -:   65:}
+        -:   66:
+        -:   67:
+        -:   68:/* Returns strategy with patched goal mode, or NULL if error. */
+    #####:   69:anode_t *localfixpoint_goalmode( DdManager *manager, int num_env, int num_sys,
+        -:   70:                                 anode_t *strategy, int goal_mode,
+        -:   71:                                 anode_t ***affected, int *affected_len,
+        -:   72:                                 DdNode *etrans, DdNode *strans,
+        -:   73:                                 DdNode **egoals,
+        -:   74:                                 DdNode *N_BDD, vartype **N, int N_len,
+        -:   75:                                 unsigned char verbose )
+        -:   76:{
+        -:   77:    int i, j, k;  /* Generic counters */
+        -:   78:    anode_t **Exit;
+        -:   79:    anode_t **Entry;
+        -:   80:    int Exit_len, Entry_len;
+        -:   81:    anode_t *local_strategy;
+        -:   82:    anode_t *head, *node;
+        -:   83:    int min_rgrad;  /* Minimum reach annotation value of affected nodes. */
+        -:   84:    int Exit_rgrad;  /* Maximum value among reached Exit nodes. */
+        -:   85:    int local_max_rgrad;
+        -:   86:    int local_min_rgrad;
+        -:   87:
+        -:   88:    /* Pre-allocate space for Entry and Exit sets; the number of
+        -:   89:       elements actually used is tracked by Entry_len and Exit_len,
+        -:   90:       respectively. */
+    #####:   91:    Exit = malloc( sizeof(anode_t *)*N_len );
+    #####:   92:    if (Exit == NULL) {
+    #####:   93:        perror( __FILE__ ",  malloc" );
+    #####:   94:        exit(-1);
+        -:   95:    }
+    #####:   96:    Entry = malloc( sizeof(anode_t *)*N_len );
+    #####:   97:    if (Entry == NULL) {
+    #####:   98:        perror( __FILE__ ",  malloc" );
+    #####:   99:        exit(-1);
+        -:  100:    }
+        -:  101:
+        -:  102:    /* Ignore goal modes that are unaffected by the change. */
+    #####:  103:    if (*(affected_len + goal_mode) == 0) {
+    #####:  104:        free( Exit );
+    #####:  105:        free( Entry );
+    #####:  106:        return strategy;
+        -:  107:    }
+        -:  108:
+    #####:  109:    if (verbose)
+    #####:  110:        logprint( "Processing for goal mode %d...", goal_mode );
+        -:  111:
+        -:  112:    /* Build Entry set and initial Exit set */
+    #####:  113:    Exit_len = Entry_len = 0;
+    #####:  114:    head = strategy;
+    #####:  115:    while (head) {
+        -:  116:        /* Though we use linear search in N, if we could sort N
+        -:  117:           earlier, or somehow ensure the input (from the game
+        -:  118:           edge change file) is already ordered, then this could
+        -:  119:           be made into a binary search. */
+    #####:  120:        if (head->mode == goal_mode) {
+    #####:  121:            for (i = 0; i < N_len; i++)
+    #####:  122:                if (statecmp( head->state, *(N+i), num_env+num_sys ))
+    #####:  123:                    break;
+        -:  124:
+    #####:  125:            if (i < N_len) {  /* Was a match found? */
+    #####:  126:                Exit_len++;
+    #####:  127:                *(Exit+Exit_len-1) = head;
+        -:  128:            } else {
+        -:  129:                /* Test for nominal membership in Entry set; i.e.,
+        -:  130:                   current node is not in N, check if it leads into N. */
+    #####:  131:                for (j = 0; j < head->trans_len; j++) {
+    #####:  132:                    for (k = 0; k < N_len; k++)
+    #####:  133:                        if ((*(head->trans+j))->mode == goal_mode
+    #####:  134:                            && statecmp( (*(head->trans+j))->state, *(N+k),
+        -:  135:                                         num_env+num_sys ))
+    #####:  136:                            break;
+    #####:  137:                    if (k < N_len) {
+    #####:  138:                        for (k = 0; k < Entry_len; k++)
+    #####:  139:                            if (statecmp((*(Entry+k))->state,
+    #####:  140:                                         (*(head->trans+j))->state,
+        -:  141:                                         num_env+num_sys ))
+    #####:  142:                                break;
+    #####:  143:                        if (k == Entry_len) {
+    #####:  144:                            Entry_len++;
+    #####:  145:                            *(Entry+Entry_len-1) = *(head->trans+j);
+        -:  146:                        }
+        -:  147:                    }
+        -:  148:                }
+        -:  149:            }
+        -:  150:        }
+    #####:  151:        head = head->next;
+        -:  152:    }
+        -:  153:
+        -:  154:    /* Find minimum reach annotation value among nodes in the
+        -:  155:       Entry and U_i sets, and remove any initial Exit nodes greater
+        -:  156:       than or equal to it. */
+    #####:  157:    min_rgrad = -1;
+    #####:  158:    for (i = 0; i < Entry_len; i++) {
+    #####:  159:        if ((*(Entry+i))->rgrad < min_rgrad || min_rgrad == -1)
+    #####:  160:            min_rgrad = (*(Entry+i))->rgrad;
+        -:  161:    }
+    #####:  162:    for (i = 0; i < *(affected_len+goal_mode); i++) {
+    #####:  163:        if ((*(*(affected+goal_mode)+i))->rgrad < min_rgrad || min_rgrad == -1)
+    #####:  164:            min_rgrad = (*(*(affected+goal_mode)+i))->rgrad;
+        -:  165:    }
+    #####:  166:    if (verbose)
+    #####:  167:        logprint( "Minimum reach annotation value in Entry or U_i: %d",
+        -:  168:                  min_rgrad );
+    #####:  169:    i = 0;
+    #####:  170:    while (i < Exit_len) {
+    #####:  171:        if ((*(Exit+i))->rgrad >= min_rgrad) {
+    #####:  172:            if (Exit_len > 1) {
+    #####:  173:                *(Exit+i) = *(Exit+Exit_len-1);
+    #####:  174:                Exit_len--;
+        -:  175:            } else {
+    #####:  176:                Exit_len = 0;
+    #####:  177:                break;
+        -:  178:            }
+        -:  179:        } else {
+    #####:  180:            i++;
+        -:  181:        }
+        -:  182:    }
+        -:  183:
+    #####:  184:    if (verbose) {
+    #####:  185:        logprint( "Entry set:" );
+    #####:  186:        for (i = 0; i < Entry_len; i++) {
+    #####:  187:            logprint_startline();
+    #####:  188:            pprint_state( (*(Entry+i))->state, num_env, num_sys,
+        -:  189:                          getlogstream() );
+    #####:  190:            logprint_endline();
+        -:  191:        }
+    #####:  192:        logprint( "Exit set:" );
+    #####:  193:        for (i = 0; i < Exit_len; i++) {
+    #####:  194:            logprint_startline();
+    #####:  195:            pprint_state( (*(Exit+i))->state, num_env, num_sys,
+        -:  196:                          getlogstream() );
+    #####:  197:            logprint_endline();
+        -:  198:        }
+        -:  199:    }
+        -:  200:
+    #####:  201:    local_strategy = synthesize_reachgame( manager, num_env, num_sys,
+        -:  202:                                           Entry, Entry_len, Exit, Exit_len,
+        -:  203:                                           etrans, strans, egoals, N_BDD,
+        -:  204:                                           verbose );
+    #####:  205:    if (local_strategy == NULL) {
+    #####:  206:        free( Exit );
+    #####:  207:        free( Entry );
+    #####:  208:        return NULL;
+        -:  209:    }
+        -:  210:
+    #####:  211:    if (verbose > 1) {
+    #####:  212:        logprint( "Local strategy for goal mode %d:", goal_mode );
+    #####:  213:        logprint_startline();
+    #####:  214:        dot_aut_dump( local_strategy, spc.evar_list, spc.svar_list, DOT_AUT_ATTRIB,
+        -:  215:                      getlogstream() );
+    #####:  216:        logprint_endline();
+        -:  217:    }
+        -:  218:
+    #####:  219:    node = local_strategy;
+    #####:  220:    local_min_rgrad = local_max_rgrad = -1;
+    #####:  221:    while (node) {
+    #####:  222:        if (node->rgrad > local_max_rgrad)
+    #####:  223:            local_max_rgrad = node->rgrad;
+    #####:  224:        if (node->rgrad < local_min_rgrad || local_min_rgrad == -1)
+    #####:  225:            local_min_rgrad = node->rgrad;
+    #####:  226:        node = node->next;
+        -:  227:    }
+        -:  228:
+        -:  229:    /* Connect local strategy to original */
+    #####:  230:    for (i = 0; i < Entry_len; i++) {
+    #####:  231:        node = local_strategy;
+    #####:  232:        while (node && !statecmp( (*(Entry+i))->state, node->state,
+        -:  233:                                  num_env+num_sys ))
+    #####:  234:            node = node->next;
+    #####:  235:        if (node == NULL) {
+    #####:  236:            fprintf( stderr,
+        -:  237:                     "Error localfixpoint_goalmode: expected Entry node"
+        -:  238:                     " missing from local strategy, in goal mode %d\n",
+        -:  239:                     goal_mode );
+    #####:  240:            return NULL;
+        -:  241:        }
+        -:  242:
+    #####:  243:        replace_anode_trans( strategy, *(Entry+i), node );
+        -:  244:    }
+        -:  245:
+    #####:  246:    Exit_rgrad = -1;
+    #####:  247:    node = local_strategy;
+    #####:  248:    while (node) {
+    #####:  249:        if (node->trans_len == 0) {  /* Terminal node of the local strategy? */
+    #####:  250:            for (i = 0; i < Exit_len; i++) {
+    #####:  251:                if (statecmp( node->state, (*(Exit+i))->state,
+        -:  252:                              num_env+num_sys ))
+    #####:  253:                    break;
+        -:  254:            }
+    #####:  255:            if (i == Exit_len) {
+    #####:  256:                fprintf( stderr,
+        -:  257:                         "Error localfixpoint_goalmode: terminal node in"
+        -:  258:                         " local strategy does not have a\nmatching Exit"
+        -:  259:                         " node, in goal mode %d\n",
+        -:  260:                         goal_mode );
+    #####:  261:                return NULL;
+        -:  262:            }
+        -:  263:
+    #####:  264:            if ((*(Exit+i))->rgrad > Exit_rgrad)
+    #####:  265:                Exit_rgrad = (*(Exit+i))->rgrad;
+        -:  266:
+    #####:  267:            if (forward_modereach( *(Exit+i), goal_mode, N, N_len,
+        -:  268:                                   -1, num_env+num_sys )) {
+    #####:  269:                fprintf( stderr,
+        -:  270:                         "Error localfixpoint_goalmode: forward graph"
+        -:  271:                         " reachability computation failed\nfrom Exit node"
+        -:  272:                         " in goal mode %d\n",
+        -:  273:                         goal_mode );
+    #####:  274:                return NULL;
+        -:  275:            }
+        -:  276:
+    #####:  277:            (*(Exit+i))->mode = -1;
+    #####:  278:            node->mode = -2;  /* Mark as to-be-deleted */
+        -:  279:
+    #####:  280:            replace_anode_trans( local_strategy, node, *(Exit+i) );
+        -:  281:        }
+    #####:  282:        node = node->next;
+        -:  283:    }
+        -:  284:
+        -:  285:    /* Delete useless nodes from N_i (whose function is now replaced
+        -:  286:       by the local strategy). */
+    #####:  287:    node = strategy;
+    #####:  288:    while (node) {
+    #####:  289:        if (node->mode != goal_mode) {
+    #####:  290:            if (node->mode == -1)
+    #####:  291:                node->mode = goal_mode;
+    #####:  292:            node = node->next;
+    #####:  293:            continue;
+        -:  294:        }
+    #####:  295:        for (i = 0; i < N_len; i++)
+    #####:  296:            if (statecmp( node->state, *(N+i), num_env+num_sys ))
+    #####:  297:                break;
+    #####:  298:        if (i < N_len)
+    #####:  299:            node->mode = -2;
+    #####:  300:        node = node->next;
+        -:  301:    }
+    #####:  302:    node = strategy;
+    #####:  303:    while (node) {
+    #####:  304:        if (node->mode == -2) {
+    #####:  305:            replace_anode_trans( strategy, node, NULL );
+    #####:  306:            strategy = delete_anode( strategy, node );
+    #####:  307:            node = strategy;
+        -:  308:        } else {
+    #####:  309:            node = node->next;
+        -:  310:        }
+        -:  311:    }
+    #####:  312:    node = local_strategy;
+    #####:  313:    while (node) {
+    #####:  314:        if (node->mode == -2) {
+    #####:  315:            local_strategy = delete_anode( local_strategy, node );
+    #####:  316:            node = local_strategy;
+        -:  317:        } else {
+    #####:  318:            node = node->next;
+        -:  319:        }
+        -:  320:    }
+        -:  321:
+        -:  322:    /* Scale reach annotation values to make room for patch. */
+    #####:  323:    i = 1;
+    #####:  324:    while ((min_rgrad-Exit_rgrad)*i < (local_max_rgrad-local_min_rgrad))
+    #####:  325:        i++;
+    #####:  326:    node = strategy;
+    #####:  327:    while (node) {
+    #####:  328:        node->rgrad *= i;
+    #####:  329:        node = node->next;
+        -:  330:    }
+        -:  331:
+    #####:  332:    node = local_strategy;
+    #####:  333:    while (node) {
+    #####:  334:        node->mode = goal_mode;
+    #####:  335:        node->rgrad += Exit_rgrad*i;
+    #####:  336:        node = node->next;
+        -:  337:    }
+        -:  338:
+    #####:  339:    head = strategy;
+    #####:  340:    while (head->next)
+    #####:  341:        head = head->next;
+    #####:  342:    head->next = local_strategy;
+        -:  343:
+    #####:  344:    free( Entry );
+    #####:  345:    free( Exit );
+        -:  346:
+    #####:  347:    return strategy;
+        -:  348:}
+        -:  349:
+        -:  350:
+        -:  351:#define INPUT_STRING_LEN 1024
+    #####:  352:anode_t *patch_localfixpoint( DdManager *manager,
+        -:  353:                              FILE *strategy_fp, FILE *change_fp,
+        -:  354:                              int original_num_env, int original_num_sys,
+        -:  355:                              ptree_t *nonbool_var_list, int *offw,
+        -:  356:                              unsigned char verbose )
+        -:  357:{
+        -:  358:    ptree_t *var_separator;
+        -:  359:    DdNode *etrans, *strans, **egoals;
+        -:  360:    DdNode *etrans_part, *strans_part;
+        -:  361:    int num_env, num_sys;
+        -:  362:    int num_nonbool;
+        -:  363:    int num_enonbool;  /* Number of env variables with nonboolean domain */
+        -:  364:
+        -:  365:    /* Two copies of offw, for quickly mapping state-next-state arrays */
+    #####:  366:    int *doffw = NULL;
+        -:  367:
+        -:  368:    DdNode *vertex1, *vertex2; /* ...regarding vertices of the game graph. */
+        -:  369:    char line[INPUT_STRING_LEN];
+        -:  370:    vartype *state, *state_frag;
+        -:  371:
+    #####:  372:    bool env_nogoal_flag = False;  /* Indicate environment has no goals */
+        -:  373:
+        -:  374:    int i, j, k;  /* Generic counters */
+        -:  375:    DdNode *tmp, *tmp2;
+        -:  376:    int num_read;
+        -:  377:    anode_t *strategy, *result_strategy;
+        -:  378:    anode_t *node, *head;
+        -:  379:    int node_counter;
+    #####:  380:    vartype **N = NULL;  /* "neighborhood" of states */
+    #####:  381:    int N_len = 0;
+        -:  382:    int goal_mode;
+    #####:  383:    DdNode *N_BDD = NULL;  /* Characteristic function for set of states N. */
+        -:  384:    bool break_flag;
+        -:  385:
+    #####:  386:    anode_t ***affected = NULL;  /* Array of pointers to arrays of
+        -:  387:                                    nodes directly affected by edge
+        -:  388:                                    set change.  Called U_i in the
+        -:  389:                                    manuscript. */
+    #####:  390:    int *affected_len = NULL;  /* Lengths of arrays in affected */
+        -:  391:
+        -:  392:    DdNode **vars, **pvars;
+        -:  393:    int *cube;
+        -:  394:    DdNode *ddval;
+        -:  395:
+    #####:  396:    if (change_fp == NULL)
+    #####:  397:        return NULL;  /* Require game changes to be listed in an open stream. */
+        -:  398:
+    #####:  399:    if (strategy_fp == NULL)
+    #####:  400:        strategy_fp = stdin;
+        -:  401:
+    #####:  402:    num_env = tree_size( spc.evar_list );
+    #####:  403:    num_sys = tree_size( spc.svar_list );
+        -:  404:
+    #####:  405:    strategy = aut_aut_load( original_num_env+original_num_sys, strategy_fp );
+    #####:  406:    if (strategy == NULL) {
+    #####:  407:        return NULL;
+        -:  408:    }
+    #####:  409:    if (verbose)
+    #####:  410:        logprint( "Read in strategy of size %d", aut_size( strategy ) );
+        -:  411:
+    #####:  412:    num_nonbool = tree_size( spc.nonbool_var_list );
+    #####:  413:    if (num_nonbool > 0) {
+    #####:  414:        if (verbose > 1)
+    #####:  415:            logprint( "Expanding nonbool variables in the given strategy"
+        -:  416:                      " automaton..." );
+    #####:  417:        if (aut_expand_bool( strategy,
+        -:  418:                             spc.evar_list, spc.svar_list, spc.nonbool_var_list )) {
+    #####:  419:            fprintf( stderr,
+        -:  420:                     "Error patch_localfixpoint: Failed to expand"
+        -:  421:                     " nonboolean variables in given automaton." );
+    #####:  422:            return NULL;
+        -:  423:        }
+    #####:  424:        if (verbose > 1) {
+    #####:  425:            logprint( "Given strategy after variable expansion:" );
+    #####:  426:            logprint_startline();
+    #####:  427:            dot_aut_dump( strategy, spc.evar_list, spc.svar_list, DOT_AUT_ATTRIB,
+        -:  428:                          getlogstream() );
+    #####:  429:            logprint_endline();
+        -:  430:        }
+        -:  431:
+    #####:  432:        num_enonbool = 0;
+    #####:  433:        while (*(offw+2*num_enonbool) < num_env)
+    #####:  434:            num_enonbool++;
+        -:  435:
+    #####:  436:        doffw = malloc( sizeof(int)*4*num_nonbool );
+    #####:  437:        if (doffw == NULL) {
+    #####:  438:            perror( __FILE__ ",  malloc" );
+    #####:  439:            exit(-1);
+        -:  440:        }
+    #####:  441:        for (i = 0; i < 2*num_nonbool; i++)
+    #####:  442:            *(doffw+2*num_nonbool+i) = *(doffw+i) = *(offw+i);
+        -:  443:    }
+        -:  444:
+    #####:  445:    affected = malloc( sizeof(anode_t **)*spc.num_sgoals );
+    #####:  446:    if (affected == NULL) {
+    #####:  447:        perror( __FILE__ ",  malloc" );
+    #####:  448:        exit(-1);
+        -:  449:    }
+    #####:  450:    affected_len = malloc( sizeof(int)*spc.num_sgoals );
+    #####:  451:    if (affected_len == NULL) {
+    #####:  452:        perror( __FILE__ ",  malloc" );
+    #####:  453:        exit(-1);
+        -:  454:    }
+    #####:  455:    for (i = 0; i < spc.num_sgoals; i++) {
+    #####:  456:        *(affected+i) = NULL;
+    #####:  457:        *(affected_len+i) = 0;
+        -:  458:    }
+        -:  459:
+    #####:  460:    cube = (int *)malloc( sizeof(int)*2*(num_env+num_sys) );
+    #####:  461:    if (cube == NULL) {
+    #####:  462:        perror( __FILE__ ",  malloc" );
+    #####:  463:        exit(-1);
+        -:  464:    }
+        -:  465:
+        -:  466:    /* Set environment goal to True (i.e., any state) if none was
+        -:  467:       given. This simplifies the implementation below. */
+    #####:  468:    if (spc.num_egoals == 0) {
+    #####:  469:        env_nogoal_flag = True;
+    #####:  470:        spc.num_egoals = 1;
+    #####:  471:        spc.env_goals = malloc( sizeof(ptree_t *) );
+    #####:  472:        *spc.env_goals = init_ptree( PT_CONSTANT, NULL, 1 );
+        -:  473:    }
+        -:  474:
+        -:  475:    /* Process game graph changes file */
+    #####:  476:    break_flag = False;
+    #####:  477:    while (fgets( line, INPUT_STRING_LEN, change_fp )) {
+        -:  478:        /* Blank or comment line? */
+    #####:  479:        if (strlen( line ) < 1 || *line == '\n' || *line == '#')
+    #####:  480:            continue;
+        -:  481:
+    #####:  482:        num_read = read_state_str( line, &state,
+        -:  483:                                   original_num_env+original_num_sys );
+    #####:  484:        if (num_read == 0) {
+        -:  485:            /* This must be the first command, so break from loop and
+        -:  486:               build local transition rules from N. */
+    #####:  487:            break_flag = True;
+    #####:  488:            break;
+    #####:  489:        } else if (num_read < original_num_env+original_num_sys) {
+    #####:  490:            fprintf( stderr,
+        -:  491:                     "Error patch_localfixpoint: malformed game change"
+        -:  492:                     " file.\n" );
+    #####:  493:            free( doffw );
+    #####:  494:            free( affected );
+    #####:  495:            free( affected_len );
+    #####:  496:            free( cube );
+    #####:  497:            return NULL;
+        -:  498:        }
+        -:  499:
+    #####:  500:        N_len++;
+    #####:  501:        N = realloc( N, sizeof(vartype *)*N_len );
+    #####:  502:        if (N == NULL) {
+    #####:  503:            perror( __FILE__ ",  realloc" );
+    #####:  504:            exit(-1);
+        -:  505:        }
+    #####:  506:        if (num_nonbool > 0) {
+    #####:  507:            *(N+N_len-1) = expand_nonbool_state( state, offw, num_nonbool,
+        -:  508:                                                 num_env+num_sys );
+    #####:  509:            if (*(N+N_len-1) == NULL) {
+    #####:  510:                fprintf( stderr,
+        -:  511:                         "Error patch_localfixpoint: failed to expand"
+        -:  512:                         " nonbool values in edge change file\n" );
+    #####:  513:                free( doffw );
+    #####:  514:                free( affected );
+    #####:  515:                free( affected_len );
+    #####:  516:                free( cube );
+    #####:  517:                return NULL;
+        -:  518:            }
+    #####:  519:            free( state );
+        -:  520:        } else {
+    #####:  521:            *(N+N_len-1) = state;
+        -:  522:        }
+        -:  523:    }
+        -:  524:
+    #####:  525:    if (verbose) {
+    #####:  526:        logprint( "States in N (%d total):", N_len );
+    #####:  527:        for (i = 0; i < N_len; i++) {
+    #####:  528:            logprint_startline();
+    #####:  529:            pprint_state( *(N+i), num_env, num_sys, getlogstream() );
+    #####:  530:            logprint_endline();
+        -:  531:        }
+        -:  532:    }
+        -:  533:
+        -:  534:    /* Build characteristic function for N */
+    #####:  535:    N_BDD = Cudd_Not( Cudd_ReadOne( manager ) );
+    #####:  536:    Cudd_Ref( N_BDD );
+    #####:  537:    for (i = 0; i < N_len; i++) {
+    #####:  538:        ddval = state_to_BDD( manager, *(N+i), 0, num_env+num_sys );
+    #####:  539:        tmp = Cudd_bddOr( manager, N_BDD, ddval );
+    #####:  540:        Cudd_Ref( tmp );
+    #####:  541:        Cudd_RecursiveDeref( manager, N_BDD );
+    #####:  542:        Cudd_RecursiveDeref( manager, ddval );
+    #####:  543:        N_BDD = tmp;
+        -:  544:    }
+    #####:  545:    ddval = NULL;
+        -:  546:
+        -:  547:    /* Chain together environment and system variable lists for
+        -:  548:       working with BDD library. */
+    #####:  549:    if (spc.evar_list == NULL) {
+    #####:  550:        var_separator = NULL;
+    #####:  551:        spc.evar_list = spc.svar_list;  /* that this is the deterministic case
+        -:  552:                                           is indicated by var_separator = NULL. */
+        -:  553:    } else {
+    #####:  554:        var_separator = get_list_item( spc.evar_list, -1 );
+    #####:  555:        if (var_separator == NULL) {
+    #####:  556:            fprintf( stderr,
+        -:  557:                     "Error: get_list_item failed on environment variables"
+        -:  558:                     " list.\n" );
+    #####:  559:            free( doffw );
+    #####:  560:            free( affected );
+    #####:  561:            free( affected_len );
+    #####:  562:            free( cube );
+    #####:  563:            return NULL;
+        -:  564:        }
+    #####:  565:        var_separator->left = spc.svar_list;
+        -:  566:    }
+        -:  567:
+        -:  568:    /* Generate BDDs for parse trees from the problem spec transition
+        -:  569:       rules that are relevant given restriction to N. */
+    #####:  570:    if (verbose)
+    #####:  571:        logprint( "Building local environment transition BDD..." );
+    #####:  572:    etrans = Cudd_ReadOne( manager );
+    #####:  573:    Cudd_Ref( etrans );
+    #####:  574:    if (verbose) {
+    #####:  575:        logprint_startline();
+    #####:  576:        logprint_raw( "Relevant env trans (one per line):" );
+        -:  577:    }
+    #####:  578:    for (i = 0; i < spc.et_array_len; i++) {
+    #####:  579:        etrans_part = ptree_BDD( *(spc.env_trans_array+i), spc.evar_list, manager );
+    #####:  580:        for (j = 0; j < N_len; j++) {
+    #####:  581:            for (k = 0; k < num_env+num_sys; k++) {
+    #####:  582:                *(cube+k) = *(*(N+j)+k);
+    #####:  583:                *(cube+num_env+num_sys+k) = 2;
+        -:  584:            }
+    #####:  585:            ddval = Cudd_CubeArrayToBdd( manager, cube );
+    #####:  586:            if (ddval == NULL) {
+    #####:  587:                fprintf( stderr,
+        -:  588:                         "Error patch_localfixpoint: building characteristic"
+        -:  589:                         " function of N." );
+    #####:  590:                return NULL;
+        -:  591:            }
+    #####:  592:            Cudd_Ref( ddval );
+        -:  593:
+    #####:  594:            tmp2 = Cudd_Cofactor( manager, etrans_part, ddval );
+    #####:  595:            if (tmp2 == NULL) {
+    #####:  596:                fprintf( stderr,
+        -:  597:                         "Error patch_localfixpoint: computing cofactor." );
+    #####:  598:                return NULL;
+        -:  599:            }
+    #####:  600:            Cudd_Ref( tmp2 );
+        -:  601:
+    #####:  602:            if (!Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )
+    #####:  603:                || !Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 )) {
+    #####:  604:                Cudd_RecursiveDeref( manager, tmp2 );
+    #####:  605:                Cudd_RecursiveDeref( manager, ddval );
+    #####:  606:                break;
+        -:  607:            }
+        -:  608:
+    #####:  609:            Cudd_RecursiveDeref( manager, tmp2 );
+    #####:  610:            Cudd_RecursiveDeref( manager, ddval );
+        -:  611:        }
+    #####:  612:        if (j < N_len) {
+    #####:  613:            if (verbose) {
+    #####:  614:                logprint_raw( "\n" );
+    #####:  615:                print_formula( *(spc.env_trans_array+i), getlogstream(),
+        -:  616:                               FORMULA_SYNTAX_GR1C );
+        -:  617:            }
+    #####:  618:            tmp = Cudd_bddAnd( manager, etrans, etrans_part );
+    #####:  619:            Cudd_Ref( tmp );
+    #####:  620:            Cudd_RecursiveDeref( manager, etrans );
+    #####:  621:            etrans = tmp;
+        -:  622:        }
+    #####:  623:        Cudd_RecursiveDeref( manager, etrans_part );
+        -:  624:
+        -:  625:    }
+    #####:  626:    if (verbose) {
+    #####:  627:        logprint_endline();
+    #####:  628:        logprint( "Done." );
+    #####:  629:        logprint( "Building local system transition BDD..." );
+        -:  630:    }
+        -:  631:
+    #####:  632:    strans = Cudd_ReadOne( manager );
+    #####:  633:    Cudd_Ref( strans );
+    #####:  634:    if (verbose) {
+    #####:  635:        logprint_startline();
+    #####:  636:        logprint_raw( "Relevant sys trans (one per line):" );
+        -:  637:    }
+    #####:  638:    for (i = 0; i < spc.st_array_len; i++) {
+    #####:  639:        strans_part = ptree_BDD( *(spc.sys_trans_array+i), spc.evar_list, manager );
+    #####:  640:        for (j = 0; j < N_len; j++) {
+    #####:  641:            for (k = 0; k < num_env+num_sys; k++) {
+    #####:  642:                *(cube+k) = *(*(N+j)+k);
+    #####:  643:                *(cube+num_env+num_sys+k) = 2;
+        -:  644:            }
+    #####:  645:            ddval = Cudd_CubeArrayToBdd( manager, cube );
+    #####:  646:            if (ddval == NULL) {
+    #####:  647:                fprintf( stderr,
+        -:  648:                         "Error patch_localfixpoint: building characteristic"
+        -:  649:                         " function of N." );
+    #####:  650:                return NULL;
+        -:  651:            }
+    #####:  652:            Cudd_Ref( ddval );
+        -:  653:
+    #####:  654:            tmp2 = Cudd_Cofactor( manager, strans_part, ddval );
+    #####:  655:            if (tmp2 == NULL) {
+    #####:  656:                fprintf( stderr,
+        -:  657:                         "Error patch_localfixpoint: computing cofactor." );
+    #####:  658:                return NULL;
+        -:  659:            }
+    #####:  660:            Cudd_Ref( tmp2 );
+        -:  661:
+    #####:  662:            if (!Cudd_bddLeq( manager, tmp2, Cudd_ReadOne( manager ) )
+    #####:  663:                || !Cudd_bddLeq( manager, Cudd_ReadOne( manager ), tmp2 )) {
+    #####:  664:                Cudd_RecursiveDeref( manager, tmp2 );
+    #####:  665:                Cudd_RecursiveDeref( manager, ddval );
+    #####:  666:                break;
+        -:  667:            }
+        -:  668:
+    #####:  669:            Cudd_RecursiveDeref( manager, tmp2 );
+    #####:  670:            Cudd_RecursiveDeref( manager, ddval );
+        -:  671:        }
+    #####:  672:        if (j < N_len) {
+    #####:  673:            if (verbose) {
+    #####:  674:                logprint_raw( "\n" );
+    #####:  675:                print_formula( *(spc.sys_trans_array+i), getlogstream(),
+        -:  676:                               FORMULA_SYNTAX_GR1C );
+        -:  677:            }
+    #####:  678:            tmp = Cudd_bddAnd( manager, strans, strans_part );
+    #####:  679:            Cudd_Ref( tmp );
+    #####:  680:            Cudd_RecursiveDeref( manager, strans );
+    #####:  681:            strans = tmp;
+        -:  682:        }
+    #####:  683:        Cudd_RecursiveDeref( manager, strans_part );
+        -:  684:
+        -:  685:    }
+    #####:  686:    if (verbose) {
+    #####:  687:        logprint_endline();
+    #####:  688:        logprint( "Done." );
+        -:  689:    }
+        -:  690:
+        -:  691:    /* Build goal BDDs, if present. */
+    #####:  692:    if (spc.num_egoals > 0) {
+    #####:  693:        egoals = malloc( spc.num_egoals*sizeof(DdNode *) );
+    #####:  694:        for (i = 0; i < spc.num_egoals; i++)
+    #####:  695:            *(egoals+i) = ptree_BDD( *(spc.env_goals+i), spc.evar_list, manager );
+        -:  696:    } else {
+    #####:  697:        egoals = NULL;
+        -:  698:    }
+        -:  699:
+    #####:  700:    if (var_separator == NULL) {
+    #####:  701:        spc.evar_list = NULL;
+        -:  702:    } else {
+    #####:  703:        var_separator->left = NULL;
+        -:  704:    }
+        -:  705:
+        -:  706:    /* Was the earlier file loop broken because a command was discovered? */
+    #####:  707:    if (break_flag) {
+        -:  708:        do {
+        -:  709:            /* Blank or comment line? */
+    #####:  710:            if (strlen( line ) < 1 || *line == '\n' || *line == '#')
+    #####:  711:                continue;
+        -:  712:
+    #####:  713:            if (!strncmp( line, "restrict ", strlen( "restrict " ) )
+    #####:  714:                || !strncmp( line, "relax ", strlen( "relax " ) )) {
+    #####:  715:                if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
+        -:  716:                    num_read
+    #####:  717:                        = read_state_str( line+strlen( "restrict" )+1,
+        -:  718:                                          &state_frag,
+        -:  719:                                          2*(original_num_env
+    #####:  720:                                             +original_num_sys) );
+        -:  721:                } else { /* "relax " */
+        -:  722:                    num_read
+    #####:  723:                        = read_state_str( line+strlen( "relax" )+1,
+        -:  724:                                          &state_frag,
+        -:  725:                                          2*(original_num_env
+    #####:  726:                                             +original_num_sys) );
+        -:  727:                }
+    #####:  728:                if (num_read != 2*(original_num_env+original_num_sys)
+    #####:  729:                    && num_read != 2*original_num_env+original_num_sys) {
+    #####:  730:                    if (num_read > 0)
+    #####:  731:                        free( state_frag );
+    #####:  732:                    fprintf( stderr,
+        -:  733:                             "Error: invalid arguments to restrict or relax"
+        -:  734:                             " command.\n" );
+    #####:  735:                    return NULL;
+        -:  736:                }
+        -:  737:
+    #####:  738:                if (num_nonbool > 0) {
+    #####:  739:                    if (num_read == 2*(original_num_env+original_num_sys)) {
+    #####:  740:                        state = expand_nonbool_state( state_frag, doffw,
+        -:  741:                                                      2*num_nonbool,
+    #####:  742:                                                      2*(num_env+num_sys) );
+    #####:  743:                        if (state == NULL) {
+    #####:  744:                            fprintf( stderr,
+        -:  745:                                     "Error patch_localfixpoint: failed to"
+        -:  746:                                     " expand nonbool values in edge change"
+        -:  747:                                     " file\n" );
+    #####:  748:                            return NULL;
+        -:  749:                        }
+    #####:  750:                        free( state_frag );
+        -:  751:                    } else { /* num_read==2*original_num_env+original_num_sys */
+    #####:  752:                        state = expand_nonbool_state( state_frag, doffw,
+        -:  753:                                                      num_nonbool+num_enonbool,
+    #####:  754:                                                      2*num_env+num_sys );
+    #####:  755:                        if (state == NULL) {
+    #####:  756:                            fprintf( stderr,
+        -:  757:                                     "Error patch_localfixpoint: failed to"
+        -:  758:                                     " expand nonbool values in edge change"
+        -:  759:                                     " file\n" );
+    #####:  760:                            return NULL;
+        -:  761:                        }
+    #####:  762:                        free( state_frag );
+        -:  763:                    }
+        -:  764:                } else {
+    #####:  765:                    state = state_frag;
+        -:  766:                }
+        -:  767:
+    #####:  768:                if (verbose) {
+    #####:  769:                    logprint_startline();
+    #####:  770:                    if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
+    #####:  771:                        if (num_read == 2*(original_num_env+original_num_sys)) {
+    #####:  772:                            logprint_raw( "Removing controlled edge from" );
+        -:  773:                        } else {
+    #####:  774:                            logprint_raw( "Removing uncontrolled edge from" );
+        -:  775:                        }
+        -:  776:                    } else { /* "relax " */
+    #####:  777:                        if (num_read == 2*(original_num_env+original_num_sys)) {
+    #####:  778:                            logprint_raw( "Adding controlled edge from" );
+        -:  779:                        } else {
+    #####:  780:                            logprint_raw( "Adding uncontrolled edge from" );
+        -:  781:                        }
+        -:  782:                    }
+    #####:  783:                    pprint_state( state, num_env, num_sys, getlogstream() );
+    #####:  784:                    logprint_raw( " to" );
+    #####:  785:                    pprint_state( state+num_env+num_sys,
+    #####:  786:                                  num_env, num_read-(2*num_env+num_sys),
+        -:  787:                                  getlogstream() );
+    #####:  788:                    logprint_endline();
+        -:  789:                }
+        -:  790:
+        -:  791:                /* Find nodes in strategy that are affected by this change */
+    #####:  792:                for (j = 0; j < spc.num_sgoals; j++) {
+    #####:  793:                    node = find_anode( strategy, j, state, num_env+num_sys );
+    #####:  794:                    while (node != NULL) {
+    #####:  795:                        if (!strncmp( line, "restrict ", strlen( "restrict " ) )
+    #####:  796:                            && (num_read
+    #####:  797:                                == 2*(original_num_env+original_num_sys))) {
+    #####:  798:                            for (i = 0; i < node->trans_len; i++) {
+    #####:  799:                                if (statecmp( (*(node->trans+i))->state,
+    #####:  800:                                              state+num_env+num_sys,
+        -:  801:                                              num_env+num_sys )) {
+    #####:  802:                                    (*(affected_len + node->mode))++;
+    #####:  803:                                    *(affected + node->mode)
+    #####:  804:                                        = realloc( *(affected + node->mode),
+        -:  805:                                                   sizeof(anode_t *)
+    #####:  806:                                                   *(*(affected_len
+    #####:  807:                                                       + node->mode)) );
+    #####:  808:                                    if (*(affected + node->mode) == NULL) {
+    #####:  809:                                        perror( __FILE__ ", "
+        -:  810:                                                " realloc" );
+    #####:  811:                                        exit(-1);
+        -:  812:                                    }
+        -:  813:                                    /* If affected state is not in N,
+        -:  814:                                       then fail. */
+    #####:  815:                                    for (i = 0; i < N_len; i++) {
+    #####:  816:                                        if (statecmp( state, *(N+i),
+        -:  817:                                                      num_env+num_sys ))
+    #####:  818:                                            break;
+        -:  819:                                    }
+    #####:  820:                                    if (i == N_len) {
+    #####:  821:                                        fprintf( stderr,
+        -:  822:                                                 "Error patch_localfixpoint:"
+        -:  823:                                                 " affected state not"
+        -:  824:                                                 " contained in N.\n" );
+    #####:  825:                                        return NULL;
+        -:  826:                                    }
+    #####:  827:                                    *(*(affected + node->mode)
+    #####:  828:                                      + *(affected_len + node->mode)-1) = node;
+    #####:  829:                                    break;
+        -:  830:                                }
+        -:  831:                            }
+    #####:  832:                        } else if (!strncmp( line, "relax ", strlen("relax ") )
+    #####:  833:                                   && (num_read
+    #####:  834:                                       == 2*original_num_env+original_num_sys)
+        -:  835:                            ) {
+    #####:  836:                            for (i = 0; i < node->trans_len; i++) {
+    #####:  837:                                if (statecmp( (*(node->trans+i))->state,
+    #####:  838:                                              state+num_env+num_sys, num_env ))
+    #####:  839:                                    break;
+        -:  840:                            }
+    #####:  841:                            if (i == node->trans_len) {
+    #####:  842:                                (*(affected_len + node->mode))++;
+    #####:  843:                                *(affected + node->mode)
+    #####:  844:                                    = realloc( *(affected + node->mode),
+        -:  845:                                               sizeof(anode_t *)
+    #####:  846:                                               *(*(affected_len
+    #####:  847:                                                   + node->mode)) );
+    #####:  848:                                if (*(affected + node->mode) == NULL) {
+    #####:  849:                                    perror( __FILE__ ",  realloc" );
+    #####:  850:                                    exit(-1);
+        -:  851:                                }
+        -:  852:                                /* If affected state is not in N, then fail. */
+    #####:  853:                                for (i = 0; i < N_len; i++) {
+    #####:  854:                                    if (statecmp( state, *(N+i),
+        -:  855:                                                  num_env+num_sys ))
+    #####:  856:                                        break;
+        -:  857:                                }
+    #####:  858:                                if (i == N_len) {
+    #####:  859:                                    fprintf( stderr,
+        -:  860:                                             "Error patch_localfixpoint:"
+        -:  861:                                             " affected state not contained"
+        -:  862:                                             " in N.\n" );
+    #####:  863:                                    return NULL;
+        -:  864:                                }
+    #####:  865:                                *(*(affected + node->mode)
+    #####:  866:                                  + *(affected_len + node->mode)-1) = node;
+        -:  867:                            }
+        -:  868:                        }
+        -:  869:
+    #####:  870:                        node = find_anode( node->next, j, state, num_env+num_sys );
+        -:  871:                    }
+        -:  872:                }
+        -:  873:
+    #####:  874:                vertex1 = state_to_BDD( manager, state, 0, num_env+num_sys );
+    #####:  875:                vertex2 = state_to_BDD( manager, state+num_env+num_sys,
+        -:  876:                                     num_env+num_sys,
+    #####:  877:                                     num_read-(num_env+num_sys) );
+    #####:  878:                if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
+    #####:  879:                    tmp = Cudd_Not( vertex2 );
+    #####:  880:                    Cudd_Ref( tmp );
+    #####:  881:                    Cudd_RecursiveDeref( manager, vertex2 );
+    #####:  882:                    vertex2 = tmp;
+    #####:  883:                    tmp = Cudd_bddOr( manager, Cudd_Not( vertex1 ), vertex2 );
+        -:  884:                } else { /* "relax " */
+    #####:  885:                    tmp = Cudd_bddAnd( manager, vertex1, vertex2 );
+        -:  886:                }
+    #####:  887:                Cudd_Ref( tmp );
+    #####:  888:                Cudd_RecursiveDeref( manager, vertex1 );
+    #####:  889:                Cudd_RecursiveDeref( manager, vertex2 );
+    #####:  890:                if (num_read == 2*original_num_env+original_num_sys) {
+    #####:  891:                    if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
+    #####:  892:                        tmp2 = Cudd_bddAnd( manager, tmp, etrans );
+        -:  893:                    } else { /* "relax " */
+    #####:  894:                        tmp2 = Cudd_bddOr( manager, tmp, etrans );
+        -:  895:                    }
+    #####:  896:                    Cudd_Ref( tmp2 );
+    #####:  897:                    Cudd_RecursiveDeref( manager, etrans );
+    #####:  898:                    etrans = tmp2;
+        -:  899:                } else { /* num_read == 2*(original_num_env+original_num_sys) */
+    #####:  900:                    if (!strncmp( line, "restrict ", strlen( "restrict " ) )) {
+    #####:  901:                        tmp2 = Cudd_bddAnd( manager, tmp, strans );
+        -:  902:                    } else { /* "relax " */
+    #####:  903:                        tmp2 = Cudd_bddOr( manager, tmp, strans );
+        -:  904:                    }
+    #####:  905:                    Cudd_Ref( tmp2 );
+    #####:  906:                    Cudd_RecursiveDeref( manager, strans );
+    #####:  907:                    strans = tmp2;
+        -:  908:                }
+    #####:  909:                Cudd_RecursiveDeref( manager, tmp );
+    #####:  910:                free( state );
+        -:  911:
+    #####:  912:            } else if (!strncmp( line, "blocksys ", strlen( "blocksys " ) )) {
+    #####:  913:                num_read = read_state_str( line+strlen( "blocksys" )+1,
+        -:  914:                                           &state_frag, original_num_sys );
+    #####:  915:                if (num_read != original_num_sys) {
+    #####:  916:                    if (num_read > 0)
+    #####:  917:                        free( state );
+    #####:  918:                    fprintf( stderr,
+        -:  919:                             "Error: invalid arguments to blocksys"
+        -:  920:                             " command.\n%d\n%s\n", num_read, line );
+    #####:  921:                    return NULL;
+        -:  922:                }
+    #####:  923:                if (num_nonbool > 0) {
+    #####:  924:                    for (i = 0; i < num_nonbool-num_enonbool; i++)
+    #####:  925:                        *(offw+2*num_enonbool+2*i) -= num_env;
+    #####:  926:                    state = expand_nonbool_state( state_frag,
+        -:  927:                                                  offw+2*num_enonbool,
+        -:  928:                                                  num_nonbool-num_enonbool,
+        -:  929:                                                  num_sys );
+    #####:  930:                    for (i = 0; i < num_nonbool-num_enonbool; i++)
+    #####:  931:                        *(offw+2*num_enonbool+2*i) += num_env;
+    #####:  932:                    if (state == NULL) {
+    #####:  933:                        fprintf( stderr,
+        -:  934:                                 "Error patch_localfixpoint: failed to expand"
+        -:  935:                                 " nonbool values in edge change file\n" );
+    #####:  936:                        return NULL;
+        -:  937:                    }
+    #####:  938:                    free( state_frag );
+        -:  939:                } else {
+    #####:  940:                    state = state_frag;
+        -:  941:                }
+    #####:  942:                if (verbose) {
+    #####:  943:                    logprint_startline();
+    #####:  944:                    logprint_raw( "Removing system moves into" );
+    #####:  945:                    pprint_state( state, -1, num_sys, getlogstream() );
+    #####:  946:                    logprint_endline();
+        -:  947:                }
+        -:  948:
+        -:  949:                /* Find nodes in strategy that are affected by this change */
+    #####:  950:                head = strategy;
+    #####:  951:                node_counter = 0;
+    #####:  952:                while (head) {
+    #####:  953:                    for (i = 0; i < head->trans_len; i++) {
+    #####:  954:                        if (statecmp( state, (*(head->trans+i))->state+num_env,
+        -:  955:                                      num_sys )) {
+    #####:  956:                            (*(affected_len + head->mode))++;
+    #####:  957:                            *(affected + head->mode)
+    #####:  958:                                = realloc( *(affected + head->mode),
+        -:  959:                                           sizeof(anode_t *)
+    #####:  960:                                           *(*(affected_len + head->mode)) );
+    #####:  961:                            if (*(affected + head->mode) == NULL) {
+    #####:  962:                                perror( __FILE__ ",  realloc" );
+    #####:  963:                                exit(-1);
+        -:  964:                            }
+        -:  965:                            /* If affected state is not in N, then fail. */
+    #####:  966:                            for (i = 0; i < N_len; i++) {
+    #####:  967:                                if (statecmp( head->state, *(N+i),
+        -:  968:                                              num_env+num_sys ))
+    #####:  969:                                    break;
+        -:  970:                            }
+    #####:  971:                            if (i == N_len) {
+    #####:  972:                                fprintf( stderr,
+        -:  973:                                         "Error patch_localfixpoint: affected"
+        -:  974:                                         " state not contained in N.\n" );
+    #####:  975:                                return NULL;
+        -:  976:                            }
+    #####:  977:                            *(*(affected + head->mode)
+    #####:  978:                              + *(affected_len + head->mode)-1) = head;
+    #####:  979:                            break;
+        -:  980:                        }
+        -:  981:                    }
+    #####:  982:                    head = head->next;
+    #####:  983:                    node_counter++;
+        -:  984:                }
+        -:  985:
+    #####:  986:                vertex2 = state_to_BDD( manager, state,
+    #####:  987:                                     2*num_env+num_sys, num_sys );
+    #####:  988:                tmp = Cudd_Not( vertex2 );
+    #####:  989:                Cudd_Ref( tmp );
+    #####:  990:                Cudd_RecursiveDeref( manager, vertex2 );
+    #####:  991:                vertex2 = tmp;
+        -:  992:
+    #####:  993:                tmp = Cudd_bddAnd( manager, strans, vertex2 );
+    #####:  994:                Cudd_Ref( tmp );
+    #####:  995:                Cudd_RecursiveDeref( manager, strans );
+    #####:  996:                strans = tmp;
+        -:  997:
+    #####:  998:                Cudd_RecursiveDeref( manager, vertex2 );
+    #####:  999:                free( state );
+        -: 1000:
+        -: 1001:            } else {
+    #####: 1002:                fprintf( stderr,
+        -: 1003:                         "Error patch_localfixpoint: unrecognized line in"
+        -: 1004:                         " given edge change file.\n" );
+    #####: 1005:                return NULL;
+        -: 1006:            }
+    #####: 1007:        } while (fgets( line, INPUT_STRING_LEN, change_fp ));
+        -: 1008:    }
+        -: 1009:
+        -: 1010:    /* Define a map in the manager to easily swap variables with their
+        -: 1011:       primed selves. */
+    #####: 1012:    vars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####: 1013:    pvars = malloc( (num_env+num_sys)*sizeof(DdNode *) );
+    #####: 1014:    for (i = 0; i < num_env+num_sys; i++) {
+    #####: 1015:        *(vars+i) = Cudd_bddIthVar( manager, i );
+    #####: 1016:        *(pvars+i) = Cudd_bddIthVar( manager, i+num_env+num_sys );
+        -: 1017:    }
+    #####: 1018:    if (!Cudd_SetVarMap( manager, vars, pvars, num_env+num_sys )) {
+    #####: 1019:        fprintf( stderr,
+        -: 1020:                 "Error: failed to define variable map in CUDD manager.\n" );
+    #####: 1021:        return NULL;
+        -: 1022:    }
+    #####: 1023:    free( vars );
+    #####: 1024:    free( pvars );
+        -: 1025:
+    #####: 1026:    for (goal_mode = 0; goal_mode < spc.num_sgoals; goal_mode++) {
+        -: 1027:
+    #####: 1028:        result_strategy = localfixpoint_goalmode( manager, num_env, num_sys,
+        -: 1029:                                                  strategy, goal_mode,
+        -: 1030:                                                  affected, affected_len,
+        -: 1031:                                                  etrans, strans, egoals,
+        -: 1032:                                                  N_BDD, N, N_len,
+        -: 1033:                                                  verbose );
+    #####: 1034:        if (result_strategy == NULL)
+    #####: 1035:            break;
+    #####: 1036:        strategy = result_strategy;
+        -: 1037:    }
+        -: 1038:
+    #####: 1039:    if (goal_mode != spc.num_sgoals) {  /* Did a local patching attempt fail? */
+    #####: 1040:        delete_aut( strategy );
+    #####: 1041:        strategy = NULL;
+        -: 1042:    } else {
+    #####: 1043:        strategy = aut_prune_deadends( strategy );
+        -: 1044:    }
+        -: 1045:
+        -: 1046:
+        -: 1047:    /* Pre-exit clean-up */
+    #####: 1048:    free( cube );
+    #####: 1049:    Cudd_RecursiveDeref( manager, etrans );
+    #####: 1050:    Cudd_RecursiveDeref( manager, strans );
+    #####: 1051:    for (i = 0; i < spc.num_egoals; i++)
+    #####: 1052:        Cudd_RecursiveDeref( manager, *(egoals+i) );
+    #####: 1053:    if (spc.num_egoals > 0)
+    #####: 1054:        free( egoals );
+    #####: 1055:    if (env_nogoal_flag) {
+    #####: 1056:        spc.num_egoals = 0;
+    #####: 1057:        delete_tree( *spc.env_goals );
+    #####: 1058:        free( spc.env_goals );
+        -: 1059:    }
+    #####: 1060:    Cudd_RecursiveDeref( manager, N_BDD );
+    #####: 1061:    for (i = 0; i < N_len; i++)
+    #####: 1062:        free( *(N+i) );
+    #####: 1063:    free( N );
+    #####: 1064:    for (i = 0; i < spc.num_sgoals; i++)
+    #####: 1065:        free( *(affected+i) );
+    #####: 1066:    free( affected );
+    #####: 1067:    free( affected_len );
+    #####: 1068:    if (num_nonbool > 0)
+    #####: 1069:        free( doffw );
+        -: 1070:
+    #####: 1071:    return strategy;
+        -: 1072:}

@@ -1,0 +1,6 @@
+<map id="SubsetInfo" name="SubsetInfo">
+<area shape="rect" id="node1" title="Miscellaneous info." alt="" coords="5,216,96,243"/>
+<area shape="rect" id="node2" href="$structNodeData.html" title="Data structure to store the information on each node." alt="" coords="70,111,157,137"/>
+<area shape="rect" id="node3" href="$structDdNode.html" title="Decision diagram node." alt="" coords="113,5,188,32"/>
+<area shape="rect" id="node4" href="$structDdChildren.html" title="The two children of a non&#45;terminal node." alt="" coords="185,111,279,137"/>
+</map>

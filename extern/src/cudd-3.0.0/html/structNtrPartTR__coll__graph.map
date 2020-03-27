@@ -1,0 +1,7 @@
+<map id="NtrPartTR" name="NtrPartTR">
+<area shape="rect" id="node1" title="Data structure for partitioned transition relation." alt="" coords="60,301,145,328"/>
+<area shape="rect" id="node2" href="$structNtrHeap.html" title="Heap&#45;based priority queue." alt="" coords="18,95,94,121"/>
+<area shape="rect" id="node3" href="$structNtrHeapSlot.html" title="Entry of NtrHeap." alt="" coords="5,5,107,32"/>
+<area shape="rect" id="node4" href="$structDdNode.html" title="Decision diagram node." alt="" coords="183,95,257,121"/>
+<area shape="rect" id="node5" href="$structDdChildren.html" title="The two children of a non&#45;terminal node." alt="" coords="194,301,289,328"/>
+</map>

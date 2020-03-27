@@ -1,0 +1,1143 @@
+        -:    0:Source:src/ptree.c
+        -:    0:Graph:ptree.gcno
+        -:    0:Data:ptree.gcda
+        -:    0:Runs:10
+        -:    0:Programs:10
+        -:    1:/* ptree.c -- Definitions for signatures appearing in ptree.h.
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2012-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#define _POSIX_C_SOURCE 200809L
+        -:    9:#define _ISOC99_SOURCE
+        -:   10:#include <math.h>
+        -:   11:#include <stdio.h>
+        -:   12:#include <string.h>
+        -:   13:#include <stdlib.h>
+        -:   14:#include <math.h>
+        -:   15:
+        -:   16:#include "common.h"
+        -:   17:#include "ptree.h"
+        -:   18:
+        -:   19:
+       58:   20:ptree_t *init_ptree( int type, char *name, int value )
+        -:   21:{
+       58:   22:    ptree_t *head = malloc( sizeof(ptree_t) );
+       58:   23:    if (head == NULL) {
+    #####:   24:        perror( __FILE__ ",  malloc" );
+    #####:   25:        exit(-1);
+        -:   26:    }
+       58:   27:    head->left = head->right = NULL;
+       58:   28:    head->name = NULL;
+       58:   29:    head->type = type;
+       58:   30:    if (type == PT_VARIABLE || type == PT_NEXT_VARIABLE) {
+       36:   31:        if (name == NULL) {
+    #####:   32:            head->name = NULL;
+        -:   33:        } else {
+       36:   34:            head->name = strdup( name );
+       36:   35:            if (head->name == NULL) {
+    #####:   36:                perror( __FILE__ ",  strdup" );
+    #####:   37:                exit(-1);
+        -:   38:            }
+        -:   39:        }
+        -:   40:        /* The "value" field is used to specify the domain of an
+        -:   41:           integer variable, if it is nonzero.  Else (if value=0), the
+        -:   42:           variable is boolean. */
+       36:   43:        head->value = value;
+       22:   44:    } else if (type == PT_CONSTANT) {
+        1:   45:        head->value = value;
+        -:   46:    }
+       58:   47:    return head;
+        -:   48:}
+        -:   49:
+        -:   50:
+       19:   51:ptree_t *copy_ptree( ptree_t *head )
+        -:   52:{
+        -:   53:    ptree_t *new_head;
+       19:   54:    if (head == NULL)
+       10:   55:        return NULL;
+        -:   56:
+        9:   57:    new_head = init_ptree( head->type, head->name, head->value );
+        9:   58:    if (new_head == NULL)
+    #####:   59:        return NULL;
+        -:   60:
+        9:   61:    new_head->left = copy_ptree( head->left );
+        9:   62:    if (new_head->left == NULL && head->left != NULL)
+    #####:   63:        return NULL;
+        -:   64:
+        9:   65:    new_head->right = copy_ptree( head->right );
+        9:   66:    if (new_head->right == NULL && head->right != NULL)
+    #####:   67:        return NULL;
+        -:   68:
+        9:   69:    return new_head;
+        -:   70:}
+        -:   71:
+        -:   72:
+       49:   73:void delete_tree( ptree_t *head )
+        -:   74:{
+       49:   75:    if (head == NULL)
+    #####:   76:        return;
+       49:   77:    if (head->left != NULL) {
+       19:   78:        delete_tree( head->left );
+       19:   79:        head->left = NULL;
+        -:   80:    }
+       49:   81:    if (head->right != NULL) {
+       18:   82:        delete_tree( head->right );
+       18:   83:        head->right = NULL;
+        -:   84:    }
+       49:   85:    if (head->name != NULL) {
+       30:   86:        free( head->name );
+        -:   87:    }
+       49:   88:    free( head );
+        -:   89:}
+        -:   90:
+        -:   91:
+        3:   92:int min_tree_value( ptree_t *head )
+        -:   93:{
+        -:   94:    int childval, minval;
+        -:   95:
+        3:   96:    if (head == NULL)
+        2:   97:        return -9999;
+        -:   98:
+        1:   99:    if (head->type == PT_CONSTANT) {
+        1:  100:        minval = head->value;
+        -:  101:    } else {
+    #####:  102:        minval = -9999;
+        -:  103:    }
+        -:  104:
+        1:  105:    childval = min_tree_value( head->left );
+        -:  106:
+        1:  107:    if (childval != -9999 && minval != -9999) {
+    #####:  108:        minval = (childval < minval) ? childval : minval;
+        1:  109:    } else if (childval != -9999) {
+    #####:  110:        minval = childval;
+        -:  111:    }
+        -:  112:
+        1:  113:    childval = min_tree_value( head->right );
+        -:  114:
+        1:  115:    if (childval != -9999 && minval != -9999) {
+    #####:  116:        minval = (childval < minval) ? childval : minval;
+        1:  117:    } else if (childval != -9999) {
+    #####:  118:        minval = childval;
+        -:  119:    }
+        -:  120:
+        1:  121:    return minval;
+        -:  122:}
+        -:  123:
+        3:  124:int max_tree_value( ptree_t *head )
+        -:  125:{
+        -:  126:    int childval, maxval;
+        -:  127:
+        3:  128:    if (head == NULL)
+        2:  129:        return -9999;
+        -:  130:
+        1:  131:    if (head->type == PT_CONSTANT) {
+        1:  132:        maxval = head->value;
+        -:  133:    } else {
+    #####:  134:        maxval = -9999;
+        -:  135:    }
+        -:  136:
+        1:  137:    childval = max_tree_value( head->left );
+        -:  138:
+        1:  139:    if (childval != -9999 && maxval != -9999) {
+    #####:  140:        maxval = (childval > maxval) ? childval : maxval;
+        1:  141:    } else if (childval != -9999) {
+    #####:  142:        maxval = childval;
+        -:  143:    }
+        -:  144:
+        1:  145:    childval = max_tree_value( head->right );
+        -:  146:
+        1:  147:    if (childval != -9999 && maxval != -9999) {
+    #####:  148:        maxval = (childval > maxval) ? childval : maxval;
+        1:  149:    } else if (childval != -9999) {
+    #####:  150:        maxval = childval;
+        -:  151:    }
+        -:  152:
+        1:  153:    return maxval;
+        -:  154:}
+        -:  155:
+    #####:  156:int rmin_tree_value( ptree_t *head, char *name )
+        -:  157:{
+        -:  158:    int childval, minval;
+        -:  159:
+    #####:  160:    if (head == NULL)
+    #####:  161:        return -9999;
+        -:  162:
+    #####:  163:    if (head->type == PT_EQUALS) {
+    #####:  164:        if ((head->left->type == PT_VARIABLE
+    #####:  165:             || head->left->type == PT_NEXT_VARIABLE)
+    #####:  166:            && head->right->type == PT_CONSTANT
+    #####:  167:            && !strncmp(head->left->name, name, strlen(name))) {
+    #####:  168:            minval = head->right->value;
+    #####:  169:        } else if ((head->right->type == PT_VARIABLE
+    #####:  170:                    || head->right->type == PT_NEXT_VARIABLE)
+    #####:  171:                   && head->left->type == PT_CONSTANT
+    #####:  172:                   && !strncmp(head->right->name, name, strlen(name))) {
+    #####:  173:            minval = head->left->value;
+        -:  174:        } else {
+    #####:  175:            minval = -9999;
+        -:  176:        }
+        -:  177:    } else {
+    #####:  178:        minval = -9999;
+        -:  179:    }
+        -:  180:
+    #####:  181:    childval = rmin_tree_value( head->left, name );
+        -:  182:
+    #####:  183:    if (childval != -9999 && minval != -9999) {
+    #####:  184:        minval = (childval < minval) ? childval : minval;
+    #####:  185:    } else if (childval != -9999) {
+    #####:  186:        minval = childval;
+        -:  187:    }
+        -:  188:
+    #####:  189:    childval = rmin_tree_value( head->right, name );
+        -:  190:
+    #####:  191:    if (childval != -9999 && minval != -9999) {
+    #####:  192:        minval = (childval < minval) ? childval : minval;
+    #####:  193:    } else if (childval != -9999) {
+    #####:  194:        minval = childval;
+        -:  195:    }
+        -:  196:
+    #####:  197:    return minval;
+        -:  198:}
+        -:  199:
+    #####:  200:int rmax_tree_value( ptree_t *head, char *name )
+        -:  201:{
+        -:  202:    int childval, maxval;
+        -:  203:
+    #####:  204:    if (head == NULL)
+    #####:  205:        return -9999;
+        -:  206:
+    #####:  207:    if (head->type == PT_EQUALS) {
+    #####:  208:        if ((head->left->type == PT_VARIABLE
+    #####:  209:             || head->left->type == PT_NEXT_VARIABLE)
+    #####:  210:            && head->right->type == PT_CONSTANT
+    #####:  211:            && !strncmp(head->left->name, name, strlen(name))) {
+    #####:  212:            maxval = head->right->value;
+    #####:  213:        } else if ((head->right->type == PT_VARIABLE
+    #####:  214:                    || head->right->type == PT_NEXT_VARIABLE)
+    #####:  215:                   && head->left->type == PT_CONSTANT
+    #####:  216:                   && !strncmp(head->right->name, name, strlen(name))) {
+    #####:  217:            maxval = head->left->value;
+        -:  218:        } else {
+    #####:  219:            maxval = -9999;
+        -:  220:        }
+        -:  221:    } else {
+    #####:  222:        maxval = -9999;
+        -:  223:    }
+        -:  224:
+    #####:  225:    childval = rmax_tree_value( head->left, name );
+        -:  226:
+    #####:  227:    if (childval != -9999 && maxval != -9999) {
+    #####:  228:        maxval = (childval > maxval) ? childval : maxval;
+    #####:  229:    } else if (childval != -9999) {
+    #####:  230:        maxval = childval;
+        -:  231:    }
+        -:  232:
+    #####:  233:    childval = rmax_tree_value( head->right, name );
+        -:  234:
+    #####:  235:    if (childval != -9999 && maxval != -9999) {
+    #####:  236:        maxval = (childval > maxval) ? childval : maxval;
+    #####:  237:    } else if (childval != -9999) {
+    #####:  238:        maxval = childval;
+        -:  239:    }
+        -:  240:
+    #####:  241:    return maxval;
+        -:  242:}
+        -:  243:
+        -:  244:
+       36:  245:char *check_vars( ptree_t *head, ptree_t *var_list, ptree_t *nextvar_list )
+        -:  246:{
+        -:  247:    char *name;
+        -:  248:    ptree_t *node;
+       36:  249:    if (head == NULL)
+       18:  250:        return NULL;
+        -:  251:
+       18:  252:    if (head->type == PT_VARIABLE || head->type == PT_NEXT_VARIABLE) {
+        8:  253:        if (head->type == PT_VARIABLE) {
+        4:  254:            node = var_list;
+        -:  255:        } else {
+        4:  256:            node = nextvar_list;
+        -:  257:        }
+       20:  258:        while (node) {
+       11:  259:            if (!strcmp( head->name, node->name ))
+        7:  260:                break;
+        4:  261:            node = node->left;
+        -:  262:        }
+        8:  263:        if (node == NULL) {
+        1:  264:            name = malloc( (strlen( head->name )+2)*sizeof(char) );
+        1:  265:            if (name == NULL) {
+    #####:  266:                perror( __FILE__ ",  malloc" );
+    #####:  267:                exit(-1);
+        -:  268:            }
+        1:  269:            strcpy( name, head->name );
+        1:  270:            if (head->type == PT_NEXT_VARIABLE) {
+        1:  271:                *(name+strlen( head->name )) = '\'';
+        1:  272:                *(name+strlen( head->name )+1) = '\0';
+        -:  273:            }
+        1:  274:            return name;
+        -:  275:        }
+        -:  276:    }
+        -:  277:
+       17:  278:    if ((name = check_vars( head->left, var_list, nextvar_list )) != NULL
+       17:  279:        || (name = check_vars( head->right, var_list, nextvar_list )) != NULL)
+        2:  280:        return name;
+       15:  281:    return NULL;
+        -:  282:}
+        -:  283:
+        -:  284:
+        -:  285:#define VARNAME_STRING_LEN 1024
+        1:  286:ptree_t *var_to_bool( char *name, int maxval )
+        -:  287:{
+        -:  288:    ptree_t *head;
+        -:  289:    char varname[VARNAME_STRING_LEN];
+        -:  290:    int i;
+        -:  291:
+        1:  292:    if (name == NULL || maxval < 0)
+    #####:  293:        return NULL;
+        -:  294:
+        1:  295:    maxval = (int)(ceil(log2( maxval+1 )));
+        -:  296:
+        1:  297:    snprintf( varname, VARNAME_STRING_LEN, "%s0", name );
+        1:  298:    head = init_ptree( PT_VARIABLE, varname, 0 );
+        2:  299:    for (i = 1; i < maxval; i++) {
+        1:  300:        snprintf( varname, VARNAME_STRING_LEN, "%s%d", name, i );
+        1:  301:        append_list_item( head, PT_VARIABLE, varname, 0 );
+        -:  302:    }
+        -:  303:
+        1:  304:    return head;
+        -:  305:}
+        -:  306:
+        -:  307:
+        -:  308:/* Expand a subformula like x < 3 to ((x = 0) | (x = 1) | (x = 2)),
+        -:  309:   assuming x has a domain of an interval of integers from 0 to some
+        -:  310:   value at least 2. */
+    #####:  311:ptree_t *expand_nonbool_varnum( ptree_t *head, char *name, int maxval )
+        -:  312:{
+        -:  313:    ptree_t **heads;
+        -:  314:    int var_tense, op_type, this_val;
+        -:  315:    int max, min;
+        -:  316:    int i;
+        -:  317:
+        -:  318:    /* Handle pointless calls */
+    #####:  319:    if (head == NULL
+    #####:  320:        || !((head->type == PT_LT) || (head->type == PT_GT)
+    #####:  321:             || (head->type == PT_LE) || (head->type == PT_GE)
+    #####:  322:             || (head->type == PT_NOTEQ))
+    #####:  323:        || !(((head->left->type == PT_VARIABLE
+    #####:  324:               || head->left->type == PT_NEXT_VARIABLE)
+    #####:  325:              && head->right->type == PT_CONSTANT
+    #####:  326:              && !strcmp( head->left->name, name ))
+    #####:  327:             || ((head->right->type == PT_VARIABLE
+    #####:  328:                  || head->right->type == PT_NEXT_VARIABLE)
+    #####:  329:                 && head->left->type == PT_CONSTANT
+    #####:  330:                 && !strcmp( head->right->name, name ))))
+    #####:  331:        return head;
+        -:  332:
+    #####:  333:    op_type = head->type;
+    #####:  334:    if (head->left->type == PT_CONSTANT) {
+    #####:  335:        this_val = head->left->value;
+    #####:  336:        var_tense = head->right->type;
+        -:  337:    } else {
+    #####:  338:        this_val = head->right->value;
+    #####:  339:        var_tense = head->left->type;
+        -:  340:    }
+    #####:  341:    delete_tree( head );
+        -:  342:
+        -:  343:    /* Special cases */
+    #####:  344:    if ((op_type == PT_LT && this_val <= 0)
+    #####:  345:        || (op_type == PT_GT && this_val >= maxval)
+    #####:  346:        || (op_type == PT_LE && this_val < 0)
+    #####:  347:        || (op_type == PT_GE && this_val > maxval))
+    #####:  348:        return init_ptree( PT_CONSTANT, NULL, 0 );  /* constant False */
+        -:  349:
+    #####:  350:    if (op_type == PT_NOTEQ && (this_val < 0 || this_val > maxval))
+    #####:  351:        return init_ptree( PT_CONSTANT, NULL, 1 );  /* constant True */
+        -:  352:
+    #####:  353:    if (op_type == PT_NOTEQ) {
+    #####:  354:        heads = malloc( maxval*sizeof(ptree_t *) );
+    #####:  355:        if (heads == NULL) {
+    #####:  356:            perror( __FILE__ ",  malloc" );
+    #####:  357:            exit(-1);
+        -:  358:        }
+    #####:  359:        min = 0;
+    #####:  360:        for (i = 0; i <= maxval; i++) {
+    #####:  361:            if (i == this_val) {
+    #####:  362:                min = 1;
+    #####:  363:                continue;
+        -:  364:            }
+    #####:  365:            *(heads+i-min) = init_ptree( PT_EQUALS, NULL, 0 );
+    #####:  366:            (*(heads+i-min))->left = init_ptree( var_tense, name, 0 );
+    #####:  367:            (*(heads+i-min))->right = init_ptree( PT_CONSTANT, NULL, i );
+        -:  368:        }
+    #####:  369:        head = merge_ptrees( heads, maxval, PT_OR );
+        -:  370:    } else {
+    #####:  371:        if (op_type == PT_LT) {
+    #####:  372:            min = 0;
+    #####:  373:            max = this_val-1;
+    #####:  374:        } else if (op_type == PT_GT) {
+    #####:  375:            max = maxval;
+    #####:  376:            min = this_val+1;
+    #####:  377:        } else if (op_type == PT_LE) {
+    #####:  378:            min = 0;
+    #####:  379:            max = this_val;
+        -:  380:        } else {  /* op_type == PT_GE */
+    #####:  381:            max = maxval;
+    #####:  382:            min = this_val;
+        -:  383:        }
+        -:  384:
+    #####:  385:        heads = malloc( (max-min+1)*sizeof(ptree_t *) );
+    #####:  386:        if (heads == NULL) {
+    #####:  387:            perror( __FILE__ ",  malloc" );
+    #####:  388:            exit(-1);
+        -:  389:        }
+    #####:  390:        for (i = min; i <= max; i++) {
+    #####:  391:            *(heads+i-min) = init_ptree( PT_EQUALS, NULL, 0 );
+    #####:  392:            (*(heads+i-min))->left = init_ptree( var_tense, name, 0 );
+    #####:  393:            (*(heads+i-min))->right = init_ptree( PT_CONSTANT, NULL, i );
+        -:  394:        }
+    #####:  395:        head = merge_ptrees( heads, max-min+1, PT_OR );
+        -:  396:    }
+    #####:  397:    free( heads );
+    #####:  398:    return head;
+        -:  399:}
+        -:  400:
+        -:  401:
+    #####:  402:ptree_t *expand_to_bool( ptree_t *head, char *name, int maxval )
+        -:  403:{
+        -:  404:    ptree_t **heads;
+        -:  405:    int this_val, i;
+        -:  406:    bool is_next;
+        -:  407:    int num_bits;
+        -:  408:    ptree_t *expanded_varlist;
+        -:  409:
+    #####:  410:    if (head == NULL)
+    #####:  411:        return NULL;
+        -:  412:
+    #####:  413:    if (maxval > 0) {
+    #####:  414:        num_bits = (int)(ceil(log2( maxval+1 )));
+        -:  415:    } else {
+    #####:  416:        num_bits = 1;
+        -:  417:    }
+        -:  418:
+    #####:  419:    if (head->type == PT_LT || head->type == PT_GT
+    #####:  420:        || head->type == PT_LE || head->type == PT_GE
+    #####:  421:        || head->type == PT_NOTEQ)
+    #####:  422:        head = expand_nonbool_varnum( head, name, maxval );
+        -:  423:
+    #####:  424:    if (head->type == PT_EQUALS
+    #####:  425:        && ((head->left->type != PT_CONSTANT
+    #####:  426:             && !strcmp( head->left->name, name ))
+    #####:  427:            || (head->right->type != PT_CONSTANT
+    #####:  428:                && !strcmp( head->right->name, name )))) {
+        -:  429:
+    #####:  430:        expanded_varlist = var_to_bool( name, maxval );
+    #####:  431:        if (expanded_varlist == NULL)
+    #####:  432:            return NULL;
+        -:  433:
+        -:  434:        /* We assume that nonboolean comparison is only between a
+        -:  435:           variable and a number; will be generalized soon. */
+    #####:  436:        if (head->left->type == PT_CONSTANT) {
+    #####:  437:            this_val = head->left->value;
+    #####:  438:            if (head->right->type == PT_VARIABLE) {
+    #####:  439:                is_next = False;
+        -:  440:            } else { /* head->right->type == PT_NEXT_VARIABLE */
+    #####:  441:                is_next = True;
+        -:  442:            }
+        -:  443:        } else {
+    #####:  444:            this_val = head->right->value;
+    #####:  445:            if (head->left->type == PT_VARIABLE) {
+    #####:  446:                is_next = False;
+        -:  447:            } else { /* head->right->type == PT_NEXT_VARIABLE */
+    #####:  448:                is_next = True;
+        -:  449:            }
+        -:  450:        }
+        -:  451:
+    #####:  452:        delete_tree( head );
+    #####:  453:        heads = malloc( num_bits*sizeof(ptree_t *) );
+    #####:  454:        if (heads == NULL) {
+    #####:  455:            perror( __FILE__ ",  malloc" );
+    #####:  456:            exit(-1);
+        -:  457:        }
+        -:  458:
+        -:  459:        /* Enforce inability to reach values outside the expanded domain */
+    #####:  460:        if (this_val > (int)(pow( 2, num_bits ) )-1 || this_val < 0) {
+    #####:  461:            free( heads );
+    #####:  462:            return init_ptree( PT_CONSTANT, NULL, 0 );
+        -:  463:        }
+        -:  464:
+    #####:  465:        for (i = num_bits-1; i >= 0; i--) {
+    #####:  466:            if ((this_val >> i)&1) {
+    #####:  467:                *(heads+i) = get_list_item( expanded_varlist, i );
+    #####:  468:                (*(heads+i))->left = (*(heads+i))->right = NULL;
+    #####:  469:                if (is_next)
+    #####:  470:                    (*(heads+i))->type = PT_NEXT_VARIABLE;
+        -:  471:            } else {
+    #####:  472:                *(heads+i) = init_ptree( PT_NEG, NULL, 0 );
+    #####:  473:                (*(heads+i))->right = get_list_item( expanded_varlist, i );
+    #####:  474:                (*(heads+i))->right->left = (*(heads+i))->right->right = NULL;
+    #####:  475:                if (is_next)
+    #####:  476:                    (*(heads+i))->right->type = PT_NEXT_VARIABLE;
+        -:  477:            }
+        -:  478:        }
+    #####:  479:        head = merge_ptrees( heads, num_bits, PT_AND );
+        -:  480:
+    #####:  481:        free( heads );
+        -:  482:    } else {
+    #####:  483:        head->left = expand_to_bool( head->left, name, maxval );
+    #####:  484:        head->right = expand_to_bool( head->right, name, maxval );
+        -:  485:    }
+        -:  486:
+    #####:  487:    return head;
+        -:  488:}
+        -:  489:
+        -:  490:
+    #####:  491:ptree_t *unreach_expanded_bool( char *name, int lower, int upper, int type )
+        -:  492:{
+        -:  493:    ptree_t *head, *node;
+        -:  494:    int i;
+    #####:  495:    if (lower > upper)
+    #####:  496:        return NULL;
+    #####:  497:    if (!(type == PT_VARIABLE || type == PT_NEXT_VARIABLE)) {
+    #####:  498:        fprintf( stderr,
+        -:  499:                 "unreach_expanded_bool: Invoked with unsupported type, %d\n",
+        -:  500:                 type );
+    #####:  501:        return NULL;
+        -:  502:    }
+        -:  503:
+    #####:  504:    head = init_ptree( PT_NEG, NULL, 0 );
+    #####:  505:    head->right = init_ptree( PT_EQUALS, NULL, 0 );
+    #####:  506:    head->right->left = init_ptree( type, name, 0 );
+    #####:  507:    head->right->right = init_ptree( PT_CONSTANT, NULL, lower );
+    #####:  508:    for (i = lower+1; i <= upper; i++) {
+    #####:  509:        node = head;
+    #####:  510:        head = init_ptree( PT_AND, NULL, 0 );
+    #####:  511:        head->right = node;
+    #####:  512:        head->left = init_ptree( PT_NEG, NULL, 0 );
+    #####:  513:        head->left->right = init_ptree( PT_EQUALS, NULL, 0 );
+    #####:  514:        head->left->right->left = init_ptree( type, name, 0 );
+    #####:  515:        head->left->right->right = init_ptree( PT_CONSTANT, NULL, i );
+        -:  516:    }
+        -:  517:
+    #####:  518:    return head;
+        -:  519:}
+        -:  520:
+        -:  521:
+      121:  522:int tree_size( ptree_t *head )
+        -:  523:{
+      121:  524:    if (head == NULL)
+       67:  525:        return 0;
+       54:  526:    return 1 + tree_size( head->left ) + tree_size( head->right );
+        -:  527:}
+        -:  528:
+        -:  529:
+       24:  530:void print_node( ptree_t *node, FILE *fp )
+        -:  531:{
+       24:  532:    if (fp == NULL)
+    #####:  533:        fp = stdout;
+        -:  534:
+       24:  535:    switch (node->type) {
+    #####:  536:    case PT_EMPTY:
+    #####:  537:        fprintf( fp, "(empty)" );
+    #####:  538:        break;
+        -:  539:
+        6:  540:    case PT_VARIABLE:
+        6:  541:        fprintf( fp, "%s", node->name );
+        6:  542:        break;
+        -:  543:
+        5:  544:    case PT_NEXT_VARIABLE:
+        5:  545:        fprintf( fp, "%s'", node->name );
+        5:  546:        break;
+        -:  547:
+    #####:  548:    case PT_CONSTANT:
+    #####:  549:        fprintf( fp, "%d", node->value );
+    #####:  550:        break;
+        -:  551:
+        5:  552:    case PT_NEG:
+        5:  553:        fprintf( fp, "!" );
+        5:  554:        break;
+        -:  555:
+        5:  556:    case PT_AND:
+        5:  557:        fprintf( fp, "&" );
+        5:  558:        break;
+        -:  559:
+        3:  560:    case PT_OR:
+        3:  561:        fprintf( fp, "|" );
+        3:  562:        break;
+        -:  563:
+    #####:  564:    case PT_IMPLIES:
+    #####:  565:        fprintf( fp, "->" );
+    #####:  566:        break;
+        -:  567:
+    #####:  568:    case PT_EQUIV:
+    #####:  569:        fprintf( fp, "<->" );
+    #####:  570:        break;
+        -:  571:
+    #####:  572:    case PT_EQUALS:
+    #####:  573:        fprintf( fp, "=" );
+    #####:  574:        break;
+        -:  575:
+    #####:  576:    case PT_NOTEQ:
+    #####:  577:        fprintf( fp, "!=" );
+    #####:  578:        break;
+        -:  579:
+    #####:  580:    case PT_LT:
+    #####:  581:        fprintf( fp, "<" );
+    #####:  582:        break;
+        -:  583:
+    #####:  584:    case PT_GT:
+    #####:  585:        fprintf( fp, ">" );
+    #####:  586:        break;
+        -:  587:
+    #####:  588:    case PT_LE:
+    #####:  589:        fprintf( fp, "<=" );
+    #####:  590:        break;
+        -:  591:
+    #####:  592:    case PT_GE:
+    #####:  593:        fprintf( fp, ">=" );
+    #####:  594:        break;
+        -:  595:
+    #####:  596:    default:
+    #####:  597:        fprintf( stderr, "inorder_print: Unrecognized type, %d\n", node->type );
+    #####:  598:        break;
+        -:  599:    }
+       24:  600:}
+        -:  601:
+        -:  602:
+       51:  603:void inorder_trav( ptree_t *head,
+        -:  604:                   void (* node_fn)(ptree_t *, void *), void *arg )
+        -:  605:{
+       51:  606:    if (head == NULL)
+       27:  607:        return;
+        -:  608:
+       24:  609:    inorder_trav( head->left, node_fn, arg );
+       24:  610:    (*node_fn)( head, arg );
+       24:  611:    inorder_trav( head->right, node_fn, arg );
+        -:  612:}
+        -:  613:
+        -:  614:
+        1:  615:ptree_t *merge_ptrees( ptree_t **heads, int len, int type )
+        -:  616:{
+        -:  617:    ptree_t *head, *node;
+        -:  618:    int i;
+        -:  619:
+        1:  620:    if (len <= 0 || heads == NULL)  /* Vacuous call. */
+    #####:  621:        return NULL;
+        -:  622:
+        1:  623:    if (len == 1)  /* Special case */
+    #####:  624:        return *heads;
+        -:  625:
+        -:  626:    /* Check whether valid merging operator requested. */
+        1:  627:    switch (type) {
+        1:  628:    case PT_AND:
+        -:  629:    case PT_OR:
+        -:  630:    case PT_IMPLIES:
+        1:  631:        break;
+    #####:  632:    default:
+    #####:  633:        return NULL;
+        -:  634:    }
+        -:  635:
+        1:  636:    head = init_ptree( type, NULL, -1 );
+        1:  637:    if (head == NULL)
+    #####:  638:        return NULL;
+        1:  639:    head->right = *(heads+len-1);
+        -:  640:
+        1:  641:    node = head;
+        1:  642:    for (i = len-1; i > 1; i--) {
+    #####:  643:        node->left = init_ptree( type, NULL, -1 );
+    #####:  644:        if (node->left == NULL) {
+    #####:  645:            fprintf( stderr,
+        -:  646:                     "Error: merge_ptrees failed to create enough new"
+        -:  647:                     " nodes.\n" );
+    #####:  648:            return NULL;
+        -:  649:        }
+    #####:  650:        node = node->left;
+    #####:  651:        node->right = *(heads+i-1);
+        -:  652:    }
+        1:  653:    node->left = *heads;
+        -:  654:
+        1:  655:    return head;
+        -:  656:}
+        -:  657:
+        -:  658:
+       20:  659:ptree_t *append_list_item( ptree_t *head, int type, char *name, int value )
+        -:  660:{
+       20:  661:    if (head == NULL) {
+        4:  662:        return init_ptree( type, name, value );
+        -:  663:    }
+        -:  664:
+       16:  665:    if (head->left == NULL) {
+       11:  666:        head->left = init_ptree( type, name, value );
+       11:  667:        return head->left;
+        -:  668:    } else {
+        5:  669:        return append_list_item( head->left, type, name, value );
+        -:  670:    }
+        -:  671:}
+        -:  672:
+        -:  673:
+        2:  674:ptree_t *remove_list_item( ptree_t *head, int index )
+        -:  675:{
+        -:  676:    ptree_t *child;
+        2:  677:    int length = tree_size( head );
+        2:  678:    int current_index = 1;
+        -:  679:
+        -:  680:    /* Error-checking */
+        2:  681:    if (head == NULL) {
+    #####:  682:        fprintf( stderr,
+        -:  683:                 "WARNING: remove_list_item called with empty tree.\n" );
+    #####:  684:        return NULL;
+        -:  685:    }
+        2:  686:    if (index < -1 || index >= length) {
+    #####:  687:        fprintf( stderr,
+        -:  688:                 "Error: remove_list_item given invalid index, %d."
+        -:  689:                 " Max possible is %d.\n",
+        -:  690:                 index, length-1 );
+    #####:  691:        return NULL;
+        -:  692:    }
+        -:  693:
+        2:  694:    if (index == 0 || (length == 1 && index == -1)) {
+        -:  695:        /* Special case; remove root, return pointer to next item. */
+        1:  696:        child = head->left;
+        1:  697:        if (head->name != NULL) {
+        1:  698:            free( head->name );
+        -:  699:        }
+        1:  700:        free( head );
+        1:  701:        return child;
+        -:  702:    }
+        -:  703:
+        1:  704:    if (index == -1)  /* Special case; remove last item. */
+        1:  705:        index = length-1;
+        -:  706:
+        2:  707:    while (current_index != index) {
+    #####:  708:        head = head->left;
+    #####:  709:        current_index++;
+        -:  710:    }
+        1:  711:    child = head->left;
+        1:  712:    head->left = child->left;
+        1:  713:    if (child->name != NULL) {
+        1:  714:        free( child->name );
+        -:  715:    }
+        1:  716:    free( child );
+        -:  717:
+        1:  718:    return head;
+        -:  719:}
+        -:  720:
+        -:  721:
+       11:  722:ptree_t *pusht_terminal( ptree_t *head, int type, char *name, int value )
+        -:  723:{
+        -:  724:    ptree_t *new_head;
+        -:  725:
+       11:  726:    new_head = init_ptree( type, name, value );
+       11:  727:    new_head->left = head;
+       11:  728:    return new_head;
+        -:  729:}
+        -:  730:
+        -:  731:
+       11:  732:ptree_t *pusht_operator( ptree_t *head, int type )
+        -:  733:{
+        -:  734:    ptree_t *new_head, *prev;
+        -:  735:
+        -:  736:    /* Make sure doing this is possible. */
+       11:  737:    if (head == NULL)
+    #####:  738:        return NULL;
+        -:  739:
+       11:  740:    new_head = init_ptree( type, NULL, 0 );
+       11:  741:    prev = head;
+       23:  742:    while (prev->left) {
+       11:  743:        if (prev->type == PT_EMPTY || prev->type == PT_VARIABLE
+        8:  744:            || prev->type == PT_NEXT_VARIABLE || prev->type == PT_CONSTANT
+        5:  745:            || prev->type == PT_NEG)
+        -:  746:            break;
+        1:  747:        prev = prev->left;
+        -:  748:    }
+       11:  749:    new_head->left = prev->left;
+       11:  750:    prev->left = NULL;
+       11:  751:    new_head->right = head;
+        -:  752:
+       11:  753:    return new_head;
+        -:  754:}
+        -:  755:
+        -:  756:
+    #####:  757:void tree_dot_dump_node( ptree_t *node, FILE *fp )
+        -:  758:{
+    #####:  759:    fprintf( fp, "\"%ld;\\n", (size_t)node );
+    #####:  760:    print_node( node, fp );
+    #####:  761:    fprintf( fp, "\"\n" );
+    #####:  762:    if (node->left != NULL) {
+    #####:  763:        fprintf( fp, "\"%ld;\\n", (size_t)node );
+    #####:  764:        print_node( node, fp );
+    #####:  765:        fprintf( fp, "\" -> \"%ld;\\n", (size_t)(node->left) );
+    #####:  766:        print_node( node->left, fp );
+    #####:  767:        fprintf( fp, "\"\n" );
+        -:  768:    }
+    #####:  769:    if (node->right != NULL) {
+    #####:  770:        fprintf( fp, "\"%ld;\\n", (size_t)node );
+    #####:  771:        print_node( node, fp );
+    #####:  772:        fprintf( fp, "\" -> \"%ld;\\n", (size_t)(node->right) );
+    #####:  773:        print_node( node->right, fp );
+    #####:  774:        fprintf( fp, "\"\n" );
+        -:  775:    }
+    #####:  776:}
+        -:  777:
+        -:  778:
+    #####:  779:int tree_dot_dump( ptree_t *head, char *filename )
+        -:  780:{
+        -:  781:
+        -:  782:
+    #####:  783:    FILE *fp = fopen( filename, "w" );
+    #####:  784:    if (fp == NULL) {
+    #####:  785:        perror( __FILE__ ",  fopen" );
+    #####:  786:        exit(-1);
+        -:  787:    }
+        -:  788:
+    #####:  789:    if (fprintf( fp, "digraph PT {\n" ) < -1) {
+    #####:  790:        fclose( fp );
+    #####:  791:        return -1;
+        -:  792:    }
+        -:  793:
+    #####:  794:    inorder_trav( head, tree_dot_dump_node, fp );
+        -:  795:
+    #####:  796:    fprintf( fp, "}\n" );
+        -:  797:
+    #####:  798:    if (fclose( fp )) {
+    #####:  799:        perror( __FILE__ ",  fclose" );
+    #####:  800:        exit(-1);
+        -:  801:    }
+        -:  802:
+    #####:  803:    return 0;
+        -:  804:}
+        -:  805:
+        -:  806:
+    #####:  807:void print_formula( ptree_t *head, FILE *fp, unsigned char format_flags )
+        -:  808:{
+    #####:  809:    if (head == NULL) {
+    #####:  810:        fprintf( stderr, "WARNING: print_formula called with NULL node." );
+    #####:  811:        return;
+        -:  812:    }
+        -:  813:
+    #####:  814:    if (fp == NULL)
+    #####:  815:        fp = stdout;
+        -:  816:
+        -:  817:    /* Special cases */
+    #####:  818:    if (format_flags == FORMULA_SYNTAX_SPIN) {
+    #####:  819:        switch (head->type) {
+    #####:  820:        case PT_IMPLIES:
+    #####:  821:            fprintf( fp, "(!" );
+    #####:  822:            print_formula( head->left, fp, format_flags );
+    #####:  823:            fprintf( fp, "||" );
+    #####:  824:            print_formula( head->right, fp, format_flags );
+    #####:  825:            fprintf( fp, ")" );
+    #####:  826:            return;
+    #####:  827:        case PT_EQUIV:
+        -:  828:            /* Naively compute subtrees twice, to avoid space
+        -:  829:               requirements of caching. */
+    #####:  830:            fprintf( fp, "((" );
+    #####:  831:            print_formula( head->left, fp, format_flags );
+    #####:  832:            fprintf( fp, "&&" );
+    #####:  833:            print_formula( head->right, fp, format_flags );
+    #####:  834:            fprintf( fp, ")||(!" );
+    #####:  835:            print_formula( head->left, fp, format_flags );
+    #####:  836:            fprintf( fp, "&&!" );
+    #####:  837:            print_formula( head->right, fp, format_flags );
+    #####:  838:            fprintf( fp, "))" );
+    #####:  839:            return;
+        -:  840:        }
+        -:  841:    }
+        -:  842:
+    #####:  843:    switch (head->type) {
+    #####:  844:    case PT_AND:
+        -:  845:    case PT_OR:
+        -:  846:    case PT_IMPLIES:
+        -:  847:    case PT_EQUIV:
+        -:  848:    case PT_EQUALS:
+        -:  849:    case PT_NOTEQ:
+        -:  850:    case PT_LT:  /* less than */
+        -:  851:    case PT_GT:  /* greater than */
+        -:  852:    case PT_GE:  /* ...or equal to*/
+        -:  853:    case PT_LE:
+    #####:  854:        fprintf( fp, "(" );
+    #####:  855:        if (head->left != NULL && head->right != NULL
+    #####:  856:            && ((head->right->type == PT_VARIABLE
+    #####:  857:                 || head->right->type == PT_NEXT_VARIABLE)
+    #####:  858:                && head->left->type == PT_CONSTANT && head->right->value >= 0)) {
+    #####:  859:            fprintf( fp, "%d", head->left->value );
+        -:  860:        } else {
+    #####:  861:            print_formula( head->left, fp, format_flags );
+        -:  862:        }
+    #####:  863:        break;
+        -:  864:
+    #####:  865:    case PT_NEG:
+    #####:  866:        fprintf( fp, "(!" );
+    #####:  867:        print_formula( head->right, fp, format_flags );
+    #####:  868:        fprintf( fp, ")" );
+    #####:  869:        return;
+        -:  870:
+    #####:  871:    case PT_VARIABLE:
+    #####:  872:        fprintf( fp, "%s", head->name );
+    #####:  873:        return;
+        -:  874:
+    #####:  875:    case PT_NEXT_VARIABLE:
+    #####:  876:        if (format_flags == FORMULA_SYNTAX_SPIN) {
+    #####:  877:            fprintf( fp, "%s_next", head->name );
+        -:  878:        } else {
+    #####:  879:            fprintf( fp, "%s'", head->name );
+        -:  880:        }
+    #####:  881:        return;
+        -:  882:
+    #####:  883:    case PT_CONSTANT:
+    #####:  884:        if (head->value == 0) {
+    #####:  885:            if (format_flags == FORMULA_SYNTAX_SPIN) {
+    #####:  886:                fprintf( fp, "false" );
+        -:  887:            } else {
+    #####:  888:                fprintf( fp, "False" );
+        -:  889:            }
+    #####:  890:        } else if (head->value == 1) {
+    #####:  891:            if (format_flags == FORMULA_SYNTAX_SPIN) {
+    #####:  892:                fprintf( fp, "true" );
+        -:  893:            } else {
+    #####:  894:                fprintf( fp, "True" );
+        -:  895:            }
+        -:  896:        } else {
+    #####:  897:            fprintf( fp, "%d", head->value );
+        -:  898:        }
+    #####:  899:        return;
+        -:  900:
+    #####:  901:    default:
+    #####:  902:        fprintf( stderr,
+        -:  903:                 "WARNING: print_formula called with node of unknown type" );
+    #####:  904:        return;
+        -:  905:    }
+        -:  906:
+    #####:  907:    switch (head->type) {
+    #####:  908:    case PT_AND:
+    #####:  909:        if (format_flags == FORMULA_SYNTAX_SPIN) {
+    #####:  910:            fprintf( fp, "&&" );
+        -:  911:        } else {
+    #####:  912:            fprintf( fp, "&" );
+        -:  913:        }
+    #####:  914:        break;
+    #####:  915:    case PT_OR:
+    #####:  916:        if (format_flags == FORMULA_SYNTAX_SPIN) {
+    #####:  917:            fprintf( fp, "||" );
+        -:  918:        } else {
+    #####:  919:            fprintf( fp, "|" );
+        -:  920:        }
+    #####:  921:        break;
+    #####:  922:    case PT_IMPLIES:
+    #####:  923:        fprintf( fp, "->" );
+    #####:  924:        break;
+    #####:  925:    case PT_EQUIV:
+    #####:  926:        fprintf( fp, "<->" );
+    #####:  927:        break;
+    #####:  928:    case PT_EQUALS:
+    #####:  929:        if (format_flags == FORMULA_SYNTAX_SPIN) {
+    #####:  930:            fprintf( fp, "==" );
+        -:  931:        } else {
+    #####:  932:            fprintf( fp, "=" );
+        -:  933:        }
+    #####:  934:        break;
+    #####:  935:    case PT_NOTEQ:
+    #####:  936:        fprintf( fp, "!=" );
+    #####:  937:        break;
+    #####:  938:    case PT_LT:
+    #####:  939:        fprintf( fp, "<" );
+    #####:  940:        break;
+    #####:  941:    case PT_GT:
+    #####:  942:        fprintf( fp, ">" );
+    #####:  943:        break;
+    #####:  944:    case PT_GE:
+    #####:  945:        fprintf( fp, ">=" );
+    #####:  946:        break;
+    #####:  947:    case PT_LE:
+    #####:  948:        fprintf( fp, "<=" );
+    #####:  949:        break;
+        -:  950:    }
+    #####:  951:    if (head->left != NULL && head->right != NULL
+    #####:  952:        && ((head->left->type == PT_VARIABLE
+    #####:  953:             || head->left->type == PT_NEXT_VARIABLE)
+    #####:  954:            && head->right->type == PT_CONSTANT && head->left->value >= 0)) {
+    #####:  955:        fprintf( fp, "%d", head->right->value );
+        -:  956:    } else {
+    #####:  957:        print_formula( head->right, fp, format_flags );
+        -:  958:    }
+    #####:  959:    fprintf( fp, ")" );
+    #####:  960:    return;
+        -:  961:}
+        -:  962:
+        -:  963:
+       12:  964:DdNode *ptree_BDD( ptree_t *head, ptree_t *var_list, DdManager *manager )
+        -:  965:{
+        -:  966:    DdNode *lsub, *rsub,*fn2, *tmp;
+        -:  967:    int index;
+        -:  968:
+        -:  969:    /* Initialize with NULL to ensure meaningful return value in case default
+        -:  970:       branches taken. */
+       12:  971:    DdNode *fn = NULL;
+        -:  972:
+       12:  973:    switch (head->type) {
+        3:  974:    case PT_AND:
+        -:  975:    case PT_OR:
+        -:  976:    case PT_IMPLIES:
+        -:  977:    case PT_EQUIV:
+        3:  978:        lsub = ptree_BDD( head->left, var_list, manager );
+        3:  979:        rsub = ptree_BDD( head->right, var_list, manager );
+        3:  980:        break;
+        3:  981:    case PT_NEG:
+        3:  982:        rsub = ptree_BDD( head->right, var_list, manager );
+        3:  983:        break;
+        5:  984:    case PT_VARIABLE:
+        5:  985:        index = find_list_item( var_list, head->type, head->name, 0 );
+        5:  986:        if (index < 0) {
+    #####:  987:            fprintf( stderr,
+        -:  988:                     "Error: ptree_BDD requested variable \"%s\","
+        -:  989:                     " but it is not in given list.\n",
+        -:  990:                     head->name );
+    #####:  991:            exit(-1);
+        -:  992:        }
+        5:  993:        lsub = Cudd_ReadOne( manager );
+        5:  994:        Cudd_Ref( lsub );
+        5:  995:        fn = Cudd_bddAnd( manager, lsub,
+        -:  996:                          Cudd_bddIthVar( manager, index ) );
+        5:  997:        Cudd_Ref( fn );
+        5:  998:        Cudd_RecursiveDeref( manager, lsub );
+        5:  999:        break;
+        -: 1000:
+        1: 1001:    case PT_NEXT_VARIABLE:
+        1: 1002:        index = find_list_item( var_list, PT_VARIABLE, head->name, 0 );
+        1: 1003:        if (index < 0) {
+    #####: 1004:            fprintf( stderr,
+        -: 1005:                     "Error: ptree_BDD requested primed variable \"%s\","
+        -: 1006:                     " but it is not in given list.\n",
+        -: 1007:                     head->name );
+    #####: 1008:            exit(-1);
+        -: 1009:        }
+        1: 1010:        lsub = Cudd_ReadOne( manager );
+        1: 1011:        Cudd_Ref( lsub );
+        1: 1012:        fn = Cudd_bddAnd( manager, lsub,
+        -: 1013:                          Cudd_bddIthVar( manager,
+        1: 1014:                                          tree_size(var_list)+index ) );
+        1: 1015:        Cudd_Ref( fn );
+        1: 1016:        Cudd_RecursiveDeref( manager, lsub );
+        1: 1017:        break;
+        -: 1018:
+    #####: 1019:    case PT_CONSTANT:
+    #####: 1020:        if (head->value == 0) {
+    #####: 1021:            fn = Cudd_Not( Cudd_ReadOne( manager ) );
+        -: 1022:        } else {
+    #####: 1023:            fn = Cudd_ReadOne( manager );
+        -: 1024:        }
+    #####: 1025:        Cudd_Ref( fn );
+    #####: 1026:        break;
+        -: 1027:    }
+        -: 1028:
+       12: 1029:    switch (head->type) {
+        1: 1030:    case PT_AND:
+        1: 1031:        fn = Cudd_bddAnd( manager, lsub, rsub );
+        1: 1032:        Cudd_Ref( fn );
+        1: 1033:        Cudd_RecursiveDeref( manager, lsub );
+        1: 1034:        Cudd_RecursiveDeref( manager, rsub );
+        1: 1035:        break;
+        -: 1036:
+        2: 1037:    case PT_OR:
+        2: 1038:        fn = Cudd_bddOr( manager, lsub, rsub );
+        2: 1039:        Cudd_Ref( fn );
+        2: 1040:        Cudd_RecursiveDeref( manager, lsub );
+        2: 1041:        Cudd_RecursiveDeref( manager, rsub );
+        2: 1042:        break;
+        -: 1043:
+    #####: 1044:    case PT_IMPLIES:
+    #####: 1045:        tmp = Cudd_Not( lsub );
+    #####: 1046:        Cudd_Ref( tmp );
+    #####: 1047:        Cudd_RecursiveDeref( manager, lsub );
+    #####: 1048:        fn = Cudd_bddOr( manager, tmp, rsub );
+    #####: 1049:        Cudd_Ref( fn );
+    #####: 1050:        Cudd_RecursiveDeref( manager, tmp );
+    #####: 1051:        Cudd_RecursiveDeref( manager, rsub );
+    #####: 1052:        break;
+        -: 1053:
+    #####: 1054:    case PT_EQUIV:
+        -: 1055:        /* -> */
+    #####: 1056:        tmp = Cudd_Not( lsub );
+    #####: 1057:        Cudd_Ref( tmp );
+    #####: 1058:        fn = Cudd_bddOr( manager, tmp, rsub );
+    #####: 1059:        Cudd_Ref( fn );
+    #####: 1060:        Cudd_RecursiveDeref( manager, tmp );
+        -: 1061:
+        -: 1062:        /* <- */
+    #####: 1063:        tmp = Cudd_Not( rsub );
+    #####: 1064:        Cudd_Ref( tmp );
+    #####: 1065:        Cudd_RecursiveDeref( manager, rsub );
+    #####: 1066:        fn2 = Cudd_bddOr( manager, tmp, lsub );
+    #####: 1067:        Cudd_Ref( fn2 );
+    #####: 1068:        Cudd_RecursiveDeref( manager, tmp );
+    #####: 1069:        Cudd_RecursiveDeref( manager, lsub );
+        -: 1070:
+        -: 1071:        /* & */
+    #####: 1072:        tmp = fn;
+    #####: 1073:        fn = Cudd_bddAnd( manager, fn, fn2 );
+    #####: 1074:        Cudd_Ref( fn );
+    #####: 1075:        Cudd_RecursiveDeref( manager, tmp );
+    #####: 1076:        Cudd_RecursiveDeref( manager, fn2 );
+    #####: 1077:        break;
+        -: 1078:
+        3: 1079:    case PT_NEG:
+        3: 1080:        fn = Cudd_Not( rsub );
+        3: 1081:        Cudd_Ref( fn );
+        3: 1082:        Cudd_RecursiveDeref( manager, rsub );
+        3: 1083:        break;
+        -: 1084:    }
+        -: 1085:
+       12: 1086:    return fn;
+        -: 1087:}
+        -: 1088:
+        -: 1089:
+        8: 1090:int find_list_item( ptree_t *head, int type, char *name, int value )
+        -: 1091:{
+        8: 1092:    int index = 0;
+       25: 1093:    while (head != NULL) {
+       17: 1094:        if (head->type == type) {
+       17: 1095:            if (head->type == PT_VARIABLE || head->type == PT_NEXT_VARIABLE) {
+        -: 1096:                /* If node is variable type, then names must match. */
+       26: 1097:                if (name != NULL && head->name != NULL
+       17: 1098:                    && !strcmp( head->name, name ))
+        8: 1099:                    break;
+    #####: 1100:            } else if (head->type == PT_CONSTANT) {
+        -: 1101:                /* If node is constant (e.g., True), then values must match. */
+    #####: 1102:                if (head->value == value)
+    #####: 1103:                    break;
+        -: 1104:            } else {
+        -: 1105:                /* Otherwise, it suffices to have the same type. */
+    #####: 1106:                break;
+        -: 1107:            }
+        -: 1108:        }
+        9: 1109:        index += 1;
+        9: 1110:        head = head->left;
+        -: 1111:    }
+        8: 1112:    if (head == NULL) {
+    #####: 1113:        return -1;  /* No matches found. */
+        -: 1114:    } else {
+        8: 1115:        return index;
+        -: 1116:    }
+        -: 1117:}
+        -: 1118:
+        -: 1119:
+        5: 1120:ptree_t *get_list_item( ptree_t *head, int index )
+        -: 1121:{
+        5: 1122:    if (head == NULL || index < -1)
+    #####: 1123:        return NULL;
+        -: 1124:
+        5: 1125:    if (index == -1) {  /* Special case of end item request. */
+    #####: 1126:        while (head->left != NULL)
+    #####: 1127:            head = head->left;
+    #####: 1128:        return head;
+        -: 1129:    }
+        -: 1130:
+       14: 1131:    while (index >= 1) {
+        4: 1132:        if (head->left == NULL)
+    #####: 1133:            return NULL;
+        4: 1134:        head = head->left;
+        4: 1135:        index--;
+        -: 1136:    }
+        5: 1137:    return head;
+        -: 1138:}

@@ -1,0 +1,490 @@
+        -:    0:Source:src/automaton.c
+        -:    0:Graph:automaton.gcno
+        -:    0:Data:automaton.gcda
+        -:    0:Runs:8
+        -:    0:Programs:8
+        -:    1:/* automaton.c -- Definitions for core routines on automaton objects.
+        -:    2: *
+        -:    3: *
+        -:    4: * SCL; 2012-2015
+        -:    5: */
+        -:    6:
+        -:    7:
+        -:    8:#define _POSIX_C_SOURCE 200809L
+        -:    9:#include <stdlib.h>
+        -:   10:#include <stdio.h>
+        -:   11:#include <string.h>
+        -:   12:
+        -:   13:#include "ptree.h"
+        -:   14:#include "gr1c_util.h"
+        -:   15:#include "automaton.h"
+        -:   16:#include "solve_support.h"
+        -:   17:
+        -:   18:
+      116:   19:anode_t *insert_anode( anode_t *head, int mode, int rgrad,
+        -:   20:                       bool initial, vartype *state, int state_len )
+        -:   21:{
+        -:   22:    int i;
+      116:   23:    anode_t *new_head = malloc( sizeof(anode_t) );
+      116:   24:    if (new_head == NULL) {
+    #####:   25:        perror( __FILE__ ",  malloc" );
+    #####:   26:        exit(-1);
+        -:   27:    }
+        -:   28:
+      116:   29:    new_head->state = malloc( state_len*sizeof(vartype) );
+      116:   30:    if (new_head->state == NULL) {
+    #####:   31:        perror( __FILE__ ",  malloc" );
+    #####:   32:        free( new_head );
+    #####:   33:        exit(-1);
+        -:   34:    }
+     1139:   35:    for (i = 0; i < state_len; i++)
+     1023:   36:        *(new_head->state + i) = *(state+i);
+      116:   37:    new_head->initial = initial;
+      116:   38:    new_head->mode = mode;
+      116:   39:    new_head->rgrad = rgrad;
+      116:   40:    new_head->trans = NULL;
+      116:   41:    new_head->trans_len = 0;
+        -:   42:
+      116:   43:    if (head == NULL) {
+       11:   44:        new_head->next = NULL;
+       11:   45:        return new_head;
+        -:   46:    } else {
+      105:   47:        new_head->next = head;
+      105:   48:        return new_head;
+        -:   49:    }
+        -:   50:}
+        -:   51:
+        -:   52:
+        3:   53:anode_t *append_anode_trans( anode_t *head,
+        -:   54:                             int mode, vartype *state, int state_len,
+        -:   55:                             int next_mode, vartype *next_state )
+        -:   56:{
+        -:   57:    anode_t **trans;
+        3:   58:    anode_t *base = find_anode( head, mode, state, state_len );
+        -:   59:
+        3:   60:    trans = realloc( base->trans, (base->trans_len+1)*sizeof(anode_t *) );
+        3:   61:    if (trans == NULL) {
+    #####:   62:        perror( __FILE__ ",  realloc" );
+    #####:   63:        exit(-1);
+        -:   64:    }
+        -:   65:
+        3:   66:    *(trans + base->trans_len) = find_anode( head, next_mode, next_state,
+        -:   67:                                             state_len );
+        3:   68:    if (*(trans + base->trans_len) == NULL) {
+    #####:   69:        base->trans = realloc( trans, (base->trans_len)*sizeof(anode_t *) );
+    #####:   70:        return NULL;
+        -:   71:    }
+        3:   72:    (base->trans_len)++;
+        3:   73:    base->trans = trans;
+        3:   74:    return head;
+        -:   75:}
+        -:   76:
+        -:   77:
+     1116:   78:anode_t *find_anode( anode_t *head, int mode, vartype *state, int state_len )
+        -:   79:{
+        -:   80:    int i;
+     1116:   81:    bool match_flag = False;
+        -:   82:
+    56689:   83:    while (head) {
+    55572:   84:        if (head->mode == mode) {
+     6072:   85:            match_flag = True;
+    30307:   86:            for (i = 0; i < state_len; i++) {
+    29192:   87:                if (*(head->state+i) != *(state+i)) {
+     4957:   88:                    match_flag = False;
+     4957:   89:                    break;
+        -:   90:                }
+        -:   91:            }
+     6072:   92:            if (match_flag)
+     1115:   93:                break;
+        -:   94:        }
+    54457:   95:        head = head->next;
+        -:   96:    }
+        -:   97:
+     1116:   98:    if (match_flag) {
+     1115:   99:        return head;
+        -:  100:    } else {
+        1:  101:        return NULL;
+        -:  102:    }
+        -:  103:}
+        -:  104:
+        -:  105:
+      101:  106:int find_anode_index( anode_t *head, int mode, vartype *state, int state_len )
+        -:  107:{
+      101:  108:    int node_counter = 0;
+        -:  109:    int i;
+      101:  110:    bool match_flag = False;
+        -:  111:
+     5252:  112:    while (head) {
+     5150:  113:        if (head->mode == mode) {
+      550:  114:            match_flag = True;
+     2750:  115:            for (i = 0; i < state_len; i++) {
+     2650:  116:                if (*(head->state+i) != *(state+i)) {
+      450:  117:                    match_flag = False;
+      450:  118:                    break;
+        -:  119:                }
+        -:  120:            }
+      550:  121:            if (match_flag)
+      100:  122:                break;
+        -:  123:        }
+     5050:  124:        head = head->next;
+     5050:  125:        node_counter++;
+        -:  126:    }
+        -:  127:
+      101:  128:    if (match_flag) {
+      100:  129:        return node_counter;
+        -:  130:    } else {
+        1:  131:        return -1;
+        -:  132:    }
+        -:  133:}
+        -:  134:
+        -:  135:
+       17:  136:int anode_index( anode_t *head, anode_t *node )
+        -:  137:{
+       17:  138:    int counter = 0;
+      155:  139:    while (head) {
+      136:  140:        if (head == node)
+       15:  141:            return counter;
+        -:  142:
+      121:  143:        head = head->next;
+      121:  144:        counter++;
+        -:  145:    }
+        2:  146:    return -1;
+        -:  147:}
+        -:  148:
+        -:  149:
+        6:  150:anode_t *delete_anode( anode_t *head, anode_t *target )
+        -:  151:{
+        -:  152:    anode_t *node, *next;
+        6:  153:    if (head == NULL || target == NULL)
+        1:  154:        return NULL;
+        5:  155:    next = head->next;
+        5:  156:    if (head == target) {
+        4:  157:        if (head->state != NULL)
+        4:  158:            free( head->state );
+        4:  159:        if (head->trans != NULL)
+    #####:  160:            free( head->trans );
+        4:  161:        free( head );
+        4:  162:        return next;
+        -:  163:    }
+        1:  164:    node = head;
+        2:  165:    while (next) {
+        1:  166:        if (next == target) {
+        1:  167:            node->next = next->next;
+        1:  168:            if (next->state != NULL)
+        1:  169:                free( next->state );
+        1:  170:            if (next->trans != NULL)
+    #####:  171:                free( next->trans );
+        1:  172:            free( next );
+        1:  173:            return head;
+        -:  174:        }
+    #####:  175:        node = next;
+    #####:  176:        next = node->next;
+        -:  177:    }
+    #####:  178:    return NULL;
+        -:  179:}
+        -:  180:
+        -:  181:
+        5:  182:void replace_anode_trans( anode_t *head, anode_t *old, anode_t *new )
+        -:  183:{
+        -:  184:    anode_t **trans;
+        -:  185:    int i, j;
+      214:  186:    while (head) {
+     2187:  187:        for (i = 0; i < head->trans_len; i++) {
+     1983:  188:            if (*(head->trans+i) == old) {
+       22:  189:                if (new == NULL) {
+       11:  190:                    if (head->trans_len == 1) {
+        1:  191:                        free( head->trans );
+        1:  192:                        head->trans = NULL;
+        1:  193:                        head->trans_len = 0;
+        -:  194:                    } else {
+       10:  195:                        trans = malloc( (head->trans_len-1)*sizeof(anode_t *) );
+       10:  196:                        if (trans == NULL) {
+    #####:  197:                            perror( __FILE__ ",  malloc" );
+    #####:  198:                            exit(-1);
+        -:  199:                        }
+       55:  200:                        for (j = 0; j < i; j++)
+       45:  201:                            *(trans+j) = *(head->trans+j);
+       55:  202:                        for (j = i+1; j < head->trans_len; j++)
+       45:  203:                            *(trans+j-1) = *(head->trans+j);
+       10:  204:                        free( head->trans );
+       10:  205:                        head->trans = trans;
+       10:  206:                        (head->trans_len)--;
+        -:  207:                    }
+       11:  208:                    i--;
+        -:  209:                } else {
+       11:  210:                    *(head->trans+i) = new;
+        -:  211:                }
+        -:  212:            }
+        -:  213:        }
+      204:  214:        head = head->next;
+        -:  215:    }
+        5:  216:}
+        -:  217:
+        -:  218:
+        4:  219:anode_t *aut_prune_deadends( anode_t *head )
+        -:  220:{
+        -:  221:    anode_t *node;
+        4:  222:    if (head == NULL)
+        1:  223:        return NULL;
+        -:  224:    do {
+        9:  225:        while (head && head->trans_len == 0) {
+        3:  226:            replace_anode_trans( head, head, NULL );
+        3:  227:            head = delete_anode( head, head );
+        -:  228:        }
+        3:  229:        if (head == NULL)
+        2:  230:            return NULL;
+        1:  231:        node = head->next;
+        3:  232:        while (node) {
+        1:  233:            if (node->trans_len == 0) {
+    #####:  234:                replace_anode_trans( head, node, NULL );
+    #####:  235:                head = delete_anode( head, node );
+    #####:  236:                break;
+        -:  237:            }
+        1:  238:            node = node->next;
+        -:  239:        }
+        1:  240:    } while (node);
+        1:  241:    return head;
+        -:  242:}
+        -:  243:
+        -:  244:
+        3:  245:anode_t *pop_anode( anode_t *head )
+        -:  246:{
+        -:  247:    anode_t *next;
+        3:  248:    next = head->next;
+        3:  249:    if (head->state != NULL)
+        3:  250:        free( head->state );
+        3:  251:    if (head->trans != NULL)
+    #####:  252:        free( head->trans );
+        3:  253:    free( head );
+        3:  254:    return next;
+        -:  255:}
+        -:  256:
+        7:  257:void delete_aut( anode_t *head )
+        -:  258:{
+        -:  259:    anode_t *next;
+        -:  260:
+      125:  261:    while (head) {
+      111:  262:        next = head->next;
+      111:  263:        if (head->state != NULL)
+      111:  264:            free( head->state );
+      111:  265:        if (head->trans != NULL)
+      108:  266:            free( head->trans );
+      111:  267:        free( head );
+      111:  268:        head = next;
+        -:  269:    }
+        7:  270:}
+        -:  271:
+        6:  272:int aut_size( anode_t *head )
+        -:  273:{
+        6:  274:    int len = 0;
+      122:  275:    while (head) {
+      110:  276:        len++;
+      110:  277:        head = head->next;
+        -:  278:    }
+        6:  279:    return len;
+        -:  280:}
+        -:  281:
+        -:  282:
+    #####:  283:int forward_modereach( anode_t *node, int mode, vartype **N, int N_len,
+        -:  284:                       int magic_mode, int state_len )
+        -:  285:{
+        -:  286:    int i, j;
+    #####:  287:    for (i = 0; i < node->trans_len; i++) {
+    #####:  288:        if ((*(node->trans+i))->mode == mode) {
+    #####:  289:            for (j = 0; j < N_len; j++)
+    #####:  290:                if (statecmp( (*(node->trans+i))->state, *(N+j), state_len ))
+    #####:  291:                    break;
+    #####:  292:            if (j < N_len) {
+    #####:  293:                (*(node->trans+i))->mode = magic_mode;
+    #####:  294:                if (forward_modereach( *(node->trans+i), mode, N, N_len,
+        -:  295:                                       magic_mode, state_len ))
+    #####:  296:                    return -1;
+        -:  297:            }
+        -:  298:        }
+        -:  299:    }
+        -:  300:
+    #####:  301:    return 0;
+        -:  302:}
+        -:  303:
+        -:  304:
+    #####:  305:int aut_compact_nonbool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+        -:  306:                         char *name, int maxval )
+        -:  307:{
+        -:  308:    int num_env, num_sys;
+    #####:  309:    ptree_t *var = evar_list, *var_tail, *var_next;
+        -:  310:    int start_index, stop_index, i;
+        -:  311:    vartype *new_state;
+        -:  312:
+    #####:  313:    num_env = tree_size( evar_list );
+    #####:  314:    num_sys = tree_size( svar_list );
+        -:  315:
+    #####:  316:    start_index = 0;
+    #####:  317:    while (var) {
+    #####:  318:        if (strstr( var->name, name ) == var->name)
+    #####:  319:            break;
+    #####:  320:        var = var->left;
+    #####:  321:        start_index++;
+        -:  322:    }
+    #####:  323:    if (var == NULL) {
+    #####:  324:        var = svar_list;
+    #####:  325:        while (var) {
+    #####:  326:            if (strstr( var->name, name ) == var->name)
+    #####:  327:                break;
+    #####:  328:            var = var->left;
+    #####:  329:            start_index++;
+        -:  330:        }
+    #####:  331:        if (var == NULL)
+    #####:  332:            return -1;  /* Could not find match. */
+        -:  333:    }
+        -:  334:
+    #####:  335:    var_tail = var;
+    #####:  336:    stop_index = start_index;
+    #####:  337:    while (var_tail->left) {
+    #####:  338:        if (strstr( var_tail->left->name, name ) != var_tail->left->name )
+    #####:  339:            break;
+    #####:  340:        var_tail = var_tail->left;
+    #####:  341:        stop_index++;
+        -:  342:    }
+    #####:  343:    free( var->name );
+    #####:  344:    var->name = strdup( name );
+    #####:  345:    if (var->name == NULL) {
+    #####:  346:        perror( __FILE__ ",  strdup" );
+    #####:  347:        exit(-1);
+        -:  348:    }
+    #####:  349:    var->value = maxval;
+    #####:  350:    if (var != var_tail) {  /* More than one bit? */
+    #####:  351:        var_next = var->left;
+    #####:  352:        var->left = var_tail->left;
+    #####:  353:        var_tail->left = NULL;
+    #####:  354:        delete_tree( var_next );
+        -:  355:    }
+        -:  356:
+    #####:  357:    while (head) {
+    #####:  358:        new_state = malloc( (num_env+num_sys - (stop_index-start_index))
+        -:  359:                            * sizeof(vartype) );
+    #####:  360:        if (new_state == NULL) {
+    #####:  361:            perror( __FILE__ ",  malloc" );
+    #####:  362:            exit(-1);
+        -:  363:        }
+        -:  364:
+    #####:  365:        for (i = 0; i < start_index; i++)
+    #####:  366:            *(new_state+i) = *(head->state+i);
+    #####:  367:        *(new_state+start_index) = bitvec_to_int( head->state+start_index,
+    #####:  368:                                                  stop_index-start_index+1 );
+    #####:  369:        for (i = start_index+1;
+    #####:  370:             i < num_env+num_sys - (stop_index-start_index); i++)
+    #####:  371:            *(new_state+i) = *(head->state+i+stop_index-start_index);
+        -:  372:
+    #####:  373:        free( head->state );
+    #####:  374:        head->state = new_state;
+        -:  375:
+    #####:  376:        head = head->next;
+        -:  377:    }
+        -:  378:
+    #####:  379:    return num_env+num_sys - (stop_index-start_index);
+        -:  380:}
+        -:  381:
+        -:  382:
+        -:  383:/* N.B., we assume that noonbool_var_list is sorted with respect to
+        -:  384:   the expanded variable list (evar_list followed by svar_list). */
+    #####:  385:int aut_expand_bool( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
+        -:  386:                     ptree_t *nonbool_var_list )
+        -:  387:{
+        -:  388:    int mapped_len, num_nonbool;
+        -:  389:    vartype *new_state;
+        -:  390:    int *offw;
+        -:  391:
+    #####:  392:    if (head == NULL)  /* Empty automaton */
+    #####:  393:        return -1;
+        -:  394:
+    #####:  395:    mapped_len = tree_size( evar_list ) + tree_size( svar_list );
+        -:  396:
+    #####:  397:    num_nonbool = tree_size( nonbool_var_list );
+    #####:  398:    if (num_nonbool == 0)
+    #####:  399:        return 0;  /* Empty call */
+        -:  400:
+    #####:  401:    offw = get_offsets_list( evar_list, svar_list, nonbool_var_list );
+    #####:  402:    if (offw == NULL && num_nonbool > 0)
+    #####:  403:        return -1;
+        -:  404:
+    #####:  405:    while (head) {
+    #####:  406:        new_state = expand_nonbool_state( head->state, offw, num_nonbool,
+        -:  407:                                          mapped_len );
+    #####:  408:        if (new_state == NULL) {
+    #####:  409:            fprintf( stderr,
+        -:  410:                     "Error aut_expand_bool: failed to expand nonbool values"
+        -:  411:                     " in automaton.\n" );
+    #####:  412:            return -1;
+        -:  413:        }
+        -:  414:
+    #####:  415:        free( head->state );
+    #####:  416:        head->state = new_state;
+        -:  417:
+    #####:  418:        head = head->next;
+        -:  419:    }
+        -:  420:
+    #####:  421:    if (offw != NULL)
+    #####:  422:        free( offw );
+    #####:  423:    return 0;
+        -:  424:}
+        -:  425:
+        -:  426:
+    #####:  427:anode_t *forward_prune( anode_t *head, anode_t **U, int U_len )
+        -:  428:{
+        -:  429:    bool touched;
+        -:  430:    int i, j;
+        -:  431:    anode_t *node;
+        -:  432:
+    #####:  433:    if (head == NULL || U_len < 0)  /* Empty automata are not permitted. */
+    #####:  434:        return NULL;
+    #####:  435:    if (U == NULL || U_len == 0)
+    #####:  436:        return head;
+        -:  437:
+        -:  438:    /* Loop and prune */
+        -:  439:    do {
+    #####:  440:        touched = False;
+    #####:  441:        for (i = 0; i < U_len; i++) {
+    #####:  442:            if (*(U+i) == NULL || (*(U+i))->initial)
+    #####:  443:                continue;
+        -:  444:
+        -:  445:            /* Look for a predecessor */
+    #####:  446:            node = head;
+    #####:  447:            while (node) {
+    #####:  448:                for (j = 0; j < node->trans_len; j++) {
+    #####:  449:                    if (*(node->trans+j) == *(U+i))
+    #####:  450:                        break;
+        -:  451:                }
+    #####:  452:                if (j < node->trans_len)
+    #####:  453:                    break;
+    #####:  454:                node = node->next;
+        -:  455:            }
+    #####:  456:            if (node == NULL) {
+        -:  457:                /* No predecessor found and not initial */
+    #####:  458:                touched = True;
+    #####:  459:                U = realloc( U,
+    #####:  460:                             (U_len + (*(U+i))->trans_len)*sizeof(anode_t *) );
+    #####:  461:                if (U == NULL) {
+    #####:  462:                    perror( __FILE__ ",  realloc" );
+    #####:  463:                    exit(-1);
+        -:  464:                }
+    #####:  465:                for (j = 0; j < (*(U+i))->trans_len; j++)
+    #####:  466:                    *(U+U_len+j) = *((*(U+i))->trans+j);
+    #####:  467:                U_len += (*(U+i))->trans_len;
+    #####:  468:                head = delete_anode( head, *(U+i) );
+    #####:  469:                for (j = 0; j < U_len; j++) {
+        -:  470:                    /* Delete duplicate pointers in U */
+    #####:  471:                    if (j == i)
+    #####:  472:                        continue;
+    #####:  473:                    if (*(U+i) == *(U+j))
+    #####:  474:                        *(U+j) = NULL;
+        -:  475:                }
+    #####:  476:                *(U+i) = NULL;  /* Mark entry as deleted */
+    #####:  477:                break;
+        -:  478:            }
+        -:  479:
+        -:  480:        }
+    #####:  481:    } while (touched && (head != NULL));
+        -:  482:
+    #####:  483:    free( U );
+    #####:  484:    return head;
+        -:  485:}

@@ -1,0 +1,6 @@
+<map id="GlobalInfo" name="GlobalInfo">
+<area shape="rect" id="node1" title="Bookkeeping data structure for subsetting algorithm." alt="" coords="15,216,104,243"/>
+<area shape="rect" id="node2" href="$structNodeDist.html" title="structure created to store subset results for each node and distances with odd and even parity of the..." alt="" coords="150,111,233,137"/>
+<area shape="rect" id="node3" href="$structDdNode.html" title="Decision diagram node." alt="" coords="200,5,274,32"/>
+<area shape="rect" id="node4" href="$structDdChildren.html" title="The two children of a non&#45;terminal node." alt="" coords="279,111,374,137"/>
+</map>
