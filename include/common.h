@@ -15,7 +15,7 @@
 #ifndef GR1C_DEVEL
 #define GR1C_DEVEL ""
 #endif
-#define GR1C_VERSION "0.13.0" GR1C_DEVEL
+#define GR1C_VERSION "0.14.0" GR1C_DEVEL
 #define GR1C_COPYRIGHT "Copyright (c) 2012-2020 by California Institute of Technology and contributors,\n" \
                        "This is free, open source software, released under a BSD license\n" \
                        "and without warranty."
