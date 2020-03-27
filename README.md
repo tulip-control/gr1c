@@ -13,6 +13,10 @@ Bug reports, feature requests, and substantial comments can be submitted via the
 [project issue tracker](https://github.com/tulip-control/gr1c/issues) or via
 email to the authors.
 
+Executable files for several operating systems (GNU/Linux, Windows, etc.) are
+available for download in [recent releases on GitHub](https://github.com/tulip-control/gr1c/releases).
+If you do not find yours there, please ask about it.
+
 
 Examples and Documentation
 ==========================
