@@ -1,3 +1,19 @@
+gr1c (0.13.0)
+
+  * Initial support for Windows. This has not been thoroughly tested yet.
+    However, the test suite with unmodified Bash shell scripts can be executed
+    with Cygwin (https://cygwin.com/).
+
+  * More tests, better documentation.
+
+  * Fix bug: case when entire automaton deleted by aut_prune_deadends().
+    Cf. commits 1ad9e0ede46f1187a809f82544a74d3f685b9b7f, 48465d21286ce5e8951317dea0aaaf36a395bd0b
+
+  * Remove previously deprecated tulip0_aut_dump() and build_anode_trans()
+
+ -- Scott C. Livingston <slivingston@cds.caltech.edu>
+
+
 gr1c (0.12.0)
 
   * Introduction of specification_t (This change occurred as part of 0.11.0.)
