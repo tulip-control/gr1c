@@ -22,8 +22,8 @@ this, use the switch `-j N` in `make` commands in these instructions, where `N`
 is the number of jobs. E.g., if there are 8 CPUs available, `make -j 8`.
 
 
-Building
---------
+Building for GNU/Linux, Mac OS, other UNIX-like
+-----------------------------------------------
 
 For the latest development snapshot, either [clone the
 repo](https://github.com/tulip-control/gr1c) (at
@@ -71,6 +71,58 @@ to get the version with
 
 Later parts of this document describe [testing gr1c](#testing) and [additional
 build options](#extras).
+
+
+Building for Windows
+--------------------
+
+These instructions are known to work when building executables for Windows on
+GNU/Linux hosts (i.e., cross-compiling). Furthermore, the results have been
+tested on Windows 10 and with [Wine](https://www.winehq.org/). For compiling on
+Windows, [the mingw-w64 project](http://mingw-w64.org/) provides toolchains for
+Windows, so it should be possible to do all of this without Linux.
+
+First, [download the latest development snapshot](
+https://github.com/tulip-control/gr1c/archive/master.zip) or clone the
+repository at <https://github.com/tulip-control/gr1c.git>.
+
+Install a toolchain from [the mingw-w64 project](http://mingw-w64.org/). Major
+GNU/Linux distributions have this available in respective package repositories;
+e.g., on Fedora or RedHat,
+
+    dnf install mingw64-gcc
+
+and on Ubuntu,
+
+    apt-get install gcc-mingw-w64
+
+gr1c depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/). Download it using
+
+    ./get-deps.sh
+
+and then
+
+    cd extern/src/cudd-3.0.0
+    ./configure --prefix=`pwd`/../.. --host=x86_64-w64-mingw32
+    make
+    make install
+
+which is nearly the same as in the script `build-deps.sh`, but with the target
+specified to be `x86_64-w64-mingw32`, which indicates "Windows 64-bit".
+
+Now, from the root of the gr1c repository source tree,
+
+    export CC=x86_64-w64-mingw32-gcc
+    export LD="x86_64-w64-mingw32-ld -r"
+    make -e
+
+If no errors are reported, you should be able to get the version with
+
+    .\gr1c.exe -V
+
+on Windows. To do the same from GNU/Linux via [Wine](https://www.winehq.org/),
+
+    wine gr1c.exe -V
 
 
 <h2 id="testing">Testing</h2>
