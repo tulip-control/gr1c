@@ -41,8 +41,9 @@ repository. [![Build Status](https://travis-ci.org/tulip-control/gr1c.svg?branch
 Dependencies
 ------------
 
-- [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/), the CU Decision Diagram package
-  by Fabio Somenzi and others.
+- [CUDD](https://web.archive.org/web/20180127051756/http://vlsi.colorado.edu/~fabio/CUDD/html/index.html), the CU Decision Diagram package
+  by Fabio Somenzi et al. (also read [the introduction](https://web.archive.org/web/20150317121927/http://vlsi.colorado.edu/~fabio/CUDD/node1.html),
+  and note that the original link for CUDD is <http://vlsi.colorado.edu/~fabio/CUDD/>)
 
 
 ### Optional
