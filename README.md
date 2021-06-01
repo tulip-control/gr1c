@@ -36,7 +36,7 @@ Building and installation
 =========================
 
 We use Travis CI to build and test gr1c from the current source code in the
-repository. [![Build Status](https://travis-ci.org/tulip-control/gr1c.svg?branch=master)](https://travis-ci.org/tulip-control/gr1c)
+repository. [![Build Status](https://travis-ci.com/tulip-control/gr1c.svg?branch=master)](https://travis-ci.com/github/tulip-control/gr1c)
 
 Dependencies
 ------------
