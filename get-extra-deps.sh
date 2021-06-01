@@ -5,7 +5,7 @@
 
 SPINVER=645
 SHA256SUM=44081282eb63cd9df763ebbcf8bad19dbeefecbebf8ac2cc090ea92e2ab71875
-URI=http://spinroot.com/spin/Src/spin${SPINVER}.tar.gz
+URI=http://spinroot.com/spin/Archive/spin${SPINVER}.tar.gz
 
 mkdir -p extern/src
 if [ ! -f extern/spin${SPINVER}.tar.gz ]
