@@ -28,7 +28,9 @@ then
     cd extern/src
     tar -xzf ../spin${SPINVER}.tar.gz
 else
-    echo "Fetched file ($URI) has unexpected SHA checksum."
+    echo "Fetched file ($URI) has unexpected SHA checksum,"
+    echo "expected: $SHA256SUM"
+    echo "observed: $FILECHECKSUM"
     false
 fi
 echo "Successfully fetched Spin"
