@@ -4,7 +4,7 @@
 # Also build extras if present, e.g., after get-extra-deps.sh
 
 CUDDVER=3.0.0
-SPINVER=6.4.5
+SPINVER=6.5.2
 
 cd extern/src/cudd-$CUDDVER
 ./configure --prefix=`pwd`/../..
@@ -12,7 +12,7 @@ make
 make install
 
 
-if [ -d ../Spin/Src${SPINVER} ]; then
-    cd ../Spin/Src${SPINVER}
+if [ -d ../Spin-version-${SPINVER} ]; then
+    cd ../Spin-version-${SPINVER}
     make
 fi

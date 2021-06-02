@@ -3,14 +3,15 @@
 # Fetch and build tools that are not required for basic usage of gr1c,
 # but that facilitate advanced usage or interesting capabilities of gr1c.
 
-SPINVER=645
-SHA256SUM=44081282eb63cd9df763ebbcf8bad19dbeefecbebf8ac2cc090ea92e2ab71875
-URI=http://spinroot.com/spin/Archive/spin${SPINVER}.tar.gz
+SPINVER=6.5.2
+SHA256SUM=e46a3bd308c4cd213cc466a8aaecfd5cedc02241190f3cb9a1d1b87e5f37080a
+# N.B., prior releases are available at https://spinroot.com/spin/Archive/
+URI=https://github.com/nimble-code/Spin/archive/refs/tags/version-${SPINVER}.tar.gz
 
 mkdir -p extern/src
 if [ ! -f extern/spin${SPINVER}.tar.gz ]
 then
-    curl -sS $URI > extern/spin${SPINVER}.tar.gz
+    curl -f -L -sS -o extern/spin${SPINVER}.tar.gz $URI
 fi
 
 if hash sha256sum >/dev/null 2>&1; then

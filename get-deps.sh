@@ -10,7 +10,7 @@ URI=https://sourceforge.net/projects/cudd-mirror/files/cudd-$CUDDVER.tar.gz/down
 mkdir -p extern/src
 if [ ! -f extern/cudd-$CUDDVER.tar.gz ]
 then
-    curl -L -sS $URI > extern/cudd-$CUDDVER.tar.gz
+    curl -L -sS -o extern/cudd-$CUDDVER.tar.gz $URI
 fi
 
 if hash sha256sum >/dev/null 2>&1; then

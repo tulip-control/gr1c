@@ -10,14 +10,14 @@ BUILD_ROOT=..
 TESTDIR=tests
 PREFACE="============================================================\nERROR:"
 
-SPINVER=6.4.5
+SPINVER=6.5.2
 
 
 if test -z $VERBOSE; then
     VERBOSE=0
 fi
 
-SPINEXE=${BUILD_ROOT}/extern/src/Spin/Src${SPINVER}/spin
+SPINEXE=${BUILD_ROOT}/extern/src/Spin-version-${SPINVER}/Src/spin
 if test $VERBOSE -eq 1; then
     ${SPINEXE} -V
 fi
