@@ -4,9 +4,10 @@ jobs:
   include:
     - os: linux
       dist: bionic
-      compiler:
-        - gcc
-        - clang
+      compiler: gcc
+    - os: linux
+      dist: bionic
+      compiler: clang
 
 addons:
   apt:
