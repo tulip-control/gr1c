@@ -35,8 +35,9 @@ will run [Doxygen](http://www.doxygen.org) and place the result in `doc/build`.
 Building and installation
 =========================
 
-We use Travis CI to build and test gr1c from the current source code in the
-repository. [![Build Status](https://travis-ci.com/tulip-control/gr1c.svg?branch=master)](https://travis-ci.com/github/tulip-control/gr1c)
+We use GitHub Actions to build and test gr1c from the current source code in the
+repository. Current status:
+[![gr1c tests](https://github.com/tulip-control/gr1c/actions/workflows/main.yml/badge.svg)](https://github.com/tulip-control/gr1c/actions/workflows/main.yml)
 
 Dependencies
 ------------
