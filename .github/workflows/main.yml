@@ -1,0 +1,35 @@
+---
+# configuration for GitHub Actions
+name: gr1c tests
+on:
+    push:
+    pull_request:
+
+jobs:
+    build:
+        name: Build and test
+        runs-on: ubuntu-20.04
+        steps:
+          - name: Install APT packages
+            run: |
+              sudo apt update
+                sudo apt install \
+                    build-essential \
+                    graphviz \
+                    gcc
+          - name: Display versions of GCC, bison, flex
+            run: |
+              gcc --version
+              bison --version
+              flex --version
+          - name: Build dependencies
+            run: |
+              ./get-deps.sh
+              ./get-extra-deps.sh
+              ./build-deps.sh
+          - name: Build gr1c
+            run: |
+              make -e all
+          - name: Run tests
+            run: |
+              VERBOSE=1 make -e check
