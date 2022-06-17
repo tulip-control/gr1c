@@ -10,6 +10,7 @@ jobs:
         name: Build and test
         runs-on: ubuntu-20.04
         steps:
+          - uses: actions/checkout@v2
           - name: Install APT packages
             run: |
               sudo apt update
