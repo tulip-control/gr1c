@@ -28,7 +28,7 @@ Building for GNU/Linux, Mac OS, other UNIX-like
 For the latest development snapshot, either [clone the
 repo](https://github.com/tulip-control/gr1c) (at
 https://github.com/tulip-control/gr1c.git) or [download a
-tarball](https://github.com/tulip-control/gr1c/tarball/master).  For the latter,
+tarball](https://github.com/tulip-control/gr1c/tarball/main).  For the latter,
 untar the file (name may vary) and change into the source directory.
 
     tar -xzf tulip-control-gr1c-658f32b.tar.gz
@@ -83,7 +83,7 @@ Windows, [the mingw-w64 project](http://mingw-w64.org/) provides toolchains for
 Windows, so it should be possible to do all of this without Linux.
 
 First, [download the latest development snapshot](
-https://github.com/tulip-control/gr1c/archive/master.zip) or clone the
+https://github.com/tulip-control/gr1c/archive/main.zip) or clone the
 repository at <https://github.com/tulip-control/gr1c.git>.
 
 Install a toolchain from [the mingw-w64 project](http://mingw-w64.org/). Major
