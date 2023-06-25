@@ -29,7 +29,7 @@ i.e., without building and browsing HTML files.
 
     make doc
 
-will run [Doxygen](http://www.doxygen.org) and place the result in `doc/build`.
+will run [Doxygen](https://www.doxygen.org) and place the result in `doc/build`.
 
 
 Building and installation
