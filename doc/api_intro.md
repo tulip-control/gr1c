@@ -49,7 +49,9 @@ removing comments.
 which is represented by the LTL formula
 \f[
 
-\left( \neg x \wedge \Box \left( x \leftrightarrow \neg x' \right) \wedge \Box \rotatebox[origin=c]{45}{$\Box$} x \right) \implies \left( y \wedge \Box \rotatebox[origin=c]{45}{$\Box$} (y \wedge x) \wedge \Box \rotatebox[origin=c]{45}{$\Box$} \neg y \right).
+\newcommand{\Feventually}{\style{display: inline-block; transform: rotate(45deg); padding: 0.2em;}{\Box}}
+
+\left( \neg x \wedge \Box \left( x \leftrightarrow \neg x' \right) \wedge \Box \Feventually x \right) \implies \left( y \wedge \Box \Feventually (y \wedge x) \wedge \Box \Feventually \neg y \right).
 
 \f]
 The only environment variable is `x`, and the only system variable is `y`; both

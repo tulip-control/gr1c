@@ -30,6 +30,7 @@ i.e., without building and browsing HTML files.
     make doc
 
 will run [Doxygen](https://www.doxygen.org) and place the result in `doc/build`.
+Formulae are rendered using [MathJax](https://www.mathjax.org/).
 
 
 Building and installation
