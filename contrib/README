@@ -5,7 +5,7 @@ of gr1c.  Below is a summary of contents.
 
 * readjson.py:
   Python script reading JSON output from gr1c.  Notable dependencies are
-  NetworkX (http://networkx.lanl.gov) and matplotlib (http://matplotlib.org).
+  NetworkX (https://networkx.org/) and matplotlib (https://matplotlib.org).
 
 * gen4g.py:
   Generate specification fragments modeling gridworlds.
