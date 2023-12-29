@@ -102,11 +102,11 @@ To obtain coverage-annotated files for all C source code, try
 
 Usage on gr1c of several tools for static analysis, i.e., tools that examine the
 source code without running the programs, are given below. The treatment is not
-exhaustive. For Clang static analyzer <http://clang-analyzer.llvm.org>, try
+exhaustive. For Clang static analyzer <https://clang-analyzer.llvm.org>, try
 
     scan-build make all
 
-For cppcheck <http://cppcheck.sourceforge.net>, try
+For cppcheck <https://cppcheck.sourceforge.io>, try
 
     cppcheck --enable=all src 2> cppcheck-issues.txt
 
@@ -119,7 +119,7 @@ Several tools for dynamic analysis, i.e., tools that examine the behavior of
 live processes, are listed below. The treatment is not exhaustive.
 
 * Tools that use the Valgrind instrumentation framework, which are available at
-  http://www.valgrind.org
+  https://valgrind.org
 
 
 Making releases
@@ -160,10 +160,10 @@ Documentation in source code should usually be
 line-wrapped at 70 characters (default in Emacs), but more importantly, lines of
 code or comments should rarely exceed 80 characters in length.  README or other
 plain text files describing nearby stuff are written in
-[Markdown](http://daringfireball.net/projects/markdown/) and line-wrapped at 80
+[Markdown](https://daringfireball.net/projects/markdown/) and line-wrapped at 80
 characters.  Many comments in the code (e.g., if beginning with `/**`) and `.md`
 files under the `doc` directory are processed by [Doxygen]
-(http://www.doxygen.org).  With [Emacs](http://www.gnu.org/software/emacs/) it
+(https://www.doxygen.org).  With [Emacs](https://www.gnu.org/software/emacs/) it
 may be possible to achieve the correct line width and tab conventions by adding
 the following to your `.emacs` configuration file.
 

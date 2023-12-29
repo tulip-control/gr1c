@@ -23,7 +23,7 @@ The common final step for visualization of results from the below code is
 
 which invokes the dot program and creates a PNG image from the DOT output; the
 image file name is patched-image.dot.png or similar.  Graphviz, which includes
-dot, is available from http://www.graphviz.org
+dot, is available from https://www.graphviz.org
 
 ### patch_localfixpoint()
 

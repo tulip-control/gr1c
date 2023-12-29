@@ -3,7 +3,7 @@ Verification
 
 While the primary motivation of the **gr1c** suite is synthesis, it can
 facilitate verification by expressing strategy automata as
-[Spin](http://spinroot.com) [Promela](http://spinroot.com/spin/Man/promela.html)
+[Spin](https://spinroot.com) [Promela](https://spinroot.com/spin/Man/promela.html)
 models using spin_aut_dump(), which is available from the command-line through
 the `-P` switch of `autman` and `gr1c`.
 
@@ -12,7 +12,7 @@ Tutorial
 --------
 
 In this tutorial, we will synthesize a strategy and then verify it using
-[Spin](http://spinroot.com).  We assume that `spin` is installed and that there
+[Spin](https://spinroot.com).  We assume that `spin` is installed and that there
 is a C compiler available as `cc`.  If you are running this from a local build
 of **gr1c**, then you may need to first add the directory containing `gr1c` and
 other programs to `PATH`, as described in [the developer's introduction](md_start_dev.html).
@@ -38,8 +38,8 @@ strategy using the [gr1c automaton format](md_formats.html#gr1cautformat)
 
 where shell redirection is used to save the output to a file named
 "trivstrategy.aut".  Note that the `-o` switch could have been used instead.
-The next step is to create a [Spin](http://spinroot.com)
-[Promela](http://spinroot.com/spin/Man/promela.html) file using
+The next step is to create a [Spin](https://spinroot.com)
+[Promela](https://spinroot.com/spin/Man/promela.html) file using
 
     gr1c autman -i examples/trivial.spc trivstrategy.aut -P > trivaut.pml
 
@@ -61,7 +61,7 @@ first few lines of the file, e.g.,
     head trivaut.pml
 
 Because we want to verify that the strategy realizes the specification, we
-generate a [never claim](http://spinroot.com/spin/Man/never.html) from the
+generate a [never claim](https://spinroot.com/spin/Man/never.html) from the
 negation of the formula that we just located in `trivaut.pml`.  Continuing our
 example, we use the routine available by the `-f` switch of Spin.  Note that
 there are other tools capable of generating a never-claim from an LTL formula,

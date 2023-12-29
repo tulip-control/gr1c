@@ -132,7 +132,7 @@ test suite from the source distribution. Testing covers optional features of
 gr1c, so accordingly, optional dependencies become required for the purposes of
 testing. If you were able to build `gr1c` as described above, then it suffices
 to additionally install [Graphviz dot](https://www.graphviz.org/) and
-[Spin](http://spinroot.com). Try
+[Spin](https://spinroot.com). Try
 
     ./get-extra-deps.sh
     ./build-deps.sh
@@ -198,7 +198,7 @@ exp/, and some parts of the implementation are available through the gr1c API.
 In some cases these programs can be built by providing the executable name to
 `make`, e.g., `make grjit`.
 
-[Doxygen](http://www.doxygen.org) must be installed to build the
+[Doxygen](https://www.doxygen.org) must be installed to build the
 documentation...including the page you are now reading.  Try
 
     make doc
