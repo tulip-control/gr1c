@@ -56,6 +56,9 @@ what is to be gained by building gr1c with it.
 - [GNU Readline](https://www.gnu.org/software/readline/), for an enhanced command
   prompt during interactive sessions. Note that there is a built-in prompt.
 
+- [GraphViz](https://www.graphviz.org/), for strategy visualization from the
+  output format type `dot`.
+
 
 Building from Source
 --------------------
