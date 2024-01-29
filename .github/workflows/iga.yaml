@@ -1,0 +1,55 @@
+name: InvenioRDM GitHub Archiver
+
+env:
+  INVENIO_SERVER: https://data.caltech.edu
+
+  # Set to an InvenioRDM record ID to mark releases as new versions.
+  parent_record: none
+
+  # The remaining variables are other IGA options. Please see the docs.
+  community:     none
+  draft:         false
+  all_assets:    false
+  all_metadata:  false
+  debug:         false
+
+# ~~~~~~~~~~~~~~~~ The rest of this file should be left as-is. ~~~~~~~~~~~~~~~~
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "The release tag (empty = latest):"
+      draft:
+        default: false
+        description: "Mark the InvenioRDM record as a draft:"
+      parent_record:
+        description: "ID of parent record (for versioning):"
+      community:
+        description: "Name of InvenioRDM community (if any):"
+      all_assets:
+        default: false
+        description: "Attach all GitHub assets:"
+      all_metadata:
+        default: false
+        description: "Include additional GitHub metadata:"
+      debug:
+        default: false
+        description: "Print debug info in the GitHub log:"
+jobs:
+  Send_to_InvenioRDM:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: caltechlibrary/iga@main
+        with:
+          INVENIO_SERVER: ${{env.INVENIO_SERVER}}
+          INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
+          all_assets:     ${{github.event.inputs.all_assets || env.all_assets}}
+          all_metadata:   ${{github.event.inputs.all_metadata || env.all_metadata}}
+          debug:          ${{github.event.inputs.debug || env.debug}}
+          draft:          ${{github.event.inputs.draft || env.draft}}
+          community:      ${{github.event.inputs.community || env.community}}
+          parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
+          release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
