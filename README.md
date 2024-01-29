@@ -92,3 +92,8 @@ This is free software released under the terms of [the BSD 3-Clause License](
 https://opensource.org/licenses/BSD-3-Clause).  There is no warranty; not even
 for merchantability or fitness for a particular purpose.  Consult LICENSE.txt
 for copying conditions.
+
+If this software is useful to you, we kindly ask that you cite us::
+
+  S. C. Livingston, "gr1c: a tool for interactive and incremental reactive synthesis". Caltech Library, Jan. 21, 2024.
+  https://authors.library.caltech.edu/records/6w6ns-1ag78

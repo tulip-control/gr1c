@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+url: "https://github.com/tulip-control/gr1c"
+preferred-citation:
+  type: report
+  title: "gr1c: a tool for interactive and incremental reactive synthesis"
+  year: 2024
+  month: 1
+  publisher:
+    name: "Caltech Library"
+  authors:
+    - family-names: "Livingston"
+      given-names: "Scott C."
