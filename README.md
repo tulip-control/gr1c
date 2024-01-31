@@ -95,4 +95,4 @@ for copying conditions.
 
 If this software is useful to you, we kindly ask that you cite us:
 
-S. C. Livingston, "gr1c: a tool for interactive and incremental reactive synthesis". Caltech Library, Jan. 21, 2024. <https://authors.library.caltech.edu/records/6w6ns-1ag78>
+S. C. Livingston, "gr1c: a tool for interactive and incremental reactive synthesis". Caltech Library, Jan. 21, 2024. [doi: 10.7907/5m62h-a4204](https://doi.org/10.7907/5m62h-a4204)
