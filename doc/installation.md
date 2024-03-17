@@ -5,7 +5,7 @@ This building and installation guide should work for anything Unix-like, but in
 particular it has been tested on, in terms of architecture for which the
 executable is built,
 * GNU/Linux: i386, x86_64
-* Mac OS X: x86_64
+* Mac OS X: x86_64, arm64
 
 Aside from standard C libraries and a basic development environment (gcc, etc.),
 **gr1c** depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/), the CU
