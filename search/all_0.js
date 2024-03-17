@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['bibliography',['Bibliography',['../md_papers.html',1,'']]]
+  ['bibliography_0',['Bibliography',['../md_papers.html',1,'']]]
 ];

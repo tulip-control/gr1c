@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['specification_20input_20format',['Specification input format',['../md_spc_format.html',1,'']]]
+  ['specification_20input_20format_0',['Specification input format',['../md_spc__format.html',1,'']]]
 ];
