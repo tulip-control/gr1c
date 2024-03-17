@@ -11,7 +11,7 @@ gr1c (0.13.0)
 
   * Remove previously deprecated tulip0_aut_dump() and build_anode_trans()
 
- -- Scott C. Livingston <slivingston@cds.caltech.edu>
+ -- Scott C. Livingston <slivingston@cds.caltech.edu>  Thu Mar 26 20:42:29 2020 -0700
 
 
 gr1c (0.12.0)
