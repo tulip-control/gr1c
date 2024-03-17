@@ -1,3 +1,12 @@
+gr1c (0.13.1)
+
+  * Report for citation in research, https://doi.org/10.7907/5m62h-a4204
+
+  * Updates to documentation and dependency URLs; releases now on GitHub
+
+ -- Scott C. Livingston <slivingston@cds.caltech.edu>  Sun, 17 Mar 2024 16:02:55 -0700
+
+
 gr1c (0.13.0)
 
   * Initial support for Windows. This has not been thoroughly tested yet.
