@@ -2,7 +2,7 @@
 #
 # SCL; 2012-2015.
 
-RELEASE=0
+RELEASE=1
 
 CORE_PROGRAMS = gr1c gr1c-rg
 EXP_PROGRAMS = gr1c-patch

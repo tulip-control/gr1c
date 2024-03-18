@@ -1,3 +1,10 @@
+gr1c (0.13.2)
+
+  * Makefile improvement for general CC (compiler invocation)
+
+ -- Scott C. Livingston <slivingston@cds.caltech.edu>  Sun, 17 Mar 2024 20:51:30 -0700
+
+
 gr1c (0.13.1)
 
   * Report for citation in research, https://doi.org/10.7907/5m62h-a4204
