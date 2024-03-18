@@ -133,7 +133,7 @@ uninstall:
 	rm -f $(DESTDIR)$(bindir)/gr1c $(DESTDIR)$(bindir)/gr1c-rg $(DESTDIR)$(bindir)/gr1c-patch
 
 check: $(CORE_PROGRAMS) $(EXP_PROGRAMS)
-	$(MAKE) -C tests CC=$(CC)
+	$(MAKE) -C tests CC="$(CC)"
 
 .PHONY: doc
 doc:
