@@ -1,6 +1,8 @@
 Bibliography
 ============
 
+If you have difficulty accessing any of these papers, contact [Scott](https://scottman.net/) for a copy.
+
 <dl>
 
 <dt id="LM14">LM14<dt><dd>S.C. Livingston, R.M. Murray. Hot-swapping robot task goals in reactive formal synthesis. in Proceedings of IEEE Conf. on Decision and Control (CDC), pp. 101--107, Dec 2014. [[Caltech CDS tech report](http://resolver.caltech.edu/CaltechCDSTR:2014.001)]. DOI:[10.1109/CDC.2014.7039366](http://dx.doi.org/10.1109/CDC.2014.7039366)</dd>
