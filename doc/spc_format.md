@@ -40,7 +40,8 @@ is equivalent to `SYSINIT:True;`.  An empty system goal section, i.e.,
 `SYSGOAL:;`, is equivalent to `[]<>True`.
 
 
-<h2 id="initconditions">Interpretations of initial conditions</h2>
+Interpretations of initial conditions  {#initconditions}
+-------------------------------------
 
 Several definitions of initial conditions have been used in the literature for
 GR(1) games and other reactive synthesis problems.  **gr1c** provides several

@@ -30,7 +30,7 @@ version 0 is the addition of the node field "initial".  A key to entries is:
 - `extra` : an arbitrary, printable string
 - `ENV`, `SYS` : ordered lists of environment and system variables,
   respectively, including domains.  Possible domains are the same as accepted in
-  the [specification input](md_spc_format.html):
+  the [specification input](./spc_format.md):
   * `"boolean"` : 1 (`True`) or 0 (`False`).  Note that JSON includes `true` and
     `false` values, but we do not use them here.
   * `[0,n]` : integers `0, 1, ..., n`, where `n` is a nonnegative integer.
@@ -101,10 +101,10 @@ Each line is of the form
 
 where `I` is `1` if the node is initial and `0` otherwise, corresponding
 respectively to `True` and `False` of the `initial` field of the anode_t
-structure (defined in automaton.h).  There is a [brief introduction to
-interpretations of initial conditions](md_spc_format.html#initconditions) in the
-documentation of the specification input format. The other elements are as in
-the [aut format v0](#gr1cautformatv0).
+structure (defined in automaton.h).  There is a
+[brief introduction to interpretations of initial conditions](#initconditions)
+in the documentation of the specification input format. The other elements are
+as in the [aut format v0](#gr1cautformatv0).
 
 <h3 id="gr1cautformatv0">version 0 (legacy)</h3>
 
@@ -127,7 +127,7 @@ file must contain indices 0 through N-1 (not necessarily in order).
 Files of this form consist of two parts: first a list (one per line) of states
 considered to be in the neighborhood; and second a sequence of **restrict**,
 **relax**, or **blocksys** commands (as defined in the section
-[Interaction](md_interaction.html)). Blank lines and lines beginning with ``#``
+[Interaction](./interaction.md)). Blank lines and lines beginning with ``#``
 are ignored.
 
 For example, if there are two variables, and we have declared the "neighborhood"

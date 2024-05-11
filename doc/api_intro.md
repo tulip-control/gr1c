@@ -9,11 +9,11 @@ cloned from
 **gr1c** is a collection of tools for GR(1) synthesis and related activities.
 Its core functionality is checking realizability of and synthesizing strategies
 for GR(1) specifications, though it does much more.  Relevant papers can be
-found in the [bibliography](md_papers.html).
+found in the [bibliography](./papers.md).
 
 Releases are posted at https://github.com/tulip-control/gr1c/releases.  Pre-built
 binaries for several platforms are available, though the preferred distribution
-form is as a source bundle.  Read the [installation page](md_installation.html)
+form is as a source bundle.  Read the [installation page](./installation.md)
 for instructions about installing gr1c from source code.  Beware the code is
 still experimental. If you find a possible bug or have comments,
 recommendations, or feature requests, then please open an [issue on
@@ -30,8 +30,8 @@ Examples
 --------
 
 Many specification files are provided under the `examples` directory.  Begin by
-reading `examples/README.txt`. Then read the [file formats](md_formats.html) and
-[specification input](md_spc_format.html) pages.  As a simple first step,
+reading `examples/README.txt`. Then read the [file formats](./formats.md) and
+[specification input](./spc_format.md) pages.  As a simple first step,
 consider the following specification, which is `examples/trivial.spc` after
 removing comments.
 
@@ -81,8 +81,8 @@ from that output, try
 Organization
 ------------
 
-Besides using the API directly and linking to relevant source files (cf. [the
-developer's introduction](md_start_dev.html)), several executable programs are
+Besides using the API directly and linking to relevant source files (cf.
+[the developer's introduction](start_dev.md)), several executable programs are
 built, some of which are considered experimental due to inclusion of methods
 involving active research.  A summary of these programs follows:
 
@@ -162,11 +162,11 @@ Common exit codes for all activities:
 Further reading
 ---------------
 
-- [format of input specifications](md_spc_format.html)
-- [interactive sessions](md_interaction.html)
-- [file formats](md_formats.html)
-- [verifying output](md_verification.html)
-- [the developer's introduction](md_start_dev.html)
+- [format of input specifications](./spc_format.md)
+- [interactive sessions](./interaction.md)
+- [file formats](./formats.md)
+- [verifying output](./verification.md)
+- [the developer's introduction](./start_dev.md)
 
 
 License

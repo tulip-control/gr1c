@@ -15,7 +15,7 @@ In this tutorial, we will synthesize a strategy and then verify it using
 [Spin](https://spinroot.com).  We assume that `spin` is installed and that there
 is a C compiler available as `cc`.  If you are running this from a local build
 of **gr1c**, then you may need to first add the directory containing `gr1c` and
-other programs to `PATH`, as described in [the developer's introduction](md_start_dev.html).
+other programs to `PATH`, as described in [the developer's introduction](./start_dev.md).
 
 Consider the small specification
 
@@ -45,8 +45,8 @@ The next step is to create a [Spin](https://spinroot.com)
 
 While we could have created this file in the first step using the `-P` switch of
 `gr1c`, first storing the aut file allows later generation of a Promela file (as
-above) or conversion to json or dot (cf. the section on [file
-formats](md_formats.html)) without repeating synthesis.  The aut file is
+above) or conversion to json or dot (cf. the section on [file formats](./formats.md))
+without repeating synthesis.  The aut file is
 appropriate for the purposes of archiving.
 
 Near the top of `trivaut.pml` is a comment block beginning with the text "LTL
