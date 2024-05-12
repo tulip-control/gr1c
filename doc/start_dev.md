@@ -32,11 +32,11 @@ gr1c include:
 </ul></dd>
 
 <dt>`exp/`</dt>
-<dd>Consult `exp/README.txt`.  The main entry point for the program `gr1c-patch` is
+<dd>Consult `exp/README`.  The main entry point for the program `gr1c-patch` is
 in `exp/grpatch.c`.</dd>
 
 <dt>`aux/`</dt>
-<dd>Consult `aux/README.txt`.  The main entry point for the program `gr1c-autman` is
+<dd>Consult `aux/README`.  The main entry point for the program `gr1c-autman` is
 in `aux/autman.c`.</dd></dd>
 
 <dt>`examples/`</dt>
@@ -56,7 +56,7 @@ reported as it happens.</dd>
 <dd>Documentation source files and configuration.</dd>
 
 <dt>`packaging/`</dt>
-<dd>Consult `packaging/README.txt`.</dd>
+<dd>Consult `packaging/README`.</dd>
 
 </dl>
 
