@@ -67,7 +67,7 @@ Detailed installation instructions are in the repository at doc/installation.md
 For the most recent release, a copy of these instructions is on the Web at
 https://tulip-control.github.io/gr1c/md_installation.html
 
-For Linux x86_64 and Mac OSX, try the following.
+For Linux and Mac OSX, try the following.
 
     ./get-deps.sh
     ./build-deps.sh
