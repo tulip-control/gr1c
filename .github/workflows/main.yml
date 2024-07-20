@@ -12,6 +12,8 @@ jobs:
         strategy:
             matrix:
                 cc: ['gcc', 'clang']
+        env:
+            CC: ${{ matrix.cc }}
         steps:
             - uses: actions/checkout@v4
             - name: Install APT packages
@@ -33,9 +35,7 @@ jobs:
                 ./build-deps.sh
             - name: Build gr1c
               run: |
-                export CC=clang
                 make -e all
             - name: Run tests
               run: |
-                export CC=clang
                 VERBOSE=1 make -e check
