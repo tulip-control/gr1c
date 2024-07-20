@@ -6,9 +6,12 @@ on:
     pull_request:
 
 jobs:
-    build:
+    build-and-test:
         name: Build and test
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-22.04
+        strategy:
+            matrix:
+                cc: ['gcc', 'clang']
         steps:
             - uses: actions/checkout@v4
             - name: Install APT packages
@@ -17,10 +20,10 @@ jobs:
                 sudo apt install \
                     build-essential \
                     graphviz \
-                    gcc
-            - name: Display versions of GCC, bison, flex
+                    ${{ matrix.cc }}
+            - name: Display versions
               run: |
-                gcc --version
+                ${{ matrix.cc }} --version
                 bison --version
                 flex --version
             - name: Build dependencies
@@ -30,7 +33,9 @@ jobs:
                 ./build-deps.sh
             - name: Build gr1c
               run: |
+                export CC=clang
                 make -e all
             - name: Run tests
               run: |
+                export CC=clang
                 VERBOSE=1 make -e check
