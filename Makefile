@@ -24,7 +24,7 @@ EXPDIR = exp
 LEX = flex -X
 LFLAGS = 
 YACC = bison -y
-YFLAGS = -d
+YFLAGS = --define=parse.error=verbose -d
 
 CC = gcc
 LD = ld -r

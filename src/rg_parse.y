@@ -20,7 +20,6 @@
   ptree_t *gen_tree_ptr = NULL;
 %}
 
-%error-verbose
 %locations
 
 
