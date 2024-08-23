@@ -33,7 +33,7 @@ void setlogstream( FILE *fp )
     }
 }
 
-FILE *getlogstream()
+FILE *getlogstream(void)
 {
     return logfp;
 }
@@ -44,7 +44,7 @@ void setlogopt( int options )
     logopt = options;
 }
 
-int getlogopt()
+int getlogopt(void)
 {
     return logopt;
 }
@@ -85,7 +85,7 @@ FILE *openlogfile( char *prefix )
     return logfp;
 }
 
-int closelogfile()
+int closelogfile(void)
 {
     if (logfp != NULL && logfp != stdout) {
         if (fclose( logfp ) == EOF) {
@@ -149,7 +149,7 @@ void logprint( char *fmt, ... )
 }
 
 
-void logprint_startline()
+void logprint_startline(void)
 {
     struct tm *timeptr;
     time_t clock;
@@ -172,7 +172,7 @@ void logprint_startline()
     }
 }
 
-void logprint_endline()
+void logprint_endline(void)
 {
     fputc( '\n', logfp );
     fflush( logfp );

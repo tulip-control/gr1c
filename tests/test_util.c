@@ -37,7 +37,7 @@ void check_bitvec_to_int( vartype *bv, int len, int expected )
 }
 
 
-void test_bitvec_to_int()
+void test_bitvec_to_int(void)
 {
     vartype bv_A[] = {0,1,0,1};
     vartype bv_5[] = {1,0,1,0};
@@ -75,7 +75,7 @@ void check_int_to_bitvec( int x, int vec_len )
 }
 
 
-void test_int_to_bitvec()
+void test_int_to_bitvec(void)
 {
     check_int_to_bitvec( 0, 1 );
     check_int_to_bitvec( 0xA, 4 );

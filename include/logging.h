@@ -17,7 +17,7 @@
 /** Use given stream for logging.  If NULL, then use stdout. */
 void setlogstream( FILE *fp );
 
-FILE *getlogstream();
+FILE *getlogstream(void);
 
 
 /** Configure format of log entries.
@@ -32,7 +32,7 @@ void setlogopt( int options );
 #define LOGOPT_NOTIME 1
 
 /** Get current log output configuration */
-int getlogopt();
+int getlogopt(void);
 
 
 /** Open a new log file, automatically name it with the current date and given
@@ -43,7 +43,7 @@ FILE *openlogfile( char *prefix );
 
 /** Manually close the current log stream, unless it is stdout.
    Return 0 on success, -1 on error. */
-int closelogfile();
+int closelogfile(void);
 
 /** Rudimentary printing routine. Supports %d, %f, and %s flags. */
 void logprint( char *fmt, ... );
@@ -53,11 +53,11 @@ void logprint_raw( char *fmt, ... );
 
 /** Start a new line.  Intended for use with logprint_raw() and
    logprint_endline(). */
-void logprint_startline();
+void logprint_startline(void);
 
 /** End line and flush log stream.  Intended for use with
    logprint_raw() and logprint_startline(). */
-void logprint_endline();
+void logprint_endline(void);
 
 
 #endif
