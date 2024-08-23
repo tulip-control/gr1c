@@ -150,7 +150,7 @@ int bounds_state( DdManager *manager, DdNode *T, vartype *ref_state,
             /* 1-norm derived metric */
             dist = 0.;
             for (i = 0; i < num_metric_vars; i++)
-                dist += fabs(*(this_mapped+i) - *(ref_mapped+i));
+                dist += abs(*(this_mapped+i) - *(ref_mapped+i));
             if (*Min == -1. || dist < *Min)
                 *Min = dist;
             if (*Max == -1. || dist > *Max)
@@ -172,7 +172,7 @@ int bounds_state( DdManager *manager, DdNode *T, vartype *ref_state,
         /* 1-norm derived metric */
         dist = 0.;
         for (i = 0; i < num_metric_vars; i++)
-            dist += fabs(*(this_mapped+i) - *(ref_mapped+i));
+            dist += abs(*(this_mapped+i) - *(ref_mapped+i));
         if (*Min == -1. || dist < *Min)
             *Min = dist;
         if (*Max == -1. || dist > *Max)
