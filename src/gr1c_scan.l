@@ -14,6 +14,7 @@
 %}
 
 %option noyywrap
+%option noinput
 %option warn nodefault
 
 
