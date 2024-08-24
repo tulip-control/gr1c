@@ -376,7 +376,6 @@ anode_t *patch_localfixpoint( DdManager *manager,
     int num_read;
     anode_t *strategy, *result_strategy;
     anode_t *node, *head;
-    int node_counter;
     vartype **N = NULL;  /* "neighborhood" of states */
     int N_len = 0;
     int goal_mode;
@@ -948,7 +947,6 @@ anode_t *patch_localfixpoint( DdManager *manager,
 
                 /* Find nodes in strategy that are affected by this change */
                 head = strategy;
-                node_counter = 0;
                 while (head) {
                     for (i = 0; i < head->trans_len; i++) {
                         if (statecmp( state, (*(head->trans+i))->state+num_env,
@@ -980,7 +978,6 @@ anode_t *patch_localfixpoint( DdManager *manager,
                         }
                     }
                     head = head->next;
-                    node_counter++;
                 }
 
                 vertex2 = state_to_BDD( manager, state,
