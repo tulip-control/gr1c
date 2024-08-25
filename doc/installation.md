@@ -79,14 +79,14 @@ Building for Windows
 These instructions are known to work when building executables for Windows on
 GNU/Linux hosts (i.e., cross-compiling). Furthermore, the results have been
 tested on Windows 10 and with [Wine](https://www.winehq.org/). For compiling on
-Windows, [the mingw-w64 project](http://mingw-w64.org/) provides toolchains for
+Windows, [the mingw-w64 project](https://www.mingw-w64.org/) provides toolchains for
 Windows, so it should be possible to do all of this without Linux.
 
 First, [download the latest development snapshot](
 https://github.com/tulip-control/gr1c/archive/main.zip) or clone the
 repository at <https://github.com/tulip-control/gr1c.git>.
 
-Install a toolchain from [the mingw-w64 project](http://mingw-w64.org/). Major
+Install a toolchain from [the mingw-w64 project](https://www.mingw-w64.org/). Major
 GNU/Linux distributions have this available in respective package repositories;
 e.g., on Fedora or RedHat,
 
