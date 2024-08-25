@@ -162,8 +162,8 @@ code or comments should rarely exceed 80 characters in length.  README or other
 plain text files describing nearby stuff are written in
 [Markdown](https://daringfireball.net/projects/markdown/) and line-wrapped at 80
 characters.  Many comments in the code (e.g., if beginning with `/**`) and `.md`
-files under the `doc` directory are processed by [Doxygen]
-(https://www.doxygen.org).  With [Emacs](https://www.gnu.org/software/emacs/) it
+files under the `doc` directory are processed by [Doxygen](https://www.doxygen.org).
+With [Emacs](https://www.gnu.org/software/emacs/) it
 may be possible to achieve the correct line width and tab conventions by adding
 the following to your `.emacs` configuration file.
 
