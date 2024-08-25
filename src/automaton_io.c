@@ -831,7 +831,7 @@ int json_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 
     fprintf( fp, " \"nodes\": {\n" );
     while (head) {
-        fprintf( fp, "\"0x%X\": {\n", head );
+        fprintf( fp, "\"%p\": {\n", (void *)head );
         fprintf( fp, "    \"state\": [" );
         for (i = 0; i < num_env+num_sys; i++) {
             fprintf( fp, "%d", *(head->state+i) );
@@ -850,7 +850,7 @@ int json_aut_dump( anode_t *head, ptree_t *evar_list, ptree_t *svar_list,
 
         fprintf( fp, "    \"trans\": [" );
         for (i = 0; i < head->trans_len; i++) {
-            fprintf( fp, "\"0x%X\"", *(head->trans+i) );
+            fprintf( fp, "\"%p\"", (void *)*(head->trans+i) );
             if (i < head->trans_len-1)
                 fprintf( fp, ", " );
         }
