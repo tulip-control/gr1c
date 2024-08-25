@@ -8,7 +8,7 @@ executable is built,
 * Mac OS X: x86_64, arm64
 
 Aside from standard C libraries and a basic development environment (gcc, etc.),
-**gr1c** depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/), the CU
+**gr1c** depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/) ([archived website](https://web.archive.org/web/20180127051756/http://vlsi.colorado.edu/~fabio/CUDD/html/index.html)), the CU
 Decision Diagram package by Fabio Somenzi and others.  Also, gr1c interactive
 mode optionally uses [GNU Readline](https://www.gnu.org/software/readline)
 (disabled by default; selected via `USE_READLINE` definition in Makefile).
@@ -34,7 +34,7 @@ untar the file (name may vary) and change into the source directory.
     tar -xzf tulip-control-gr1c-658f32b.tar.gz
     cd tulip-control-gr1c-658f32b
 
-We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/).
+We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/) ([archived website](https://web.archive.org/web/20180127051756/http://vlsi.colorado.edu/~fabio/CUDD/html/index.html)).
 
 <h3>Automatic</h3>
 
@@ -46,15 +46,18 @@ We will first build [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/).
 We mostly follow the steps as performed by the scripts listed above. To begin,
 make a directory called `extern`. At the time of writing, the latest version is
 3.0.0. Below we use [cURL](https://curl.haxx.se) to download it from the
-command-line. Alternatively, [wget](https://www.gnu.org/software/wget/) can be
-used similarly. You might also try directing your Web browser at
-<ftp://vlsi.colorado.edu/pub/>, or read CUDD documentation for instructions.
+command-line. Because the original upstream website of CUDD is permanently
+offline, we download the files from another location. For any download location,
+note that the SHA-256 digest is always
+b8e966b4562c96a03e7fbea239729587d7b395d53cadcc39a7203b49cf7eeb69
 
+    export CUDDVER=3.0.0
     mkdir extern
     cd extern
-    curl -O ftp://vlsi.colorado.edu/pub/cudd-3.0.0.tar.gz
-    tar -xzf cudd-3.0.0.tar.gz
-    cd cudd-3.0.0
+    https://sourceforge.net/projects/cudd-mirror/files/cudd-$CUDDVER.tar.gz/download
+    curl -L -sS -o extern/cudd-$CUDDVER.tar.gz https://sourceforge.net/projects/cudd-mirror/files/cudd-$CUDDVER.tar.gz/download
+    tar -xzf cudd-$CUDDVER.tar.gz
+    cd cudd-$CUDDVER
     ./configure --prefix=`pwd`/..
     make
     make install
@@ -96,7 +99,8 @@ and on Ubuntu,
 
     apt-get install gcc-mingw-w64
 
-gr1c depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/). Download it using
+gr1c depends on [CUDD](http://vlsi.colorado.edu/~fabio/CUDD/) ([archived website](https://web.archive.org/web/20180127051756/http://vlsi.colorado.edu/~fabio/CUDD/html/index.html)).
+Download it using
 
     ./get-deps.sh
 
