@@ -7,7 +7,7 @@ CUDDVER=3.0.0
 SPINVER=6.5.2
 
 cd extern/src/cudd-$CUDDVER
-./configure --prefix=`pwd`/../..
+./configure --prefix="$(pwd)/../.."
 make
 make install
 

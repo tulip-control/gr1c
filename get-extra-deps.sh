@@ -15,11 +15,11 @@ then
 fi
 
 if hash sha256sum >/dev/null 2>&1; then
-    FILECHECKSUM=`sha256sum extern/spin${SPINVER}.tar.gz| sed 's/ .*//'`
+    FILECHECKSUM=$(sha256sum extern/spin${SPINVER}.tar.gz| sed 's/ .*//')
 elif hash shasum >/dev/null 2>&1; then
-    FILECHECKSUM=`shasum -a 256 extern/spin${SPINVER}.tar.gz| sed 's/ .*//'`
+    FILECHECKSUM=$(shasum -a 256 extern/spin${SPINVER}.tar.gz| sed 's/ .*//')
 else
-    echo "neither `sha256sum` nor `shasum` found in the PATH."
+    echo 'neither `sha256sum` nor `shasum` found in the PATH.'
     rm extern/spin${SPINVER}.tar.gz
     exit 1
 fi

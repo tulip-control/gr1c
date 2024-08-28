@@ -22,7 +22,7 @@ REFSPECS="gridworld_2x20_1obs"
 if test $VERBOSE -eq 1; then
     echo "\nPerforming regression tests for patch_localfixpoint()..."
 fi
-for k in `echo $REFSPECS`; do
+for k in $(echo $REFSPECS); do
     if test $VERBOSE -eq 1; then
         echo "\tComparing  gr1c -t aut $TESTDIR/specs/patching/${k}.spc \n\t\tagainst $TESTDIR/expected_outputs/patching/${k}.spc.autdump.out"
     fi

@@ -13,7 +13,7 @@ if test -z $VERBOSE; then
 fi
 
 
-export PATH=`pwd`/${BUILD_ROOT}:$PATH
+export PATH="$(pwd)/${BUILD_ROOT}:$PATH"
 
 if test $VERBOSE -eq 1; then
     echo '\nChecking for detection of flawed command-line usage...'
@@ -72,15 +72,15 @@ done
 if test $VERBOSE -eq 1; then
    echo '\nParsing version message from `gr1c -V`...'
 fi
-VERSION_LINE=`gr1c -V | head -1`
+VERSION_LINE=$(gr1c -V | head -1)
 echo $VERSION_LINE | grep dev0 > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-    VERSION=`echo ${VERSION_LINE} | cut -d ' ' -f2`
-    VERSION_SPLIT=`echo ${VERSION} | sed 's/\./ /g'`
+    VERSION=$(echo ${VERSION_LINE} | cut -d ' ' -f2)
+    VERSION_SPLIT=$(echo ${VERSION} | sed 's/\./ /g')
     if test $VERBOSE -eq 1; then
         echo 'Found version:' ${VERSION}
     fi
-    if [ `echo ${VERSION_SPLIT} | wc -w` -ne 3 ]; then
+    if [ $(echo ${VERSION_SPLIT} | wc -w) -ne 3 ]; then
         echo $PREFACE 'detected version does not have 3 component numbers'
         echo
         exit 1
@@ -102,7 +102,7 @@ fi
 if test $VERBOSE -eq 1; then
     echo '\nComparing `gr1c help` and `gr1c -h`...'
 fi
-TMPFILE=`$MKTEMP`
+TMPFILE=$($MKTEMP)
 gr1c help > $TMPFILE
 if ! (gr1c -h | diff $TMPFILE -); then
     echo $PREFACE 'Outputs of `gr1c help` and gr1c -h` do not match'
@@ -113,7 +113,7 @@ fi
 if test $VERBOSE -eq 1; then
     echo '\nComparing `gr1c --help` and `gr1c -h`...'
 fi
-TMPFILE=`$MKTEMP`
+TMPFILE=$($MKTEMP)
 gr1c --help > $TMPFILE
 if ! (gr1c -h | diff $TMPFILE -); then
     echo $PREFACE 'Outputs of `gr1c --help` and gr1c -h` do not match'

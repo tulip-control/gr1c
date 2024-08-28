@@ -27,7 +27,7 @@ UNREALIZABLE_REFSPECS="trivial_un.spc"
 if test $VERBOSE -eq 1; then
     echo "\nChecking specifications that should be realizable..."
 fi
-for k in `echo $REFSPECS`; do
+for k in $(echo $REFSPECS); do
     if test $VERBOSE -eq 1; then
         echo "\t gr1c -r $TESTDIR/specs/$k"
     fi
@@ -40,7 +40,7 @@ done
 if test $VERBOSE -eq 1; then
     echo "\nChecking specifications that should be unrealizable..."
 fi
-for k in `echo $UNREALIZABLE_REFSPECS`; do
+for k in $(echo $UNREALIZABLE_REFSPECS); do
     if test $VERBOSE -eq 1; then
         echo "\t gr1c -r $TESTDIR/specs/$k"
     fi
@@ -70,7 +70,7 @@ REFSPECS="trivial_2var.spc free_counter.spc count_onestep.spc trivial_mustblock.
 if test $VERBOSE -eq 1; then
     echo "\nPerforming regression tests for vanilla GR(1) synthesis..."
 fi
-for k in `echo $REFSPECS`; do
+for k in $(echo $REFSPECS); do
     if test $VERBOSE -eq 1; then
         echo "\tComparing  gr1c -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.listdump.out"
     fi
@@ -133,7 +133,7 @@ REFSPECS="reach_2var.spc reach_2var_mustblock.spc reach_free_counter.spc reach_f
 if test $VERBOSE -eq 1; then
     echo "\nPerforming regression tests for reachability games..."
 fi
-for k in `echo $REFSPECS`; do
+for k in $(echo $REFSPECS); do
     if test $VERBOSE -eq 1; then
         echo "\tComparing  gr1c-rg -t txt $TESTDIR/specs/$k \n\t\tagainst $TESTDIR/expected_outputs/${k}.listdump.out"
     fi
@@ -152,7 +152,7 @@ REFSPECS="trivial_partwin gridworld_bool"
 if test $VERBOSE -eq 1; then
     echo "\nPerforming regression tests for interaction..."
 fi
-for k in `echo $REFSPECS`; do
+for k in $(echo $REFSPECS); do
     if test $VERBOSE -eq 1; then
         echo "\tComparing  gr1c -i $TESTDIR/specs/${k}.spc < $TESTDIR/interaction_scripts/${k}_IN.txt \n\t\tagainst $TESTDIR/interaction_scripts/${k}_OUT.txt"
     fi
@@ -169,7 +169,7 @@ done
 if test $VERBOSE -eq 1; then
     echo "\nChecking detection of flawed specification files..."
 fi
-for k in `ls flawed_specs/*.spc`; do
+for k in $(ls flawed_specs/*.spc); do
     if test $VERBOSE -eq 1; then
         echo "\t gr1c -s $k"
     fi
@@ -186,7 +186,7 @@ done
 if test $VERBOSE -eq 1; then
     echo "\nChecking detection of flawed reachability game (rg) specification files..."
 fi
-for k in `ls flawed_reach_specs/*.spc`; do
+for k in $(ls flawed_reach_specs/*.spc); do
     if test $VERBOSE -eq 1; then
         echo "\t gr1c-rg -s $k"
     fi
