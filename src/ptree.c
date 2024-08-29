@@ -601,7 +601,7 @@ void print_node( ptree_t *node, FILE *fp )
 
 
 void inorder_trav( ptree_t *head,
-                   void (* node_fn)(ptree_t *, void *), void *arg )
+                   void (* node_fn)(ptree_t *, FILE *), void *arg )
 {
     if (head == NULL)
         return;

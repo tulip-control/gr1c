@@ -114,7 +114,7 @@ void print_node( ptree_t *node, FILE *fp );
 /** Traverse the tree in-order, calling *node_fn at each node and
    passing it arg. */
 void inorder_trav( ptree_t *head,
-                   void (* node_fn)(ptree_t *, void *), void *arg );
+                   void (* node_fn)(ptree_t *, FILE *), void *arg );
 
 /** If f is NULL, then use stdout. Cf table of \ref PTreeFormulaSyntax. */
 void print_formula( ptree_t *head, FILE *fp, unsigned char format_flags );
