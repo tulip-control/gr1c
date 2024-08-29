@@ -3,6 +3,7 @@
 # SCL; 2012-2015.
 
 RELEASE=0
+COVERAGE=0
 
 CORE_PROGRAMS = gr1c gr1c-rg
 EXP_PROGRAMS = gr1c-patch
@@ -30,6 +31,7 @@ CC = gcc
 LD = ld -r
 
 CFLAGS = -Wall -pedantic -std=c99 -I$(deps_prefix)/include -I$(INCLUDEDIR)
+
 LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 
 # To use and statically link with GNU Readline
@@ -40,9 +42,6 @@ LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 # will fail if you build gr1c with GNU Readline.
 
 
-# To measure test coverage
-#CFLAGS += -fprofile-arcs -ftest-coverage
-#LDFLAGS += -lgcov
 ifeq ($(RELEASE),0)
 	GR1C_GITHASH := $(shell git describe --dirty)
 	ifdef GR1C_GITHASH
@@ -53,6 +52,11 @@ ifeq ($(RELEASE),0)
 	CFLAGS += -g -DGR1C_DEVEL=\".dev0$(GR1C_GITHASH)\"
 else
 	CFLAGS += -O3
+endif
+
+ifneq ($(COVERAGE),0)
+	CFLAGS += -fprofile-arcs -ftest-coverage
+	LDFLAGS += -lgcov
 endif
 
 

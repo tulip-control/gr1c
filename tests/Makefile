@@ -8,9 +8,9 @@ INCLUDEDIR = include
 CFLAGS = -g -Wall -pedantic -std=c99 -I$(deps_prefix)/include -I../$(INCLUDEDIR)
 LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 
-# To measure test coverage
-#CFLAGS += -fprofile-arcs -ftest-coverage
-#LDFLAGS += -lgcov
+ifneq ($(COVERAGE),0)
+	CFLAGS += -fprofile-arcs -ftest-coverage
+endif
 
 PROGRAMS = test_util test_logging test_automaton test_aut_prune_deadends test_aut_aut_load test_aut_aut_dump test_ptree test_ptree_to_BDD test_bitblasting test_solve_support test_patching
 
