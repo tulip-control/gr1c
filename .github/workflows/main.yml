@@ -33,9 +33,19 @@ jobs:
                 ./get-deps.sh
                 ./get-extra-deps.sh
                 ./build-deps.sh
+            - name: Enable measurement of coverage
+              if: matrix.cc == 'gcc'
+              run: |
+                echo 'COVERAGE=1' >> "$GITHUB_ENV"
             - name: Build gr1c
               run: |
                 make -e all
             - name: Run tests
               run: |
                 VERBOSE=1 make -e check
+            - name: Report coverage
+              if: matrix.cc == 'gcc'
+              run: |
+                gcov -n $(for k in $(find src exp aux -name \*.c); do basename $k; done) > cov-summary.txt
+                echo "### Coverage summary" >> $GITHUB_STEP_SUMMARY
+                tail -1 cov-summary.txt >> $GITHUB_STEP_SUMMARY
