@@ -20,7 +20,7 @@ jobs:
             CC: ${{ matrix.cc }}
         steps:
             - uses: actions/checkout@v4
-	    - name: Install packages via Brew if macOS
+            - name: Install packages via Brew if macOS
               if: matrix.os == 'macos-latest'
               run: |
                 brew install graphviz
