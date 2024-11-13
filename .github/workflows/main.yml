@@ -26,7 +26,6 @@ jobs:
                 brew install graphviz
                 brew install flex
                 brew install bison
-                brew install ${{ matrix.cc }}
             - name: Install APT packages if Ubuntu
               if: matrix.os == 'ubuntu-22.04'
               run: |
