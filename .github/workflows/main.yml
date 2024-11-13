@@ -8,15 +8,27 @@ on:
 jobs:
     build-and-test:
         name: Build and test
-        runs-on: ubuntu-22.04
+        runs-on: ${{ matrix.os }}
         strategy:
             matrix:
+                os: [
+                    ubuntu-22.04,
+                    macos-latest,
+                    ]
                 cc: ['gcc', 'clang']
         env:
             CC: ${{ matrix.cc }}
         steps:
             - uses: actions/checkout@v4
-            - name: Install APT packages
+	    - name: Install packages via Brew if macOS
+              if: matrix.os == 'macos-latest'
+              run: |
+                brew install graphviz
+                brew install flex
+                brew install bison
+                brew install ${{ matrix.cc }}
+            - name: Install APT packages if Ubuntu
+              if: matrix.os == 'ubuntu-22.04'
               run: |
                 sudo apt update
                 sudo apt install \
