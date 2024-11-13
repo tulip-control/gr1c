@@ -21,7 +21,7 @@ jobs:
                       cc: gcc
         env:
             CC: ${{ matrix.cc }}
-	    PATH: /opt/homebrew/opt/flex/bin:/opt/homebrew/opt/bison/bin:$PATH
+            PATH: /opt/homebrew/opt/flex/bin:/opt/homebrew/opt/bison/bin:$PATH
         steps:
             - uses: actions/checkout@v4
             - name: Install packages via Brew if macOS
