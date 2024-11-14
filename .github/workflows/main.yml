@@ -25,13 +25,13 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - name: Install packages via Brew if macOS
-              if: matrix.os == 'macos-latest'
+              if: runner.os == 'macOS'
               run: |
                 brew install graphviz
                 brew install flex
                 brew install bison
             - name: Install APT packages if Ubuntu
-              if: matrix.os == 'ubuntu-22.04'
+              if: runner.os == 'Linux'
               run: |
                 sudo apt update
                 sudo apt install \
