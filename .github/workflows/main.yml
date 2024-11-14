@@ -28,9 +28,9 @@ jobs:
               run: |
                 brew install graphviz
                 brew install flex
-                echo 'export PATH="/opt/homebrew/opt/flex/bin:$PATH"' >> $HOME/.bash_profile
+                echo '/opt/homebrew/opt/flex/bin' >> $GITHUB_PATH
                 brew install bison
-                echo 'export PATH="/opt/homebrew/opt/bison/bin:$PATH"' >> $HOME/.bash_profile
+                echo '/opt/homebrew/opt/bison/bin' >> $GITHUB_PATH
             - name: Install APT packages if Ubuntu
               if: runner.os == 'Linux'
               run: |
