@@ -682,6 +682,22 @@ int main( int argc, char **argv )
                            original_env_goals, original_num_egoals,
                            original_sys_goals, original_num_sgoals,
                            stdout, NULL );
+
+            /* Clean-up */
+            delete_tree( original_sys_init );
+            delete_tree( original_env_init );
+            for (j = 0; j < original_num_egoals; j++)
+                delete_tree( *(original_env_goals+j) );
+            free( original_env_goals );
+            for (j = 0; j < original_num_sgoals; j++)
+                delete_tree( *(original_sys_goals+j) );
+            free( original_sys_goals );
+            for (j = 0; j < original_et_array_len; j++)
+                delete_tree( *(original_env_trans_array+j) );
+            free( original_env_trans_array );
+            for (j = 0; j < original_st_array_len; j++)
+                delete_tree( *(original_sys_trans_array+j) );
+            free( original_sys_trans_array );
         }
     }
 
