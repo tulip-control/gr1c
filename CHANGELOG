@@ -1,3 +1,12 @@
+gr1c (0.13.3)
+
+  * Various code quality improvements (not affecting correctness)
+
+  * Improve documentation
+
+ -- Scott C. Livingston <slivingston@cds.caltech.edu>  Thu, 21 Nov 2024 18:57:50 -0800
+
+
 gr1c (0.13.2)
 
   * Makefile improvement for general CC (compiler invocation)
