@@ -9,14 +9,18 @@
 # command-line unless file names appear as arguments. Specifications
 # be provided via stdin and pipes. E.g.,
 #
-#     cat examples/trivial.spc | docker run -i --rm gr1c:latest
+#     cat examples/trivial.spc | docker run -i --rm gr1c:latest gr1c
 #
 # synthesizes according to examples/trivial.spc and removes the Docker
 # container afterward because of `--rm`. E.g.,
 #
-#     docker run -i --rm gr1c:latest help
+#     docker run -i --rm gr1c:latest gr1c help
 #
-# causes the gr1c help message to be printed.
+# causes the gr1c help message to be printed. To drop into a shell with
+# gr1c installed,
+#
+#     docker run -it --rm gr1c:latest bash
+
 
 FROM debian:stable
 
@@ -38,4 +42,4 @@ RUN make -j4 all && make check
 
 ENV PATH /root/gr1c:$PATH
 
-ENTRYPOINT ["gr1c"]
+CMD ["gr1c"]
