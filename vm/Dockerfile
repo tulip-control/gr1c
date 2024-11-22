@@ -22,7 +22,8 @@ RUN apt-get update && apt-get -y install \
     graphviz \
     build-essential \
     bison \
-    flex
+    flex \
+    python3
 
 COPY . /root/gr1c
 

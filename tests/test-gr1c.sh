@@ -115,11 +115,17 @@ fi
 if test $VERBOSE -eq 1; then
     echo "\nChecking syntax for examples of JSON output..."
 fi
-if ! (python -V > /dev/null); then
-    echo $PREFACE "Python not installed. Tests require it to check JSON syntax.\n"
-    exit 1
+if ! (python -V > /dev/null 2>&1); then
+    if ! (python3 -V > /dev/null); then
+        echo $PREFACE "Python not installed. Tests require it to check JSON syntax.\n"
+        exit 1
+    else
+        PYTHON=python3
+    fi
+else
+    PYTHON=python
 fi
-if ! ($BUILD_ROOT/gr1c -t json specs/trivial_2var.spc | python -m json.tool > /dev/null); then
+if ! ($BUILD_ROOT/gr1c -t json specs/trivial_2var.spc | $PYTHON -m json.tool > /dev/null); then
     echo $PREFACE "syntax error in JSON output from gr1c on specs/trivial_2var.spc\n"
     exit 1
 fi
