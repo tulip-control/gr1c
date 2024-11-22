@@ -2,6 +2,9 @@
 #
 # The tag `gr1c:latest` can be changed or omitted.
 #
+# Run `make clean` to remove any existing executable or object files
+# before building this image.
+#
 # After the image is built, the container can replace `gr1c` on the
 # command-line unless file names appear as arguments. Specifications
 # be provided via stdin and pipes. E.g.,
