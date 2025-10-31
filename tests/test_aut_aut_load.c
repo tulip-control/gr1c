@@ -59,7 +59,7 @@ anode_t *aut_aut_loads( char *autstr, int state_len )
         perror( __FILE__ ", fdopen" );
         abort();
     }
-    fprintf( fp, autstr );
+    fprintf( fp, "%s", autstr );
     if (fseek( fp, 0, SEEK_SET )) {
         perror( __FILE__ ", fseek" );
         abort();
