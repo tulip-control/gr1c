@@ -15,7 +15,7 @@
 #include "automaton.h"
 
 
-#define INPUT_STRING_LEN 1024
+#define INPUT_STRING_LEN 4096
 
 /* Future work: sorting of nodes could be made faster. */
 anode_t *aut_aut_loadver( int state_len, FILE *fp, int *version )
