@@ -62,6 +62,7 @@ jobs:
             - name: Report coverage
               if: matrix.cc == 'gcc'
               run: |
-                gcov -n *.gcno *.gcna > cov-summary.txt
+                rm -f lex.yy.{gcno,gcda} y.tab.{gcno,gcda}
+                gcov -n *.gcno *.gcda > cov-summary.txt
                 echo "### Coverage summary" >> $GITHUB_STEP_SUMMARY
                 tail -1 cov-summary.txt >> $GITHUB_STEP_SUMMARY
