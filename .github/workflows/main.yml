@@ -13,11 +13,11 @@ jobs:
             matrix:
                 os: [
                     ubuntu-24.04,
-                    macos-15,
+                    macos-26,
                     ]
                 cc: ['gcc', 'clang']
                 exclude:
-                    - os: macos-15
+                    - os: macos-26
                       cc: gcc
         env:
             CC: ${{ matrix.cc }}
