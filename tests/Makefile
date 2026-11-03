@@ -10,6 +10,10 @@ LDFLAGS = -L$(deps_prefix)/lib -lm -lcudd
 
 ifneq ($(COVERAGE),0)
 	CFLAGS += -fprofile-arcs -ftest-coverage
+
+	# Example of flags for macOS
+	#CFLAGS += -fprofile-arcs -ftest-coverage -I/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk/usr/include
+	#LDFLAGS += -L/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk/usr/lib
 endif
 
 PROGRAMS = test_util test_logging test_automaton test_aut_prune_deadends test_aut_aut_load test_aut_aut_dump test_ptree test_ptree_to_BDD test_bitblasting test_solve_support test_patching

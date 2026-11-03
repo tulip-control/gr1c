@@ -57,6 +57,10 @@ endif
 ifneq ($(COVERAGE),0)
 	CFLAGS += -fprofile-arcs -ftest-coverage
 	LDFLAGS += -lgcov
+
+	# Example of flags for macOS
+	#CFLAGS += -fprofile-arcs -ftest-coverage -I/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk/usr/include
+	#LDFLAGS += -lgcov -L/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk/usr/lib
 endif
 
 
